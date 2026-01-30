@@ -1,3 +1,4 @@
+import { useEffect, useMemo } from 'react';
 import { Doughnut } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -16,15 +17,14 @@ ChartJS.register(ArcElement, Tooltip, Legend);
  * Comparativo entrada e saída
  */
 const DistribuicaoChart = ({ onDataCalculated }) => {
-  // Calcular totais
-  const totalEntradas = entradasData.reduce((a, b) => a + b, 0);
-  const totalSaidas = saidasData.reduce((a, b) => a + b, 0);
-  const totalServicos = 0; // Conforme análise, valores zerados
-  const totalGeral = totalEntradas + totalSaidas + totalServicos;
+  // Calcular totais com useMemo para evitar recálculos desnecessários
+  const calculatedData = useMemo(() => {
+    const totalEntradas = entradasData.reduce((a, b) => a + b, 0);
+    const totalSaidas = saidasData.reduce((a, b) => a + b, 0);
+    const totalServicos = 0;
+    const totalGeral = totalEntradas + totalSaidas + totalServicos;
 
-  // Notificar o componente pai sobre os dados calculados
-  if (onDataCalculated) {
-    onDataCalculated({
+    return {
       totalEntradas,
       totalSaidas,
       totalServicos,
@@ -32,8 +32,17 @@ const DistribuicaoChart = ({ onDataCalculated }) => {
       percEntradas: calculatePercentage(totalEntradas, totalGeral),
       percSaidas: calculatePercentage(totalSaidas, totalGeral),
       percServicos: calculatePercentage(totalServicos, totalGeral)
-    });
-  }
+    };
+  }, []);
+
+  // Notificar o componente pai apenas uma vez na montagem
+  useEffect(() => {
+    if (onDataCalculated) {
+      onDataCalculated(calculatedData);
+    }
+  }, []);
+
+  const { totalEntradas, totalSaidas, totalServicos, totalGeral } = calculatedData;
 
   const chartData = {
     labels: ['Entradas', 'Saídas', 'Serviços'],
