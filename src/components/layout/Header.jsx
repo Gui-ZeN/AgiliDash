@@ -26,7 +26,8 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
     { id: 'gerais', label: 'INFO. GERAIS' },
     { id: 'contabil', label: 'CONTÁBIL' },
     { id: 'fiscal', label: 'FISCAL' },
-    { id: 'pessoal', label: 'PESSOAL' }
+    { id: 'pessoal', label: 'PESSOAL' },
+    { id: 'administrativo', label: 'ADMINISTRATIVO' }
   ];
 
   const handleLogout = () => {

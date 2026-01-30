@@ -38,7 +38,19 @@ import {
   Layers,
   UserPlus,
   BadgeCheck,
-  Banknote
+  Banknote,
+  ClipboardList,
+  FileCheck,
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+  ScrollText,
+  Home,
+  Zap,
+  Shield,
+  Package,
+  Wrench,
+  MoreHorizontal
 } from 'lucide-react';
 import Header from '../components/layout/Header';
 import Card, { PrimaryCard, AlertCard, InfoCard, MetricCard, TeamCard } from '../components/common/Card';
@@ -55,6 +67,7 @@ import FluxoFiscalChart from '../components/charts/FluxoFiscalChart';
 import DistribuicaoChart from '../components/charts/DistribuicaoChart';
 import FolhaPagamentoChart from '../components/charts/FolhaPagamentoChart';
 import { DepartamentoPizzaChart, ContratoPizzaChart } from '../components/charts/FuncionariosPizzaChart';
+import { DespesasMensaisChart, DespesasCategoriaChart } from '../components/charts/DespesasAdminChart';
 import { formatCurrency, sumArray } from '../utils/formatters';
 import { useEmpresa } from '../context/EmpresaContext';
 import {
@@ -64,7 +77,7 @@ import {
 
 /**
  * Dashboard Principal - Design Aprimorado
- * Contém as 4 tabs: Info. Gerais, Contábil, Fiscal, Pessoal
+ * Contém as 5 tabs: Info. Gerais, Contábil, Fiscal, Pessoal, Administrativo
  */
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('gerais');
@@ -82,6 +95,7 @@ const Dashboard = () => {
   const saidasData = cnpjDados.saidasData;
   const totaisFiscais = cnpjDados.totaisFiscais;
   const pessoalData = cnpjDados.pessoalData;
+  const administrativoData = cnpjDados.administrativoData;
 
   // Animação ao trocar de tab ou CNPJ
   useEffect(() => {
@@ -109,7 +123,8 @@ const Dashboard = () => {
   const iconMap = {
     calculator: Calculator,
     'file-spreadsheet': FileSpreadsheet,
-    users: Users
+    users: Users,
+    briefcase: Briefcase
   };
 
   // Classe de animação
@@ -991,6 +1006,314 @@ const Dashboard = () => {
                     com custo total mensal de <strong>{formatCurrency(pessoalData.folhaMensal + pessoalData.encargos + pessoalData.beneficios)}</strong>
                     (folha + encargos + benefícios). A área de <strong>Produção</strong> representa
                     a maior concentração de funcionários, alinhada com a operação industrial da empresa.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ===== TAB: ADMINISTRATIVO ===== */}
+        {activeTab === 'administrativo' && (
+          <div className="space-y-8">
+            {/* Header */}
+            <section className={`flex items-start justify-between transition-all duration-500 ${cardAnimation}`}>
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-amber-500 rounded-lg">
+                    <Briefcase className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="text-xs font-bold text-amber-600 uppercase tracking-widest">
+                    Setor Administrativo
+                  </span>
+                </div>
+                <h1 className="text-4xl font-extrabold text-[#1e293b] mb-1">
+                  Gestão Administrativa
+                </h1>
+                <p className="text-lg text-slate-400 font-medium">
+                  Contratos, despesas e documentos da empresa.
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleExportReport('pdf')}
+                  className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors"
+                >
+                  <FileDown className="w-4 h-4" />
+                  PDF
+                </button>
+                <button
+                  onClick={() => handleExportReport('excel')}
+                  className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  Excel
+                </button>
+              </div>
+            </section>
+
+            {/* Cards de métricas principais */}
+            <div className={`grid grid-cols-1 md:grid-cols-4 gap-4 transition-all duration-500 delay-100 ${cardAnimation}`}>
+              <div className="bg-gradient-to-br from-amber-500 to-orange-500 p-6 rounded-2xl text-white shadow-lg">
+                <div className="flex items-center justify-between mb-4">
+                  <ScrollText className="w-8 h-8 opacity-80" />
+                  <span className="text-xs font-bold bg-white/20 px-3 py-1 rounded-full">
+                    Vigentes
+                  </span>
+                </div>
+                <p className="text-3xl font-black">{administrativoData.contratos.vigentes}</p>
+                <p className="text-white/70 text-sm mt-1">Contratos Ativos</p>
+              </div>
+
+              <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-6 rounded-2xl text-white shadow-lg">
+                <div className="flex items-center justify-between mb-4">
+                  <Wallet className="w-8 h-8 opacity-80" />
+                </div>
+                <p className="text-3xl font-black">{formatCurrency(administrativoData.indicadores.custoOperacional)}</p>
+                <p className="text-white/70 text-sm mt-1">Custo Operacional/Mês</p>
+              </div>
+
+              <div className="bg-gradient-to-br from-emerald-500 to-green-600 p-6 rounded-2xl text-white shadow-lg">
+                <div className="flex items-center justify-between mb-4">
+                  <FileCheck className="w-8 h-8 opacity-80" />
+                </div>
+                <p className="text-3xl font-black">{administrativoData.certidoes.filter(c => c.status === 'Válida').length}</p>
+                <p className="text-white/70 text-sm mt-1">Certidões Válidas</p>
+              </div>
+
+              <div className="bg-gradient-to-br from-red-500 to-rose-600 p-6 rounded-2xl text-white shadow-lg">
+                <div className="flex items-center justify-between mb-4">
+                  <AlertTriangle className="w-8 h-8 opacity-80" />
+                </div>
+                <p className="text-3xl font-black">{administrativoData.contratos.vencendo30dias}</p>
+                <p className="text-white/70 text-sm mt-1">Vencendo em 30 dias</p>
+              </div>
+            </div>
+
+            {/* Gráfico de Despesas Mensais */}
+            <div className={`bg-white p-8 rounded-3xl border border-slate-100 shadow-sm transition-all duration-500 delay-200 ${cardAnimation}`}>
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h3 className="text-xl font-bold text-slate-800">Despesas Administrativas</h3>
+                  <p className="text-sm text-slate-400">Evolução mensal das despesas</p>
+                </div>
+                <div className="p-3 bg-amber-50 rounded-xl">
+                  <BarChartBig className="w-6 h-6 text-amber-600" />
+                </div>
+              </div>
+              <DespesasMensaisChart despesasMensais={administrativoData.despesasMensais} />
+            </div>
+
+            {/* Grid: Despesas por Categoria e Indicadores */}
+            <div className={`grid grid-cols-1 lg:grid-cols-2 gap-6 transition-all duration-500 delay-300 ${cardAnimation}`}>
+              {/* Despesas por Categoria */}
+              <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-800">Despesas por Categoria</h3>
+                    <p className="text-sm text-slate-400">Distribuição dos custos</p>
+                  </div>
+                  <div className="p-3 bg-amber-50 rounded-xl">
+                    <PieChart className="w-6 h-6 text-amber-600" />
+                  </div>
+                </div>
+                <DespesasCategoriaChart despesasPorCategoria={administrativoData.despesasPorCategoria} />
+              </div>
+
+              {/* Indicadores */}
+              <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
+                <h3 className="text-lg font-bold text-slate-800 mb-6 pb-4 border-b border-slate-100">
+                  Indicadores Operacionais
+                </h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-blue-100 rounded-lg">
+                        <DollarSign className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <span className="font-medium text-slate-700">Ticket Médio de Venda</span>
+                    </div>
+                    <span className="text-xl font-bold text-blue-600">
+                      {formatCurrency(administrativoData.indicadores.ticketMedioVenda)}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-green-100 rounded-lg">
+                        <Percent className="w-5 h-5 text-green-600" />
+                      </div>
+                      <span className="font-medium text-slate-700">Margem Operacional</span>
+                    </div>
+                    <span className="text-xl font-bold text-green-600">
+                      {administrativoData.indicadores.margemOperacional}%
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-red-100 rounded-lg">
+                        <AlertCircle className="w-5 h-5 text-red-600" />
+                      </div>
+                      <span className="font-medium text-slate-700">Taxa de Inadimplência</span>
+                    </div>
+                    <span className="text-xl font-bold text-red-600">
+                      {administrativoData.indicadores.inadimplencia}%
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-amber-100 rounded-lg">
+                        <Wallet className="w-5 h-5 text-amber-600" />
+                      </div>
+                      <span className="font-medium text-slate-700">Custo Operacional Mensal</span>
+                    </div>
+                    <span className="text-xl font-bold text-amber-600">
+                      {formatCurrency(administrativoData.indicadores.custoOperacional)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Tabela de Certidões */}
+            <div className={`bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden transition-all duration-500 delay-400 ${cardAnimation}`}>
+              <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-800">Certidões e Documentos</h3>
+                  <p className="text-sm text-slate-400">Status das certidões da empresa</p>
+                </div>
+                <span className="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm font-medium">
+                  {administrativoData.certidoes.length} documentos
+                </span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-slate-50">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Documento</th>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Tipo</th>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Validade</th>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {administrativoData.certidoes.map((cert) => (
+                      <tr key={cert.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className={`p-2 rounded-lg ${cert.status === 'Válida' ? 'bg-green-100' : 'bg-amber-100'}`}>
+                              <FileCheck className={`w-4 h-4 ${cert.status === 'Válida' ? 'text-green-600' : 'text-amber-600'}`} />
+                            </div>
+                            <span className="font-semibold text-slate-700">{cert.nome}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="px-2 py-1 bg-slate-100 text-slate-600 rounded text-sm">
+                            {cert.tipo}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-slate-600">
+                          {new Date(cert.validade).toLocaleDateString('pt-BR')}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${cert.status === 'Válida' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                            {cert.status === 'Válida' ? <CheckCircle className="w-3 h-3" /> : <AlertTriangle className="w-3 h-3" />}
+                            {cert.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Tabela de Contratos */}
+            <div className={`bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden transition-all duration-500 delay-500 ${cardAnimation}`}>
+              <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-800">Contratos Ativos</h3>
+                  <p className="text-sm text-slate-400">Contratos vigentes com fornecedores</p>
+                </div>
+                <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">
+                  {administrativoData.listaContratos.length} contratos
+                </span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-slate-50">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Fornecedor</th>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Tipo</th>
+                      <th className="px-6 py-4 text-right text-xs font-bold text-slate-400 uppercase">Valor Mensal</th>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Vencimento</th>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {administrativoData.listaContratos.map((contrato) => {
+                      const iconMap = {
+                        'Aluguel': Home,
+                        'Utilidades': Zap,
+                        'Seguro': Shield,
+                        'Serviços': Wrench
+                      };
+                      const Icon = iconMap[contrato.tipo] || Package;
+
+                      return (
+                        <tr key={contrato.id} className="hover:bg-slate-50 transition-colors">
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 rounded-lg bg-slate-100">
+                                <Icon className="w-4 h-4 text-slate-600" />
+                              </div>
+                              <span className="font-semibold text-slate-700">{contrato.fornecedor}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="px-2 py-1 bg-slate-100 text-slate-600 rounded text-sm">
+                              {contrato.tipo}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-right font-semibold text-[#0e4f6d]">
+                            {formatCurrency(contrato.valor)}
+                          </td>
+                          <td className="px-6 py-4 text-slate-600">
+                            {new Date(contrato.vencimento).toLocaleDateString('pt-BR')}
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${contrato.status === 'Ativo' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                              {contrato.status === 'Ativo' ? <CheckCircle className="w-3 h-3" /> : <AlertTriangle className="w-3 h-3" />}
+                              {contrato.status}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Card de informação */}
+            <div className={`bg-gradient-to-r from-amber-500 to-orange-500 p-8 rounded-3xl text-white shadow-xl transition-all duration-500 delay-600 ${cardAnimation}`}>
+              <div className="flex items-start gap-6">
+                <div className="p-4 bg-white/10 rounded-2xl backdrop-blur-sm">
+                  <Briefcase className="w-8 h-8" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold mb-3">Gestão Administrativa</h3>
+                  <p className="text-white/80 leading-relaxed">
+                    O setor administrativo gerencia <strong>{administrativoData.contratos.total} contratos</strong> com
+                    custo operacional mensal de <strong>{formatCurrency(administrativoData.indicadores.custoOperacional)}</strong>.
+                    Todas as certidões estão em dia, garantindo a regularidade fiscal e trabalhista da empresa.
+                    {administrativoData.contratos.vencendo30dias > 0 && (
+                      <strong className="block mt-2">
+                        Atenção: {administrativoData.contratos.vencendo30dias} contrato(s) vencendo nos próximos 30 dias.
+                      </strong>
+                    )}
                   </p>
                 </div>
               </div>

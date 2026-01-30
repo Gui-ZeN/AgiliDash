@@ -215,6 +215,49 @@ export const dadosPorCnpj = {
         { id: 7, nome: 'Ricardo Alves', cargo: 'Supervisor de Vendas', departamento: 'Vendas', salario: 6200, admissao: '2020-09-01' },
         { id: 8, nome: 'Juliana Martins', cargo: 'Assistente Administrativo', departamento: 'Administrativo', salario: 2400, admissao: '2023-02-14' }
       ]
+    },
+    // Dados Administrativos (placeholder - aguardando dados reais)
+    administrativoData: {
+      // Contratos ativos
+      contratos: {
+        total: 12,
+        vigentes: 10,
+        vencendo30dias: 2,
+        vencidos: 0
+      },
+      // Despesas administrativas por categoria
+      despesasPorCategoria: {
+        labels: ['Aluguel', 'Utilidades', 'Seguros', 'Material Escritório', 'Serviços Terceiros', 'Outros'],
+        data: [25000, 8500, 4200, 2800, 15000, 5500]
+      },
+      // Despesas mensais
+      despesasMensais: [
+        58000, 59500, 57800, 61000, 62500, 63000,
+        61500, 64000, 65500, 63800, 66000, 68000
+      ],
+      // Documentos/Certidões
+      certidoes: [
+        { id: 1, nome: 'CND Federal', status: 'Válida', validade: '2025-06-15', tipo: 'Federal' },
+        { id: 2, nome: 'CND Estadual', status: 'Válida', validade: '2025-05-20', tipo: 'Estadual' },
+        { id: 3, nome: 'CND Municipal', status: 'Válida', validade: '2025-04-10', tipo: 'Municipal' },
+        { id: 4, nome: 'FGTS - CRF', status: 'Válida', validade: '2025-02-28', tipo: 'Trabalhista' },
+        { id: 5, nome: 'Certidão Trabalhista', status: 'Vencendo', validade: '2025-02-05', tipo: 'Trabalhista' }
+      ],
+      // Lista de contratos
+      listaContratos: [
+        { id: 1, fornecedor: 'Imobiliária Centro', tipo: 'Aluguel', valor: 25000, vencimento: '2026-12-31', status: 'Ativo' },
+        { id: 2, fornecedor: 'Energisa', tipo: 'Utilidades', valor: 4500, vencimento: '2025-12-31', status: 'Ativo' },
+        { id: 3, fornecedor: 'Seguradora ABC', tipo: 'Seguro', valor: 4200, vencimento: '2025-08-15', status: 'Ativo' },
+        { id: 4, fornecedor: 'Contabilidade XYZ', tipo: 'Serviços', valor: 8500, vencimento: '2025-06-30', status: 'Ativo' },
+        { id: 5, fornecedor: 'TI Solutions', tipo: 'Serviços', valor: 6500, vencimento: '2025-03-15', status: 'Vencendo' }
+      ],
+      // Indicadores gerais
+      indicadores: {
+        ticketMedioVenda: 285.50,
+        custoOperacional: 61000,
+        margemOperacional: 28.5,
+        inadimplencia: 2.3
+      }
     }
   },
   'cnpj_002': {
@@ -306,6 +349,40 @@ export const dadosPorCnpj = {
         { id: 4, nome: 'Patrícia Gomes', cargo: 'Auxiliar Administrativo', departamento: 'Administrativo', salario: 2300, admissao: '2023-01-08' },
         { id: 5, nome: 'Marcos Vieira', cargo: 'Operador de Produção', departamento: 'Produção', salario: 2000, admissao: '2022-09-20' }
       ]
+    },
+    // Dados Administrativos (placeholder)
+    administrativoData: {
+      contratos: {
+        total: 8,
+        vigentes: 7,
+        vencendo30dias: 1,
+        vencidos: 0
+      },
+      despesasPorCategoria: {
+        labels: ['Aluguel', 'Utilidades', 'Seguros', 'Material Escritório', 'Serviços Terceiros', 'Outros'],
+        data: [18000, 5500, 2800, 1500, 9000, 3200]
+      },
+      despesasMensais: [
+        38000, 39200, 37500, 40000, 41200, 42000,
+        40500, 42500, 43800, 42200, 44000, 45500
+      ],
+      certidoes: [
+        { id: 1, nome: 'CND Federal', status: 'Válida', validade: '2025-06-15', tipo: 'Federal' },
+        { id: 2, nome: 'CND Estadual', status: 'Válida', validade: '2025-05-20', tipo: 'Estadual' },
+        { id: 3, nome: 'CND Municipal', status: 'Válida', validade: '2025-04-10', tipo: 'Municipal' },
+        { id: 4, nome: 'FGTS - CRF', status: 'Válida', validade: '2025-03-15', tipo: 'Trabalhista' }
+      ],
+      listaContratos: [
+        { id: 1, fornecedor: 'Imobiliária Local', tipo: 'Aluguel', valor: 18000, vencimento: '2026-06-30', status: 'Ativo' },
+        { id: 2, fornecedor: 'Enel', tipo: 'Utilidades', valor: 3200, vencimento: '2025-12-31', status: 'Ativo' },
+        { id: 3, fornecedor: 'Seguradora DEF', tipo: 'Seguro', valor: 2800, vencimento: '2025-09-20', status: 'Ativo' }
+      ],
+      indicadores: {
+        ticketMedioVenda: 195.80,
+        custoOperacional: 40000,
+        margemOperacional: 25.2,
+        inadimplencia: 3.1
+      }
     }
   },
   'cnpj_003': {
@@ -395,6 +472,39 @@ export const dadosPorCnpj = {
         { id: 2, nome: 'Beatriz Almeida', cargo: 'Vendedora', departamento: 'Vendas', salario: 3000, admissao: '2022-08-01' },
         { id: 3, nome: 'Diego Ramos', cargo: 'Operador de Produção', departamento: 'Produção', salario: 1900, admissao: '2023-03-10' }
       ]
+    },
+    // Dados Administrativos (placeholder)
+    administrativoData: {
+      contratos: {
+        total: 5,
+        vigentes: 5,
+        vencendo30dias: 0,
+        vencidos: 0
+      },
+      despesasPorCategoria: {
+        labels: ['Aluguel', 'Utilidades', 'Seguros', 'Material Escritório', 'Serviços Terceiros', 'Outros'],
+        data: [12000, 3800, 1800, 900, 5500, 2000]
+      },
+      despesasMensais: [
+        24000, 24800, 23500, 25200, 26000, 26500,
+        25800, 27000, 27800, 26800, 28000, 29000
+      ],
+      certidoes: [
+        { id: 1, nome: 'CND Federal', status: 'Válida', validade: '2025-07-10', tipo: 'Federal' },
+        { id: 2, nome: 'CND Estadual', status: 'Válida', validade: '2025-06-15', tipo: 'Estadual' },
+        { id: 3, nome: 'CND Municipal', status: 'Válida', validade: '2025-05-20', tipo: 'Municipal' },
+        { id: 4, nome: 'FGTS - CRF', status: 'Válida', validade: '2025-04-10', tipo: 'Trabalhista' }
+      ],
+      listaContratos: [
+        { id: 1, fornecedor: 'Imobiliária Regional', tipo: 'Aluguel', valor: 12000, vencimento: '2026-03-31', status: 'Ativo' },
+        { id: 2, fornecedor: 'Coelce', tipo: 'Utilidades', valor: 2200, vencimento: '2025-12-31', status: 'Ativo' }
+      ],
+      indicadores: {
+        ticketMedioVenda: 165.30,
+        custoOperacional: 26000,
+        margemOperacional: 22.8,
+        inadimplencia: 1.8
+      }
     }
   }
 };
@@ -511,6 +621,14 @@ export const equipeTecnica = [
     icon: 'users',
     bgColor: 'bg-teal-50',
     iconColor: 'text-teal-600'
+  },
+  {
+    id: 4,
+    setor: 'Setor Administrativo',
+    nome: 'Lucas Mendonça',
+    icon: 'briefcase',
+    bgColor: 'bg-amber-50',
+    iconColor: 'text-amber-600'
   }
 ];
 
@@ -587,7 +705,8 @@ export const statusUsuario = [
 export const setoresUpload = [
   { value: 'contabil', label: 'Contábil' },
   { value: 'fiscal', label: 'Fiscal' },
-  { value: 'pessoal', label: 'Pessoal' }
+  { value: 'pessoal', label: 'Pessoal' },
+  { value: 'administrativo', label: 'Administrativo' }
 ];
 
 // Histórico de importações (mock)
