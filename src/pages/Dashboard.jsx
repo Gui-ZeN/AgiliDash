@@ -32,7 +32,13 @@ import {
   FileText,
   CircleDollarSign,
   Receipt,
-  Percent
+  Percent,
+  Download,
+  FileDown,
+  Layers,
+  UserPlus,
+  BadgeCheck,
+  Banknote
 } from 'lucide-react';
 import Header from '../components/layout/Header';
 import Card, { PrimaryCard, AlertCard, InfoCard, MetricCard, TeamCard } from '../components/common/Card';
@@ -47,16 +53,13 @@ import IRPJChart from '../components/charts/IRPJChart';
 import CSLLChart from '../components/charts/CSLLChart';
 import FluxoFiscalChart from '../components/charts/FluxoFiscalChart';
 import DistribuicaoChart from '../components/charts/DistribuicaoChart';
+import FolhaPagamentoChart from '../components/charts/FolhaPagamentoChart';
+import { DepartamentoPizzaChart, ContratoPizzaChart } from '../components/charts/FuncionariosPizzaChart';
 import { formatCurrency, sumArray } from '../utils/formatters';
+import { useEmpresa } from '../context/EmpresaContext';
 import {
-  empresaInfo,
   equipeTecnica,
-  dreData2024,
-  dreData2025,
-  meses,
-  entradasData,
-  saidasData,
-  totaisFiscais
+  meses
 } from '../data/mockData';
 
 /**
@@ -66,21 +69,26 @@ import {
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('gerais');
   const [selectedYear, setSelectedYear] = useState(2025);
-  const [dreData, setDreData] = useState(dreData2025);
   const [fiscalData, setFiscalData] = useState(null);
   const [animateCards, setAnimateCards] = useState(false);
 
-  // Atualiza dados do DRE quando o ano muda
-  useEffect(() => {
-    setDreData(selectedYear === 2025 ? dreData2025 : dreData2024);
-  }, [selectedYear]);
+  // Usar contexto da empresa
+  const { cnpjInfo, cnpjDados, isConsolidado, totaisConsolidados } = useEmpresa();
 
-  // Animação ao trocar de tab
+  // Dados do CNPJ selecionado
+  const dreData = selectedYear === 2025 ? cnpjDados.dreData2025 : cnpjDados.dreData2024;
+  const dreData2024 = cnpjDados.dreData2024;
+  const entradasData = cnpjDados.entradasData;
+  const saidasData = cnpjDados.saidasData;
+  const totaisFiscais = cnpjDados.totaisFiscais;
+  const pessoalData = cnpjDados.pessoalData;
+
+  // Animação ao trocar de tab ou CNPJ
   useEffect(() => {
     setAnimateCards(false);
     const timer = setTimeout(() => setAnimateCards(true), 50);
     return () => clearTimeout(timer);
-  }, [activeTab]);
+  }, [activeTab, cnpjInfo.id]);
 
   // Calcular totais do DRE
   const totalReceita = sumArray(dreData.receita);
@@ -109,11 +117,24 @@ const Dashboard = () => {
     ? 'opacity-100 translate-y-0'
     : 'opacity-0 translate-y-4';
 
+  // Função para exportar relatório (mock)
+  const handleExportReport = (type) => {
+    alert(`Exportação de relatório ${type.toUpperCase()} será implementada com integração Firebase.`);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-50 to-cyan-50/30 text-slate-800">
       <Header activeTab={activeTab} onTabChange={setActiveTab} />
 
       <main className="max-w-7xl mx-auto px-4 py-8">
+        {/* Badge de modo consolidado */}
+        {isConsolidado && (
+          <div className="mb-6 bg-gradient-to-r from-[#0e4f6d] to-[#1a6b8a] p-4 rounded-2xl text-white flex items-center gap-3">
+            <Layers className="w-5 h-5" />
+            <span className="font-medium">Visualizando dados consolidados de todos os CNPJs</span>
+          </div>
+        )}
+
         {/* ===== TAB: INFORMAÇÕES GERAIS ===== */}
         {activeTab === 'gerais' && (
           <div className="space-y-8">
@@ -189,20 +210,24 @@ const Dashboard = () => {
                     <div className="flex items-center gap-2 mb-3">
                       <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
                       <span className="text-xs font-medium text-white/70 uppercase tracking-wider">
-                        Cliente Ativo
+                        Cliente Ativo • {cnpjInfo.tipo}
                       </span>
                     </div>
                     <h2 className="text-3xl font-bold mb-2">
-                      {empresaInfo.nome}
+                      {cnpjInfo.razaoSocial}
                     </h2>
                     <div className="flex flex-wrap items-center gap-4 text-white/80">
                       <span className="flex items-center gap-2">
                         <FileText className="w-4 h-4" />
-                        CNPJ: {empresaInfo.cnpj}
+                        CNPJ: {cnpjInfo.cnpj}
                       </span>
                       <span className="flex items-center gap-2">
                         <Target className="w-4 h-4" />
-                        Cód: {empresaInfo.codigoCliente}
+                        Cód: {cnpjInfo.codigoCliente}
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4" />
+                        {cnpjInfo.endereco.cidade}/{cnpjInfo.endereco.estado}
                       </span>
                     </div>
                   </div>
@@ -211,10 +236,10 @@ const Dashboard = () => {
                       <p className="text-xs font-medium text-white/70 uppercase tracking-wider mb-1">
                         Regime Tributário
                       </p>
-                      <p className="text-xl font-bold">{empresaInfo.regimeTributario}</p>
+                      <p className="text-xl font-bold">{cnpjInfo.regimeTributario}</p>
                     </div>
                     <span className="text-xs text-white/60">
-                      Exercício {empresaInfo.exercicio}
+                      Exercício {cnpjInfo.exercicio}
                     </span>
                   </div>
                 </div>
@@ -230,12 +255,12 @@ const Dashboard = () => {
                       Responsável Legal
                     </p>
                     <h3 className="text-2xl font-bold text-[#0e4f6d] mb-1">
-                      {empresaInfo.responsavel.nome}
+                      {cnpjInfo.responsavel.nome}
                     </h3>
                     <div className="flex items-center gap-4">
                       <span className="text-sm text-slate-500 flex items-center gap-1">
                         <Briefcase className="w-4 h-4" />
-                        {empresaInfo.responsavel.cargo}
+                        {cnpjInfo.responsavel.cargo}
                       </span>
                     </div>
                   </div>
@@ -318,21 +343,39 @@ const Dashboard = () => {
         {activeTab === 'contabil' && (
           <div className="space-y-8">
             {/* Header da seção */}
-            <section className={`transition-all duration-500 ${cardAnimation}`}>
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-green-600 rounded-lg">
-                  <Calculator className="w-5 h-5 text-white" />
+            <section className={`flex items-start justify-between transition-all duration-500 ${cardAnimation}`}>
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-green-600 rounded-lg">
+                    <Calculator className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="text-xs font-bold text-green-600 uppercase tracking-widest">
+                    Departamento Contábil
+                  </span>
                 </div>
-                <span className="text-xs font-bold text-green-600 uppercase tracking-widest">
-                  Departamento Contábil
-                </span>
+                <h1 className="text-4xl font-extrabold text-[#1e293b] mb-1">
+                  Análise Financeira
+                </h1>
+                <p className="text-lg text-slate-400 font-medium">
+                  Demonstrativo mensal de fluxos financeiros e resultados.
+                </p>
               </div>
-              <h1 className="text-4xl font-extrabold text-[#1e293b] mb-1">
-                Análise Financeira
-              </h1>
-              <p className="text-lg text-slate-400 font-medium">
-                Demonstrativo mensal de fluxos financeiros e resultados.
-              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleExportReport('pdf')}
+                  className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors"
+                >
+                  <FileDown className="w-4 h-4" />
+                  PDF
+                </button>
+                <button
+                  onClick={() => handleExportReport('excel')}
+                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  Excel
+                </button>
+              </div>
             </section>
 
             {/* Cards de métricas principais */}
@@ -559,21 +602,39 @@ const Dashboard = () => {
         {activeTab === 'fiscal' && (
           <div className="space-y-8">
             {/* Header */}
-            <section className={`transition-all duration-500 ${cardAnimation}`}>
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-indigo-600 rounded-lg">
-                  <FileSpreadsheet className="w-5 h-5 text-white" />
+            <section className={`flex items-start justify-between transition-all duration-500 ${cardAnimation}`}>
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-indigo-600 rounded-lg">
+                    <FileSpreadsheet className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="text-xs font-bold text-indigo-600 uppercase tracking-widest">
+                    Departamento Fiscal
+                  </span>
                 </div>
-                <span className="text-xs font-bold text-indigo-600 uppercase tracking-widest">
-                  Departamento Fiscal
-                </span>
+                <h1 className="text-4xl font-extrabold text-[#1e293b] mb-1">
+                  Análise Tributária
+                </h1>
+                <p className="text-lg text-slate-400 font-medium">
+                  Apuração trimestral sobre Lucro Real.
+                </p>
               </div>
-              <h1 className="text-4xl font-extrabold text-[#1e293b] mb-1">
-                Análise Tributária
-              </h1>
-              <p className="text-lg text-slate-400 font-medium">
-                Apuração trimestral sobre Lucro Real.
-              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleExportReport('pdf')}
+                  className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors"
+                >
+                  <FileDown className="w-4 h-4" />
+                  PDF
+                </button>
+                <button
+                  onClick={() => handleExportReport('excel')}
+                  className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  Excel
+                </button>
+              </div>
             </section>
 
             {/* Cards de impostos */}
@@ -741,92 +802,195 @@ const Dashboard = () => {
         {activeTab === 'pessoal' && (
           <div className="space-y-8">
             {/* Header */}
-            <section className={`transition-all duration-500 ${cardAnimation}`}>
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-teal-600 rounded-lg">
-                  <Users className="w-5 h-5 text-white" />
+            <section className={`flex items-start justify-between transition-all duration-500 ${cardAnimation}`}>
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-teal-600 rounded-lg">
+                    <Users className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="text-xs font-bold text-teal-600 uppercase tracking-widest">
+                    Departamento Pessoal
+                  </span>
                 </div>
-                <span className="text-xs font-bold text-teal-600 uppercase tracking-widest">
-                  Departamento Pessoal
-                </span>
+                <h1 className="text-4xl font-extrabold text-[#1e293b] mb-1">
+                  Gestão de Pessoas
+                </h1>
+                <p className="text-lg text-slate-400 font-medium">
+                  Recursos humanos e obrigações sociais.
+                </p>
               </div>
-              <h1 className="text-4xl font-extrabold text-[#1e293b] mb-1">
-                Gestão de Pessoas
-              </h1>
-              <p className="text-lg text-slate-400 font-medium">
-                Recursos humanos e obrigações sociais.
-              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleExportReport('pdf')}
+                  className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors"
+                >
+                  <FileDown className="w-4 h-4" />
+                  PDF
+                </button>
+                <button
+                  onClick={() => handleExportReport('excel')}
+                  className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  Excel
+                </button>
+              </div>
             </section>
 
-            {/* Cards placeholder */}
-            <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 transition-all duration-500 delay-100 ${cardAnimation}`}>
-              <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm opacity-50">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="p-3 bg-slate-100 rounded-xl">
-                    <Users className="w-6 h-6 text-slate-400" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-slate-400 uppercase">Colaboradores</p>
-                    <p className="text-2xl font-black text-slate-300">--</p>
-                  </div>
+            {/* Cards de métricas principais */}
+            <div className={`grid grid-cols-1 md:grid-cols-4 gap-4 transition-all duration-500 delay-100 ${cardAnimation}`}>
+              <div className="bg-gradient-to-br from-teal-500 to-cyan-600 p-6 rounded-2xl text-white shadow-lg">
+                <div className="flex items-center justify-between mb-4">
+                  <Users className="w-8 h-8 opacity-80" />
+                  <span className="text-xs font-bold bg-white/20 px-3 py-1 rounded-full">
+                    Ativos
+                  </span>
                 </div>
+                <p className="text-3xl font-black">{pessoalData.funcionarios}</p>
+                <p className="text-white/70 text-sm mt-1">Colaboradores</p>
               </div>
 
-              <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm opacity-50">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="p-3 bg-slate-100 rounded-xl">
-                    <DollarSign className="w-6 h-6 text-slate-400" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-slate-400 uppercase">Folha Mensal</p>
-                    <p className="text-2xl font-black text-slate-300">--</p>
-                  </div>
+              <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-6 rounded-2xl text-white shadow-lg">
+                <div className="flex items-center justify-between mb-4">
+                  <Banknote className="w-8 h-8 opacity-80" />
                 </div>
+                <p className="text-3xl font-black">{formatCurrency(pessoalData.folhaMensal)}</p>
+                <p className="text-white/70 text-sm mt-1">Folha Mensal</p>
               </div>
 
-              <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm opacity-50">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="p-3 bg-slate-100 rounded-xl">
-                    <Percent className="w-6 h-6 text-slate-400" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-slate-400 uppercase">Encargos</p>
-                    <p className="text-2xl font-black text-slate-300">--</p>
-                  </div>
+              <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-6 rounded-2xl text-white shadow-lg">
+                <div className="flex items-center justify-between mb-4">
+                  <Receipt className="w-8 h-8 opacity-80" />
                 </div>
+                <p className="text-3xl font-black">{formatCurrency(pessoalData.encargos)}</p>
+                <p className="text-white/70 text-sm mt-1">Encargos (33,3%)</p>
+              </div>
+
+              <div className="bg-gradient-to-br from-purple-500 to-pink-600 p-6 rounded-2xl text-white shadow-lg">
+                <div className="flex items-center justify-between mb-4">
+                  <Award className="w-8 h-8 opacity-80" />
+                </div>
+                <p className="text-3xl font-black">{formatCurrency(pessoalData.beneficios)}</p>
+                <p className="text-white/70 text-sm mt-1">Benefícios</p>
               </div>
             </div>
 
-            {/* Card em desenvolvimento */}
-            <div className={`bg-white p-16 rounded-3xl border border-slate-100 shadow-sm text-center transition-all duration-500 delay-200 ${cardAnimation}`}>
-              <div className="w-24 h-24 bg-gradient-to-br from-teal-100 to-cyan-100 rounded-full flex items-center justify-center mx-auto mb-8">
-                <Users className="w-12 h-12 text-teal-500" />
+            {/* Gráfico de Folha de Pagamento */}
+            <div className={`bg-white p-8 rounded-3xl border border-slate-100 shadow-sm transition-all duration-500 delay-200 ${cardAnimation}`}>
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h3 className="text-xl font-bold text-slate-800">Evolução da Folha de Pagamento</h3>
+                  <p className="text-sm text-slate-400">Salários + Encargos por mês</p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span className="flex items-center gap-2 text-sm text-slate-500">
+                    <div className="w-3 h-3 rounded-full bg-[#0e4f6d]" /> Salários
+                  </span>
+                  <span className="flex items-center gap-2 text-sm text-slate-500">
+                    <div className="w-3 h-3 rounded-full bg-[#58a3a4]" /> Encargos
+                  </span>
+                </div>
               </div>
-              <h3 className="text-2xl font-bold text-slate-800 mb-3">
-                Em Desenvolvimento
-              </h3>
-              <p className="text-slate-400 max-w-md mx-auto mb-8">
-                Esta seção apresentará o resumo da folha de pagamento,
-                encargos sociais, métricas de turnover e indicadores de RH.
-              </p>
-              <div className="flex items-center justify-center gap-2 text-sm text-teal-600 font-medium">
-                <Clock className="w-4 h-4" />
-                <span>Previsão: Em breve</span>
+              <FolhaPagamentoChart
+                folhaPorMes={pessoalData.folhaPorMes}
+                encargosPorMes={pessoalData.encargosPorMes}
+              />
+            </div>
+
+            {/* Gráficos de Pizza */}
+            <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 transition-all duration-500 delay-300 ${cardAnimation}`}>
+              <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-800">Por Departamento</h3>
+                    <p className="text-sm text-slate-400">Distribuição de funcionários</p>
+                  </div>
+                  <div className="p-3 bg-teal-50 rounded-xl">
+                    <PieChart className="w-6 h-6 text-teal-600" />
+                  </div>
+                </div>
+                <DepartamentoPizzaChart porDepartamento={pessoalData.porDepartamento} />
+              </div>
+
+              <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-800">Por Tipo de Contrato</h3>
+                    <p className="text-sm text-slate-400">Regime de contratação</p>
+                  </div>
+                  <div className="p-3 bg-green-50 rounded-xl">
+                    <BadgeCheck className="w-6 h-6 text-green-600" />
+                  </div>
+                </div>
+                <ContratoPizzaChart porContrato={pessoalData.porContrato} />
               </div>
             </div>
 
-            {/* Info card */}
-            <div className={`bg-teal-50 border border-teal-200 p-8 rounded-3xl transition-all duration-500 delay-300 ${cardAnimation}`}>
-              <div className="flex items-start gap-4">
-                <div className="p-3 bg-teal-100 rounded-xl">
-                  <UserCheck className="w-6 h-6 text-teal-600" />
+            {/* Tabela de Funcionários */}
+            <div className={`bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden transition-all duration-500 delay-400 ${cardAnimation}`}>
+              <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-800">Lista de Colaboradores</h3>
+                  <p className="text-sm text-slate-400">Principais funcionários do CNPJ</p>
+                </div>
+                <span className="px-3 py-1 bg-teal-50 text-teal-700 rounded-full text-sm font-medium">
+                  {pessoalData.listaFuncionarios.length} registros
+                </span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-slate-50">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Nome</th>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Cargo</th>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Departamento</th>
+                      <th className="px-6 py-4 text-right text-xs font-bold text-slate-400 uppercase">Salário</th>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Admissão</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {pessoalData.listaFuncionarios.map((func) => (
+                      <tr key={func.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-white font-bold text-sm">
+                              {func.nome.charAt(0)}
+                            </div>
+                            <span className="font-semibold text-slate-700">{func.nome}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-slate-600">{func.cargo}</td>
+                        <td className="px-6 py-4">
+                          <span className="px-2 py-1 bg-slate-100 text-slate-600 rounded text-sm">
+                            {func.departamento}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right font-semibold text-[#0e4f6d]">
+                          {formatCurrency(func.salario)}
+                        </td>
+                        <td className="px-6 py-4 text-slate-500">
+                          {new Date(func.admissao).toLocaleDateString('pt-BR')}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Card de resumo */}
+            <div className={`bg-gradient-to-r from-teal-600 to-cyan-600 p-8 rounded-3xl text-white shadow-xl transition-all duration-500 delay-500 ${cardAnimation}`}>
+              <div className="flex items-start gap-6">
+                <div className="p-4 bg-white/10 rounded-2xl backdrop-blur-sm">
+                  <UserCheck className="w-8 h-8" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-teal-800 mb-2">Perspectiva de Gestão</h3>
-                  <p className="text-teal-700/80 leading-relaxed">
-                    Aguardando processamento da folha de pagamento para identificar
-                    correlações entre o crescimento de receita verificado no setor
-                    contábil e o aumento da força de trabalho.
+                  <h3 className="text-xl font-bold mb-3">Resumo de Gestão de Pessoas</h3>
+                  <p className="text-white/80 leading-relaxed">
+                    O quadro atual conta com <strong>{pessoalData.funcionarios} colaboradores</strong>,
+                    com custo total mensal de <strong>{formatCurrency(pessoalData.folhaMensal + pessoalData.encargos + pessoalData.beneficios)}</strong>
+                    (folha + encargos + benefícios). A área de <strong>Produção</strong> representa
+                    a maior concentração de funcionários, alinhada com a operação industrial da empresa.
                   </p>
                 </div>
               </div>

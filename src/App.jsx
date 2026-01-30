@@ -1,7 +1,9 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { EmpresaProvider } from './context/EmpresaContext';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import AdminPanel from './pages/AdminPanel';
+import Configuracoes from './pages/Configuracoes';
 
 /**
  * App Principal
@@ -15,6 +17,7 @@ import AdminPanel from './pages/AdminPanel';
  *   - Tab: Fiscal
  *   - Tab: Pessoal
  * → /admin (painel admin)
+ * → /configuracoes (configurações da empresa)
  *
  * TODO: Integrar com Firebase Auth para proteção de rotas
  */
@@ -23,19 +26,24 @@ function App() {
   // const isAuthenticated = useAuth();
 
   return (
-    <Routes>
-      {/* Rota de Login */}
-      <Route path="/" element={<Login />} />
+    <EmpresaProvider>
+      <Routes>
+        {/* Rota de Login */}
+        <Route path="/" element={<Login />} />
 
-      {/* Rota do Dashboard Principal */}
-      <Route path="/dashboard" element={<Dashboard />} />
+        {/* Rota do Dashboard Principal */}
+        <Route path="/dashboard" element={<Dashboard />} />
 
-      {/* Rota do Painel Admin */}
-      <Route path="/admin" element={<AdminPanel />} />
+        {/* Rota do Painel Admin */}
+        <Route path="/admin" element={<AdminPanel />} />
 
-      {/* Redireciona rotas desconhecidas para o login */}
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        {/* Rota de Configurações */}
+        <Route path="/configuracoes" element={<Configuracoes />} />
+
+        {/* Redireciona rotas desconhecidas para o login */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </EmpresaProvider>
   );
 }
 

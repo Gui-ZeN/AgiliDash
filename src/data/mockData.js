@@ -1,5 +1,6 @@
 /**
  * Mock Data para o Dashboard Fiscal
+ * Estrutura Multi-CNPJ: Uma empresa pode ter vários CNPJs
  * TODO: Integrar com Firebase Firestore para dados dinâmicos
  */
 
@@ -9,95 +10,480 @@ export const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'S
 // Labels para trimestres (usado em gráficos fiscais)
 export const trimestres = ['1º Tri', '2º Tri', '3º Tri', '4º Tri'];
 
-// Dados de faturamento mensal (2025)
-export const faturamentoData = [
-  559817.75, 495000, 488000, 507000, 565000, 547000,
-  628000, 580000, 544000, 638000, 617000, 699000
-];
+// ============================================
+// ESTRUTURA DA EMPRESA (USUÁRIO)
+// ============================================
 
-// Dados de entradas (compras/custos)
-export const entradasData = [
-  2100500, 1950000, 2400000, 2200000, 2423405.49, 3642289.06,
-  4958289.94, 2222369.15, 10651793.34, 3800000, 4100000, 5200000
-];
-
-// Dados de saídas (vendas/receita)
-export const saidasData = [
-  450000, 420000, 480000, 460000, 521590.84, 574772.05,
-  692399.50, 631988.75, 644739.69, 600000, 650000, 750000
-];
-
-// Dados DRE 2025 (Demonstrativo do Resultado do Exercício)
-export const dreData2025 = {
-  receita: [
-    577643.92, 500914.48, 529675.12, 542100.00, 560000.00, 547000.00,
-    628000.00, 580000.00, 600000.00, 638000.00, 617000.00, 699000.00
-  ],
-  despesa: [
-    404350.00, 350640.00, 370770.00, 379470.00, 392000.00, 382900.00,
-    439600.00, 406000.00, 420000.00, 446600.00, 431900.00, 489300.00
-  ],
-  lucro: [
-    173293.92, 150274.48, 158905.12, 162630.00, 168000.00, 164100.00,
-    188400.00, 174000.00, 180000.00, 191400.00, 185100.00, 209700.00
-  ]
+export const empresaUsuario = {
+  id: 'empresa_001',
+  razaoSocial: 'GRUPO EJP ALIMENTOS S.A.',
+  nomeFantasia: 'Grupo EJP',
+  cnpjPrincipal: '30.533.759/0001-09',
+  email: 'contato@grupoejp.com.br',
+  telefone: '(85) 3333-4444',
+  endereco: {
+    logradouro: 'Av. Santos Dumont',
+    numero: '1500',
+    complemento: 'Sala 1001',
+    bairro: 'Aldeota',
+    cidade: 'Fortaleza',
+    estado: 'CE',
+    cep: '60150-161'
+  },
+  plano: 'Premium',
+  dataAssinatura: '2024-01-15',
+  limiteUsuarios: 10,
+  limiteCnpjs: 5
 };
 
-// Dados DRE 2024
-export const dreData2024 = {
-  receita: [
-    542610.55, 479780.80, 472836.00, 491346.32, 548089.67, 530370.20,
-    609004.40, 562715.14, 527379.73, 619043.24, 598804.41, 678180.79
-  ],
-  despesa: [
-    379827.38, 335846.56, 330985.20, 343942.42, 383662.77, 371259.14,
-    426303.08, 393900.60, 369165.81, 433330.27, 419163.09, 474726.55
-  ],
-  lucro: [
-    162783.17, 143934.24, 141850.80, 147403.90, 164426.90, 159111.06,
-    182701.32, 168814.54, 158213.92, 185712.97, 179641.32, 203454.24
-  ]
-};
+// ============================================
+// CNPJS DA EMPRESA
+// ============================================
 
-// Dados CSLL trimestral
-export const csllData = [14497.55, 14230.35, 14322.21, 14430.19];
-
-// Dados IRPJ trimestral (total)
-export const irpjTotalData = [34270.97, 33528.75, 33783.92, 34083.85];
-
-// Dados IRPJ adicional (10% sobre o que excede R$ 20.000/mês)
-export const irpjAdicional = [10108.39, 9811.5, 9913.57, 10033.54];
-
-// Grupos de receitas (para gráfico de pizza)
-export const receitaGrupos = {
-  labels: ['Venda de Produtos', 'Venda de Sorvetes', 'Transferências'],
-  data: [11959939.48, 1939015.97, 1783255.32]
-};
-
-// Grupos de custos (para gráfico de pizza)
-export const custosGrupos = {
-  labels: ['Compra p/ Industrialização', 'Compra p/ Ind. ST'],
-  data: [44609086.27, 1101668.36]
-};
-
-// Totais acumulados
-export const totaisAcumulados = {
-  entradas: 45710754.63,
-  saidas: 15682210.77
-};
-
-// Informações da empresa (dados cadastrais)
-export const empresaInfo = {
-  nome: 'EJP COMERCIO DE ALIMENTOS LTDA',
-  nomeFantasia: 'EJP MATRIZ',
-  cnpj: '30.533.759/0001-09',
-  codigoCliente: '260',
-  regimeTributario: 'Lucro Real',
-  exercicio: '2025',
-  responsavel: {
-    nome: 'Sr. Emerson Clay Batista Montenegro Filho',
-    cargo: 'Sócio-Administrador'
+export const cnpjsEmpresa = [
+  {
+    id: 'cnpj_001',
+    cnpj: '30.533.759/0001-09',
+    razaoSocial: 'EJP COMERCIO DE ALIMENTOS LTDA',
+    nomeFantasia: 'EJP MATRIZ',
+    tipo: 'Matriz',
+    codigoCliente: '260',
+    regimeTributario: 'Lucro Real',
+    exercicio: '2025',
+    status: 'Ativo',
+    responsavel: {
+      nome: 'Sr. Emerson Clay Batista Montenegro Filho',
+      cargo: 'Sócio-Administrador'
+    },
+    endereco: {
+      cidade: 'Fortaleza',
+      estado: 'CE'
+    }
+  },
+  {
+    id: 'cnpj_002',
+    cnpj: '30.533.759/0002-80',
+    razaoSocial: 'EJP COMERCIO DE ALIMENTOS LTDA',
+    nomeFantasia: 'EJP FILIAL MARACANAÚ',
+    tipo: 'Filial',
+    codigoCliente: '261',
+    regimeTributario: 'Lucro Real',
+    exercicio: '2025',
+    status: 'Ativo',
+    responsavel: {
+      nome: 'Sra. Maria Helena Santos',
+      cargo: 'Gerente'
+    },
+    endereco: {
+      cidade: 'Maracanaú',
+      estado: 'CE'
+    }
+  },
+  {
+    id: 'cnpj_003',
+    cnpj: '30.533.759/0003-61',
+    razaoSocial: 'EJP COMERCIO DE ALIMENTOS LTDA',
+    nomeFantasia: 'EJP FILIAL CAUCAIA',
+    tipo: 'Filial',
+    codigoCliente: '262',
+    regimeTributario: 'Lucro Real',
+    exercicio: '2025',
+    status: 'Ativo',
+    responsavel: {
+      nome: 'Sr. João Pedro Lima',
+      cargo: 'Gerente'
+    },
+    endereco: {
+      cidade: 'Caucaia',
+      estado: 'CE'
+    }
   }
+];
+
+// ============================================
+// DADOS FINANCEIROS POR CNPJ
+// ============================================
+
+export const dadosPorCnpj = {
+  'cnpj_001': {
+    // Dados de faturamento mensal (2025)
+    faturamentoData: [
+      559817.75, 495000, 488000, 507000, 565000, 547000,
+      628000, 580000, 544000, 638000, 617000, 699000
+    ],
+    // Dados de entradas (compras/custos)
+    entradasData: [
+      2100500, 1950000, 2400000, 2200000, 2423405.49, 3642289.06,
+      4958289.94, 2222369.15, 10651793.34, 3800000, 4100000, 5200000
+    ],
+    // Dados de saídas (vendas/receita)
+    saidasData: [
+      450000, 420000, 480000, 460000, 521590.84, 574772.05,
+      692399.50, 631988.75, 644739.69, 600000, 650000, 750000
+    ],
+    // Dados DRE 2025
+    dreData2025: {
+      receita: [
+        577643.92, 500914.48, 529675.12, 542100.00, 560000.00, 547000.00,
+        628000.00, 580000.00, 600000.00, 638000.00, 617000.00, 699000.00
+      ],
+      despesa: [
+        404350.00, 350640.00, 370770.00, 379470.00, 392000.00, 382900.00,
+        439600.00, 406000.00, 420000.00, 446600.00, 431900.00, 489300.00
+      ],
+      lucro: [
+        173293.92, 150274.48, 158905.12, 162630.00, 168000.00, 164100.00,
+        188400.00, 174000.00, 180000.00, 191400.00, 185100.00, 209700.00
+      ]
+    },
+    // Dados DRE 2024
+    dreData2024: {
+      receita: [
+        542610.55, 479780.80, 472836.00, 491346.32, 548089.67, 530370.20,
+        609004.40, 562715.14, 527379.73, 619043.24, 598804.41, 678180.79
+      ],
+      despesa: [
+        379827.38, 335846.56, 330985.20, 343942.42, 383662.77, 371259.14,
+        426303.08, 393900.60, 369165.81, 433330.27, 419163.09, 474726.55
+      ],
+      lucro: [
+        162783.17, 143934.24, 141850.80, 147403.90, 164426.90, 159111.06,
+        182701.32, 168814.54, 158213.92, 185712.97, 179641.32, 203454.24
+      ]
+    },
+    // Dados CSLL trimestral
+    csllData: [14497.55, 14230.35, 14322.21, 14430.19],
+    // Dados IRPJ trimestral (total)
+    irpjTotalData: [34270.97, 33528.75, 33783.92, 34083.85],
+    // Dados IRPJ adicional
+    irpjAdicional: [10108.39, 9811.5, 9913.57, 10033.54],
+    // Grupos de receitas
+    receitaGrupos: {
+      labels: ['Venda de Produtos', 'Venda de Sorvetes', 'Transferências'],
+      data: [11959939.48, 1939015.97, 1783255.32]
+    },
+    // Grupos de custos
+    custosGrupos: {
+      labels: ['Compra p/ Industrialização', 'Compra p/ Ind. ST'],
+      data: [44609086.27, 1101668.36]
+    },
+    // Totais acumulados
+    totaisAcumulados: {
+      entradas: 45710754.63,
+      saidas: 15682210.77
+    },
+    // Totais fiscais
+    totaisFiscais: {
+      irpj: 135667.49,
+      csll: 57480.30,
+      cargaTributariaTotal: 193147.79
+    },
+    // Dados de Pessoal (RH)
+    pessoalData: {
+      funcionarios: 45,
+      folhaMensal: 157500.00,
+      encargos: 52462.50,
+      beneficios: 22500.00,
+      // Folha por mês
+      folhaPorMes: [
+        145000, 147500, 150000, 152000, 155000, 157500,
+        157500, 158000, 160000, 162000, 165000, 170000
+      ],
+      // Encargos por mês
+      encargosPorMes: [
+        48300, 49125, 49950, 50616, 51615, 52462,
+        52462, 52626, 53280, 53946, 54945, 56610
+      ],
+      // Funcionários por departamento
+      porDepartamento: {
+        labels: ['Produção', 'Administrativo', 'Vendas', 'Logística', 'RH'],
+        data: [20, 8, 10, 5, 2]
+      },
+      // Tipo de contrato
+      porContrato: {
+        labels: ['CLT', 'PJ', 'Estagiário', 'Temporário'],
+        data: [38, 3, 2, 2]
+      },
+      // Lista de funcionários
+      listaFuncionarios: [
+        { id: 1, nome: 'Carlos Silva', cargo: 'Gerente de Produção', departamento: 'Produção', salario: 8500, admissao: '2020-03-15' },
+        { id: 2, nome: 'Ana Oliveira', cargo: 'Analista Financeiro', departamento: 'Administrativo', salario: 5200, admissao: '2021-07-01' },
+        { id: 3, nome: 'Pedro Santos', cargo: 'Vendedor Externo', departamento: 'Vendas', salario: 3800, admissao: '2022-01-10' },
+        { id: 4, nome: 'Maria Costa', cargo: 'Auxiliar de Produção', departamento: 'Produção', salario: 2100, admissao: '2023-05-20' },
+        { id: 5, nome: 'João Lima', cargo: 'Motorista', departamento: 'Logística', salario: 2800, admissao: '2021-11-08' },
+        { id: 6, nome: 'Fernanda Souza', cargo: 'Analista de RH', departamento: 'RH', salario: 4500, admissao: '2022-08-15' },
+        { id: 7, nome: 'Ricardo Alves', cargo: 'Supervisor de Vendas', departamento: 'Vendas', salario: 6200, admissao: '2020-09-01' },
+        { id: 8, nome: 'Juliana Martins', cargo: 'Assistente Administrativo', departamento: 'Administrativo', salario: 2400, admissao: '2023-02-14' }
+      ]
+    }
+  },
+  'cnpj_002': {
+    faturamentoData: [
+      320000, 310000, 335000, 340000, 355000, 365000,
+      380000, 375000, 390000, 410000, 425000, 450000
+    ],
+    entradasData: [
+      1200000, 1150000, 1280000, 1320000, 1400000, 1450000,
+      1520000, 1480000, 1550000, 1620000, 1700000, 1800000
+    ],
+    saidasData: [
+      280000, 275000, 300000, 310000, 320000, 330000,
+      345000, 340000, 355000, 375000, 390000, 415000
+    ],
+    dreData2025: {
+      receita: [
+        320000, 310000, 335000, 340000, 355000, 365000,
+        380000, 375000, 390000, 410000, 425000, 450000
+      ],
+      despesa: [
+        224000, 217000, 234500, 238000, 248500, 255500,
+        266000, 262500, 273000, 287000, 297500, 315000
+      ],
+      lucro: [
+        96000, 93000, 100500, 102000, 106500, 109500,
+        114000, 112500, 117000, 123000, 127500, 135000
+      ]
+    },
+    dreData2024: {
+      receita: [
+        295000, 285000, 305000, 315000, 320000, 330000,
+        345000, 340000, 355000, 370000, 385000, 410000
+      ],
+      despesa: [
+        206500, 199500, 213500, 220500, 224000, 231000,
+        241500, 238000, 248500, 259000, 269500, 287000
+      ],
+      lucro: [
+        88500, 85500, 91500, 94500, 96000, 99000,
+        103500, 102000, 106500, 111000, 115500, 123000
+      ]
+    },
+    csllData: [8100, 8400, 8700, 9100],
+    irpjTotalData: [19200, 19800, 20500, 21400],
+    irpjAdicional: [5600, 5900, 6200, 6600],
+    receitaGrupos: {
+      labels: ['Venda de Produtos', 'Venda de Sorvetes', 'Transferências'],
+      data: [3200000, 850000, 405000]
+    },
+    custosGrupos: {
+      labels: ['Compra p/ Industrialização', 'Compra p/ Ind. ST'],
+      data: [15800000, 670000]
+    },
+    totaisAcumulados: {
+      entradas: 16470000,
+      saidas: 4455000
+    },
+    totaisFiscais: {
+      irpj: 80900,
+      csll: 34300,
+      cargaTributariaTotal: 115200
+    },
+    pessoalData: {
+      funcionarios: 28,
+      folhaMensal: 89600.00,
+      encargos: 29836.80,
+      beneficios: 14000.00,
+      folhaPorMes: [
+        82000, 83500, 85000, 86000, 87500, 89600,
+        89600, 90000, 91500, 93000, 95000, 98000
+      ],
+      encargosPorMes: [
+        27306, 27805, 28305, 28638, 29137, 29836,
+        29836, 29970, 30469, 30969, 31635, 32634
+      ],
+      porDepartamento: {
+        labels: ['Produção', 'Administrativo', 'Vendas', 'Logística', 'RH'],
+        data: [12, 5, 6, 4, 1]
+      },
+      porContrato: {
+        labels: ['CLT', 'PJ', 'Estagiário', 'Temporário'],
+        data: [24, 2, 1, 1]
+      },
+      listaFuncionarios: [
+        { id: 1, nome: 'Roberto Ferreira', cargo: 'Gerente Filial', departamento: 'Administrativo', salario: 7200, admissao: '2021-02-01' },
+        { id: 2, nome: 'Carla Mendes', cargo: 'Supervisora de Produção', departamento: 'Produção', salario: 5800, admissao: '2021-06-15' },
+        { id: 3, nome: 'Lucas Rodrigues', cargo: 'Vendedor', departamento: 'Vendas', salario: 3200, admissao: '2022-03-10' },
+        { id: 4, nome: 'Patrícia Gomes', cargo: 'Auxiliar Administrativo', departamento: 'Administrativo', salario: 2300, admissao: '2023-01-08' },
+        { id: 5, nome: 'Marcos Vieira', cargo: 'Operador de Produção', departamento: 'Produção', salario: 2000, admissao: '2022-09-20' }
+      ]
+    }
+  },
+  'cnpj_003': {
+    faturamentoData: [
+      180000, 175000, 190000, 195000, 205000, 215000,
+      225000, 220000, 230000, 245000, 255000, 275000
+    ],
+    entradasData: [
+      720000, 700000, 760000, 780000, 820000, 860000,
+      900000, 880000, 920000, 980000, 1020000, 1100000
+    ],
+    saidasData: [
+      165000, 160000, 175000, 180000, 190000, 200000,
+      210000, 205000, 215000, 230000, 240000, 260000
+    ],
+    dreData2025: {
+      receita: [
+        180000, 175000, 190000, 195000, 205000, 215000,
+        225000, 220000, 230000, 245000, 255000, 275000
+      ],
+      despesa: [
+        126000, 122500, 133000, 136500, 143500, 150500,
+        157500, 154000, 161000, 171500, 178500, 192500
+      ],
+      lucro: [
+        54000, 52500, 57000, 58500, 61500, 64500,
+        67500, 66000, 69000, 73500, 76500, 82500
+      ]
+    },
+    dreData2024: {
+      receita: [
+        165000, 160000, 175000, 180000, 190000, 200000,
+        210000, 205000, 215000, 230000, 240000, 260000
+      ],
+      despesa: [
+        115500, 112000, 122500, 126000, 133000, 140000,
+        147000, 143500, 150500, 161000, 168000, 182000
+      ],
+      lucro: [
+        49500, 48000, 52500, 54000, 57000, 60000,
+        63000, 61500, 64500, 69000, 72000, 78000
+      ]
+    },
+    csllData: [4800, 5100, 5400, 5800],
+    irpjTotalData: [11400, 12000, 12700, 13600],
+    irpjAdicional: [3300, 3500, 3800, 4100],
+    receitaGrupos: {
+      labels: ['Venda de Produtos', 'Venda de Sorvetes', 'Transferências'],
+      data: [1850000, 520000, 240000]
+    },
+    custosGrupos: {
+      labels: ['Compra p/ Industrialização', 'Compra p/ Ind. ST'],
+      data: [9200000, 440000]
+    },
+    totaisAcumulados: {
+      entradas: 9640000,
+      saidas: 2610000
+    },
+    totaisFiscais: {
+      irpj: 49700,
+      csll: 21100,
+      cargaTributariaTotal: 70800
+    },
+    pessoalData: {
+      funcionarios: 18,
+      folhaMensal: 54000.00,
+      encargos: 17982.00,
+      beneficios: 9000.00,
+      folhaPorMes: [
+        48000, 49000, 50000, 51000, 52000, 54000,
+        54000, 55000, 56000, 57000, 58000, 60000
+      ],
+      encargosPorMes: [
+        15984, 16317, 16650, 16983, 17316, 17982,
+        17982, 18315, 18648, 18981, 19314, 19980
+      ],
+      porDepartamento: {
+        labels: ['Produção', 'Administrativo', 'Vendas', 'Logística', 'RH'],
+        data: [8, 3, 4, 2, 1]
+      },
+      porContrato: {
+        labels: ['CLT', 'PJ', 'Estagiário', 'Temporário'],
+        data: [15, 1, 1, 1]
+      },
+      listaFuncionarios: [
+        { id: 1, nome: 'André Nascimento', cargo: 'Gerente Filial', departamento: 'Administrativo', salario: 6500, admissao: '2022-01-15' },
+        { id: 2, nome: 'Beatriz Almeida', cargo: 'Vendedora', departamento: 'Vendas', salario: 3000, admissao: '2022-08-01' },
+        { id: 3, nome: 'Diego Ramos', cargo: 'Operador de Produção', departamento: 'Produção', salario: 1900, admissao: '2023-03-10' }
+      ]
+    }
+  }
+};
+
+// ============================================
+// HELPERS PARA ACESSAR DADOS
+// ============================================
+
+/**
+ * Obtém os dados de um CNPJ específico
+ * @param {string} cnpjId - ID do CNPJ (ex: 'cnpj_001')
+ * @returns {object} - Dados financeiros do CNPJ
+ */
+export const getDadosCnpj = (cnpjId) => {
+  return dadosPorCnpj[cnpjId] || dadosPorCnpj['cnpj_001'];
+};
+
+/**
+ * Obtém informações de um CNPJ específico
+ * @param {string} cnpjId - ID do CNPJ
+ * @returns {object} - Informações cadastrais do CNPJ
+ */
+export const getInfoCnpj = (cnpjId) => {
+  return cnpjsEmpresa.find(c => c.id === cnpjId) || cnpjsEmpresa[0];
+};
+
+/**
+ * Calcula totais consolidados de todos os CNPJs
+ * @returns {object} - Totais consolidados
+ */
+export const getTotaisConsolidados = () => {
+  const cnpjIds = Object.keys(dadosPorCnpj);
+
+  let totalReceita = 0;
+  let totalDespesa = 0;
+  let totalLucro = 0;
+  let totalFuncionarios = 0;
+  let totalFolha = 0;
+  let totalIRPJ = 0;
+  let totalCSLL = 0;
+
+  cnpjIds.forEach(id => {
+    const dados = dadosPorCnpj[id];
+    totalReceita += dados.dreData2025.receita.reduce((a, b) => a + b, 0);
+    totalDespesa += dados.dreData2025.despesa.reduce((a, b) => a + b, 0);
+    totalLucro += dados.dreData2025.lucro.reduce((a, b) => a + b, 0);
+    totalFuncionarios += dados.pessoalData.funcionarios;
+    totalFolha += dados.pessoalData.folhaMensal;
+    totalIRPJ += dados.totaisFiscais.irpj;
+    totalCSLL += dados.totaisFiscais.csll;
+  });
+
+  return {
+    receita: totalReceita,
+    despesa: totalDespesa,
+    lucro: totalLucro,
+    funcionarios: totalFuncionarios,
+    folhaMensal: totalFolha,
+    irpj: totalIRPJ,
+    csll: totalCSLL,
+    cargaTributaria: totalIRPJ + totalCSLL,
+    qtdCnpjs: cnpjIds.length
+  };
+};
+
+// ============================================
+// COMPATIBILIDADE COM CÓDIGO EXISTENTE
+// ============================================
+
+// Exporta dados do CNPJ principal para manter compatibilidade
+const cnpjPrincipal = dadosPorCnpj['cnpj_001'];
+
+export const faturamentoData = cnpjPrincipal.faturamentoData;
+export const entradasData = cnpjPrincipal.entradasData;
+export const saidasData = cnpjPrincipal.saidasData;
+export const dreData2025 = cnpjPrincipal.dreData2025;
+export const dreData2024 = cnpjPrincipal.dreData2024;
+export const csllData = cnpjPrincipal.csllData;
+export const irpjTotalData = cnpjPrincipal.irpjTotalData;
+export const irpjAdicional = cnpjPrincipal.irpjAdicional;
+export const receitaGrupos = cnpjPrincipal.receitaGrupos;
+export const custosGrupos = cnpjPrincipal.custosGrupos;
+export const totaisAcumulados = cnpjPrincipal.totaisAcumulados;
+export const totaisFiscais = cnpjPrincipal.totaisFiscais;
+
+// Info da empresa (CNPJ principal) - mantém compatibilidade
+export const empresaInfo = {
+  ...cnpjsEmpresa[0],
+  nome: cnpjsEmpresa[0].razaoSocial
 };
 
 // Equipe técnica responsável
@@ -128,13 +514,6 @@ export const equipeTecnica = [
   }
 ];
 
-// Totais fiscais (cards de resumo)
-export const totaisFiscais = {
-  irpj: 135667.49,
-  csll: 57480.30,
-  cargaTributariaTotal: 193147.79
-};
-
 // Dados mockados para o painel admin (usuários)
 export const usuariosMock = [
   {
@@ -142,29 +521,66 @@ export const usuariosMock = [
     nome: 'Admin Principal',
     email: 'admin@agilicomplex.com.br',
     perfil: 'Administrador',
-    status: 'Ativo'
+    status: 'Ativo',
+    cnpjsAcesso: ['cnpj_001', 'cnpj_002', 'cnpj_003'] // Acesso a todos
   },
   {
     id: 2,
     nome: 'Kallyne Castro',
     email: 'kallyne@agilicomplex.com.br',
     perfil: 'Contábil',
-    status: 'Ativo'
+    status: 'Ativo',
+    cnpjsAcesso: ['cnpj_001', 'cnpj_002', 'cnpj_003']
   },
   {
     id: 3,
     nome: 'Alan Severo',
     email: 'alan@agilicomplex.com.br',
     perfil: 'Fiscal',
-    status: 'Ativo'
+    status: 'Ativo',
+    cnpjsAcesso: ['cnpj_001', 'cnpj_002']
   },
   {
     id: 4,
     nome: 'Sarane Ribeiro',
     email: 'sarane@agilicomplex.com.br',
     perfil: 'Pessoal',
-    status: 'Ativo'
+    status: 'Ativo',
+    cnpjsAcesso: ['cnpj_001']
+  },
+  {
+    id: 5,
+    nome: 'Roberto Ferreira',
+    email: 'roberto@ejp.com.br',
+    perfil: 'Gerente',
+    status: 'Ativo',
+    cnpjsAcesso: ['cnpj_002']
+  },
+  {
+    id: 6,
+    nome: 'André Nascimento',
+    email: 'andre@ejp.com.br',
+    perfil: 'Gerente',
+    status: 'Pendente',
+    cnpjsAcesso: ['cnpj_003']
   }
+];
+
+// Perfis disponíveis para usuários
+export const perfisUsuario = [
+  { value: 'Administrador', label: 'Administrador', descricao: 'Acesso total ao sistema' },
+  { value: 'Gerente', label: 'Gerente', descricao: 'Acesso aos dados do CNPJ' },
+  { value: 'Contábil', label: 'Contábil', descricao: 'Acesso aos dados contábeis' },
+  { value: 'Fiscal', label: 'Fiscal', descricao: 'Acesso aos dados fiscais' },
+  { value: 'Pessoal', label: 'Pessoal', descricao: 'Acesso aos dados de RH' },
+  { value: 'Visualizador', label: 'Visualizador', descricao: 'Apenas visualização' }
+];
+
+// Status disponíveis para usuários
+export const statusUsuario = [
+  { value: 'Ativo', label: 'Ativo', color: 'green' },
+  { value: 'Inativo', label: 'Inativo', color: 'red' },
+  { value: 'Pendente', label: 'Pendente', color: 'yellow' }
 ];
 
 // Setores disponíveis para upload de CSV
@@ -172,4 +588,49 @@ export const setoresUpload = [
   { value: 'contabil', label: 'Contábil' },
   { value: 'fiscal', label: 'Fiscal' },
   { value: 'pessoal', label: 'Pessoal' }
+];
+
+// Histórico de importações (mock)
+export const historicoImportacoes = [
+  {
+    id: 1,
+    cnpj: '30.533.759/0001-09',
+    setor: 'Contábil',
+    arquivo: 'balancete_jan_2025.csv',
+    data: '2025-01-15T10:30:00',
+    usuario: 'Kallyne Castro',
+    status: 'Sucesso',
+    registros: 156
+  },
+  {
+    id: 2,
+    cnpj: '30.533.759/0001-09',
+    setor: 'Fiscal',
+    arquivo: 'nfes_jan_2025.csv',
+    data: '2025-01-15T11:45:00',
+    usuario: 'Alan Severo',
+    status: 'Sucesso',
+    registros: 342
+  },
+  {
+    id: 3,
+    cnpj: '30.533.759/0002-80',
+    setor: 'Contábil',
+    arquivo: 'balancete_jan_2025.csv',
+    data: '2025-01-16T09:15:00',
+    usuario: 'Kallyne Castro',
+    status: 'Sucesso',
+    registros: 89
+  },
+  {
+    id: 4,
+    cnpj: '30.533.759/0001-09',
+    setor: 'Pessoal',
+    arquivo: 'folha_jan_2025.csv',
+    data: '2025-01-20T14:00:00',
+    usuario: 'Sarane Ribeiro',
+    status: 'Erro',
+    registros: 0,
+    erro: 'Formato de data inválido na linha 23'
+  }
 ];
