@@ -70,6 +70,12 @@ import { DepartamentoPizzaChart, ContratoPizzaChart } from '../components/charts
 import { DespesasMensaisChart, DespesasCategoriaChart } from '../components/charts/DespesasAdminChart';
 import { formatCurrency, sumArray } from '../utils/formatters';
 import { useEmpresa } from '../context/EmpresaContext';
+import { useTheme } from '../context/ThemeContext';
+import Breadcrumb from '../components/ui/Breadcrumb';
+import PeriodFilter from '../components/ui/PeriodFilter';
+import ExportButton from '../components/ui/ExportButton';
+import Sparkline from '../components/ui/Sparkline';
+import { VencimentoAlert } from '../components/ui/AlertBanner';
 import {
   equipeTecnica,
   meses
@@ -84,9 +90,11 @@ const Dashboard = () => {
   const [selectedYear, setSelectedYear] = useState(2025);
   const [fiscalData, setFiscalData] = useState(null);
   const [animateCards, setAnimateCards] = useState(false);
+  const [periodFilter, setPeriodFilter] = useState({ type: 'year', year: 2025 });
 
-  // Usar contexto da empresa
+  // Usar contexto da empresa e tema
   const { cnpjInfo, cnpjDados, isConsolidado, totaisConsolidados } = useEmpresa();
+  const { isDarkMode } = useTheme();
 
   // Dados do CNPJ selecionado
   const dreData = selectedYear === 2025 ? cnpjDados.dreData2025 : cnpjDados.dreData2024;
@@ -137,11 +145,53 @@ const Dashboard = () => {
     alert(`Exportação de relatório ${type.toUpperCase()} será implementada com integração Firebase.`);
   };
 
+  // Dados para sparklines (mock - últimos 12 meses)
+  const receitaSparkline = cnpjDados?.dreData2025?.receita || [0];
+  const lucroSparkline = cnpjDados?.dreData2025?.receita?.map((r, i) => r - (cnpjDados?.dreData2025?.despesa?.[i] || 0)) || [0];
+
+  // Dados de vencimentos próximos (mock)
+  const vencimentosProximos = [
+    { descricao: 'ICMS', dataVencimento: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString() },
+    { descricao: 'ISS', dataVencimento: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString() },
+    { descricao: 'INSS', dataVencimento: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() }
+  ];
+
+  // Dados para exportação
+  const exportColumns = [
+    { key: 'mes', label: 'Mes' },
+    { key: 'receita', label: 'Receita' },
+    { key: 'despesa', label: 'Despesa' },
+    { key: 'lucro', label: 'Lucro' }
+  ];
+  const exportData = meses.map((mes, i) => ({
+    mes,
+    receita: dreData?.receita?.[i] || 0,
+    despesa: dreData?.despesa?.[i] || 0,
+    lucro: (dreData?.receita?.[i] || 0) - (dreData?.despesa?.[i] || 0)
+  }));
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-50 to-cyan-50/30 text-slate-800">
+    <div className={`min-h-screen ${isDarkMode ? 'dark bg-slate-900' : 'bg-gradient-to-br from-slate-50 via-slate-50 to-cyan-50/30'} text-slate-800 dark:text-slate-200`}>
       <Header activeTab={activeTab} onTabChange={setActiveTab} />
 
       <main className="w-full px-4 lg:px-6 xl:px-8 py-6 lg:py-8">
+        {/* Toolbar com Breadcrumb, Filtros e Export */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <Breadcrumb />
+          <div className="flex items-center gap-3">
+            <PeriodFilter value={periodFilter} onChange={setPeriodFilter} />
+            <ExportButton
+              data={exportData}
+              columns={exportColumns}
+              filename={`relatorio-${cnpjInfo?.nomeFantasia || 'empresa'}`}
+              title={`Relatorio ${cnpjInfo?.nomeFantasia || 'Empresa'}`}
+            />
+          </div>
+        </div>
+
+        {/* Alertas de Vencimentos */}
+        <VencimentoAlert vencimentos={vencimentosProximos} className="mb-6" />
+
         {/* Badge de modo consolidado */}
         {isConsolidado && (
           <div className="mb-6 bg-gradient-to-r from-[#0e4f6d] to-[#1a6b8a] p-4 rounded-2xl text-white flex items-center gap-3">
@@ -171,29 +221,39 @@ const Dashboard = () => {
               </p>
             </section>
 
-            {/* Cards de estatísticas rápidas */}
+            {/* Cards de estatísticas rápidas com Sparklines */}
             <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 transition-all duration-500 delay-100 ${cardAnimation}`}>
-              <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 bg-green-50 rounded-lg">
-                    <TrendingUp className="w-5 h-5 text-green-600" />
+                  <div className="p-2 bg-green-50 dark:bg-green-900/30 rounded-lg">
+                    <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
                   </div>
-                  <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                  <span className="text-xs font-bold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-2 py-1 rounded-full">
                     +{variacaoReceita}%
                   </span>
                 </div>
-                <p className="text-2xl font-black text-slate-800">{formatCurrency(totalReceita)}</p>
-                <p className="text-xs text-slate-400 mt-1">Receita {selectedYear}</p>
+                <div className="flex items-end justify-between">
+                  <div>
+                    <p className="text-2xl font-black text-slate-800 dark:text-white">{formatCurrency(totalReceita)}</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Receita {selectedYear}</p>
+                  </div>
+                  <Sparkline data={receitaSparkline} color="#10b981" height={32} width={60} />
+                </div>
               </div>
 
-              <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 bg-blue-50 rounded-lg">
-                    <DollarSign className="w-5 h-5 text-blue-600" />
+                  <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+                    <DollarSign className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                   </div>
                 </div>
-                <p className="text-2xl font-black text-slate-800">{formatCurrency(totalLucro)}</p>
-                <p className="text-xs text-slate-400 mt-1">Lucro Líquido</p>
+                <div className="flex items-end justify-between">
+                  <div>
+                    <p className="text-2xl font-black text-slate-800 dark:text-white">{formatCurrency(totalLucro)}</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Lucro Liquido</p>
+                  </div>
+                  <Sparkline data={lucroSparkline} color="#3b82f6" height={32} width={60} />
+                </div>
               </div>
 
               <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
