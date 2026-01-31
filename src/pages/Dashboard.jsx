@@ -141,7 +141,7 @@ const Dashboard = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-50 to-cyan-50/30 text-slate-800">
       <Header activeTab={activeTab} onTabChange={setActiveTab} />
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="w-full px-4 lg:px-6 xl:px-8 py-6 lg:py-8">
         {/* Badge de modo consolidado */}
         {isConsolidado && (
           <div className="mb-6 bg-gradient-to-r from-[#0e4f6d] to-[#1a6b8a] p-4 rounded-2xl text-white flex items-center gap-3">

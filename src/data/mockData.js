@@ -1,6 +1,6 @@
 /**
  * Mock Data para o Dashboard Fiscal
- * Estrutura Multi-CNPJ: Uma empresa pode ter vários CNPJs
+ * Estrutura Hierárquica: Grupo → Empresa → CNPJ
  * TODO: Integrar com Firebase Firestore para dados dinâmicos
  */
 
@@ -11,38 +11,110 @@ export const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'S
 export const trimestres = ['1º Tri', '2º Tri', '3º Tri', '4º Tri'];
 
 // ============================================
-// ESTRUTURA DA EMPRESA (USUÁRIO)
+// SETORES DISPONÍVEIS
 // ============================================
 
-export const empresaUsuario = {
-  id: 'empresa_001',
-  razaoSocial: 'GRUPO EJP ALIMENTOS S.A.',
-  nomeFantasia: 'Grupo EJP',
-  cnpjPrincipal: '30.533.759/0001-09',
-  email: 'contato@grupoejp.com.br',
-  telefone: '(85) 3333-4444',
-  endereco: {
-    logradouro: 'Av. Santos Dumont',
-    numero: '1500',
-    complemento: 'Sala 1001',
-    bairro: 'Aldeota',
-    cidade: 'Fortaleza',
-    estado: 'CE',
-    cep: '60150-161'
+export const setoresDisponiveis = [
+  { id: 'contabil', nome: 'Contábil', icon: 'calculator', cor: 'cyan' },
+  { id: 'fiscal', nome: 'Fiscal', icon: 'file-spreadsheet', cor: 'blue' },
+  { id: 'pessoal', nome: 'Pessoal', icon: 'users', cor: 'teal' },
+  { id: 'administrativo', nome: 'Administrativo', icon: 'briefcase', cor: 'amber' }
+];
+
+// ============================================
+// ESTRUTURA HIERÁRQUICA: GRUPOS
+// ============================================
+
+export const grupos = [
+  {
+    id: 'grupo_001',
+    nome: 'Grupo EJP',
+    descricao: 'Holding de empresas do setor alimentício',
+    dataCriacao: '2020-01-15',
+    status: 'Ativo'
   },
-  plano: 'Premium',
-  dataAssinatura: '2024-01-15',
-  limiteUsuarios: 10,
-  limiteCnpjs: 5
-};
+  {
+    id: 'grupo_002',
+    nome: 'Grupo ABC Logística',
+    descricao: 'Empresas de transporte e logística',
+    dataCriacao: '2021-06-01',
+    status: 'Ativo'
+  }
+];
 
 // ============================================
-// CNPJS DA EMPRESA
+// ESTRUTURA HIERÁRQUICA: EMPRESAS
+// ============================================
+
+export const empresas = [
+  {
+    id: 'empresa_001',
+    grupoId: 'grupo_001',
+    razaoSocial: 'EJP COMERCIO DE ALIMENTOS LTDA',
+    nomeFantasia: 'EJP Alimentos',
+    cnpjPrincipal: '30.533.759/0001-09',
+    regimeTributario: 'Lucro Real',
+    email: 'contato@ejpalimentos.com.br',
+    telefone: '(85) 3333-4444',
+    endereco: {
+      logradouro: 'Av. Santos Dumont',
+      numero: '1500',
+      complemento: 'Sala 1001',
+      bairro: 'Aldeota',
+      cidade: 'Fortaleza',
+      estado: 'CE',
+      cep: '60150-161'
+    },
+    status: 'Ativo'
+  },
+  {
+    id: 'empresa_002',
+    grupoId: 'grupo_001',
+    razaoSocial: 'EJP DISTRIBUIDORA LTDA',
+    nomeFantasia: 'EJP Distribuidora',
+    cnpjPrincipal: '30.533.760/0001-90',
+    regimeTributario: 'Lucro Presumido',
+    email: 'contato@ejpdistribuidora.com.br',
+    telefone: '(85) 3333-5555',
+    endereco: {
+      logradouro: 'Rua das Flores',
+      numero: '250',
+      bairro: 'Centro',
+      cidade: 'Fortaleza',
+      estado: 'CE',
+      cep: '60060-100'
+    },
+    status: 'Ativo'
+  },
+  {
+    id: 'empresa_003',
+    grupoId: 'grupo_002',
+    razaoSocial: 'ABC TRANSPORTES LTDA',
+    nomeFantasia: 'ABC Transportes',
+    cnpjPrincipal: '12.345.678/0001-90',
+    regimeTributario: 'Simples Nacional',
+    email: 'contato@abctransportes.com.br',
+    telefone: '(85) 3444-5555',
+    endereco: {
+      logradouro: 'Av. Industrial',
+      numero: '500',
+      bairro: 'Distrito Industrial',
+      cidade: 'Maracanaú',
+      estado: 'CE',
+      cep: '61939-000'
+    },
+    status: 'Ativo'
+  }
+];
+
+// ============================================
+// ESTRUTURA HIERÁRQUICA: CNPJs
 // ============================================
 
 export const cnpjsEmpresa = [
   {
     id: 'cnpj_001',
+    empresaId: 'empresa_001',
     cnpj: '30.533.759/0001-09',
     razaoSocial: 'EJP COMERCIO DE ALIMENTOS LTDA',
     nomeFantasia: 'EJP MATRIZ',
@@ -62,6 +134,7 @@ export const cnpjsEmpresa = [
   },
   {
     id: 'cnpj_002',
+    empresaId: 'empresa_001',
     cnpj: '30.533.759/0002-80',
     razaoSocial: 'EJP COMERCIO DE ALIMENTOS LTDA',
     nomeFantasia: 'EJP FILIAL MARACANAÚ',
@@ -81,6 +154,7 @@ export const cnpjsEmpresa = [
   },
   {
     id: 'cnpj_003',
+    empresaId: 'empresa_001',
     cnpj: '30.533.759/0003-61',
     razaoSocial: 'EJP COMERCIO DE ALIMENTOS LTDA',
     nomeFantasia: 'EJP FILIAL CAUCAIA',
@@ -95,6 +169,46 @@ export const cnpjsEmpresa = [
     },
     endereco: {
       cidade: 'Caucaia',
+      estado: 'CE'
+    }
+  },
+  {
+    id: 'cnpj_004',
+    empresaId: 'empresa_002',
+    cnpj: '30.533.760/0001-90',
+    razaoSocial: 'EJP DISTRIBUIDORA LTDA',
+    nomeFantasia: 'EJP DISTRIBUIDORA MATRIZ',
+    tipo: 'Matriz',
+    codigoCliente: '270',
+    regimeTributario: 'Lucro Presumido',
+    exercicio: '2025',
+    status: 'Ativo',
+    responsavel: {
+      nome: 'Sr. Carlos Eduardo Santos',
+      cargo: 'Diretor'
+    },
+    endereco: {
+      cidade: 'Fortaleza',
+      estado: 'CE'
+    }
+  },
+  {
+    id: 'cnpj_005',
+    empresaId: 'empresa_003',
+    cnpj: '12.345.678/0001-90',
+    razaoSocial: 'ABC TRANSPORTES LTDA',
+    nomeFantasia: 'ABC TRANSPORTES',
+    tipo: 'Matriz',
+    codigoCliente: '300',
+    regimeTributario: 'Simples Nacional',
+    exercicio: '2025',
+    status: 'Ativo',
+    responsavel: {
+      nome: 'Sr. Roberto Almeida',
+      cargo: 'Proprietário'
+    },
+    endereco: {
+      cidade: 'Maracanaú',
       estado: 'CE'
     }
   }
@@ -216,26 +330,22 @@ export const dadosPorCnpj = {
         { id: 8, nome: 'Juliana Martins', cargo: 'Assistente Administrativo', departamento: 'Administrativo', salario: 2400, admissao: '2023-02-14' }
       ]
     },
-    // Dados Administrativos (placeholder - aguardando dados reais)
+    // Dados Administrativos
     administrativoData: {
-      // Contratos ativos
       contratos: {
         total: 12,
         vigentes: 10,
         vencendo30dias: 2,
         vencidos: 0
       },
-      // Despesas administrativas por categoria
       despesasPorCategoria: {
         labels: ['Aluguel', 'Utilidades', 'Seguros', 'Material Escritório', 'Serviços Terceiros', 'Outros'],
         data: [25000, 8500, 4200, 2800, 15000, 5500]
       },
-      // Despesas mensais
       despesasMensais: [
         58000, 59500, 57800, 61000, 62500, 63000,
         61500, 64000, 65500, 63800, 66000, 68000
       ],
-      // Documentos/Certidões
       certidoes: [
         { id: 1, nome: 'CND Federal', status: 'Válida', validade: '2025-06-15', tipo: 'Federal' },
         { id: 2, nome: 'CND Estadual', status: 'Válida', validade: '2025-05-20', tipo: 'Estadual' },
@@ -243,7 +353,6 @@ export const dadosPorCnpj = {
         { id: 4, nome: 'FGTS - CRF', status: 'Válida', validade: '2025-02-28', tipo: 'Trabalhista' },
         { id: 5, nome: 'Certidão Trabalhista', status: 'Vencendo', validade: '2025-02-05', tipo: 'Trabalhista' }
       ],
-      // Lista de contratos
       listaContratos: [
         { id: 1, fornecedor: 'Imobiliária Centro', tipo: 'Aluguel', valor: 25000, vencimento: '2026-12-31', status: 'Ativo' },
         { id: 2, fornecedor: 'Energisa', tipo: 'Utilidades', valor: 4500, vencimento: '2025-12-31', status: 'Ativo' },
@@ -251,7 +360,6 @@ export const dadosPorCnpj = {
         { id: 4, fornecedor: 'Contabilidade XYZ', tipo: 'Serviços', valor: 8500, vencimento: '2025-06-30', status: 'Ativo' },
         { id: 5, fornecedor: 'TI Solutions', tipo: 'Serviços', valor: 6500, vencimento: '2025-03-15', status: 'Vencendo' }
       ],
-      // Indicadores gerais
       indicadores: {
         ticketMedioVenda: 285.50,
         custoOperacional: 61000,
@@ -350,7 +458,6 @@ export const dadosPorCnpj = {
         { id: 5, nome: 'Marcos Vieira', cargo: 'Operador de Produção', departamento: 'Produção', salario: 2000, admissao: '2022-09-20' }
       ]
     },
-    // Dados Administrativos (placeholder)
     administrativoData: {
       contratos: {
         total: 8,
@@ -473,7 +580,6 @@ export const dadosPorCnpj = {
         { id: 3, nome: 'Diego Ramos', cargo: 'Operador de Produção', departamento: 'Produção', salario: 1900, admissao: '2023-03-10' }
       ]
     },
-    // Dados Administrativos (placeholder)
     administrativoData: {
       contratos: {
         total: 5,
@@ -506,6 +612,246 @@ export const dadosPorCnpj = {
         inadimplencia: 1.8
       }
     }
+  },
+  'cnpj_004': {
+    faturamentoData: [
+      150000, 145000, 160000, 165000, 175000, 180000,
+      190000, 185000, 195000, 210000, 220000, 240000
+    ],
+    entradasData: [
+      600000, 580000, 640000, 660000, 700000, 720000,
+      760000, 740000, 780000, 840000, 880000, 960000
+    ],
+    saidasData: [
+      140000, 135000, 150000, 155000, 165000, 170000,
+      180000, 175000, 185000, 200000, 210000, 230000
+    ],
+    dreData2025: {
+      receita: [
+        150000, 145000, 160000, 165000, 175000, 180000,
+        190000, 185000, 195000, 210000, 220000, 240000
+      ],
+      despesa: [
+        105000, 101500, 112000, 115500, 122500, 126000,
+        133000, 129500, 136500, 147000, 154000, 168000
+      ],
+      lucro: [
+        45000, 43500, 48000, 49500, 52500, 54000,
+        57000, 55500, 58500, 63000, 66000, 72000
+      ]
+    },
+    dreData2024: {
+      receita: [
+        140000, 135000, 150000, 155000, 165000, 170000,
+        180000, 175000, 185000, 200000, 210000, 230000
+      ],
+      despesa: [
+        98000, 94500, 105000, 108500, 115500, 119000,
+        126000, 122500, 129500, 140000, 147000, 161000
+      ],
+      lucro: [
+        42000, 40500, 45000, 46500, 49500, 51000,
+        54000, 52500, 55500, 60000, 63000, 69000
+      ]
+    },
+    csllData: [4000, 4200, 4500, 4800],
+    irpjTotalData: [9500, 10000, 10600, 11300],
+    irpjAdicional: [2800, 3000, 3200, 3400],
+    receitaGrupos: {
+      labels: ['Distribuição', 'Revenda', 'Serviços'],
+      data: [1500000, 420000, 195000]
+    },
+    custosGrupos: {
+      labels: ['Compra de Mercadorias', 'Frete'],
+      data: [7500000, 360000]
+    },
+    totaisAcumulados: {
+      entradas: 7860000,
+      saidas: 2115000
+    },
+    totaisFiscais: {
+      irpj: 41400,
+      csll: 17500,
+      cargaTributariaTotal: 58900
+    },
+    pessoalData: {
+      funcionarios: 15,
+      folhaMensal: 45000.00,
+      encargos: 14985.00,
+      beneficios: 7500.00,
+      folhaPorMes: [
+        40000, 41000, 42000, 43000, 44000, 45000,
+        45000, 46000, 47000, 48000, 49000, 50000
+      ],
+      encargosPorMes: [
+        13320, 13653, 13986, 14319, 14652, 14985,
+        14985, 15318, 15651, 15984, 16317, 16650
+      ],
+      porDepartamento: {
+        labels: ['Logística', 'Administrativo', 'Vendas', 'Operações'],
+        data: [6, 3, 4, 2]
+      },
+      porContrato: {
+        labels: ['CLT', 'PJ', 'Temporário'],
+        data: [12, 2, 1]
+      },
+      listaFuncionarios: [
+        { id: 1, nome: 'Eduardo Lima', cargo: 'Gerente', departamento: 'Administrativo', salario: 6000, admissao: '2022-04-01' },
+        { id: 2, nome: 'Fernanda Costa', cargo: 'Vendedora', departamento: 'Vendas', salario: 2800, admissao: '2022-09-15' },
+        { id: 3, nome: 'Gustavo Silva', cargo: 'Motorista', departamento: 'Logística', salario: 2500, admissao: '2023-01-20' }
+      ]
+    },
+    administrativoData: {
+      contratos: {
+        total: 4,
+        vigentes: 4,
+        vencendo30dias: 0,
+        vencidos: 0
+      },
+      despesasPorCategoria: {
+        labels: ['Aluguel', 'Utilidades', 'Seguros', 'Material Escritório', 'Serviços Terceiros', 'Outros'],
+        data: [10000, 3200, 1500, 800, 4500, 1800]
+      },
+      despesasMensais: [
+        20000, 20800, 19500, 21200, 22000, 22500,
+        21800, 23000, 23800, 22800, 24000, 25000
+      ],
+      certidoes: [
+        { id: 1, nome: 'CND Federal', status: 'Válida', validade: '2025-08-10', tipo: 'Federal' },
+        { id: 2, nome: 'CND Estadual', status: 'Válida', validade: '2025-07-15', tipo: 'Estadual' },
+        { id: 3, nome: 'CND Municipal', status: 'Válida', validade: '2025-06-20', tipo: 'Municipal' }
+      ],
+      listaContratos: [
+        { id: 1, fornecedor: 'Galpão Centro', tipo: 'Aluguel', valor: 10000, vencimento: '2026-06-30', status: 'Ativo' },
+        { id: 2, fornecedor: 'Energisa', tipo: 'Utilidades', valor: 1800, vencimento: '2025-12-31', status: 'Ativo' }
+      ],
+      indicadores: {
+        ticketMedioVenda: 145.20,
+        custoOperacional: 21800,
+        margemOperacional: 24.5,
+        inadimplencia: 2.0
+      }
+    }
+  },
+  'cnpj_005': {
+    faturamentoData: [
+      85000, 82000, 90000, 95000, 100000, 105000,
+      110000, 108000, 115000, 125000, 130000, 145000
+    ],
+    entradasData: [
+      340000, 328000, 360000, 380000, 400000, 420000,
+      440000, 432000, 460000, 500000, 520000, 580000
+    ],
+    saidasData: [
+      80000, 77000, 85000, 90000, 95000, 100000,
+      105000, 102000, 110000, 120000, 125000, 140000
+    ],
+    dreData2025: {
+      receita: [
+        85000, 82000, 90000, 95000, 100000, 105000,
+        110000, 108000, 115000, 125000, 130000, 145000
+      ],
+      despesa: [
+        59500, 57400, 63000, 66500, 70000, 73500,
+        77000, 75600, 80500, 87500, 91000, 101500
+      ],
+      lucro: [
+        25500, 24600, 27000, 28500, 30000, 31500,
+        33000, 32400, 34500, 37500, 39000, 43500
+      ]
+    },
+    dreData2024: {
+      receita: [
+        80000, 77000, 85000, 90000, 95000, 100000,
+        105000, 102000, 110000, 120000, 125000, 140000
+      ],
+      despesa: [
+        56000, 53900, 59500, 63000, 66500, 70000,
+        73500, 71400, 77000, 84000, 87500, 98000
+      ],
+      lucro: [
+        24000, 23100, 25500, 27000, 28500, 30000,
+        31500, 30600, 33000, 36000, 37500, 42000
+      ]
+    },
+    csllData: [2200, 2400, 2600, 2900],
+    irpjTotalData: [5200, 5700, 6200, 6800],
+    irpjAdicional: [1500, 1700, 1900, 2100],
+    receitaGrupos: {
+      labels: ['Frete', 'Armazenagem', 'Outros'],
+      data: [950000, 280000, 160000]
+    },
+    custosGrupos: {
+      labels: ['Combustível', 'Manutenção', 'Pedágios'],
+      data: [380000, 85000, 45000]
+    },
+    totaisAcumulados: {
+      entradas: 510000,
+      saidas: 1390000
+    },
+    totaisFiscais: {
+      irpj: 23900,
+      csll: 10100,
+      cargaTributariaTotal: 34000
+    },
+    pessoalData: {
+      funcionarios: 12,
+      folhaMensal: 32000.00,
+      encargos: 10656.00,
+      beneficios: 6000.00,
+      folhaPorMes: [
+        28000, 29000, 30000, 30500, 31000, 32000,
+        32000, 32500, 33000, 34000, 35000, 36000
+      ],
+      encargosPorMes: [
+        9324, 9657, 9990, 10156, 10323, 10656,
+        10656, 10822, 10989, 11322, 11655, 11988
+      ],
+      porDepartamento: {
+        labels: ['Operações', 'Administrativo', 'Logística'],
+        data: [7, 2, 3]
+      },
+      porContrato: {
+        labels: ['CLT', 'PJ'],
+        data: [10, 2]
+      },
+      listaFuncionarios: [
+        { id: 1, nome: 'Roberto Almeida', cargo: 'Diretor', departamento: 'Administrativo', salario: 8000, admissao: '2021-06-01' },
+        { id: 2, nome: 'Helena Santos', cargo: 'Coordenadora', departamento: 'Operações', salario: 4500, admissao: '2022-02-15' },
+        { id: 3, nome: 'Igor Pereira', cargo: 'Motorista', departamento: 'Logística', salario: 2200, admissao: '2022-08-20' }
+      ]
+    },
+    administrativoData: {
+      contratos: {
+        total: 3,
+        vigentes: 3,
+        vencendo30dias: 0,
+        vencidos: 0
+      },
+      despesasPorCategoria: {
+        labels: ['Aluguel', 'Utilidades', 'Seguros', 'Manutenção Frota', 'Outros'],
+        data: [8000, 2500, 3500, 4000, 1500]
+      },
+      despesasMensais: [
+        18000, 18500, 17800, 19000, 19500, 20000,
+        19500, 20500, 21000, 20200, 21500, 22000
+      ],
+      certidoes: [
+        { id: 1, nome: 'CND Federal', status: 'Válida', validade: '2025-09-10', tipo: 'Federal' },
+        { id: 2, nome: 'CND Estadual', status: 'Válida', validade: '2025-08-15', tipo: 'Estadual' },
+        { id: 3, nome: 'CND Municipal', status: 'Válida', validade: '2025-07-20', tipo: 'Municipal' }
+      ],
+      listaContratos: [
+        { id: 1, fornecedor: 'Pátio Central', tipo: 'Aluguel', valor: 8000, vencimento: '2026-12-31', status: 'Ativo' },
+        { id: 2, fornecedor: 'Posto Líder', tipo: 'Combustível', valor: 15000, vencimento: '2025-12-31', status: 'Ativo' }
+      ],
+      indicadores: {
+        ticketMedioVenda: 850.00,
+        custoOperacional: 19500,
+        margemOperacional: 30.0,
+        inadimplencia: 1.5
+      }
+    }
   }
 };
 
@@ -515,8 +861,6 @@ export const dadosPorCnpj = {
 
 /**
  * Obtém os dados de um CNPJ específico
- * @param {string} cnpjId - ID do CNPJ (ex: 'cnpj_001')
- * @returns {object} - Dados financeiros do CNPJ
  */
 export const getDadosCnpj = (cnpjId) => {
   return dadosPorCnpj[cnpjId] || dadosPorCnpj['cnpj_001'];
@@ -524,16 +868,45 @@ export const getDadosCnpj = (cnpjId) => {
 
 /**
  * Obtém informações de um CNPJ específico
- * @param {string} cnpjId - ID do CNPJ
- * @returns {object} - Informações cadastrais do CNPJ
  */
 export const getInfoCnpj = (cnpjId) => {
   return cnpjsEmpresa.find(c => c.id === cnpjId) || cnpjsEmpresa[0];
 };
 
 /**
+ * Obtém CNPJs de uma empresa
+ */
+export const getCnpjsByEmpresa = (empresaId) => {
+  return cnpjsEmpresa.filter(c => c.empresaId === empresaId);
+};
+
+/**
+ * Obtém empresas de um grupo
+ */
+export const getEmpresasByGrupo = (grupoId) => {
+  return empresas.filter(e => e.grupoId === grupoId);
+};
+
+/**
+ * Obtém grupo de uma empresa
+ */
+export const getGrupoByEmpresa = (empresaId) => {
+  const empresa = empresas.find(e => e.id === empresaId);
+  if (!empresa) return null;
+  return grupos.find(g => g.id === empresa.grupoId);
+};
+
+/**
+ * Obtém empresa de um CNPJ
+ */
+export const getEmpresaByCnpj = (cnpjId) => {
+  const cnpj = cnpjsEmpresa.find(c => c.id === cnpjId);
+  if (!cnpj) return null;
+  return empresas.find(e => e.id === cnpj.empresaId);
+};
+
+/**
  * Calcula totais consolidados de todos os CNPJs
- * @returns {object} - Totais consolidados
  */
 export const getTotaisConsolidados = () => {
   const cnpjIds = Object.keys(dadosPorCnpj);
@@ -570,6 +943,87 @@ export const getTotaisConsolidados = () => {
   };
 };
 
+/**
+ * Calcula totais consolidados por empresa
+ */
+export const getTotaisConsolidadosPorEmpresa = (empresaId) => {
+  const cnpjsDaEmpresa = getCnpjsByEmpresa(empresaId);
+
+  let totalReceita = 0;
+  let totalDespesa = 0;
+  let totalLucro = 0;
+  let totalFuncionarios = 0;
+  let totalFolha = 0;
+  let totalIRPJ = 0;
+  let totalCSLL = 0;
+
+  cnpjsDaEmpresa.forEach(cnpj => {
+    const dados = dadosPorCnpj[cnpj.id];
+    if (dados) {
+      totalReceita += dados.dreData2025.receita.reduce((a, b) => a + b, 0);
+      totalDespesa += dados.dreData2025.despesa.reduce((a, b) => a + b, 0);
+      totalLucro += dados.dreData2025.lucro.reduce((a, b) => a + b, 0);
+      totalFuncionarios += dados.pessoalData.funcionarios;
+      totalFolha += dados.pessoalData.folhaMensal;
+      totalIRPJ += dados.totaisFiscais.irpj;
+      totalCSLL += dados.totaisFiscais.csll;
+    }
+  });
+
+  return {
+    receita: totalReceita,
+    despesa: totalDespesa,
+    lucro: totalLucro,
+    funcionarios: totalFuncionarios,
+    folhaMensal: totalFolha,
+    irpj: totalIRPJ,
+    csll: totalCSLL,
+    cargaTributaria: totalIRPJ + totalCSLL,
+    qtdCnpjs: cnpjsDaEmpresa.length
+  };
+};
+
+/**
+ * Calcula totais consolidados por grupo
+ */
+export const getTotaisConsolidadosPorGrupo = (grupoId) => {
+  const empresasDoGrupo = getEmpresasByGrupo(grupoId);
+
+  let totalReceita = 0;
+  let totalDespesa = 0;
+  let totalLucro = 0;
+  let totalFuncionarios = 0;
+  let totalFolha = 0;
+  let totalIRPJ = 0;
+  let totalCSLL = 0;
+  let totalCnpjs = 0;
+
+  empresasDoGrupo.forEach(empresa => {
+    const totais = getTotaisConsolidadosPorEmpresa(empresa.id);
+    totalReceita += totais.receita;
+    totalDespesa += totais.despesa;
+    totalLucro += totais.lucro;
+    totalFuncionarios += totais.funcionarios;
+    totalFolha += totais.folhaMensal;
+    totalIRPJ += totais.irpj;
+    totalCSLL += totais.csll;
+    totalCnpjs += totais.qtdCnpjs;
+  });
+
+  return {
+    receita: totalReceita,
+    despesa: totalDespesa,
+    lucro: totalLucro,
+    funcionarios: totalFuncionarios,
+    folhaMensal: totalFolha,
+    irpj: totalIRPJ,
+    csll: totalCSLL,
+    cargaTributaria: totalIRPJ + totalCSLL,
+    qtdCnpjs: totalCnpjs,
+    qtdEmpresas: empresasDoGrupo.length
+  };
+};
+
 // ============================================
 // COMPATIBILIDADE COM CÓDIGO EXISTENTE
 // ============================================
@@ -595,6 +1049,9 @@ export const empresaInfo = {
   ...cnpjsEmpresa[0],
   nome: cnpjsEmpresa[0].razaoSocial
 };
+
+// Empresa usuário - mantém compatibilidade
+export const empresaUsuario = empresas[0];
 
 // Equipe técnica responsável
 export const equipeTecnica = [
@@ -632,66 +1089,22 @@ export const equipeTecnica = [
   }
 ];
 
-// Dados mockados para o painel admin (usuários)
-export const usuariosMock = [
-  {
-    id: 1,
-    nome: 'Admin Principal',
-    email: 'admin@agilicomplex.com.br',
-    perfil: 'Administrador',
-    status: 'Ativo',
-    cnpjsAcesso: ['cnpj_001', 'cnpj_002', 'cnpj_003'] // Acesso a todos
-  },
-  {
-    id: 2,
-    nome: 'Kallyne Castro',
-    email: 'kallyne@agilicomplex.com.br',
-    perfil: 'Contábil',
-    status: 'Ativo',
-    cnpjsAcesso: ['cnpj_001', 'cnpj_002', 'cnpj_003']
-  },
-  {
-    id: 3,
-    nome: 'Alan Severo',
-    email: 'alan@agilicomplex.com.br',
-    perfil: 'Fiscal',
-    status: 'Ativo',
-    cnpjsAcesso: ['cnpj_001', 'cnpj_002']
-  },
-  {
-    id: 4,
-    nome: 'Sarane Ribeiro',
-    email: 'sarane@agilicomplex.com.br',
-    perfil: 'Pessoal',
-    status: 'Ativo',
-    cnpjsAcesso: ['cnpj_001']
-  },
-  {
-    id: 5,
-    nome: 'Roberto Ferreira',
-    email: 'roberto@ejp.com.br',
-    perfil: 'Gerente',
-    status: 'Ativo',
-    cnpjsAcesso: ['cnpj_002']
-  },
-  {
-    id: 6,
-    nome: 'André Nascimento',
-    email: 'andre@ejp.com.br',
-    perfil: 'Gerente',
-    status: 'Pendente',
-    cnpjsAcesso: ['cnpj_003']
-  }
-];
+// ============================================
+// SISTEMA DE PERMISSÕES SIMPLIFICADO
+// ============================================
 
-// Perfis disponíveis para usuários
+// Perfis disponíveis (simplificado)
 export const perfisUsuario = [
-  { value: 'Administrador', label: 'Administrador', descricao: 'Acesso total ao sistema' },
-  { value: 'Gerente', label: 'Gerente', descricao: 'Acesso aos dados do CNPJ' },
-  { value: 'Contábil', label: 'Contábil', descricao: 'Acesso aos dados contábeis' },
-  { value: 'Fiscal', label: 'Fiscal', descricao: 'Acesso aos dados fiscais' },
-  { value: 'Pessoal', label: 'Pessoal', descricao: 'Acesso aos dados de RH' },
-  { value: 'Visualizador', label: 'Visualizador', descricao: 'Apenas visualização' }
+  {
+    value: 'Admin',
+    label: 'Administrador',
+    descricao: 'Acesso total ao sistema e gerenciamento de usuários'
+  },
+  {
+    value: 'Visualizador',
+    label: 'Visualizador',
+    descricao: 'Apenas visualização dos setores permitidos'
+  }
 ];
 
 // Status disponíveis para usuários
@@ -699,6 +1112,76 @@ export const statusUsuario = [
   { value: 'Ativo', label: 'Ativo', color: 'green' },
   { value: 'Inativo', label: 'Inativo', color: 'red' },
   { value: 'Pendente', label: 'Pendente', color: 'yellow' }
+];
+
+// Dados mockados para o painel admin (usuários)
+export const usuariosMock = [
+  {
+    id: 1,
+    nome: 'Admin Principal',
+    email: 'admin@agilicomplex.com.br',
+    perfil: 'Admin',
+    status: 'Ativo',
+    setoresAcesso: ['contabil', 'fiscal', 'pessoal', 'administrativo'],
+    gruposAcesso: ['grupo_001', 'grupo_002'],
+    empresasAcesso: ['empresa_001', 'empresa_002', 'empresa_003'],
+    cnpjsAcesso: ['cnpj_001', 'cnpj_002', 'cnpj_003', 'cnpj_004', 'cnpj_005']
+  },
+  {
+    id: 2,
+    nome: 'Kallyne Castro',
+    email: 'kallyne@agilicomplex.com.br',
+    perfil: 'Visualizador',
+    status: 'Ativo',
+    setoresAcesso: ['contabil'],
+    gruposAcesso: ['grupo_001'],
+    empresasAcesso: ['empresa_001'],
+    cnpjsAcesso: ['cnpj_001', 'cnpj_002', 'cnpj_003']
+  },
+  {
+    id: 3,
+    nome: 'Alan Severo',
+    email: 'alan@agilicomplex.com.br',
+    perfil: 'Visualizador',
+    status: 'Ativo',
+    setoresAcesso: ['fiscal'],
+    gruposAcesso: ['grupo_001'],
+    empresasAcesso: ['empresa_001'],
+    cnpjsAcesso: ['cnpj_001', 'cnpj_002']
+  },
+  {
+    id: 4,
+    nome: 'Sarane Ribeiro',
+    email: 'sarane@agilicomplex.com.br',
+    perfil: 'Visualizador',
+    status: 'Ativo',
+    setoresAcesso: ['pessoal'],
+    gruposAcesso: ['grupo_001'],
+    empresasAcesso: ['empresa_001'],
+    cnpjsAcesso: ['cnpj_001']
+  },
+  {
+    id: 5,
+    nome: 'Lucas Mendonça',
+    email: 'lucas@agilicomplex.com.br',
+    perfil: 'Visualizador',
+    status: 'Ativo',
+    setoresAcesso: ['administrativo'],
+    gruposAcesso: ['grupo_001'],
+    empresasAcesso: ['empresa_001', 'empresa_002'],
+    cnpjsAcesso: ['cnpj_001', 'cnpj_004']
+  },
+  {
+    id: 6,
+    nome: 'Roberto Almeida',
+    email: 'roberto@abctransportes.com.br',
+    perfil: 'Visualizador',
+    status: 'Ativo',
+    setoresAcesso: ['contabil', 'fiscal', 'pessoal', 'administrativo'],
+    gruposAcesso: ['grupo_002'],
+    empresasAcesso: ['empresa_003'],
+    cnpjsAcesso: ['cnpj_005']
+  }
 ];
 
 // Setores disponíveis para upload de CSV
