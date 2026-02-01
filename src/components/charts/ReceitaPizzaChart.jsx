@@ -7,34 +7,40 @@ import {
 } from 'chart.js';
 import { formatCurrency } from '../../utils/formatters';
 import { receitaGrupos } from '../../data/mockData';
+import { useTheme } from '../../context/ThemeContext';
+import { getChartColors, getPieChartOptions } from '../../utils/chartTheme';
 
 // Registrar componentes do Chart.js
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 /**
- * Gráfico de Pizza - Grupos de Receitas
- * Mostra a distribuição das receitas por natureza de venda
+ * Grafico de Pizza - Grupos de Receitas
+ * Mostra a distribuicao das receitas por natureza de venda
  */
 const ReceitaPizzaChart = () => {
+  const { isDarkMode } = useTheme();
+  const colors = getChartColors(isDarkMode);
+
   const chartData = {
     labels: receitaGrupos.labels,
     datasets: [
       {
         data: receitaGrupos.data,
-        backgroundColor: ['#22c55e', '#86efac', '#166534'],
+        backgroundColor: isDarkMode
+          ? ['#4ade80', '#86efac', '#22c55e']
+          : ['#22c55e', '#86efac', '#166534'],
         borderWidth: 0,
         hoverOffset: 10
       }
     ]
   };
 
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
+  const options = getPieChartOptions(isDarkMode, {
     plugins: {
       legend: {
         position: 'bottom',
         labels: {
+          color: colors.textColor,
           usePointStyle: true,
           font: {
             size: 11
@@ -55,7 +61,7 @@ const ReceitaPizzaChart = () => {
       }
     },
     cutout: '65%'
-  };
+  });
 
   return (
     <div className="h-[300px] relative flex justify-center">

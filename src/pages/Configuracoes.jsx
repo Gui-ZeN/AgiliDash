@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import Logo from '../components/layout/Logo';
 import { useEmpresa } from '../context/EmpresaContext';
+import { useTheme } from '../context/ThemeContext';
 import { formatCurrency } from '../utils/formatters';
 import { getCnpjsByEmpresa, getEmpresasByGrupo } from '../data/mockData';
 
@@ -36,6 +37,7 @@ const Configuracoes = () => {
     grupoAtual,
     empresaAtual
   } = useEmpresa();
+  const { isDarkMode } = useTheme();
 
   // Estado para tabs
   const [activeSection, setActiveSection] = useState('grupos');
@@ -161,68 +163,68 @@ const Configuracoes = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className={`min-h-screen ${isDarkMode ? 'dark bg-slate-900' : 'bg-slate-50'}`}>
       {/* Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-40">
+      <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-40">
         <div className="w-full px-4 lg:px-6 h-16 lg:h-20 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link
               to="/dashboard"
-              className="p-2 rounded-lg hover:bg-slate-100 transition-colors"
+              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
             >
-              <ArrowLeft className="w-5 h-5 text-slate-600" />
+              <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
             </Link>
             <Logo width={140} height={50} />
           </div>
-          <h1 className="text-lg font-bold text-[#0e4f6d]">Configuracoes</h1>
+          <h1 className="text-lg font-bold text-[#0e4f6d] dark:text-cyan-400">Configuracoes</h1>
         </div>
       </header>
 
       <main className="w-full px-4 lg:px-6 py-6 lg:py-8">
         {/* Cards de estatisticas */}
         <div className="grid grid-cols-3 gap-4 mb-8">
-          <div className="bg-white rounded-xl border border-slate-200 p-4 lg:p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 lg:p-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 lg:p-3 bg-amber-100 rounded-lg">
-                <FolderTree className="w-5 h-5 lg:w-6 lg:h-6 text-amber-600" />
+              <div className="p-2 lg:p-3 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
+                <FolderTree className="w-5 h-5 lg:w-6 lg:h-6 text-amber-600 dark:text-amber-400" />
               </div>
               <div>
-                <p className="text-2xl lg:text-3xl font-bold text-slate-800">{stats.grupos}</p>
-                <p className="text-xs lg:text-sm text-slate-500">Grupos</p>
+                <p className="text-2xl lg:text-3xl font-bold text-slate-800 dark:text-white">{stats.grupos}</p>
+                <p className="text-xs lg:text-sm text-slate-500 dark:text-slate-400">Grupos</p>
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-xl border border-slate-200 p-4 lg:p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 lg:p-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 lg:p-3 bg-blue-100 rounded-lg">
-                <Building className="w-5 h-5 lg:w-6 lg:h-6 text-blue-600" />
+              <div className="p-2 lg:p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                <Building className="w-5 h-5 lg:w-6 lg:h-6 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <p className="text-2xl lg:text-3xl font-bold text-slate-800">{stats.empresas}</p>
-                <p className="text-xs lg:text-sm text-slate-500">Empresas</p>
+                <p className="text-2xl lg:text-3xl font-bold text-slate-800 dark:text-white">{stats.empresas}</p>
+                <p className="text-xs lg:text-sm text-slate-500 dark:text-slate-400">Empresas</p>
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-xl border border-slate-200 p-4 lg:p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 lg:p-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 lg:p-3 bg-teal-100 rounded-lg">
-                <Building2 className="w-5 h-5 lg:w-6 lg:h-6 text-teal-600" />
+              <div className="p-2 lg:p-3 bg-teal-100 dark:bg-teal-900/30 rounded-lg">
+                <Building2 className="w-5 h-5 lg:w-6 lg:h-6 text-teal-600 dark:text-teal-400" />
               </div>
               <div>
-                <p className="text-2xl lg:text-3xl font-bold text-slate-800">{stats.cnpjs}</p>
-                <p className="text-xs lg:text-sm text-slate-500">CNPJs</p>
+                <p className="text-2xl lg:text-3xl font-bold text-slate-800 dark:text-white">{stats.cnpjs}</p>
+                <p className="text-xs lg:text-sm text-slate-500 dark:text-slate-400">CNPJs</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Secao principal */}
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
           {/* Header da secao */}
-          <div className="p-4 lg:p-6 border-b border-slate-200 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="p-4 lg:p-6 border-b border-slate-200 dark:border-slate-700 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
-              <h2 className="text-xl font-bold text-slate-800">Estrutura Organizacional</h2>
-              <p className="text-sm text-slate-500">Gerencie grupos, empresas e CNPJs</p>
+              <h2 className="text-xl font-bold text-slate-800 dark:text-white">Estrutura Organizacional</h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Gerencie grupos, empresas e CNPJs</p>
             </div>
             <button
               onClick={handleAddGrupo}

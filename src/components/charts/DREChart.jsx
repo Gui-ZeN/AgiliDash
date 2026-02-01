@@ -10,6 +10,8 @@ import {
 } from 'chart.js';
 import { formatCurrency } from '../../utils/formatters';
 import { meses } from '../../data/mockData';
+import { useTheme } from '../../context/ThemeContext';
+import { getChartColors, getChartOptions } from '../../utils/chartTheme';
 
 // Registrar componentes do Chart.js
 ChartJS.register(
@@ -22,35 +24,33 @@ ChartJS.register(
 );
 
 /**
- * Gráfico DRE (Demonstrativo do Resultado do Exercício)
- * Compara Receita vs Despesa mês a mês
+ * Grafico DRE (Demonstrativo do Resultado do Exercicio)
+ * Compara Receita vs Despesa mes a mes
  */
 const DREChart = ({ data }) => {
+  const { isDarkMode } = useTheme();
+  const colors = getChartColors(isDarkMode);
+
   const chartData = {
     labels: meses,
     datasets: [
       {
         label: 'Receita Bruta',
         data: data.receita,
-        backgroundColor: '#16a34a',
+        backgroundColor: colors.success,
         borderRadius: 4
       },
       {
         label: 'Despesas/Custos',
         data: data.despesa,
-        backgroundColor: '#ef4444',
+        backgroundColor: colors.danger,
         borderRadius: 4
       }
     ]
   };
 
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
+  const options = getChartOptions(isDarkMode, {
     plugins: {
-      legend: {
-        position: 'bottom'
-      },
       tooltip: {
         mode: 'index',
         intersect: false,
@@ -64,17 +64,24 @@ const DREChart = ({ data }) => {
     scales: {
       y: {
         beginAtZero: true,
+        grid: {
+          color: colors.gridColor
+        },
         ticks: {
+          color: colors.textColorSecondary,
           callback: (value) => 'R$ ' + (value / 1000).toFixed(0) + 'k'
         }
       },
       x: {
         grid: {
           display: false
+        },
+        ticks: {
+          color: colors.textColorSecondary
         }
       }
     }
-  };
+  });
 
   return (
     <div className="h-[400px] relative">

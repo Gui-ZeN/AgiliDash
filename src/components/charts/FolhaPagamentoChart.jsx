@@ -10,6 +10,8 @@ import {
 } from 'chart.js';
 import { meses } from '../../data/mockData';
 import { formatCurrency } from '../../utils/formatters';
+import { useTheme } from '../../context/ThemeContext';
+import { getChartColors, getChartOptions } from '../../utils/chartTheme';
 
 ChartJS.register(
   CategoryScale,
@@ -21,37 +23,39 @@ ChartJS.register(
 );
 
 /**
- * Gráfico de Folha de Pagamento por mês
+ * Grafico de Folha de Pagamento por mes
  */
 const FolhaPagamentoChart = ({ folhaPorMes, encargosPorMes }) => {
+  const { isDarkMode } = useTheme();
+  const colors = getChartColors(isDarkMode);
+
   const data = {
     labels: meses,
     datasets: [
       {
-        label: 'Salários',
+        label: 'Salarios',
         data: folhaPorMes,
-        backgroundColor: '#0e4f6d',
+        backgroundColor: colors.primary,
         borderRadius: 6,
         barThickness: 20
       },
       {
         label: 'Encargos',
         data: encargosPorMes,
-        backgroundColor: '#58a3a4',
+        backgroundColor: colors.primaryLight,
         borderRadius: 6,
         barThickness: 20
       }
     ]
   };
 
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
+  const options = getChartOptions(isDarkMode, {
     plugins: {
       legend: {
         position: 'top',
         align: 'end',
         labels: {
+          color: colors.textColor,
           usePointStyle: true,
           pointStyle: 'circle',
           padding: 20,
@@ -62,11 +66,6 @@ const FolhaPagamentoChart = ({ folhaPorMes, encargosPorMes }) => {
         }
       },
       tooltip: {
-        backgroundColor: '#1e293b',
-        titleFont: { size: 13, weight: 'bold' },
-        bodyFont: { size: 12 },
-        padding: 12,
-        cornerRadius: 8,
         callbacks: {
           label: function(context) {
             return `${context.dataset.label}: ${formatCurrency(context.raw)}`;
@@ -79,21 +78,21 @@ const FolhaPagamentoChart = ({ folhaPorMes, encargosPorMes }) => {
         grid: { display: false },
         ticks: {
           font: { size: 11, weight: '500' },
-          color: '#64748b'
+          color: colors.textColorSecondary
         }
       },
       y: {
-        grid: { color: '#f1f5f9' },
+        grid: { color: colors.gridColor },
         ticks: {
           font: { size: 11 },
-          color: '#64748b',
+          color: colors.textColorSecondary,
           callback: function(value) {
             return formatCurrency(value);
           }
         }
       }
     }
-  };
+  });
 
   return (
     <div className="h-[300px]">

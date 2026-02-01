@@ -75,7 +75,7 @@ import Breadcrumb from '../components/ui/Breadcrumb';
 import PeriodFilter from '../components/ui/PeriodFilter';
 import ExportButton from '../components/ui/ExportButton';
 import Sparkline from '../components/ui/Sparkline';
-import { VencimentoAlert } from '../components/ui/AlertBanner';
+import CnpjFilter from '../components/ui/CnpjFilter';
 import {
   equipeTecnica,
   meses
@@ -149,13 +149,6 @@ const Dashboard = () => {
   const receitaSparkline = cnpjDados?.dreData2025?.receita || [0];
   const lucroSparkline = cnpjDados?.dreData2025?.receita?.map((r, i) => r - (cnpjDados?.dreData2025?.despesa?.[i] || 0)) || [0];
 
-  // Dados de vencimentos próximos (mock)
-  const vencimentosProximos = [
-    { descricao: 'ICMS', dataVencimento: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString() },
-    { descricao: 'ISS', dataVencimento: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString() },
-    { descricao: 'INSS', dataVencimento: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() }
-  ];
-
   // Dados para exportação
   const exportColumns = [
     { key: 'mes', label: 'Mes' },
@@ -178,7 +171,8 @@ const Dashboard = () => {
         {/* Toolbar com Breadcrumb, Filtros e Export */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <Breadcrumb />
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <CnpjFilter />
             <PeriodFilter value={periodFilter} onChange={setPeriodFilter} />
             <ExportButton
               data={exportData}
@@ -188,9 +182,6 @@ const Dashboard = () => {
             />
           </div>
         </div>
-
-        {/* Alertas de Vencimentos */}
-        <VencimentoAlert vencimentos={vencimentosProximos} className="mb-6" />
 
         {/* Badge de modo consolidado */}
         {isConsolidado && (

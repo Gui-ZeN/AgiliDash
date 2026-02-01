@@ -9,6 +9,8 @@ import {
   Legend
 } from 'chart.js';
 import { meses, faturamentoData } from '../../data/mockData';
+import { useTheme } from '../../context/ThemeContext';
+import { getChartColors, getChartOptions } from '../../utils/chartTheme';
 
 // Registrar componentes do Chart.js
 ChartJS.register(
@@ -21,26 +23,27 @@ ChartJS.register(
 );
 
 /**
- * Gráfico de Evolução do Faturamento Bruto
- * Histórico mensal de emissão de notas
+ * Grafico de Evolucao do Faturamento Bruto
+ * Historico mensal de emissao de notas
  */
 const FaturamentoChart = () => {
+  const { isDarkMode } = useTheme();
+  const colors = getChartColors(isDarkMode);
+
   const chartData = {
     labels: meses,
     datasets: [
       {
         label: 'Faturamento Bruto',
         data: faturamentoData,
-        backgroundColor: '#0e4f6d',
+        backgroundColor: colors.primary,
         borderRadius: 8,
         barThickness: 24
       }
     ]
   };
 
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
+  const options = getChartOptions(isDarkMode, {
     plugins: {
       legend: {
         display: false
@@ -50,17 +53,24 @@ const FaturamentoChart = () => {
       y: {
         beginAtZero: false,
         min: 400000,
+        grid: {
+          color: colors.gridColor
+        },
         ticks: {
+          color: colors.textColorSecondary,
           callback: (value) => 'R$ ' + (value / 1000).toFixed(0) + 'k'
         }
       },
       x: {
         grid: {
           display: false
+        },
+        ticks: {
+          color: colors.textColorSecondary
         }
       }
     }
-  };
+  });
 
   return (
     <div className="h-[350px] relative">
