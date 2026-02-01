@@ -88,7 +88,7 @@ const DistribuicaoChart = ({ onDataCalculated }) => {
 
   return (
     <div className="h-[200px] relative">
-      <Doughnut data={chartData} options={options} />
+      <Doughnut key={`distribuicao-${isDarkMode}`} data={chartData} options={options} />
     </div>
   );
 };

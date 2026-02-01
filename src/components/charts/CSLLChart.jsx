@@ -11,6 +11,8 @@ import {
   Filler
 } from 'chart.js';
 import { trimestres, csllData } from '../../data/mockData';
+import { useTheme } from '../../context/ThemeContext';
+import { getChartColors, getChartOptions } from '../../utils/chartTheme';
 
 // Registrar componentes do Chart.js
 ChartJS.register(
@@ -25,18 +27,21 @@ ChartJS.register(
 );
 
 /**
- * Gráfico CSLL (Contribuição Social sobre o Lucro Líquido)
- * Evolução trimestral (Alíquota 9%)
+ * Grafico CSLL (Contribuicao Social sobre o Lucro Liquido)
+ * Evolucao trimestral (Aliquota 9%)
  */
 const CSLLChart = () => {
+  const { isDarkMode } = useTheme();
+  const colors = getChartColors(isDarkMode);
+
   const chartData = {
     labels: trimestres,
     datasets: [
       {
         label: 'CSLL',
         data: csllData,
-        borderColor: '#06b6d4',
-        backgroundColor: 'rgba(6, 182, 212, 0.05)',
+        borderColor: colors.info,
+        backgroundColor: isDarkMode ? 'rgba(56, 189, 248, 0.1)' : 'rgba(6, 182, 212, 0.05)',
         fill: true,
         tension: 0.4,
         borderWidth: 4
@@ -44,9 +49,7 @@ const CSLLChart = () => {
     ]
   };
 
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
+  const options = getChartOptions(isDarkMode, {
     plugins: {
       legend: {
         display: false
@@ -55,16 +58,22 @@ const CSLLChart = () => {
     scales: {
       y: {
         beginAtZero: true,
+        grid: { color: colors.gridColor },
         ticks: {
+          color: colors.textColorSecondary,
           callback: (value) => 'R$ ' + value.toLocaleString('pt-BR')
         }
+      },
+      x: {
+        grid: { display: false },
+        ticks: { color: colors.textColorSecondary }
       }
     }
-  };
+  });
 
   return (
     <div className="h-[320px] relative">
-      <Line data={chartData} options={options} />
+      <Line key={`csll-${isDarkMode}`} data={chartData} options={options} />
     </div>
   );
 };

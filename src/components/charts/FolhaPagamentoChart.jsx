@@ -96,7 +96,7 @@ const FolhaPagamentoChart = ({ folhaPorMes, encargosPorMes }) => {
 
   return (
     <div className="h-[300px]">
-      <Bar data={data} options={options} />
+      <Bar key={`folha-${isDarkMode}`} data={data} options={options} />
     </div>
   );
 };

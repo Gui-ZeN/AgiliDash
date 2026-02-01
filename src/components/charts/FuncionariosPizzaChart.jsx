@@ -5,39 +5,39 @@ import {
   Tooltip,
   Legend
 } from 'chart.js';
+import { useTheme } from '../../context/ThemeContext';
+import { getChartColors, getPieChartOptions } from '../../utils/chartTheme';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 /**
- * Gráfico de Pizza - Funcionários por Departamento
+ * Grafico de Pizza - Funcionarios por Departamento
  */
 export const DepartamentoPizzaChart = ({ porDepartamento }) => {
+  const { isDarkMode } = useTheme();
+  const colors = getChartColors(isDarkMode);
+
   const data = {
     labels: porDepartamento.labels,
     datasets: [
       {
         data: porDepartamento.data,
-        backgroundColor: [
-          '#0e4f6d',
-          '#58a3a4',
-          '#1a6b8a',
-          '#7cc4c7',
-          '#0d3d54'
-        ],
-        borderColor: '#ffffff',
+        backgroundColor: isDarkMode
+          ? ['#38bdf8', '#4ade80', '#fbbf24', '#a78bfa', '#f87171']
+          : ['#0e4f6d', '#58a3a4', '#1a6b8a', '#7cc4c7', '#0d3d54'],
+        borderColor: isDarkMode ? '#1e293b' : '#ffffff',
         borderWidth: 3,
         hoverOffset: 10
       }
     ]
   };
 
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
+  const options = getPieChartOptions(isDarkMode, {
     plugins: {
       legend: {
         position: 'right',
         labels: {
+          color: colors.textColor,
           usePointStyle: true,
           pointStyle: 'circle',
           padding: 15,
@@ -48,11 +48,6 @@ export const DepartamentoPizzaChart = ({ porDepartamento }) => {
         }
       },
       tooltip: {
-        backgroundColor: '#1e293b',
-        titleFont: { size: 13, weight: 'bold' },
-        bodyFont: { size: 12 },
-        padding: 12,
-        cornerRadius: 8,
         callbacks: {
           label: function(context) {
             const total = context.dataset.data.reduce((a, b) => a + b, 0);
@@ -62,44 +57,43 @@ export const DepartamentoPizzaChart = ({ porDepartamento }) => {
         }
       }
     }
-  };
+  });
 
   return (
     <div className="h-[250px]">
-      <Doughnut data={data} options={options} />
+      <Doughnut key={`depto-${isDarkMode}`} data={data} options={options} />
     </div>
   );
 };
 
 /**
- * Gráfico de Pizza - Funcionários por Tipo de Contrato
+ * Grafico de Pizza - Funcionarios por Tipo de Contrato
  */
 export const ContratoPizzaChart = ({ porContrato }) => {
+  const { isDarkMode } = useTheme();
+  const colors = getChartColors(isDarkMode);
+
   const data = {
     labels: porContrato.labels,
     datasets: [
       {
         data: porContrato.data,
-        backgroundColor: [
-          '#10b981',
-          '#f59e0b',
-          '#8b5cf6',
-          '#ef4444'
-        ],
-        borderColor: '#ffffff',
+        backgroundColor: isDarkMode
+          ? ['#4ade80', '#fbbf24', '#a78bfa', '#f87171']
+          : ['#10b981', '#f59e0b', '#8b5cf6', '#ef4444'],
+        borderColor: isDarkMode ? '#1e293b' : '#ffffff',
         borderWidth: 3,
         hoverOffset: 10
       }
     ]
   };
 
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
+  const options = getPieChartOptions(isDarkMode, {
     plugins: {
       legend: {
         position: 'right',
         labels: {
+          color: colors.textColor,
           usePointStyle: true,
           pointStyle: 'circle',
           padding: 15,
@@ -110,11 +104,6 @@ export const ContratoPizzaChart = ({ porContrato }) => {
         }
       },
       tooltip: {
-        backgroundColor: '#1e293b',
-        titleFont: { size: 13, weight: 'bold' },
-        bodyFont: { size: 12 },
-        padding: 12,
-        cornerRadius: 8,
         callbacks: {
           label: function(context) {
             const total = context.dataset.data.reduce((a, b) => a + b, 0);
@@ -124,11 +113,11 @@ export const ContratoPizzaChart = ({ porContrato }) => {
         }
       }
     }
-  };
+  });
 
   return (
     <div className="h-[250px]">
-      <Doughnut data={data} options={options} />
+      <Doughnut key={`contrato-${isDarkMode}`} data={data} options={options} />
     </div>
   );
 };

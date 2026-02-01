@@ -103,7 +103,7 @@ const LucroComparativoChart = () => {
 
   return (
     <div className="h-[350px] relative">
-      <Line data={chartData} options={options} />
+      <Line key={`lucro-${isDarkMode}`} data={chartData} options={options} />
     </div>
   );
 };

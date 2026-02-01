@@ -11,6 +11,8 @@ import {
   Filler
 } from 'chart.js';
 import { meses, entradasData, saidasData } from '../../data/mockData';
+import { useTheme } from '../../context/ThemeContext';
+import { getChartColors, getChartOptions } from '../../utils/chartTheme';
 
 // Registrar componentes do Chart.js
 ChartJS.register(
@@ -25,26 +27,29 @@ ChartJS.register(
 );
 
 /**
- * Gráfico de Movimentação Financeira Anual
- * Mostra entradas vs saídas ao longo do ano
+ * Grafico de Movimentacao Financeira Anual
+ * Mostra entradas vs saidas ao longo do ano
  */
 const MovimentacaoChart = () => {
+  const { isDarkMode } = useTheme();
+  const colors = getChartColors(isDarkMode);
+
   const chartData = {
     labels: meses,
     datasets: [
       {
         label: 'Entradas',
         data: entradasData,
-        borderColor: '#0e4f6d',
-        backgroundColor: 'rgba(14, 79, 109, 0.05)',
+        borderColor: colors.primary,
+        backgroundColor: isDarkMode ? 'rgba(14, 79, 109, 0.2)' : 'rgba(14, 79, 109, 0.05)',
         fill: true,
         tension: 0.4,
         borderWidth: 3
       },
       {
-        label: 'Saídas',
+        label: 'Saidas',
         data: saidasData,
-        borderColor: '#58a3a4',
+        borderColor: colors.primaryLight,
         borderDash: [5, 5],
         tension: 0.4,
         borderWidth: 2
@@ -52,9 +57,7 @@ const MovimentacaoChart = () => {
     ]
   };
 
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
+  const options = getChartOptions(isDarkMode, {
     plugins: {
       legend: {
         display: false
@@ -62,16 +65,22 @@ const MovimentacaoChart = () => {
     },
     scales: {
       y: {
+        grid: { color: colors.gridColor },
         ticks: {
+          color: colors.textColorSecondary,
           callback: (value) => 'R$ ' + (value / 1000000).toFixed(1) + 'M'
         }
+      },
+      x: {
+        grid: { display: false },
+        ticks: { color: colors.textColorSecondary }
       }
     }
-  };
+  });
 
   return (
     <div className="h-[400px] relative">
-      <Line data={chartData} options={options} />
+      <Line key={`movimentacao-${isDarkMode}`} data={chartData} options={options} />
     </div>
   );
 };

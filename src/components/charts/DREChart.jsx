@@ -85,7 +85,7 @@ const DREChart = ({ data }) => {
 
   return (
     <div className="h-[400px] relative">
-      <Bar data={chartData} options={options} />
+      <Bar key={`dre-${isDarkMode}`} data={chartData} options={options} />
     </div>
   );
 };

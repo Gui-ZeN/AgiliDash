@@ -9,6 +9,8 @@ import {
   Legend
 } from 'chart.js';
 import { trimestres, irpjTotalData, irpjAdicional } from '../../data/mockData';
+import { useTheme } from '../../context/ThemeContext';
+import { getChartColors, getChartOptions } from '../../utils/chartTheme';
 
 // Registrar componentes do Chart.js
 ChartJS.register(
@@ -21,10 +23,13 @@ ChartJS.register(
 );
 
 /**
- * Gráfico IRPJ (Imposto de Renda Pessoa Jurídica)
- * Composição: Base (15%) vs Adicional (10%)
+ * Grafico IRPJ (Imposto de Renda Pessoa Juridica)
+ * Composicao: Base (15%) vs Adicional (10%)
  */
 const IRPJChart = () => {
+  const { isDarkMode } = useTheme();
+  const colors = getChartColors(isDarkMode);
+
   // Calcular IRPJ base (total - adicional)
   const irpjBase = irpjTotalData.map((total, index) => total - irpjAdicional[index]);
 
@@ -34,39 +39,44 @@ const IRPJChart = () => {
       {
         label: 'IRPJ Base (15%)',
         data: irpjBase,
-        backgroundColor: '#0e4f6d',
+        backgroundColor: colors.primary,
         borderRadius: 6
       },
       {
         label: 'Adicional IRPJ (10%)',
         data: irpjAdicional,
-        backgroundColor: '#ef4444',
+        backgroundColor: colors.danger,
         borderRadius: 6
       }
     ]
   };
 
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
+  const options = getChartOptions(isDarkMode, {
     plugins: {
       legend: {
-        position: 'bottom'
+        position: 'bottom',
+        labels: { color: colors.textColor }
       }
     },
     scales: {
       y: {
         beginAtZero: true,
+        grid: { color: colors.gridColor },
         ticks: {
+          color: colors.textColorSecondary,
           callback: (value) => 'R$ ' + value.toLocaleString('pt-BR')
         }
+      },
+      x: {
+        grid: { display: false },
+        ticks: { color: colors.textColorSecondary }
       }
     }
-  };
+  });
 
   return (
     <div className="h-[320px] relative">
-      <Bar data={chartData} options={options} />
+      <Bar key={`irpj-${isDarkMode}`} data={chartData} options={options} />
     </div>
   );
 };

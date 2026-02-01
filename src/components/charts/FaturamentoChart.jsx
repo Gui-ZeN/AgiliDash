@@ -74,7 +74,7 @@ const FaturamentoChart = () => {
 
   return (
     <div className="h-[350px] relative">
-      <Bar data={chartData} options={options} />
+      <Bar key={`faturamento-${isDarkMode}`} data={chartData} options={options} />
     </div>
   );
 };

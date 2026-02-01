@@ -11,6 +11,8 @@ import {
 } from 'chart.js';
 import { meses } from '../../data/mockData';
 import { formatCurrency } from '../../utils/formatters';
+import { useTheme } from '../../context/ThemeContext';
+import { getChartColors, getChartOptions, getPieChartOptions } from '../../utils/chartTheme';
 
 ChartJS.register(
   CategoryScale,
@@ -23,35 +25,31 @@ ChartJS.register(
 );
 
 /**
- * Gráfico de Despesas Administrativas por mês
+ * Grafico de Despesas Administrativas por mes
  */
 export const DespesasMensaisChart = ({ despesasMensais }) => {
+  const { isDarkMode } = useTheme();
+  const colors = getChartColors(isDarkMode);
+
   const data = {
     labels: meses,
     datasets: [
       {
         label: 'Despesas Administrativas',
         data: despesasMensais,
-        backgroundColor: '#f59e0b',
+        backgroundColor: colors.warning,
         borderRadius: 6,
         barThickness: 24
       }
     ]
   };
 
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
+  const options = getChartOptions(isDarkMode, {
     plugins: {
       legend: {
         display: false
       },
       tooltip: {
-        backgroundColor: '#1e293b',
-        titleFont: { size: 13, weight: 'bold' },
-        bodyFont: { size: 12 },
-        padding: 12,
-        cornerRadius: 8,
         callbacks: {
           label: function(context) {
             return formatCurrency(context.raw);
@@ -64,60 +62,57 @@ export const DespesasMensaisChart = ({ despesasMensais }) => {
         grid: { display: false },
         ticks: {
           font: { size: 11, weight: '500' },
-          color: '#64748b'
+          color: colors.textColorSecondary
         }
       },
       y: {
-        grid: { color: '#f1f5f9' },
+        grid: { color: colors.gridColor },
         ticks: {
           font: { size: 11 },
-          color: '#64748b',
+          color: colors.textColorSecondary,
           callback: function(value) {
             return formatCurrency(value);
           }
         }
       }
     }
-  };
+  });
 
   return (
     <div className="h-[280px]">
-      <Bar data={data} options={options} />
+      <Bar key={`despesas-${isDarkMode}`} data={data} options={options} />
     </div>
   );
 };
 
 /**
- * Gráfico de Pizza - Despesas por Categoria
+ * Grafico de Pizza - Despesas por Categoria
  */
 export const DespesasCategoriaChart = ({ despesasPorCategoria }) => {
+  const { isDarkMode } = useTheme();
+  const colors = getChartColors(isDarkMode);
+
   const data = {
     labels: despesasPorCategoria.labels,
     datasets: [
       {
         data: despesasPorCategoria.data,
-        backgroundColor: [
-          '#f59e0b',
-          '#eab308',
-          '#84cc16',
-          '#22c55e',
-          '#14b8a6',
-          '#06b6d4'
-        ],
-        borderColor: '#ffffff',
+        backgroundColor: isDarkMode
+          ? ['#fbbf24', '#facc15', '#a3e635', '#4ade80', '#2dd4bf', '#38bdf8']
+          : ['#f59e0b', '#eab308', '#84cc16', '#22c55e', '#14b8a6', '#06b6d4'],
+        borderColor: isDarkMode ? '#1e293b' : '#ffffff',
         borderWidth: 3,
         hoverOffset: 10
       }
     ]
   };
 
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
+  const options = getPieChartOptions(isDarkMode, {
     plugins: {
       legend: {
         position: 'right',
         labels: {
+          color: colors.textColor,
           usePointStyle: true,
           pointStyle: 'circle',
           padding: 12,
@@ -128,11 +123,6 @@ export const DespesasCategoriaChart = ({ despesasPorCategoria }) => {
         }
       },
       tooltip: {
-        backgroundColor: '#1e293b',
-        titleFont: { size: 13, weight: 'bold' },
-        bodyFont: { size: 12 },
-        padding: 12,
-        cornerRadius: 8,
         callbacks: {
           label: function(context) {
             const total = context.dataset.data.reduce((a, b) => a + b, 0);
@@ -142,11 +132,11 @@ export const DespesasCategoriaChart = ({ despesasPorCategoria }) => {
         }
       }
     }
-  };
+  });
 
   return (
     <div className="h-[250px]">
-      <Doughnut data={data} options={options} />
+      <Doughnut key={`cat-${isDarkMode}`} data={data} options={options} />
     </div>
   );
 };

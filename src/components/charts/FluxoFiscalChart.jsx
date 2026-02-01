@@ -10,6 +10,8 @@ import {
 } from 'chart.js';
 import { formatCurrency } from '../../utils/formatters';
 import { meses, entradasData, saidasData } from '../../data/mockData';
+import { useTheme } from '../../context/ThemeContext';
+import { getChartColors, getChartOptions } from '../../utils/chartTheme';
 
 // Registrar componentes do Chart.js
 ChartJS.register(
@@ -22,25 +24,28 @@ ChartJS.register(
 );
 
 /**
- * Gráfico de Fluxo Mensal Fiscal (Barras Horizontais)
- * Comparativo mês a mês: Entradas vs Saídas
+ * Grafico de Fluxo Mensal Fiscal (Barras Horizontais)
+ * Comparativo mes a mes: Entradas vs Saidas
  */
 const FluxoFiscalChart = () => {
+  const { isDarkMode } = useTheme();
+  const colors = getChartColors(isDarkMode);
+
   const chartData = {
     labels: meses,
     datasets: [
       {
         label: 'Entradas',
         data: entradasData,
-        backgroundColor: '#ef4444',
+        backgroundColor: colors.danger,
         borderRadius: 4,
         barPercentage: 0.7,
         categoryPercentage: 0.8
       },
       {
-        label: 'Saídas',
+        label: 'Saidas',
         data: saidasData,
-        backgroundColor: '#22c55e',
+        backgroundColor: colors.success,
         borderRadius: 4,
         barPercentage: 0.7,
         categoryPercentage: 0.8
@@ -48,13 +53,12 @@ const FluxoFiscalChart = () => {
     ]
   };
 
-  const options = {
+  const options = getChartOptions(isDarkMode, {
     indexAxis: 'y', // Barras horizontais
-    responsive: true,
-    maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'top'
+        position: 'top',
+        labels: { color: colors.textColor }
       },
       tooltip: {
         callbacks: {
@@ -66,24 +70,22 @@ const FluxoFiscalChart = () => {
     },
     scales: {
       x: {
-        grid: {
-          color: '#f1f5f9'
-        },
+        grid: { color: colors.gridColor },
         ticks: {
+          color: colors.textColorSecondary,
           callback: (value) => 'R$ ' + (value / 1000000).toFixed(1) + 'M'
         }
       },
       y: {
-        grid: {
-          display: false
-        }
+        grid: { display: false },
+        ticks: { color: colors.textColorSecondary }
       }
     }
-  };
+  });
 
   return (
     <div className="h-[500px] relative">
-      <Bar data={chartData} options={options} />
+      <Bar key={`fluxo-${isDarkMode}`} data={chartData} options={options} />
     </div>
   );
 };

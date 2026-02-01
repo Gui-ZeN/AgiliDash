@@ -65,7 +65,7 @@ const CustosPizzaChart = () => {
 
   return (
     <div className="h-[300px] relative flex justify-center">
-      <Doughnut data={chartData} options={options} />
+      <Doughnut key={`custos-${isDarkMode}`} data={chartData} options={options} />
     </div>
   );
 };
