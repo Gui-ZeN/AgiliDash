@@ -287,23 +287,9 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
           {/* Action Buttons */}
           <div className="hidden lg:flex items-center gap-1 border-l border-slate-100 dark:border-slate-700 pl-4">
             <Link
-              to="/usuarios"
+              to="/configuracoes"
               className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-              title="Usuarios"
-            >
-              <Users className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-            </Link>
-            <Link
-              to="/logs"
-              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-              title="Logs"
-            >
-              <Activity className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-            </Link>
-            <Link
-              to="/admin"
-              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-              title="Painel Admin"
+              title="Painel Administrativo"
             >
               <Settings className="w-5 h-5 text-slate-500 dark:text-slate-400" />
             </Link>
@@ -379,39 +365,12 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
               </div>
 
               <Link
-                to="/usuarios"
-                className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <Users className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-                <span className="font-medium text-slate-700 dark:text-slate-300">Usuarios</span>
-              </Link>
-
-              <Link
-                to="/logs"
-                className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <Activity className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-                <span className="font-medium text-slate-700 dark:text-slate-300">Logs</span>
-              </Link>
-
-              <Link
-                to="/admin"
-                className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <Settings className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-                <span className="font-medium text-slate-700 dark:text-slate-300">Painel Admin</span>
-              </Link>
-
-              <Link
                 to="/configuracoes"
                 className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                <Building2 className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-                <span className="font-medium text-slate-700 dark:text-slate-300">Configuracoes</span>
+                <Settings className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+                <span className="font-medium text-slate-700 dark:text-slate-300">Painel Administrativo</span>
               </Link>
 
               <button
