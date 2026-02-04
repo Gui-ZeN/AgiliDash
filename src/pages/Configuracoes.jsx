@@ -1,14 +1,16 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowLeft, Building2, FolderTree, Plus, Edit2, Trash2, ChevronRight, ChevronDown,
   X, AlertTriangle, Save, Check, Users, Upload, FileSpreadsheet, Shield, Eye,
   Mail, Phone, Download, Activity, Calculator, FileText, Briefcase, Scale,
-  ChevronLeft, Database, Table, AlertCircle, CheckCircle2
+  ChevronLeft, Database, Table, AlertCircle, CheckCircle2, TrendingUp, TrendingDown
 } from 'lucide-react';
 import Logo from '../components/layout/Logo';
 import { useTheme } from '../context/ThemeContext';
 import { useData } from '../context/DataContext';
+import { parseAnaliseHorizontal, parseBalancete, parseDREComparativa, parseDREMensal } from '../utils/dominioParser';
+import { formatCurrency } from '../utils/formatters';
 
 // Definicao dos setores e seus relatorios
 const SETORES_CONFIG = {
@@ -222,30 +224,42 @@ const Configuracoes = () => {
       const isContabilDominio = importCategory === 'setores' && importSetor === 'contabil';
 
       if (isContabilDominio) {
-        // Para relatorios do Dominio, armazenar o conteudo bruto
-        // O parser sera aplicado na confirmacao
+        // Para relatórios do Domínio, parsear os dados imediatamente para preview inteligente
+        let dadosParsed = null;
+        let parseError = null;
+
+        try {
+          switch (importRelatorio) {
+            case 'analiseHorizontal':
+              dadosParsed = parseAnaliseHorizontal(text);
+              break;
+            case 'balancete':
+              dadosParsed = parseBalancete(text);
+              break;
+            case 'dreComparativa':
+              dadosParsed = parseDREComparativa(text);
+              break;
+            case 'dreMensal':
+              dadosParsed = parseDREMensal(text);
+              break;
+            default:
+              parseError = 'Tipo de relatório não reconhecido';
+          }
+        } catch (err) {
+          parseError = err.message;
+          console.error('Erro ao parsear arquivo:', err);
+        }
+
         const lines = text.split('\n').filter(line => line.trim());
 
-        // Preview completo para formato Domínio - mostrar TODAS as linhas estruturadas
-        const previewData = lines.map((line, i) => {
-          const cols = line.split(';').map(c => c.trim());
-          return {
-            '#': i + 1,
-            'Codigo': cols[0]?.substring(0, 20) || '-',
-            'Descricao': cols[1]?.substring(0, 50) || '-',
-            'Valor 1': cols[2]?.substring(0, 20) || '-',
-            'Valor 2': cols[3]?.substring(0, 20) || '-'
-          };
-        });
-
         setImportPreview({
-          headers: ['#', 'Codigo', 'Descricao', 'Valor 1', 'Valor 2'],
-          data: previewData,
           file: file.name,
           totalRows: lines.length,
           rawContent: text,
           isDominioFormat: true,
-          tipoRelatorio: importRelatorio
+          tipoRelatorio: importRelatorio,
+          dadosParsed,
+          parseError
         });
         setImportStep(3);
       } else {
@@ -759,83 +773,244 @@ const Configuracoes = () => {
                       <p className="font-semibold text-emerald-800 dark:text-emerald-300">{importPreview.file}</p>
                       <p className="text-sm text-emerald-600 dark:text-emerald-400">
                         {importPreview.totalRows} linha(s) no arquivo
-                        {importPreview.isDominioFormat && ` - Formato Domínio (${importPreview.tipoRelatorio})`}
+                        {importPreview.isDominioFormat && ` - Formato Domínio`}
                       </p>
                     </div>
                   </div>
 
-                  {/* Info especial para formato Domínio */}
-                  {importPreview.isDominioFormat && (
-                    <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl">
+                  {/* Erro de parse */}
+                  {importPreview.parseError && (
+                    <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
                       <div className="flex items-start gap-3">
-                        <FileText className="w-5 h-5 text-blue-500 mt-0.5" />
+                        <AlertTriangle className="w-5 h-5 text-red-500 mt-0.5" />
                         <div>
-                          <p className="font-medium text-blue-800 dark:text-blue-300">Relatório do Sistema Domínio</p>
-                          <p className="text-sm text-blue-700 dark:text-blue-400 mt-1">
-                            {importPreview.tipoRelatorio === 'balancete' && 'O Balancete Mensal será processado para extrair: Receitas, Custos, Estoques, Movimentação Bancária e Aplicações Financeiras.'}
-                            {importPreview.tipoRelatorio === 'analiseHorizontal' && 'A Análise Horizontal (DRE) será processada para extrair: Receita Bruta, Despesas Operacionais e Lucro por mês.'}
-                            {importPreview.tipoRelatorio === 'dreComparativa' && 'A DRE Comparativa será processada para comparação entre anos.'}
-                            {importPreview.tipoRelatorio === 'dreMensal' && 'A DRE Mensal será processada para análise mensal detalhada.'}
-                          </p>
+                          <p className="font-medium text-red-800 dark:text-red-300">Erro ao processar arquivo</p>
+                          <p className="text-sm text-red-700 dark:text-red-400 mt-1">{importPreview.parseError}</p>
                         </div>
                       </div>
                     </div>
                   )}
 
-                  {/* Preview da tabela */}
-                  <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden mb-6">
-                    <div className="p-4 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
-                      <h3 className="font-semibold text-slate-800 dark:text-white">
-                        Preview dos dados ({importPreview.data.length} linhas)
-                      </h3>
-                      <span className="text-xs text-slate-500 bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded">
-                        {importPreview.isDominioFormat ? 'Arquivo completo' : 'Amostra'}
-                      </span>
+                  {/* Preview INTELIGENTE para Domínio - Análise Horizontal */}
+                  {importPreview.isDominioFormat && importPreview.tipoRelatorio === 'analiseHorizontal' && importPreview.dadosParsed && (
+                    <div className="space-y-6">
+                      {/* Cards de Totais */}
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-4 rounded-xl text-white">
+                          <div className="flex items-center gap-2 mb-2">
+                            <TrendingUp className="w-5 h-5 opacity-80" />
+                            <span className="text-sm opacity-80">Receita Bruta Total</span>
+                          </div>
+                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totais?.receitaBruta || 0)}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-red-500 to-rose-600 p-4 rounded-xl text-white">
+                          <div className="flex items-center gap-2 mb-2">
+                            <TrendingDown className="w-5 h-5 opacity-80" />
+                            <span className="text-sm opacity-80">Despesas Totais</span>
+                          </div>
+                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totais?.despesaTotal || 0)}</p>
+                        </div>
+                        <div className={`bg-gradient-to-br ${(importPreview.dadosParsed.totais?.lucroLiquido || 0) >= 0 ? 'from-blue-500 to-indigo-600' : 'from-orange-500 to-red-600'} p-4 rounded-xl text-white`}>
+                          <div className="flex items-center gap-2 mb-2">
+                            <Calculator className="w-5 h-5 opacity-80" />
+                            <span className="text-sm opacity-80">Resultado Líquido</span>
+                          </div>
+                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totais?.lucroLiquido || 0)}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-purple-500 to-violet-600 p-4 rounded-xl text-white">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Activity className="w-5 h-5 opacity-80" />
+                            <span className="text-sm opacity-80">Competência</span>
+                          </div>
+                          <p className="text-2xl font-bold">{importPreview.dadosParsed.competencia || '-'}</p>
+                        </div>
+                      </div>
+
+                      {/* Tabela Mensal */}
+                      <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+                        <div className="p-4 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
+                          <h3 className="font-semibold text-slate-800 dark:text-white">Dados Mensais Extraídos</h3>
+                        </div>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm">
+                            <thead className="bg-slate-100 dark:bg-slate-800">
+                              <tr>
+                                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500 sticky left-0 bg-slate-100 dark:bg-slate-800">Mês</th>
+                                {importPreview.dadosParsed.meses?.map((mes, i) => (
+                                  <th key={i} className="px-3 py-2 text-right text-xs font-semibold text-slate-500 whitespace-nowrap">{mes}</th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                              <tr className="bg-green-50 dark:bg-green-900/10">
+                                <td className="px-3 py-2 font-medium text-green-700 dark:text-green-400 sticky left-0 bg-green-50 dark:bg-green-900/10">Receita Bruta</td>
+                                {importPreview.dadosParsed.dados?.receitaBruta?.map((val, i) => (
+                                  <td key={i} className="px-3 py-2 text-right text-green-600 dark:text-green-400 whitespace-nowrap">{formatCurrency(val)}</td>
+                                ))}
+                              </tr>
+                              <tr className="bg-red-50 dark:bg-red-900/10">
+                                <td className="px-3 py-2 font-medium text-red-700 dark:text-red-400 sticky left-0 bg-red-50 dark:bg-red-900/10">Despesas Operacionais</td>
+                                {importPreview.dadosParsed.dados?.despesasOperacionais?.map((val, i) => (
+                                  <td key={i} className="px-3 py-2 text-right text-red-600 dark:text-red-400 whitespace-nowrap">{formatCurrency(Math.abs(val))}</td>
+                                ))}
+                              </tr>
+                              <tr className="bg-blue-50 dark:bg-blue-900/10">
+                                <td className="px-3 py-2 font-medium text-blue-700 dark:text-blue-400 sticky left-0 bg-blue-50 dark:bg-blue-900/10">Lucro Bruto</td>
+                                {importPreview.dadosParsed.dados?.lucroBruto?.map((val, i) => (
+                                  <td key={i} className={`px-3 py-2 text-right whitespace-nowrap ${val >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-red-600 dark:text-red-400'}`}>{formatCurrency(val)}</td>
+                                ))}
+                              </tr>
+                              <tr className="bg-slate-50 dark:bg-slate-800/50 font-bold">
+                                <td className="px-3 py-2 font-bold text-slate-800 dark:text-white sticky left-0 bg-slate-50 dark:bg-slate-800/50">Resultado Líquido</td>
+                                {importPreview.dadosParsed.dados?.resultadoLiquido?.map((val, i) => (
+                                  <td key={i} className={`px-3 py-2 text-right whitespace-nowrap font-bold ${val >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>{formatCurrency(val)}</td>
+                                ))}
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
                     </div>
-                    <div className={`overflow-x-auto overflow-y-auto ${importPreview.isDominioFormat ? 'max-h-[500px]' : 'max-h-80'}`}>
+                  )}
+
+                  {/* Preview para Balancete */}
+                  {importPreview.isDominioFormat && importPreview.tipoRelatorio === 'balancete' && importPreview.dadosParsed && (
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-gradient-to-br from-blue-500 to-cyan-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Bancos Conta Movimento</p>
+                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.bancosMovimento?.saldoAtual || 0)}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Aplicações Financeiras</p>
+                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.aplicacoesFinanceiras?.saldoAtual || 0)}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Estoque</p>
+                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.estoque?.saldoAtual || 0)}</p>
+                        </div>
+                      </div>
+                      <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+                        <div className="p-4 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
+                          <h3 className="font-semibold text-slate-800 dark:text-white">Contas Extraídas ({importPreview.dadosParsed.contas?.length || 0} contas)</h3>
+                        </div>
+                        <div className="max-h-64 overflow-y-auto">
+                          <table className="w-full text-sm">
+                            <thead className="bg-slate-100 dark:bg-slate-800 sticky top-0">
+                              <tr>
+                                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500">Classificação</th>
+                                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500">Descrição</th>
+                                <th className="px-3 py-2 text-right text-xs font-semibold text-slate-500">Saldo Atual</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                              {importPreview.dadosParsed.contas?.slice(0, 20).map((conta, i) => (
+                                <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-700/30">
+                                  <td className="px-3 py-2 text-slate-600 dark:text-slate-400 font-mono text-xs">{conta.classificacao}</td>
+                                  <td className="px-3 py-2 text-slate-700 dark:text-slate-300">{conta.descricao}</td>
+                                  <td className="px-3 py-2 text-right text-slate-700 dark:text-slate-300">{formatCurrency(conta.saldoAtual)}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Preview para DRE Comparativa */}
+                  {importPreview.isDominioFormat && importPreview.tipoRelatorio === 'dreComparativa' && importPreview.dadosParsed && (
+                    <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+                      <div className="p-4 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
+                        <h3 className="font-semibold text-slate-800 dark:text-white">Comparativo Anual</h3>
+                      </div>
                       <table className="w-full text-sm">
-                        <thead className="bg-slate-100 dark:bg-slate-800 sticky top-0 z-10">
+                        <thead className="bg-slate-100 dark:bg-slate-800">
                           <tr>
-                            {importPreview.headers.map((h, i) => (
-                              <th key={i} className="px-3 py-2 text-left text-xs font-semibold text-slate-500 whitespace-nowrap border-b border-slate-200 dark:border-slate-700">{h}</th>
-                            ))}
+                            <th className="px-4 py-2 text-left text-xs font-semibold text-slate-500">Descrição</th>
+                            <th className="px-4 py-2 text-right text-xs font-semibold text-slate-500">Ano Atual</th>
+                            <th className="px-4 py-2 text-right text-xs font-semibold text-slate-500">Ano Anterior</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                          {(importPreview.isDominioFormat ? importPreview.data : importPreview.data.slice(0, 10)).map((row, i) => (
-                            <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-700/30">
-                              {importPreview.headers.map((h, j) => (
-                                <td key={j} className="px-3 py-2 text-slate-700 dark:text-slate-300 whitespace-nowrap text-xs">{row[h] || <span className="text-slate-400">-</span>}</td>
-                              ))}
+                          {['receitaBruta', 'despesasOperacionais', 'lucroBruto', 'resultadoLiquido'].map(key => (
+                            <tr key={key}>
+                              <td className="px-4 py-2 font-medium text-slate-700 dark:text-slate-300">{key.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase())}</td>
+                              <td className="px-4 py-2 text-right text-slate-600 dark:text-slate-400">{formatCurrency(importPreview.dadosParsed.dados?.anoAtual?.[key] || 0)}</td>
+                              <td className="px-4 py-2 text-right text-slate-600 dark:text-slate-400">{formatCurrency(importPreview.dadosParsed.dados?.anoAnterior?.[key] || 0)}</td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
                     </div>
-                    {!importPreview.isDominioFormat && importPreview.totalRows > 10 && (
-                      <div className="p-3 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-200 dark:border-slate-700 text-center">
-                        <p className="text-sm text-slate-500">... e mais {importPreview.totalRows - 10} registro(s)</p>
+                  )}
+
+                  {/* Preview para DRE Mensal */}
+                  {importPreview.isDominioFormat && importPreview.tipoRelatorio === 'dreMensal' && importPreview.dadosParsed && (
+                    <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+                      <div className="p-4 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
+                        <h3 className="font-semibold text-slate-800 dark:text-white">DRE do Período - {importPreview.dadosParsed.periodo}</h3>
                       </div>
-                    )}
-                  </div>
+                      <table className="w-full text-sm">
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                          {Object.entries(importPreview.dadosParsed.dados || {}).map(([key, value]) => (
+                            <tr key={key}>
+                              <td className="px-4 py-2 font-medium text-slate-700 dark:text-slate-300">{key.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase())}</td>
+                              <td className="px-4 py-2 text-right text-slate-600 dark:text-slate-400">{formatCurrency(value)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  {/* Preview padrão para CSV normal */}
+                  {!importPreview.isDominioFormat && importPreview.headers && (
+                    <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden mb-6">
+                      <div className="p-4 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
+                        <h3 className="font-semibold text-slate-800 dark:text-white">Preview dos dados</h3>
+                      </div>
+                      <div className="overflow-x-auto max-h-80">
+                        <table className="w-full text-sm">
+                          <thead className="bg-slate-100 dark:bg-slate-800 sticky top-0">
+                            <tr>
+                              {importPreview.headers.map((h, i) => (
+                                <th key={i} className="px-3 py-2 text-left text-xs font-semibold text-slate-500 whitespace-nowrap">{h}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                            {importPreview.data?.slice(0, 10).map((row, i) => (
+                              <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-700/30">
+                                {importPreview.headers.map((h, j) => (
+                                  <td key={j} className="px-3 py-2 text-slate-700 dark:text-slate-300 whitespace-nowrap text-xs">{row[h] || '-'}</td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Alerta */}
-                  <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl flex items-start gap-3">
+                  <div className="mt-6 mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl flex items-start gap-3">
                     <AlertCircle className="w-5 h-5 text-amber-500 mt-0.5" />
                     <div>
                       <p className="font-medium text-amber-800 dark:text-amber-300">Revise os dados antes de confirmar</p>
-                      <p className="text-sm text-amber-700 dark:text-amber-400">Os dados serao importados para o sistema. Esta acao pode ser desfeita apenas manualmente.</p>
+                      <p className="text-sm text-amber-700 dark:text-amber-400">Os dados serão importados para o sistema. Esta ação pode ser desfeita apenas manualmente.</p>
                     </div>
                   </div>
 
                   <div className="flex justify-between">
                     <button onClick={() => { setImportPreview(null); setImportStep(2); if (fileInputRef.current) fileInputRef.current.value = ''; }}
-                      className="flex items-center gap-2 px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg">
+                      className="flex items-center gap-2 px-4 py-2 text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg">
                       <ChevronLeft className="w-4 h-4" />Voltar
                     </button>
                     <button onClick={handleImportConfirm}
-                      className="flex items-center gap-2 px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">
-                      <Upload className="w-4 h-4" />Confirmar Importacao ({importPreview.totalRows} registros)
+                      disabled={importPreview.parseError}
+                      className="flex items-center gap-2 px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                      <Upload className="w-4 h-4" />Confirmar Importação
                     </button>
                   </div>
                 </div>
