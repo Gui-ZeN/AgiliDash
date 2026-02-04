@@ -4,33 +4,37 @@
  */
 
 // Converte valor brasileiro (1.234,56) para número
+// Valores com parênteses são NEGATIVOS: (15.777,06) = -15777.06
 export const parseValorBR = (valor) => {
-  if (!valor || valor === '0,00' || valor === '0') return 0;
+  if (!valor || valor === '0,00' || valor === '0' || valor === '-') return 0;
 
   // Remove espaços e caracteres especiais
   let clean = valor.toString().trim();
 
-  // Remove indicadores de débito/crédito
-  const isCredit = clean.endsWith('c');
-  const isDebit = clean.endsWith('d');
-  clean = clean.replace(/[cd]$/i, '');
+  // Se for apenas texto ou cabeçalho, retorna 0
+  if (clean.match(/^[a-zA-Z]/)) return 0;
 
-  // Remove parênteses (valores negativos)
+  // Remove indicadores de débito/crédito (usado em balancetes)
+  const isCredit = clean.endsWith('c') || clean.endsWith('C');
+  const isDebit = clean.endsWith('d') || clean.endsWith('D');
+  clean = clean.replace(/[cdCD]$/, '');
+
+  // Verifica se é valor negativo (entre parênteses)
   const isNegative = clean.startsWith('(') && clean.endsWith(')');
   clean = clean.replace(/[()]/g, '');
 
-  // Converte formato BR para número
+  // Converte formato BR (1.234,56) para formato JS (1234.56)
   clean = clean.replace(/\./g, '').replace(',', '.');
 
   let num = parseFloat(clean) || 0;
 
-  // Aplica sinal negativo se necessário
-  if (isNegative || isDebit) {
-    num = Math.abs(num); // Débito é positivo no ativo
+  // Aplica sinal negativo se estava entre parênteses
+  if (isNegative) {
+    num = -Math.abs(num);
   }
-  if (isCredit) {
-    num = Math.abs(num); // Crédito é positivo no passivo
-  }
+
+  // Para débito/crédito em balancetes, manter positivo (será tratado no contexto)
+  // Em DREs, valores com parênteses já são negativos
 
   return num;
 };
@@ -119,79 +123,97 @@ export const parseBalancete = (csvContent) => {
  */
 export const parseAnaliseHorizontal = (csvContent) => {
   const lines = csvContent.split('\n');
-  const meses = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
   const mesNomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
   let empresaInfo = {};
   let competencia = '';
   const dados = {
-    receitaBruta: [],
-    deducoes: [],
-    receitaLiquida: [],
-    cmv: [],
-    lucroBruto: [],
-    despesasOperacionais: [],
-    despesasPessoal: [],
-    despesasGerais: [],
-    recuperacaoCreditos: [],
-    resultadoFinanceiro: [],
-    despesasFinanceiras: [],
-    receitaFinanceira: [],
-    outrasReceitas: [],
-    lucroAntesIR: [],
-    provisaoCSLL: [],
-    provisaoIRPJ: [],
-    resultadoLiquido: []
+    receitaBruta: new Array(12).fill(0),
+    deducoes: new Array(12).fill(0),
+    receitaLiquida: new Array(12).fill(0),
+    cmv: new Array(12).fill(0),
+    lucroBruto: new Array(12).fill(0),
+    despesasOperacionais: new Array(12).fill(0),
+    despesasPessoal: new Array(12).fill(0),
+    despesasGerais: new Array(12).fill(0),
+    recuperacaoCreditos: new Array(12).fill(0),
+    resultadoFinanceiro: new Array(12).fill(0),
+    despesasFinanceiras: new Array(12).fill(0),
+    receitaFinanceira: new Array(12).fill(0),
+    outrasReceitas: new Array(12).fill(0),
+    lucroAntesIR: new Array(12).fill(0),
+    provisaoCSLL: new Array(12).fill(0),
+    provisaoIRPJ: new Array(12).fill(0),
+    resultadoLiquido: new Array(12).fill(0)
   };
 
-  // Mapear linha para categoria
-  const categoriaMap = {
-    'RECEITA BRUTA': 'receitaBruta',
-    '(-) DEDUCOES DA RECEITA BRUTA': 'deducoes',
-    'RECEITA LIQUIDA': 'receitaLiquida',
-    '(-) CMV/ CPV': 'cmv',
-    '= LUCRO BRUTO': 'lucroBruto',
-    '(-) DESPESAS OPERACIONAIS DAS ATIVIDADES EM GERAL': 'despesasOperacionais',
-    'DESPESAS C/ PESSOAL': 'despesasPessoal',
-    'DESPESAS GERAIS': 'despesasGerais',
-    'RECUPERACAO DE CREDITOS': 'recuperacaoCreditos',
-    '+ / - RESULTADO FINANCEIRO': 'resultadoFinanceiro',
-    '(-) DESPESAS FINANCEIRAS': 'despesasFinanceiras',
-    'RECEITA FINANCEIRA': 'receitaFinanceira',
-    'OUTRAS RECEITAS OPERACIONAIS': 'outrasReceitas',
-    '= LUCRO ANTES DO IR E DA CSL': 'lucroAntesIR',
-    '(-) PROVISAO PARA A CONTRIBUICAO SOCIAL': 'provisaoCSLL',
-    '(-) PROVISAO PARA O IMPOSTO DE RENDA': 'provisaoIRPJ',
-    '= RESULTADO LIQUIDO DO PERIODO': 'resultadoLiquido'
-  };
+  // Mapear linha para categoria - usar includes para maior flexibilidade
+  const categoriaMap = [
+    { match: 'RECEITA BRUTA', key: 'receitaBruta', exact: true },
+    { match: '(-) DEDUCOES DA RECEITA BRUTA', key: 'deducoes', exact: true },
+    { match: 'RECEITA LIQUIDA', key: 'receitaLiquida', exact: true },
+    { match: '(-) CMV', key: 'cmv', exact: false },
+    { match: '= LUCRO BRUTO', key: 'lucroBruto', exact: true },
+    { match: '(-) DESPESAS OPERACIONAIS', key: 'despesasOperacionais', exact: false },
+    { match: 'DESPESAS C/ PESSOAL', key: 'despesasPessoal', exact: true },
+    { match: 'DESPESAS GERAIS', key: 'despesasGerais', exact: true },
+    { match: 'RECUPERACAO DE CREDITOS', key: 'recuperacaoCreditos', exact: true },
+    { match: '+ / - RESULTADO FINANCEIRO', key: 'resultadoFinanceiro', exact: true },
+    { match: '(-) DESPESAS FINANCEIRAS', key: 'despesasFinanceiras', exact: true },
+    { match: 'RECEITA FINANCEIRA', key: 'receitaFinanceira', exact: true },
+    { match: 'OUTRAS RECEITAS OPERACIONAIS', key: 'outrasReceitas', exact: true },
+    { match: '= LUCRO ANTES DO IR', key: 'lucroAntesIR', exact: false },
+    { match: '(-) PROVISAO PARA A CONTRIBUICAO SOCIAL', key: 'provisaoCSLL', exact: true },
+    { match: '(-) PROVISAO PARA O IMPOSTO DE RENDA', key: 'provisaoIRPJ', exact: true },
+    { match: '= RESULTADO LIQUIDO DO PERIODO', key: 'resultadoLiquido', exact: true },
+    { match: 'LUCRO/PREJU', key: 'resultadoLiquido', exact: false }
+  ];
+
+  // Índices CORRETOS das colunas para cada mês no CSV do Domínio
+  // Jan=6, Fev=8, Mar=10, Abr=12, Mai=14, Jun=17, Jul=19, Ago=21, Set=23, Out=25, Nov=27, Dez=31
+  const indicesMeses = [6, 8, 10, 12, 14, 17, 19, 21, 23, 25, 27, 31];
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const cols = line.split(';').map(c => c.trim());
 
-    // Extrair informações
+    // Extrair informações da empresa
     if (line.includes('C.N.P.J.:')) {
-      empresaInfo.cnpj = cols[3];
+      empresaInfo.cnpj = cols[3] || cols.find(c => c.match(/\d{2}\.\d{3}\.\d{3}/)) || '';
     }
-    if (line.includes('Competência:')) {
-      competencia = cols[3];
+    if (line.includes('Compet')) {
+      competencia = cols[3] || cols.find(c => c.match(/\d{2}\/\d{4}/)) || '';
     }
 
     // Identificar linhas de dados
     const descricao = cols[0];
-    const categoria = categoriaMap[descricao];
+    if (!descricao) continue;
 
-    if (categoria) {
-      // Colunas: Descrição, vazio(x5), 01/2025, vazio, 02/2025, %, 03/2025, %, ...
-      // Índices aproximados para valores mensais: 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28
-      const indices = [6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 29]; // Ajustado para o formato do CSV
+    // Procurar categoria correspondente
+    for (const cat of categoriaMap) {
+      const match = cat.exact
+        ? descricao === cat.match
+        : descricao.includes(cat.match);
 
-      for (let m = 0; m < 12; m++) {
-        const valor = parseValorBR(cols[indices[m]]);
-        dados[categoria][m] = valor;
+      if (match) {
+        // Extrair valores de cada mês
+        for (let m = 0; m < 12; m++) {
+          const colIndex = indicesMeses[m];
+          if (colIndex < cols.length) {
+            const valorRaw = cols[colIndex];
+            const valor = parseValorBR(valorRaw);
+            dados[cat.key][m] = valor;
+          }
+        }
+        break; // Encontrou a categoria, não precisa continuar
       }
     }
   }
+
+  // Debug: log dos valores encontrados
+  console.log('Parser Análise Horizontal - Receita Bruta:', dados.receitaBruta);
+  console.log('Parser Análise Horizontal - Despesas Operacionais:', dados.despesasOperacionais);
+  console.log('Parser Análise Horizontal - Resultado Líquido:', dados.resultadoLiquido);
 
   return {
     empresaInfo,
