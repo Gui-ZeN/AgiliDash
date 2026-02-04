@@ -3,7 +3,7 @@
  * Baseados nos relatórios do Sistema Domínio
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
 import Chart from 'chart.js/auto';
 import { useTheme } from '../../context/ThemeContext';
 import { formatCurrency } from '../../utils/formatters';
@@ -20,6 +20,10 @@ const COLORS = {
   pink: '#ec4899'
 };
 
+// Arrays padrão (constantes para evitar recriação em cada render)
+const DEFAULT_MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+const DEFAULT_VALORES = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
 /**
  * 1. Gráfico de Barras - Comparativo Receita x Despesa
  * Fonte: DRE Horizontal
@@ -29,11 +33,19 @@ export const ComparativoReceitaDespesaChart = ({ dados }) => {
   const chartInstance = useRef(null);
   const { isDarkMode } = useTheme();
 
-  const meses = dados?.meses || ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-  const receitas = dados?.dados?.receitaBruta || new Array(12).fill(0);
-  const despesas = dados?.dados?.despesasOperacionais?.map(d => Math.abs(d)) || new Array(12).fill(0);
+  // Usar useMemo para evitar recriação de arrays em cada render
+  const meses = useMemo(() => dados?.meses || DEFAULT_MESES, [dados?.meses]);
+  const receitas = useMemo(() => dados?.dados?.receitaBruta || DEFAULT_VALORES, [dados?.dados?.receitaBruta]);
+  const despesas = useMemo(() => {
+    if (dados?.dados?.despesasOperacionais) {
+      return dados.dados.despesasOperacionais.map(d => Math.abs(d));
+    }
+    return DEFAULT_VALORES;
+  }, [dados?.dados?.despesasOperacionais]);
 
   useEffect(() => {
+    if (!chartRef.current) return;
+
     if (chartInstance.current) {
       chartInstance.current.destroy();
     }
@@ -125,7 +137,7 @@ export const ComparativoReceitaDespesaChart = ({ dados }) => {
         chartInstance.current.destroy();
       }
     };
-  }, [dados, isDarkMode, meses, receitas, despesas]);
+  }, [meses, receitas, despesas, isDarkMode]);
 
   return (
     <div className="h-[350px]">
@@ -144,21 +156,26 @@ export const VariacaoLucroChart = ({ dadosAtual, dadosAnterior }) => {
   const chartInstance = useRef(null);
   const { isDarkMode } = useTheme();
 
-  const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-
-  // Calcular lucro mensal (Receita - Despesa)
-  const calcularLucro = (dados) => {
-    if (!dados?.dados) return new Array(12).fill(0);
-    return dados.dados.receitaBruta.map((rec, i) => {
-      const desp = Math.abs(dados.dados.despesasOperacionais[i] || 0);
+  // Calcular lucro mensal (Receita - Despesa) usando useMemo
+  const lucroAtual = useMemo(() => {
+    if (!dadosAtual?.dados?.receitaBruta) return DEFAULT_VALORES;
+    return dadosAtual.dados.receitaBruta.map((rec, i) => {
+      const desp = Math.abs(dadosAtual.dados.despesasOperacionais?.[i] || 0);
       return rec - desp;
     });
-  };
+  }, [dadosAtual]);
 
-  const lucroAtual = calcularLucro(dadosAtual);
-  const lucroAnterior = calcularLucro(dadosAnterior);
+  const lucroAnterior = useMemo(() => {
+    if (!dadosAnterior?.dados?.receitaBruta) return DEFAULT_VALORES;
+    return dadosAnterior.dados.receitaBruta.map((rec, i) => {
+      const desp = Math.abs(dadosAnterior.dados.despesasOperacionais?.[i] || 0);
+      return rec - desp;
+    });
+  }, [dadosAnterior]);
 
   useEffect(() => {
+    if (!chartRef.current) return;
+
     if (chartInstance.current) {
       chartInstance.current.destroy();
     }
@@ -168,7 +185,7 @@ export const VariacaoLucroChart = ({ dadosAtual, dadosAnterior }) => {
     chartInstance.current = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: meses,
+        labels: DEFAULT_MESES,
         datasets: [
           {
             label: '2025',
@@ -259,7 +276,7 @@ export const VariacaoLucroChart = ({ dadosAtual, dadosAnterior }) => {
         chartInstance.current.destroy();
       }
     };
-  }, [dadosAtual, dadosAnterior, isDarkMode, lucroAtual, lucroAnterior]);
+  }, [lucroAtual, lucroAnterior, isDarkMode]);
 
   return (
     <div className="h-[350px]">
@@ -277,12 +294,14 @@ export const ReceitaCustoEstoqueChart = ({ dados }) => {
   const chartInstance = useRef(null);
   const { isDarkMode } = useTheme();
 
-  const meses = dados?.meses || ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-  const receita = dados?.series?.receita || new Array(12).fill(0);
-  const custo = dados?.series?.custo || new Array(12).fill(0);
-  const estoque = dados?.series?.estoque || new Array(12).fill(0);
+  const meses = useMemo(() => dados?.meses || DEFAULT_MESES, [dados?.meses]);
+  const receita = useMemo(() => dados?.series?.receita || DEFAULT_VALORES, [dados?.series?.receita]);
+  const custo = useMemo(() => dados?.series?.custo || DEFAULT_VALORES, [dados?.series?.custo]);
+  const estoque = useMemo(() => dados?.series?.estoque || DEFAULT_VALORES, [dados?.series?.estoque]);
 
   useEffect(() => {
+    if (!chartRef.current) return;
+
     if (chartInstance.current) {
       chartInstance.current.destroy();
     }
@@ -394,7 +413,7 @@ export const ReceitaCustoEstoqueChart = ({ dados }) => {
         chartInstance.current.destroy();
       }
     };
-  }, [dados, isDarkMode, meses, receita, custo, estoque]);
+  }, [meses, receita, custo, estoque, isDarkMode]);
 
   return (
     <div className="h-[350px]">
@@ -412,10 +431,12 @@ export const MovimentacaoBancariaChart = ({ dados }) => {
   const chartInstance = useRef(null);
   const { isDarkMode } = useTheme();
 
-  const meses = dados?.meses || ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-  const saldos = dados?.series?.bancosMovimento || new Array(12).fill(0);
+  const meses = useMemo(() => dados?.meses || DEFAULT_MESES, [dados?.meses]);
+  const saldos = useMemo(() => dados?.series?.bancosMovimento || DEFAULT_VALORES, [dados?.series?.bancosMovimento]);
 
   useEffect(() => {
+    if (!chartRef.current) return;
+
     if (chartInstance.current) {
       chartInstance.current.destroy();
     }
@@ -500,7 +521,7 @@ export const MovimentacaoBancariaChart = ({ dados }) => {
         chartInstance.current.destroy();
       }
     };
-  }, [dados, isDarkMode, meses, saldos]);
+  }, [meses, saldos, isDarkMode]);
 
   return (
     <div className="h-[300px]">
@@ -518,10 +539,12 @@ export const AplicacoesFinanceirasChart = ({ dados }) => {
   const chartInstance = useRef(null);
   const { isDarkMode } = useTheme();
 
-  const meses = dados?.meses || ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-  const saldos = dados?.series?.aplicacoesFinanceiras || new Array(12).fill(0);
+  const meses = useMemo(() => dados?.meses || DEFAULT_MESES, [dados?.meses]);
+  const saldos = useMemo(() => dados?.series?.aplicacoesFinanceiras || DEFAULT_VALORES, [dados?.series?.aplicacoesFinanceiras]);
 
   useEffect(() => {
+    if (!chartRef.current) return;
+
     if (chartInstance.current) {
       chartInstance.current.destroy();
     }
@@ -606,7 +629,7 @@ export const AplicacoesFinanceirasChart = ({ dados }) => {
         chartInstance.current.destroy();
       }
     };
-  }, [dados, isDarkMode, meses, saldos]);
+  }, [meses, saldos, isDarkMode]);
 
   return (
     <div className="h-[300px]">
@@ -622,13 +645,23 @@ export const AplicacoesFinanceirasChart = ({ dados }) => {
 export const TabelaComparativoMensal = ({ dados }) => {
   const { isDarkMode } = useTheme();
 
-  const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-  const receitas = dados?.dados?.receitaBruta || new Array(12).fill(0);
-  const despesas = dados?.dados?.despesasOperacionais?.map(d => Math.abs(d)) || new Array(12).fill(0);
+  const receitas = useMemo(() => dados?.dados?.receitaBruta || DEFAULT_VALORES, [dados?.dados?.receitaBruta]);
+  const despesas = useMemo(() => {
+    if (dados?.dados?.despesasOperacionais) {
+      return dados.dados.despesasOperacionais.map(d => Math.abs(d));
+    }
+    return DEFAULT_VALORES;
+  }, [dados?.dados?.despesasOperacionais]);
 
-  const totalReceita = receitas.reduce((a, b) => a + b, 0);
-  const totalDespesa = despesas.reduce((a, b) => a + b, 0);
-  const totalLucro = totalReceita - totalDespesa;
+  const { totalReceita, totalDespesa, totalLucro } = useMemo(() => {
+    const totalRec = receitas.reduce((a, b) => a + b, 0);
+    const totalDesp = despesas.reduce((a, b) => a + b, 0);
+    return {
+      totalReceita: totalRec,
+      totalDespesa: totalDesp,
+      totalLucro: totalRec - totalDesp
+    };
+  }, [receitas, despesas]);
 
   return (
     <div className="overflow-x-auto">
@@ -650,7 +683,7 @@ export const TabelaComparativoMensal = ({ dados }) => {
           </tr>
         </thead>
         <tbody className={`divide-y ${isDarkMode ? 'divide-slate-700' : 'divide-slate-100'}`}>
-          {meses.map((mes, i) => {
+          {DEFAULT_MESES.map((mes, i) => {
             const lucro = receitas[i] - despesas[i];
             return (
               <tr
@@ -706,20 +739,35 @@ export const TabelaComparativoMensal = ({ dados }) => {
 export const CardsMetricasContabil = ({ dados }) => {
   const { isDarkMode } = useTheme();
 
-  const receitas = dados?.dados?.receitaBruta || [];
-  const despesas = dados?.dados?.despesasOperacionais?.map(d => Math.abs(d)) || [];
+  const receitas = useMemo(() => dados?.dados?.receitaBruta || DEFAULT_VALORES, [dados?.dados?.receitaBruta]);
+  const despesas = useMemo(() => {
+    if (dados?.dados?.despesasOperacionais) {
+      return dados.dados.despesasOperacionais.map(d => Math.abs(d));
+    }
+    return DEFAULT_VALORES;
+  }, [dados?.dados?.despesasOperacionais]);
 
-  const totalReceita = receitas.reduce((a, b) => a + b, 0);
-  const totalDespesa = despesas.reduce((a, b) => a + b, 0);
-  const totalLucro = totalReceita - totalDespesa;
-  const margem = totalReceita > 0 ? ((totalLucro / totalReceita) * 100).toFixed(1) : 0;
+  const { totalReceita, totalDespesa, totalLucro, margem, variacaoReceita } = useMemo(() => {
+    const totalRec = receitas.reduce((a, b) => a + b, 0);
+    const totalDesp = despesas.reduce((a, b) => a + b, 0);
+    const lucro = totalRec - totalDesp;
+    const marg = totalRec > 0 ? ((lucro / totalRec) * 100).toFixed(1) : 0;
 
-  // Variação vs mês anterior
-  const receitaAtual = receitas[receitas.length - 1] || 0;
-  const receitaAnterior = receitas[receitas.length - 2] || 0;
-  const variacaoReceita = receitaAnterior > 0
-    ? (((receitaAtual - receitaAnterior) / receitaAnterior) * 100).toFixed(1)
-    : 0;
+    // Variação vs mês anterior
+    const receitaAtual = receitas[receitas.length - 1] || 0;
+    const receitaAnterior = receitas[receitas.length - 2] || 0;
+    const variacao = receitaAnterior > 0
+      ? (((receitaAtual - receitaAnterior) / receitaAnterior) * 100).toFixed(1)
+      : 0;
+
+    return {
+      totalReceita: totalRec,
+      totalDespesa: totalDesp,
+      totalLucro: lucro,
+      margem: marg,
+      variacaoReceita: variacao
+    };
+  }, [receitas, despesas]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
