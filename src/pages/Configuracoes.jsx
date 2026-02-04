@@ -225,18 +225,26 @@ const Configuracoes = () => {
         // Para relatorios do Dominio, armazenar o conteudo bruto
         // O parser sera aplicado na confirmacao
         const lines = text.split('\n').filter(line => line.trim());
-        const previewLines = lines.slice(0, 15).map(line => {
-          const cols = line.split(';').map(c => c.trim().substring(0, 50));
-          return cols;
+
+        // Melhor preview para formato Domínio - mostrar primeiras colunas estruturadas
+        const previewData = lines.slice(0, 15).map((line, i) => {
+          const cols = line.split(';').map(c => c.trim());
+          return {
+            '#': i + 1,
+            'Codigo': cols[0]?.substring(0, 15) || '-',
+            'Descricao': cols[1]?.substring(0, 40) || '-',
+            'Valor/Info': cols[2]?.substring(0, 20) || cols[3]?.substring(0, 20) || '-'
+          };
         });
 
         setImportPreview({
-          headers: ['Conteudo do arquivo (primeiras colunas)'],
-          data: previewLines.map((cols, i) => ({ linha: i + 1, conteudo: cols.slice(0, 5).join(' | ') })),
+          headers: ['#', 'Codigo', 'Descricao', 'Valor/Info'],
+          data: previewData,
           file: file.name,
           totalRows: lines.length,
           rawContent: text,
-          isDominioFormat: true
+          isDominioFormat: true,
+          tipoRelatorio: importRelatorio
         });
         setImportStep(3);
       } else {
@@ -738,14 +746,37 @@ const Configuracoes = () => {
                     <CheckCircle2 className="w-8 h-8 text-emerald-500" />
                     <div>
                       <p className="font-semibold text-emerald-800 dark:text-emerald-300">{importPreview.file}</p>
-                      <p className="text-sm text-emerald-600 dark:text-emerald-400">{importPreview.totalRows} registro(s) encontrado(s) - {importPreview.headers.length} colunas</p>
+                      <p className="text-sm text-emerald-600 dark:text-emerald-400">
+                        {importPreview.totalRows} linha(s) no arquivo
+                        {importPreview.isDominioFormat && ` - Formato Domínio (${importPreview.tipoRelatorio})`}
+                      </p>
                     </div>
                   </div>
+
+                  {/* Info especial para formato Domínio */}
+                  {importPreview.isDominioFormat && (
+                    <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl">
+                      <div className="flex items-start gap-3">
+                        <FileText className="w-5 h-5 text-blue-500 mt-0.5" />
+                        <div>
+                          <p className="font-medium text-blue-800 dark:text-blue-300">Relatório do Sistema Domínio</p>
+                          <p className="text-sm text-blue-700 dark:text-blue-400 mt-1">
+                            {importPreview.tipoRelatorio === 'balancete' && 'O Balancete Mensal será processado para extrair: Receitas, Custos, Estoques, Movimentação Bancária e Aplicações Financeiras.'}
+                            {importPreview.tipoRelatorio === 'analiseHorizontal' && 'A Análise Horizontal (DRE) será processada para extrair: Receita Bruta, Despesas Operacionais e Lucro por mês.'}
+                            {importPreview.tipoRelatorio === 'dreComparativa' && 'A DRE Comparativa será processada para comparação entre anos.'}
+                            {importPreview.tipoRelatorio === 'dreMensal' && 'A DRE Mensal será processada para análise mensal detalhada.'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Preview da tabela */}
                   <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden mb-6">
                     <div className="p-4 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
-                      <h3 className="font-semibold text-slate-800 dark:text-white">Preview dos dados (primeiros 10 registros)</h3>
+                      <h3 className="font-semibold text-slate-800 dark:text-white">
+                        Preview dos dados (primeiras {Math.min(10, importPreview.data.length)} linhas)
+                      </h3>
                     </div>
                     <div className="overflow-x-auto max-h-80">
                       <table className="w-full text-sm">
