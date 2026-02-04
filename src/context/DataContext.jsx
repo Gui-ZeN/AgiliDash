@@ -1,4 +1,11 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import {
+  parseBalancete,
+  parseAnaliseHorizontal,
+  parseDREComparativa,
+  parseDREMensal,
+  consolidarBalancetesMensais
+} from '../utils/dominioParser';
 
 const DataContext = createContext();
 
@@ -35,6 +42,11 @@ const initialUsuarios = [
   }
 ];
 
+// Estrutura inicial para dados contábeis
+const initialDadosContabeis = {
+  // cnpjId -> { balancetes: [], analiseHorizontal: null, dreComparativa: null, dreMensal: null }
+};
+
 export const DataProvider = ({ children }) => {
   // Estado para Grupos
   const [grupos, setGrupos] = useState(() => {
@@ -54,6 +66,12 @@ export const DataProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : initialUsuarios;
   });
 
+  // Estado para dados contábeis por CNPJ
+  const [dadosContabeis, setDadosContabeis] = useState(() => {
+    const saved = localStorage.getItem('agili_dados_contabeis');
+    return saved ? JSON.parse(saved) : initialDadosContabeis;
+  });
+
   // Persistir no localStorage
   useEffect(() => {
     localStorage.setItem('agili_grupos', JSON.stringify(grupos));
@@ -66,6 +84,10 @@ export const DataProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('agili_usuarios', JSON.stringify(usuarios));
   }, [usuarios]);
+
+  useEffect(() => {
+    localStorage.setItem('agili_dados_contabeis', JSON.stringify(dadosContabeis));
+  }, [dadosContabeis]);
 
   // ===== CRUD GRUPOS =====
   const addGrupo = (grupo) => {
@@ -139,6 +161,78 @@ export const DataProvider = ({ children }) => {
     return usuarios.filter(u => u.grupoId === grupoId);
   };
 
+  // ===== DADOS CONTABEIS =====
+  const importarRelatorioContabil = (cnpjId, tipoRelatorio, csvContent) => {
+    try {
+      let dadosParsed;
+
+      switch (tipoRelatorio) {
+        case 'balancete':
+          dadosParsed = parseBalancete(csvContent);
+          break;
+        case 'analiseHorizontal':
+          dadosParsed = parseAnaliseHorizontal(csvContent);
+          break;
+        case 'dreComparativa':
+          dadosParsed = parseDREComparativa(csvContent);
+          break;
+        case 'dreMensal':
+          dadosParsed = parseDREMensal(csvContent);
+          break;
+        default:
+          throw new Error(`Tipo de relatório desconhecido: ${tipoRelatorio}`);
+      }
+
+      setDadosContabeis(prev => {
+        const cnpjData = prev[cnpjId] || {
+          balancetes: [],
+          analiseHorizontal: null,
+          dreComparativa: null,
+          dreMensal: null,
+          balancetesConsolidados: null
+        };
+
+        if (tipoRelatorio === 'balancete') {
+          // Adicionar ao array de balancetes (máximo 12 para série mensal)
+          const newBalancetes = [...cnpjData.balancetes, dadosParsed].slice(-12);
+          return {
+            ...prev,
+            [cnpjId]: {
+              ...cnpjData,
+              balancetes: newBalancetes,
+              balancetesConsolidados: consolidarBalancetesMensais(newBalancetes)
+            }
+          };
+        } else {
+          return {
+            ...prev,
+            [cnpjId]: {
+              ...cnpjData,
+              [tipoRelatorio]: dadosParsed
+            }
+          };
+        }
+      });
+
+      return { success: true, dados: dadosParsed };
+    } catch (error) {
+      console.error('Erro ao importar relatório:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  const getDadosContabeis = (cnpjId) => {
+    return dadosContabeis[cnpjId] || null;
+  };
+
+  const limparDadosContabeis = (cnpjId) => {
+    setDadosContabeis(prev => {
+      const newData = { ...prev };
+      delete newData[cnpjId];
+      return newData;
+    });
+  };
+
   // ===== ESTATISTICAS =====
   const getStats = () => ({
     totalGrupos: grupos.length,
@@ -177,6 +271,12 @@ export const DataProvider = ({ children }) => {
     updateUsuario,
     deleteUsuario,
     getUsuariosByGrupo,
+
+    // Dados Contabeis
+    dadosContabeis,
+    importarRelatorioContabil,
+    getDadosContabeis,
+    limparDadosContabeis,
 
     // Utils
     getStats,

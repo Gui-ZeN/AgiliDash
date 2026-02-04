@@ -60,6 +60,16 @@ import MovimentacaoChart from '../components/charts/MovimentacaoChart';
 import LucroComparativoChart from '../components/charts/LucroComparativoChart';
 import ReceitaPizzaChart from '../components/charts/ReceitaPizzaChart';
 import CustosPizzaChart from '../components/charts/CustosPizzaChart';
+import {
+  ComparativoReceitaDespesaChart,
+  VariacaoLucroChart,
+  ReceitaCustoEstoqueChart,
+  MovimentacaoBancariaChart,
+  AplicacoesFinanceirasChart,
+  TabelaComparativoMensal,
+  CardsMetricasContabil
+} from '../components/charts/ContabilCharts';
+import { useData } from '../context/DataContext';
 import FaturamentoChart from '../components/charts/FaturamentoChart';
 import IRPJChart from '../components/charts/IRPJChart';
 import CSLLChart from '../components/charts/CSLLChart';
@@ -95,6 +105,11 @@ const Dashboard = () => {
   // Usar contexto da empresa e tema
   const { cnpjInfo, cnpjDados, isConsolidado, totaisConsolidados } = useEmpresa();
   const { isDarkMode } = useTheme();
+  const { getDadosContabeis } = useData();
+
+  // Obter dados contábeis importados para o CNPJ selecionado
+  const dadosContabeisImportados = getDadosContabeis(cnpjInfo?.id);
+  const temDadosContabeis = dadosContabeisImportados?.analiseHorizontal || dadosContabeisImportados?.balancetesConsolidados;
 
   // Dados do CNPJ selecionado
   const dreData = selectedYear === 2025 ? cnpjDados.dreData2025 : cnpjDados.dreData2024;
@@ -409,34 +424,34 @@ const Dashboard = () => {
         {activeTab === 'contabil' && (
           <div className="space-y-8">
             {/* Header da seção */}
-            <section className={`flex items-start justify-between transition-all duration-500 ${cardAnimation}`}>
+            <section className={`flex flex-col lg:flex-row items-start justify-between gap-4 transition-all duration-500 ${cardAnimation}`}>
               <div>
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-green-600 rounded-lg">
+                  <div className="p-2 bg-emerald-600 rounded-lg">
                     <Calculator className="w-5 h-5 text-white" />
                   </div>
-                  <span className="text-xs font-bold text-green-600 uppercase tracking-widest">
-                    Departamento Contábil
+                  <span className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                    Departamento Contabil
                   </span>
                 </div>
-                <h1 className="text-4xl font-extrabold text-[#1e293b] mb-1">
-                  Análise Financeira
+                <h1 className={`text-4xl font-extrabold mb-1 ${isDarkMode ? 'text-white' : 'text-[#1e293b]'}`}>
+                  Analise Financeira
                 </h1>
-                <p className="text-lg text-slate-400 font-medium">
-                  Demonstrativo mensal de fluxos financeiros e resultados.
+                <p className={`text-lg font-medium ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                  Demonstrativo mensal de receitas, despesas e resultados.
                 </p>
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={() => handleExportReport('pdf')}
-                  className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors"
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${isDarkMode ? 'bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
                 >
                   <FileDown className="w-4 h-4" />
                   PDF
                 </button>
                 <button
                   onClick={() => handleExportReport('excel')}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
                 >
                   <Download className="w-4 h-4" />
                   Excel
@@ -444,204 +459,284 @@ const Dashboard = () => {
               </div>
             </section>
 
-            {/* Cards de métricas principais */}
-            <div className={`grid grid-cols-1 md:grid-cols-4 gap-4 transition-all duration-500 delay-100 ${cardAnimation}`}>
-              <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-6 rounded-2xl text-white shadow-lg">
-                <div className="flex items-center justify-between mb-4">
-                  <TrendingUp className="w-8 h-8 opacity-80" />
-                  <span className="text-xs font-bold bg-white/20 px-3 py-1 rounded-full">
-                    +{variacaoReceita}%
-                  </span>
+            {/* Banner de status de dados importados */}
+            {!temDadosContabeis && (
+              <div className={`p-4 rounded-2xl flex items-center gap-3 ${isDarkMode ? 'bg-amber-900/30 border border-amber-700/50' : 'bg-amber-50 border border-amber-200'}`}>
+                <AlertCircle className={`w-5 h-5 ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`} />
+                <span className={isDarkMode ? 'text-amber-300' : 'text-amber-800'}>
+                  Nenhum relatorio importado. Acesse <strong>Configuracoes</strong> para importar dados do Dominio.
+                </span>
+              </div>
+            )}
+
+            {/* Cards de métricas - usando dados importados ou mock */}
+            {temDadosContabeis ? (
+              <div className={`transition-all duration-500 delay-100 ${cardAnimation}`}>
+                <CardsMetricasContabil dados={dadosContabeisImportados?.analiseHorizontal} />
+              </div>
+            ) : (
+              <div className={`grid grid-cols-1 md:grid-cols-4 gap-4 transition-all duration-500 delay-100 ${cardAnimation}`}>
+                <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-6 rounded-2xl text-white shadow-lg">
+                  <div className="flex items-center justify-between mb-4">
+                    <TrendingUp className="w-8 h-8 opacity-80" />
+                    <span className="text-xs font-bold bg-white/20 px-3 py-1 rounded-full">
+                      +{variacaoReceita}%
+                    </span>
+                  </div>
+                  <p className="text-3xl font-black">{formatCurrency(totalReceita)}</p>
+                  <p className="text-white/70 text-sm mt-1">Receita Total {selectedYear}</p>
                 </div>
-                <p className="text-3xl font-black">{formatCurrency(totalReceita)}</p>
-                <p className="text-white/70 text-sm mt-1">Receita Total {selectedYear}</p>
+
+                <div className="bg-gradient-to-br from-red-500 to-rose-600 p-6 rounded-2xl text-white shadow-lg">
+                  <div className="flex items-center justify-between mb-4">
+                    <TrendingDown className="w-8 h-8 opacity-80" />
+                  </div>
+                  <p className="text-3xl font-black">{formatCurrency(totalDespesa)}</p>
+                  <p className="text-white/70 text-sm mt-1">Despesas Total {selectedYear}</p>
+                </div>
+
+                <div className="bg-gradient-to-br from-[#0e4f6d] to-[#1a6b8a] p-6 rounded-2xl text-white shadow-lg">
+                  <div className="flex items-center justify-between mb-4">
+                    <Coins className="w-8 h-8 opacity-80" />
+                  </div>
+                  <p className="text-3xl font-black">{formatCurrency(totalLucro)}</p>
+                  <p className="text-white/70 text-sm mt-1">Lucro Liquido</p>
+                </div>
+
+                <div className="bg-gradient-to-br from-purple-500 to-indigo-600 p-6 rounded-2xl text-white shadow-lg">
+                  <div className="flex items-center justify-between mb-4">
+                    <Activity className="w-8 h-8 opacity-80" />
+                  </div>
+                  <p className="text-3xl font-black">{margemLucro}%</p>
+                  <p className="text-white/70 text-sm mt-1">Margem de Lucro</p>
+                </div>
+              </div>
+            )}
+
+            {/* Seção 1: Comparativo de Lucro */}
+            <section className={`transition-all duration-500 delay-200 ${cardAnimation}`}>
+              <div className="flex items-center gap-3 mb-6">
+                <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
+                  <BarChart2 className={`w-5 h-5 ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
+                </div>
+                <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                  Comparativo de Lucro
+                </h2>
               </div>
 
-              <div className="bg-gradient-to-br from-red-500 to-rose-600 p-6 rounded-2xl text-white shadow-lg">
-                <div className="flex items-center justify-between mb-4">
-                  <TrendingDown className="w-8 h-8 opacity-80" />
+              {/* Grid: Gráfico de Barras + Cards Resumo */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Gráfico de Barras - Receita x Despesa */}
+                <div className={`lg:col-span-2 p-6 rounded-3xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                  <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+                    <div>
+                      <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                        Receita vs Despesa
+                      </h3>
+                      <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                        Evolucao mensal comparativa
+                      </p>
+                    </div>
+                    <ButtonGroup
+                      options={[
+                        { value: 2024, label: '2024' },
+                        { value: 2025, label: '2025' }
+                      ]}
+                      activeValue={selectedYear}
+                      onChange={setSelectedYear}
+                    />
+                  </div>
+                  {temDadosContabeis ? (
+                    <ComparativoReceitaDespesaChart dados={dadosContabeisImportados?.analiseHorizontal} />
+                  ) : (
+                    <DREChart data={dreData} />
+                  )}
                 </div>
-                <p className="text-3xl font-black">{formatCurrency(totalDespesa)}</p>
-                <p className="text-white/70 text-sm mt-1">Despesas Total {selectedYear}</p>
-              </div>
 
-              <div className="bg-gradient-to-br from-[#0e4f6d] to-[#1a6b8a] p-6 rounded-2xl text-white shadow-lg">
-                <div className="flex items-center justify-between mb-4">
-                  <Coins className="w-8 h-8 opacity-80" />
-                </div>
-                <p className="text-3xl font-black">{formatCurrency(totalLucro)}</p>
-                <p className="text-white/70 text-sm mt-1">Lucro Líquido</p>
-              </div>
+                {/* Card Lateral de Resumo */}
+                <div className={`p-6 rounded-3xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                  <h3 className={`text-lg font-bold mb-6 pb-4 border-b ${isDarkMode ? 'text-white border-slate-700' : 'text-slate-800 border-slate-100'}`}>
+                    Resumo do Exercicio
+                  </h3>
 
-              <div className="bg-gradient-to-br from-purple-500 to-indigo-600 p-6 rounded-2xl text-white shadow-lg">
-                <div className="flex items-center justify-between mb-4">
-                  <Activity className="w-8 h-8 opacity-80" />
+                  <div className="space-y-4">
+                    <div className={`p-4 rounded-2xl ${isDarkMode ? 'bg-green-900/30' : 'bg-green-50'}`}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <ArrowUpRight className={`w-5 h-5 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`} />
+                        <p className={`text-sm font-medium ${isDarkMode ? 'text-green-400' : 'text-green-700'}`}>Receita Anual</p>
+                      </div>
+                      <p className={`text-2xl font-black ${isDarkMode ? 'text-green-300' : 'text-green-700'}`}>
+                        {formatCurrency(totalReceita)}
+                      </p>
+                    </div>
+
+                    <div className={`p-4 rounded-2xl ${isDarkMode ? 'bg-red-900/30' : 'bg-red-50'}`}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <ArrowDownRight className={`w-5 h-5 ${isDarkMode ? 'text-red-400' : 'text-red-600'}`} />
+                        <p className={`text-sm font-medium ${isDarkMode ? 'text-red-400' : 'text-red-700'}`}>Despesa Anual</p>
+                      </div>
+                      <p className={`text-2xl font-black ${isDarkMode ? 'text-red-300' : 'text-red-600'}`}>
+                        {formatCurrency(totalDespesa)}
+                      </p>
+                    </div>
+
+                    <div className={`p-4 rounded-2xl ${isDarkMode ? 'bg-[#0e4f6d]/40' : 'bg-[#0e4f6d]/10'}`}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Coins className={`w-5 h-5 ${isDarkMode ? 'text-cyan-400' : 'text-[#0e4f6d]'}`} />
+                        <p className={`text-sm font-medium ${isDarkMode ? 'text-cyan-400' : 'text-[#0e4f6d]'}`}>Lucro Liquido</p>
+                      </div>
+                      <p className={`text-2xl font-black ${isDarkMode ? 'text-cyan-300' : 'text-[#0e4f6d]'}`}>
+                        {formatCurrency(totalLucro)}
+                      </p>
+                      <p className={`text-xs mt-2 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                        Margem: {margemLucro}%
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <p className="text-3xl font-black">{margemLucro}%</p>
-                <p className="text-white/70 text-sm mt-1">Margem de Lucro</p>
               </div>
+            </section>
+
+            {/* Tabela Comparativo Mensal */}
+            <div className={`rounded-3xl shadow-sm overflow-hidden transition-all duration-500 delay-300 ${cardAnimation} ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+              <div className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
+                <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Detalhamento Mensal</h3>
+                <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Mes Referencia | Entradas | Saidas | Lucro Liquido</p>
+              </div>
+              {temDadosContabeis ? (
+                <TabelaComparativoMensal dados={dadosContabeisImportados?.analiseHorizontal} />
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className={isDarkMode ? 'bg-slate-700/50' : 'bg-slate-50'}>
+                      <tr>
+                        <th className={`px-6 py-4 text-left text-xs font-bold uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Mes</th>
+                        <th className={`px-6 py-4 text-right text-xs font-bold uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Entradas</th>
+                        <th className={`px-6 py-4 text-right text-xs font-bold uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Saidas</th>
+                        <th className={`px-6 py-4 text-right text-xs font-bold uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Saldo</th>
+                      </tr>
+                    </thead>
+                    <tbody className={`divide-y ${isDarkMode ? 'divide-slate-700' : 'divide-slate-100'}`}>
+                      {meses.map((mes, i) => (
+                        <tr key={mes} className={`transition-colors ${isDarkMode ? 'hover:bg-slate-700/30' : 'hover:bg-slate-50'}`}>
+                          <td className={`px-6 py-4 font-semibold ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{mes}/2025</td>
+                          <td className={`px-6 py-4 text-right ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}>{formatCurrency(entradasData[i])}</td>
+                          <td className={`px-6 py-4 text-right ${isDarkMode ? 'text-red-400' : 'text-red-500'}`}>{formatCurrency(saidasData[i])}</td>
+                          <td className={`px-6 py-4 text-right font-bold ${isDarkMode ? 'text-cyan-400' : 'text-[#0e4f6d]'}`}>
+                            {formatCurrency(entradasData[i] - saidasData[i])}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
 
-            {/* Grid: Comparativo DRE e Card Lateral */}
-            <div className={`grid grid-cols-1 lg:grid-cols-3 gap-6 transition-all duration-500 delay-200 ${cardAnimation}`}>
-              {/* Gráfico Comparativo */}
-              <div className="lg:col-span-2 bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-                <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-                  <div>
-                    <h3 className="text-xl font-bold text-slate-800">
-                      Receita vs Despesa
-                    </h3>
-                    <p className="text-sm text-slate-400">
-                      Evolução mensal comparativa
-                    </p>
-                  </div>
-                  <ButtonGroup
-                    options={[
-                      { value: 2024, label: '2024' },
-                      { value: 2025, label: '2025' }
-                    ]}
-                    activeValue={selectedYear}
-                    onChange={setSelectedYear}
-                  />
-                </div>
-                <DREChart data={dreData} />
-              </div>
-
-              {/* Card Lateral com métricas detalhadas */}
-              <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-                <h3 className="text-lg font-bold text-slate-800 mb-6 pb-4 border-b border-slate-100">
-                  Resumo do Exercício
-                </h3>
-
-                <div className="space-y-6">
-                  <div className="p-4 bg-green-50 rounded-2xl">
-                    <div className="flex items-center gap-2 mb-2">
-                      <ArrowUpRight className="w-5 h-5 text-green-600" />
-                      <p className="text-sm text-green-700 font-medium">Receita Anual</p>
-                    </div>
-                    <p className="text-2xl font-black text-green-700">
-                      {formatCurrency(totalReceita)}
-                    </p>
-                  </div>
-
-                  <div className="p-4 bg-red-50 rounded-2xl">
-                    <div className="flex items-center gap-2 mb-2">
-                      <ArrowDownRight className="w-5 h-5 text-red-600" />
-                      <p className="text-sm text-red-700 font-medium">Despesa Anual</p>
-                    </div>
-                    <p className="text-2xl font-black text-red-600">
-                      {formatCurrency(totalDespesa)}
-                    </p>
-                  </div>
-
-                  <div className="p-4 bg-[#0e4f6d]/10 rounded-2xl">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Coins className="w-5 h-5 text-[#0e4f6d]" />
-                      <p className="text-sm text-[#0e4f6d] font-medium">Lucro Líquido</p>
-                    </div>
-                    <p className="text-3xl font-black text-[#0e4f6d]">
-                      {formatCurrency(totalLucro)}
-                    </p>
-                    <p className="text-xs text-slate-400 mt-2">
-                      Margem: {margemLucro}%
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Gráficos de Pizza */}
-            <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 transition-all duration-500 delay-300 ${cardAnimation}`}>
-              <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-800">Grupos de Receitas</h3>
-                    <p className="text-sm text-slate-400">Por natureza de venda</p>
-                  </div>
-                  <div className="p-3 bg-green-50 rounded-xl">
-                    <PieChart className="w-6 h-6 text-green-600" />
-                  </div>
-                </div>
-                <ReceitaPizzaChart />
-              </div>
-
-              <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-800">Grupos de Custos</h3>
-                    <p className="text-sm text-slate-400">Por tipo de aquisição</p>
-                  </div>
-                  <div className="p-3 bg-red-50 rounded-xl">
-                    <PieChart className="w-6 h-6 text-red-600" />
-                  </div>
-                </div>
-                <CustosPizzaChart />
-              </div>
-            </div>
-
-            {/* Gráfico de Lucro Comparativo */}
-            <div className={`bg-white p-8 rounded-3xl border border-slate-100 shadow-sm transition-all duration-500 delay-400 ${cardAnimation}`}>
-              <div className="flex items-center justify-between mb-8">
+            {/* Gráfico de Variação Anual do Lucro */}
+            <div className={`p-6 rounded-3xl shadow-sm transition-all duration-500 delay-400 ${cardAnimation} ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+              <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h3 className="text-xl font-bold text-slate-800">Variação do Lucro Líquido</h3>
-                  <p className="text-sm text-slate-400">Comparativo 2024 vs 2025</p>
-                </div>
-                <div className="p-3 bg-green-50 rounded-xl">
-                  <TrendingUp className="w-6 h-6 text-green-600" />
-                </div>
-              </div>
-              <LucroComparativoChart />
-            </div>
-
-            {/* Gráfico de Movimentação */}
-            <div className={`bg-white p-8 rounded-3xl border border-slate-100 shadow-sm transition-all duration-500 delay-500 ${cardAnimation}`}>
-              <div className="flex items-center justify-between mb-8">
-                <div>
-                  <h3 className="text-xl font-bold text-slate-800">Movimentação Financeira</h3>
-                  <p className="text-sm text-slate-400">Fluxo anual de entradas e saídas</p>
+                  <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Variacao Anual do Lucro</h3>
+                  <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Comparativo 2024 vs 2025</p>
                 </div>
                 <div className="flex items-center gap-4">
-                  <span className="flex items-center gap-2 text-sm text-slate-500">
-                    <div className="w-3 h-3 rounded-full bg-[#0e4f6d]" /> Entradas
+                  <span className={`flex items-center gap-2 text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                    <div className="w-3 h-3 rounded-full bg-[#0e4f6d]" /> 2025
                   </span>
-                  <span className="flex items-center gap-2 text-sm text-slate-500">
-                    <div className="w-3 h-3 rounded-full bg-[#58a3a4]" /> Saídas
+                  <span className={`flex items-center gap-2 text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                    <div className="w-3 h-3 rounded-full bg-[#58a3a4] border-2 border-dashed border-[#58a3a4]" /> 2024
                   </span>
                 </div>
               </div>
-              <MovimentacaoChart />
+              {temDadosContabeis ? (
+                <VariacaoLucroChart
+                  dadosAtual={dadosContabeisImportados?.analiseHorizontal}
+                  dadosAnterior={null}
+                />
+              ) : (
+                <LucroComparativoChart />
+              )}
             </div>
 
-            {/* Tabela de Dados */}
-            <div className={`bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden transition-all duration-500 delay-600 ${cardAnimation}`}>
-              <div className="p-6 border-b border-slate-100">
-                <h3 className="text-lg font-bold text-slate-800">Detalhamento Mensal</h3>
-                <p className="text-sm text-slate-400">Movimentação mês a mês</p>
+            {/* Seção 2: Movimentações e Aplicações */}
+            <section className={`transition-all duration-500 delay-500 ${cardAnimation}`}>
+              <div className="flex items-center gap-3 mb-6">
+                <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-blue-900/50' : 'bg-blue-100'}`}>
+                  <Wallet className={`w-5 h-5 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
+                </div>
+                <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                  Movimentacoes e Aplicacoes
+                </h2>
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-slate-50">
-                    <tr>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Mês</th>
-                      <th className="px-6 py-4 text-right text-xs font-bold text-slate-400 uppercase">Entradas</th>
-                      <th className="px-6 py-4 text-right text-xs font-bold text-slate-400 uppercase">Saídas</th>
-                      <th className="px-6 py-4 text-right text-xs font-bold text-slate-400 uppercase">Saldo</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {meses.map((mes, i) => (
-                      <tr key={mes} className="hover:bg-slate-50 transition-colors">
-                        <td className="px-6 py-4 font-semibold text-slate-700">{mes}/2025</td>
-                        <td className="px-6 py-4 text-right text-slate-600">{formatCurrency(entradasData[i])}</td>
-                        <td className="px-6 py-4 text-right text-red-500">{formatCurrency(saidasData[i])}</td>
-                        <td className="px-6 py-4 text-right font-bold text-[#0e4f6d]">
-                          {formatCurrency(entradasData[i] - saidasData[i])}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Gráfico de Receita x Custo x Estoque */}
+                <div className={`p-6 rounded-3xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Receita x Custo x Estoque</h3>
+                      <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Ultimos 12 meses</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className={`flex items-center gap-1 text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                        <div className="w-2 h-2 rounded-full bg-emerald-500" /> Receita
+                      </span>
+                      <span className={`flex items-center gap-1 text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                        <div className="w-2 h-2 rounded-full bg-red-500" /> Custo
+                      </span>
+                      <span className={`flex items-center gap-1 text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                        <div className="w-2 h-2 rounded-full bg-blue-500" /> Estoque
+                      </span>
+                    </div>
+                  </div>
+                  {temDadosContabeis ? (
+                    <ReceitaCustoEstoqueChart dados={dadosContabeisImportados?.balancetesConsolidados} />
+                  ) : (
+                    <MovimentacaoChart />
+                  )}
+                </div>
+
+                {/* Gráfico de Movimentação Bancária */}
+                <div className={`p-6 rounded-3xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Movimentacao Bancaria</h3>
+                      <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Saldo em Bancos Conta Movimento</p>
+                    </div>
+                    <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-[#0e4f6d]/30' : 'bg-[#0e4f6d]/10'}`}>
+                      <Banknote className={`w-5 h-5 ${isDarkMode ? 'text-cyan-400' : 'text-[#0e4f6d]'}`} />
+                    </div>
+                  </div>
+                  {temDadosContabeis ? (
+                    <MovimentacaoBancariaChart dados={dadosContabeisImportados?.balancetesConsolidados} />
+                  ) : (
+                    <div className="h-[300px] flex items-center justify-center">
+                      <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Importe Balancetes para visualizar</p>
+                    </div>
+                  )}
+                </div>
               </div>
+            </section>
+
+            {/* Gráfico de Aplicações Financeiras */}
+            <div className={`p-6 rounded-3xl shadow-sm transition-all duration-500 delay-600 ${cardAnimation} ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Aplicacoes Financeiras</h3>
+                  <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Aplicacoes Financeiras de Liquidez Imediata</p>
+                </div>
+                <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-[#58a3a4]/30' : 'bg-[#58a3a4]/10'}`}>
+                  <TrendingUp className={`w-5 h-5 ${isDarkMode ? 'text-teal-400' : 'text-[#58a3a4]'}`} />
+                </div>
+              </div>
+              {temDadosContabeis ? (
+                <AplicacoesFinanceirasChart dados={dadosContabeisImportados?.balancetesConsolidados} />
+              ) : (
+                <div className="h-[300px] flex items-center justify-center">
+                  <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Importe Balancetes para visualizar</p>
+                </div>
+              )}
             </div>
 
             {/* Card de análise */}
@@ -651,12 +746,21 @@ const Dashboard = () => {
                   <Award className="w-8 h-8" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold mb-3">Análise de Performance 2025</h3>
+                  <h3 className="text-xl font-bold mb-3">Analise de Performance 2025</h3>
                   <p className="text-white/80 leading-relaxed">
-                    O exercício de 2025 demonstra crescimento exponencial de receita com estabilidade
-                    nos primeiros trimestres e salto significativo a partir de Julho. Destaque para
-                    <strong> Setembro</strong> com entradas superiores a <strong>R$ 10,6 milhões</strong>.
-                    O controle de saídas permanece estável, ampliando a margem líquida no segundo semestre.
+                    {temDadosContabeis ? (
+                      <>
+                        Dados importados do Sistema Dominio. Os relatorios mostram a evolucao financeira
+                        da empresa ao longo do exercicio, permitindo acompanhar receitas, despesas,
+                        movimentacao bancaria e aplicacoes financeiras mes a mes.
+                      </>
+                    ) : (
+                      <>
+                        O exercicio de 2025 demonstra crescimento de receita com estabilidade
+                        nos primeiros trimestres. Para visualizar dados reais, importe os relatorios
+                        do Sistema Dominio (Balancete, Analise Horizontal, DRE) na area de Configuracoes.
+                      </>
+                    )}
                   </p>
                 </div>
               </div>

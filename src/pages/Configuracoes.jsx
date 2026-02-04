@@ -18,10 +18,10 @@ const SETORES_CONFIG = {
     icon: Calculator,
     cor: 'emerald',
     relatorios: [
-      { id: 'dre', nome: 'DRE - Demonstrativo de Resultados', campos: ['conta', 'descricao', 'jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'] },
-      { id: 'balancete', nome: 'Balancete', campos: ['conta', 'descricao', 'saldoAnterior', 'debito', 'credito', 'saldoAtual'] },
-      { id: 'fluxoCaixa', nome: 'Fluxo de Caixa', campos: ['data', 'descricao', 'tipo', 'valor', 'saldo'] },
-      { id: 'razao', nome: 'Razao Contabil', campos: ['conta', 'data', 'historico', 'debito', 'credito', 'saldo'] }
+      { id: 'balancete', nome: 'Balancete Mensal', descricao: 'Exportar do Dominio: Relatorios > Contabil > Balancete', formato: 'dominio' },
+      { id: 'analiseHorizontal', nome: 'Analise Horizontal (DRE)', descricao: 'Exportar do Dominio: Relatorios > Contabil > Analise Horizontal do DRE', formato: 'dominio' },
+      { id: 'dreComparativa', nome: 'DRE Comparativa', descricao: 'Exportar do Dominio: Relatorios > Contabil > DRE Comparativa (Anual)', formato: 'dominio' },
+      { id: 'dreMensal', nome: 'DRE Mensal', descricao: 'Exportar do Dominio: Relatorios > Contabil > DRE do Periodo', formato: 'dominio' }
     ]
   },
   fiscal: {
@@ -69,7 +69,7 @@ const Configuracoes = () => {
   const {
     grupos, cnpjs, usuarios, addGrupo, updateGrupo, deleteGrupo,
     addCnpj, updateCnpj, deleteCnpj, addUsuario, updateUsuario, deleteUsuario,
-    getCnpjsByGrupo, getStats, setoresDisponiveis
+    getCnpjsByGrupo, getStats, setoresDisponiveis, importarRelatorioContabil
   } = useData();
 
   // Estados principais
@@ -217,33 +217,58 @@ const Configuracoes = () => {
     const reader = new FileReader();
     reader.onload = (event) => {
       const text = event.target.result;
-      const lines = text.split('\n').filter(line => line.trim());
-      const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-      const data = lines.slice(1).map(line => {
-        const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
-        const obj = {};
-        headers.forEach((h, i) => obj[h] = values[i] || '');
-        return obj;
-      });
 
-      // Auto-mapping
-      const mapping = {};
-      const expectedCampos = importCategory === 'setores' && importRelatorio
-        ? SETORES_CONFIG[importSetor]?.relatorios.find(r => r.id === importRelatorio)?.campos || []
-        : [];
+      // Verificar se e formato Dominio (setor contabil) ou CSV normal
+      const isContabilDominio = importCategory === 'setores' && importSetor === 'contabil';
 
-      headers.forEach(h => {
-        const lowerH = h.toLowerCase();
-        expectedCampos.forEach(campo => {
-          if (lowerH.includes(campo.toLowerCase()) || campo.toLowerCase().includes(lowerH)) {
-            mapping[campo] = h;
-          }
+      if (isContabilDominio) {
+        // Para relatorios do Dominio, armazenar o conteudo bruto
+        // O parser sera aplicado na confirmacao
+        const lines = text.split('\n').filter(line => line.trim());
+        const previewLines = lines.slice(0, 15).map(line => {
+          const cols = line.split(';').map(c => c.trim().substring(0, 50));
+          return cols;
         });
-      });
 
-      setImportPreview({ headers, data, file: file.name, totalRows: data.length });
-      setImportMapping(mapping);
-      setImportStep(3);
+        setImportPreview({
+          headers: ['Conteudo do arquivo (primeiras colunas)'],
+          data: previewLines.map((cols, i) => ({ linha: i + 1, conteudo: cols.slice(0, 5).join(' | ') })),
+          file: file.name,
+          totalRows: lines.length,
+          rawContent: text,
+          isDominioFormat: true
+        });
+        setImportStep(3);
+      } else {
+        // Formato CSV padrao (virgula)
+        const lines = text.split('\n').filter(line => line.trim());
+        const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+        const data = lines.slice(1).map(line => {
+          const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
+          const obj = {};
+          headers.forEach((h, i) => obj[h] = values[i] || '');
+          return obj;
+        });
+
+        // Auto-mapping
+        const mapping = {};
+        const expectedCampos = importCategory === 'setores' && importRelatorio
+          ? SETORES_CONFIG[importSetor]?.relatorios.find(r => r.id === importRelatorio)?.campos || []
+          : [];
+
+        headers.forEach(h => {
+          const lowerH = h.toLowerCase();
+          expectedCampos.forEach(campo => {
+            if (lowerH.includes(campo.toLowerCase()) || campo.toLowerCase().includes(lowerH)) {
+              mapping[campo] = h;
+            }
+          });
+        });
+
+        setImportPreview({ headers, data, file: file.name, totalRows: data.length });
+        setImportMapping(mapping);
+        setImportStep(3);
+      }
     };
     reader.readAsText(file);
   };
@@ -252,6 +277,8 @@ const Configuracoes = () => {
     if (!importPreview) return;
 
     let count = 0;
+    let errorMsg = null;
+
     if (importCategory === 'cadastros') {
       if (importType === 'grupos') {
         importPreview.data.forEach(row => {
@@ -273,8 +300,18 @@ const Configuracoes = () => {
           }
         });
       }
+    } else if (importCategory === 'setores' && importSetor === 'contabil' && importPreview.isDominioFormat) {
+      // Usar parser especifico do Dominio para setor contabil
+      const result = importarRelatorioContabil(selectedCnpjImport, importRelatorio, importPreview.rawContent);
+
+      if (result.success) {
+        count = 1;
+        showSuccess(`Relatorio ${SETORES_CONFIG.contabil.relatorios.find(r => r.id === importRelatorio)?.nome} importado com sucesso!`);
+      } else {
+        errorMsg = result.error || 'Erro ao processar arquivo';
+      }
     } else {
-      // Para dados de setores, salvamos no localStorage por enquanto (futuro: Firebase)
+      // Para outros setores, salvamos no localStorage por enquanto (futuro: Firebase)
       const storageKey = `agili_import_${importSetor}_${importRelatorio}_${selectedCnpjImport}`;
       const existingData = JSON.parse(localStorage.getItem(storageKey) || '[]');
       const newData = [...existingData, ...importPreview.data];
@@ -282,8 +319,12 @@ const Configuracoes = () => {
       count = importPreview.data.length;
     }
 
-    showSuccess(`${count} registro(s) importado(s) com sucesso!`);
-    setImportStep(4);
+    if (errorMsg) {
+      showSuccess(`Erro: ${errorMsg}`);
+    } else if (count > 0) {
+      showSuccess(`${count} registro(s) importado(s) com sucesso!`);
+      setImportStep(4);
+    }
   };
 
   const downloadTemplate = () => {
