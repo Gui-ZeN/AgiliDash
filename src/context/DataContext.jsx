@@ -1,0 +1,201 @@
+import { createContext, useContext, useState, useEffect } from 'react';
+
+const DataContext = createContext();
+
+// Dados iniciais
+const initialGrupos = [
+  { id: 'grupo_001', nome: 'Grupo EJP', descricao: 'Holding principal', status: 'Ativo', criadoEm: '2024-01-15' }
+];
+
+const initialCnpjs = [
+  {
+    id: 'cnpj_001',
+    grupoId: 'grupo_001',
+    cnpj: '12.345.678/0001-90',
+    razaoSocial: 'EJP Comercio e Servicos Ltda',
+    nomeFantasia: 'EJP Matriz',
+    tipo: 'Matriz',
+    regimeTributario: 'Lucro Real',
+    cidade: 'Sao Paulo',
+    estado: 'SP',
+    status: 'Ativo'
+  }
+];
+
+const initialUsuarios = [
+  {
+    id: 'user_001',
+    nome: 'Administrador',
+    email: 'admin@agili.com.br',
+    perfil: 'Admin',
+    grupoId: 'grupo_001',
+    setoresAcesso: ['contabil', 'fiscal', 'pessoal', 'administrativo'],
+    status: 'Ativo',
+    criadoEm: '2024-01-15'
+  }
+];
+
+export const DataProvider = ({ children }) => {
+  // Estado para Grupos
+  const [grupos, setGrupos] = useState(() => {
+    const saved = localStorage.getItem('agili_grupos');
+    return saved ? JSON.parse(saved) : initialGrupos;
+  });
+
+  // Estado para CNPJs
+  const [cnpjs, setCnpjs] = useState(() => {
+    const saved = localStorage.getItem('agili_cnpjs');
+    return saved ? JSON.parse(saved) : initialCnpjs;
+  });
+
+  // Estado para Usuarios
+  const [usuarios, setUsuarios] = useState(() => {
+    const saved = localStorage.getItem('agili_usuarios');
+    return saved ? JSON.parse(saved) : initialUsuarios;
+  });
+
+  // Persistir no localStorage
+  useEffect(() => {
+    localStorage.setItem('agili_grupos', JSON.stringify(grupos));
+  }, [grupos]);
+
+  useEffect(() => {
+    localStorage.setItem('agili_cnpjs', JSON.stringify(cnpjs));
+  }, [cnpjs]);
+
+  useEffect(() => {
+    localStorage.setItem('agili_usuarios', JSON.stringify(usuarios));
+  }, [usuarios]);
+
+  // ===== CRUD GRUPOS =====
+  const addGrupo = (grupo) => {
+    const newGrupo = {
+      ...grupo,
+      id: `grupo_${Date.now()}`,
+      status: 'Ativo',
+      criadoEm: new Date().toISOString().split('T')[0]
+    };
+    setGrupos(prev => [...prev, newGrupo]);
+    return newGrupo;
+  };
+
+  const updateGrupo = (id, data) => {
+    setGrupos(prev => prev.map(g => g.id === id ? { ...g, ...data } : g));
+  };
+
+  const deleteGrupo = (id) => {
+    // Excluir CNPJs do grupo
+    setCnpjs(prev => prev.filter(c => c.grupoId !== id));
+    // Excluir usuarios do grupo
+    setUsuarios(prev => prev.filter(u => u.grupoId !== id));
+    // Excluir grupo
+    setGrupos(prev => prev.filter(g => g.id !== id));
+  };
+
+  // ===== CRUD CNPJs =====
+  const addCnpj = (cnpj) => {
+    const newCnpj = {
+      ...cnpj,
+      id: `cnpj_${Date.now()}`,
+      status: 'Ativo'
+    };
+    setCnpjs(prev => [...prev, newCnpj]);
+    return newCnpj;
+  };
+
+  const updateCnpj = (id, data) => {
+    setCnpjs(prev => prev.map(c => c.id === id ? { ...c, ...data } : c));
+  };
+
+  const deleteCnpj = (id) => {
+    setCnpjs(prev => prev.filter(c => c.id !== id));
+  };
+
+  const getCnpjsByGrupo = (grupoId) => {
+    return cnpjs.filter(c => c.grupoId === grupoId);
+  };
+
+  // ===== CRUD USUARIOS =====
+  const addUsuario = (usuario) => {
+    const newUsuario = {
+      ...usuario,
+      id: `user_${Date.now()}`,
+      status: 'Ativo',
+      criadoEm: new Date().toISOString().split('T')[0]
+    };
+    setUsuarios(prev => [...prev, newUsuario]);
+    return newUsuario;
+  };
+
+  const updateUsuario = (id, data) => {
+    setUsuarios(prev => prev.map(u => u.id === id ? { ...u, ...data } : u));
+  };
+
+  const deleteUsuario = (id) => {
+    setUsuarios(prev => prev.filter(u => u.id !== id));
+  };
+
+  const getUsuariosByGrupo = (grupoId) => {
+    return usuarios.filter(u => u.grupoId === grupoId);
+  };
+
+  // ===== ESTATISTICAS =====
+  const getStats = () => ({
+    totalGrupos: grupos.length,
+    totalCnpjs: cnpjs.length,
+    totalUsuarios: usuarios.length,
+    gruposAtivos: grupos.filter(g => g.status === 'Ativo').length,
+    cnpjsAtivos: cnpjs.filter(c => c.status === 'Ativo').length,
+    usuariosAtivos: usuarios.filter(u => u.status === 'Ativo').length
+  });
+
+  // Setores disponiveis
+  const setoresDisponiveis = [
+    { id: 'contabil', nome: 'Contabil', descricao: 'Acesso ao setor contabil' },
+    { id: 'fiscal', nome: 'Fiscal', descricao: 'Acesso ao setor fiscal' },
+    { id: 'pessoal', nome: 'Pessoal', descricao: 'Acesso ao setor de pessoal/RH' },
+    { id: 'administrativo', nome: 'Administrativo', descricao: 'Acesso ao setor administrativo' }
+  ];
+
+  const value = {
+    // Grupos
+    grupos,
+    addGrupo,
+    updateGrupo,
+    deleteGrupo,
+
+    // CNPJs
+    cnpjs,
+    addCnpj,
+    updateCnpj,
+    deleteCnpj,
+    getCnpjsByGrupo,
+
+    // Usuarios
+    usuarios,
+    addUsuario,
+    updateUsuario,
+    deleteUsuario,
+    getUsuariosByGrupo,
+
+    // Utils
+    getStats,
+    setoresDisponiveis
+  };
+
+  return (
+    <DataContext.Provider value={value}>
+      {children}
+    </DataContext.Provider>
+  );
+};
+
+export const useData = () => {
+  const context = useContext(DataContext);
+  if (!context) {
+    throw new Error('useData deve ser usado dentro de DataProvider');
+  }
+  return context;
+};
+
+export default DataContext;

@@ -109,7 +109,7 @@ const Logs = () => {
         <div className="w-full px-4 lg:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link
-              to="/admin"
+              to="/configuracoes"
               className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
             >
               <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />

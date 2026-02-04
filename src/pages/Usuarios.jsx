@@ -2,31 +2,36 @@ import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowLeft, Users, Plus, Search, Edit2, Trash2, Shield, Eye,
-  Check, X, Mail, Phone, Building2, ChevronDown, Filter, MoreVertical
+  Check, X, Mail, Phone, Building2, FolderTree
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
-import { useEmpresa } from '../context/EmpresaContext';
-import { usuariosMock, perfisUsuario, setoresDisponiveis } from '../data/mockData';
-import { logActivity, ActivityTypes, ActivityCategories } from '../utils/activityLog';
+import { useData } from '../context/DataContext';
 
 /**
- * Página de Gestão de Usuários
- * Permite cadastrar, editar e gerenciar permissões de usuários
+ * Pagina de Gestao de Usuarios
+ * Permite cadastrar, editar e gerenciar permissoes de usuarios
  */
 const Usuarios = () => {
   const { isDarkMode } = useTheme();
-  const { todosGrupos, todasEmpresas } = useEmpresa();
+  const {
+    usuarios,
+    grupos,
+    addUsuario,
+    updateUsuario,
+    deleteUsuario,
+    setoresDisponiveis
+  } = useData();
 
-  const [usuarios, setUsuarios] = useState(usuariosMock);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPerfil, setFilterPerfil] = useState('todos');
   const [filterStatus, setFilterStatus] = useState('todos');
 
   // Modal states
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalMode, setModalMode] = useState('create'); // 'create' | 'edit'
+  const [modalMode, setModalMode] = useState('create');
   const [selectedUser, setSelectedUser] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [successMessage, setSuccessMessage] = useState('');
 
   // Form state
   const [formData, setFormData] = useState({
@@ -35,10 +40,21 @@ const Usuarios = () => {
     telefone: '',
     perfil: 'Visualizador',
     status: 'Ativo',
-    setoresAcesso: [],
-    gruposAcesso: [],
-    empresasAcesso: []
+    grupoId: '',
+    setoresAcesso: []
   });
+
+  // Perfis disponiveis
+  const perfisUsuario = [
+    { value: 'Admin', label: 'Administrador', descricao: 'Acesso total ao sistema' },
+    { value: 'Visualizador', label: 'Visualizador', descricao: 'Apenas visualizacao de dados' }
+  ];
+
+  // Mostrar mensagem de sucesso
+  const showSuccess = (message) => {
+    setSuccessMessage(message);
+    setTimeout(() => setSuccessMessage(''), 3000);
+  };
 
   // Filtered users
   const filteredUsers = useMemo(() => {
@@ -61,9 +77,8 @@ const Usuarios = () => {
         telefone: user.telefone || '',
         perfil: user.perfil,
         status: user.status,
-        setoresAcesso: user.setoresAcesso || [],
-        gruposAcesso: user.gruposAcesso || [],
-        empresasAcesso: user.empresasAcesso || []
+        grupoId: user.grupoId || '',
+        setoresAcesso: user.setoresAcesso || []
       });
     } else {
       setSelectedUser(null);
@@ -73,71 +88,44 @@ const Usuarios = () => {
         telefone: '',
         perfil: 'Visualizador',
         status: 'Ativo',
-        setoresAcesso: [],
-        gruposAcesso: [],
-        empresasAcesso: []
+        grupoId: grupos[0]?.id || '',
+        setoresAcesso: []
       });
     }
     setModalOpen(true);
   };
 
   const handleSave = () => {
+    if (!formData.nome.trim() || !formData.email.trim()) return;
+
     if (modalMode === 'create') {
-      const newUser = {
-        id: Date.now(),
-        ...formData,
-        avatar: formData.nome.substring(0, 2).toUpperCase(),
-        dataCadastro: new Date().toISOString()
-      };
-      setUsuarios([...usuarios, newUser]);
-      logActivity({
-        type: ActivityTypes.CREATE,
-        category: ActivityCategories.CONFIG,
-        description: `Usuario criado: ${formData.nome}`,
-        metadata: { userId: newUser.id }
-      });
+      addUsuario(formData);
+      showSuccess('Usuario criado com sucesso!');
     } else {
-      setUsuarios(usuarios.map(u =>
-        u.id === selectedUser.id ? { ...u, ...formData } : u
-      ));
-      logActivity({
-        type: ActivityTypes.UPDATE,
-        category: ActivityCategories.CONFIG,
-        description: `Usuario atualizado: ${formData.nome}`,
-        metadata: { userId: selectedUser.id }
-      });
+      updateUsuario(selectedUser.id, formData);
+      showSuccess('Usuario atualizado com sucesso!');
     }
     setModalOpen(false);
   };
 
   const handleDelete = (userId) => {
-    const user = usuarios.find(u => u.id === userId);
-    setUsuarios(usuarios.filter(u => u.id !== userId));
+    deleteUsuario(userId);
     setDeleteConfirm(null);
-    logActivity({
-      type: ActivityTypes.DELETE,
-      category: ActivityCategories.CONFIG,
-      description: `Usuario removido: ${user?.nome}`,
-      metadata: { userId }
-    });
+    showSuccess('Usuario removido com sucesso!');
   };
 
-  const toggleSetor = (setor) => {
+  const toggleSetor = (setorId) => {
     setFormData(prev => ({
       ...prev,
-      setoresAcesso: prev.setoresAcesso.includes(setor)
-        ? prev.setoresAcesso.filter(s => s !== setor)
-        : [...prev.setoresAcesso, setor]
+      setoresAcesso: prev.setoresAcesso.includes(setorId)
+        ? prev.setoresAcesso.filter(s => s !== setorId)
+        : [...prev.setoresAcesso, setorId]
     }));
   };
 
-  const toggleGrupo = (grupoId) => {
-    setFormData(prev => ({
-      ...prev,
-      gruposAcesso: prev.gruposAcesso.includes(grupoId)
-        ? prev.gruposAcesso.filter(g => g !== grupoId)
-        : [...prev.gruposAcesso, grupoId]
-    }));
+  const getGrupoNome = (grupoId) => {
+    const grupo = grupos.find(g => g.id === grupoId);
+    return grupo?.nome || 'Sem grupo';
   };
 
   return (
@@ -147,7 +135,7 @@ const Usuarios = () => {
         <div className="w-full px-4 lg:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link
-              to="/admin"
+              to="/configuracoes"
               className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
             >
               <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
@@ -172,6 +160,14 @@ const Usuarios = () => {
           </button>
         </div>
       </header>
+
+      {/* Mensagem de sucesso */}
+      {successMessage && (
+        <div className="fixed top-20 right-4 z-50 bg-emerald-500 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2 animate-pulse">
+          <Check className="w-5 h-5" />
+          {successMessage}
+        </div>
+      )}
 
       <main className="w-full px-4 lg:px-6 py-6">
         {/* Stats Cards */}
@@ -237,6 +233,7 @@ const Usuarios = () => {
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Usuario</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Contato</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Grupo</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Perfil</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Setores</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Status</th>
@@ -249,7 +246,7 @@ const Usuarios = () => {
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#0e4f6d] to-[#58a3a4] flex items-center justify-center text-white font-bold">
-                          {user.avatar || user.nome.substring(0, 2).toUpperCase()}
+                          {user.nome.substring(0, 2).toUpperCase()}
                         </div>
                         <div>
                           <p className="font-semibold text-slate-800 dark:text-white">{user.nome}</p>
@@ -269,6 +266,12 @@ const Usuarios = () => {
                             {user.telefone}
                           </div>
                         )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-2">
+                        <FolderTree className="w-4 h-4 text-amber-500" />
+                        <span className="text-sm text-slate-600 dark:text-slate-300">{getGrupoNome(user.grupoId)}</span>
                       </div>
                     </td>
                     <td className="px-4 py-4">
@@ -295,6 +298,9 @@ const Usuarios = () => {
                           <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 rounded text-xs">
                             +{user.setoresAcesso.length - 3}
                           </span>
+                        )}
+                        {(user.setoresAcesso || []).length === 0 && (
+                          <span className="text-xs text-slate-400">Nenhum</span>
                         )}
                       </div>
                     </td>
@@ -345,13 +351,21 @@ const Usuarios = () => {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-slate-100 dark:border-slate-700">
-              <h2 className="text-xl font-bold text-slate-800 dark:text-white">
-                {modalMode === 'create' ? 'Novo Usuario' : 'Editar Usuario'}
-              </h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-slate-800 dark:text-white">
+                  {modalMode === 'create' ? 'Novo Usuario' : 'Editar Usuario'}
+                </h2>
+                <button
+                  onClick={() => setModalOpen(false)}
+                  className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                >
+                  <X className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+                </button>
+              </div>
             </div>
 
             <div className="p-6 space-y-6">
-              {/* Dados básicos */}
+              {/* Dados basicos */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nome *</label>
@@ -396,6 +410,21 @@ const Usuarios = () => {
                 </div>
               </div>
 
+              {/* Grupo */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">Grupo</label>
+                <select
+                  value={formData.grupoId}
+                  onChange={(e) => setFormData({ ...formData, grupoId: e.target.value })}
+                  className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200"
+                >
+                  <option value="">Selecione um grupo...</option>
+                  {grupos.map(grupo => (
+                    <option key={grupo.id} value={grupo.id}>{grupo.nome}</option>
+                  ))}
+                </select>
+              </div>
+
               {/* Perfil */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">Perfil de Acesso</label>
@@ -432,43 +461,21 @@ const Usuarios = () => {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {setoresDisponiveis.map(setor => (
                     <button
-                      key={setor.value}
-                      onClick={() => toggleSetor(setor.value)}
+                      key={setor.id}
+                      onClick={() => toggleSetor(setor.id)}
                       className={`p-3 rounded-lg border text-center transition-colors ${
-                        formData.setoresAcesso.includes(setor.value)
+                        formData.setoresAcesso.includes(setor.id)
                           ? 'border-[#0e4f6d] bg-[#0e4f6d] text-white'
                           : 'border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:border-[#0e4f6d]'
                       }`}
                     >
-                      <span className="text-sm font-medium">{setor.label}</span>
+                      <span className="text-sm font-medium">{setor.nome}</span>
                     </button>
                   ))}
                 </div>
-              </div>
-
-              {/* Grupos */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">Grupos com Acesso</label>
-                <div className="grid grid-cols-2 gap-3">
-                  {todosGrupos.map(grupo => (
-                    <button
-                      key={grupo.id}
-                      onClick={() => toggleGrupo(grupo.id)}
-                      className={`p-3 rounded-lg border text-left transition-colors ${
-                        formData.gruposAcesso.includes(grupo.id)
-                          ? 'border-[#0e4f6d] bg-[#0e4f6d]/5 dark:bg-[#0e4f6d]/20'
-                          : 'border-slate-200 dark:border-slate-600 hover:border-slate-300'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <Building2 className={`w-4 h-4 ${formData.gruposAcesso.includes(grupo.id) ? 'text-[#0e4f6d]' : 'text-slate-400'}`} />
-                        <span className={`font-medium ${formData.gruposAcesso.includes(grupo.id) ? 'text-[#0e4f6d] dark:text-cyan-400' : 'text-slate-700 dark:text-slate-300'}`}>
-                          {grupo.nome}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                  Selecione quais setores este usuario podera visualizar
+                </p>
               </div>
             </div>
 
