@@ -226,19 +226,20 @@ const Configuracoes = () => {
         // O parser sera aplicado na confirmacao
         const lines = text.split('\n').filter(line => line.trim());
 
-        // Melhor preview para formato Domínio - mostrar primeiras colunas estruturadas
-        const previewData = lines.slice(0, 15).map((line, i) => {
+        // Preview completo para formato Domínio - mostrar TODAS as linhas estruturadas
+        const previewData = lines.map((line, i) => {
           const cols = line.split(';').map(c => c.trim());
           return {
             '#': i + 1,
-            'Codigo': cols[0]?.substring(0, 15) || '-',
-            'Descricao': cols[1]?.substring(0, 40) || '-',
-            'Valor/Info': cols[2]?.substring(0, 20) || cols[3]?.substring(0, 20) || '-'
+            'Codigo': cols[0]?.substring(0, 20) || '-',
+            'Descricao': cols[1]?.substring(0, 50) || '-',
+            'Valor 1': cols[2]?.substring(0, 20) || '-',
+            'Valor 2': cols[3]?.substring(0, 20) || '-'
           };
         });
 
         setImportPreview({
-          headers: ['#', 'Codigo', 'Descricao', 'Valor/Info'],
+          headers: ['#', 'Codigo', 'Descricao', 'Valor 1', 'Valor 2'],
           data: previewData,
           file: file.name,
           totalRows: lines.length,
@@ -353,8 +354,15 @@ const Configuracoes = () => {
     } else if (importSetor && importRelatorio) {
       const relatorio = SETORES_CONFIG[importSetor]?.relatorios.find(r => r.id === importRelatorio);
       if (relatorio) {
-        content = relatorio.campos.join(',') + '\n' + relatorio.campos.map(() => 'exemplo').join(',');
-        filename = `template_${importSetor}_${importRelatorio}.csv`;
+        // Formato Domínio não precisa de template - é exportado do sistema
+        if (relatorio.formato === 'dominio') {
+          showSuccess('Para este relatório, exporte diretamente do Sistema Domínio. Não há template para download.');
+          return;
+        }
+        if (relatorio.campos) {
+          content = relatorio.campos.join(',') + '\n' + relatorio.campos.map(() => 'exemplo').join(',');
+          filename = `template_${importSetor}_${importRelatorio}.csv`;
+        }
       }
     }
 
@@ -677,7 +685,10 @@ const Configuracoes = () => {
                               <button key={rel.id} onClick={() => setImportRelatorio(rel.id)}
                                 className={`p-4 rounded-lg border-2 text-left transition-all ${importRelatorio === rel.id ? 'border-[#0e4f6d] bg-[#0e4f6d]/5' : 'border-slate-200 hover:border-slate-300'}`}>
                                 <p className={`font-medium ${importRelatorio === rel.id ? 'text-[#0e4f6d]' : 'text-slate-700 dark:text-slate-300'}`}>{rel.nome}</p>
-                                <p className="text-xs text-slate-500 mt-1">{rel.campos.length} campos</p>
+                                <p className="text-xs text-slate-500 mt-1">
+                                  {rel.formato === 'dominio' ? 'Formato Domínio' : `${rel.campos?.length || 0} campos`}
+                                </p>
+                                {rel.descricao && <p className="text-xs text-slate-400 mt-1 truncate">{rel.descricao}</p>}
                               </button>
                             ))}
                           </div>
@@ -773,34 +784,35 @@ const Configuracoes = () => {
 
                   {/* Preview da tabela */}
                   <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden mb-6">
-                    <div className="p-4 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
+                    <div className="p-4 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
                       <h3 className="font-semibold text-slate-800 dark:text-white">
-                        Preview dos dados (primeiras {Math.min(10, importPreview.data.length)} linhas)
+                        Preview dos dados ({importPreview.data.length} linhas)
                       </h3>
+                      <span className="text-xs text-slate-500 bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded">
+                        {importPreview.isDominioFormat ? 'Arquivo completo' : 'Amostra'}
+                      </span>
                     </div>
-                    <div className="overflow-x-auto max-h-80">
+                    <div className={`overflow-x-auto overflow-y-auto ${importPreview.isDominioFormat ? 'max-h-[500px]' : 'max-h-80'}`}>
                       <table className="w-full text-sm">
-                        <thead className="bg-slate-100 dark:bg-slate-800 sticky top-0">
+                        <thead className="bg-slate-100 dark:bg-slate-800 sticky top-0 z-10">
                           <tr>
-                            <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500 border-r border-slate-200 dark:border-slate-700">#</th>
                             {importPreview.headers.map((h, i) => (
-                              <th key={i} className="px-3 py-2 text-left text-xs font-semibold text-slate-500 whitespace-nowrap">{h}</th>
+                              <th key={i} className="px-3 py-2 text-left text-xs font-semibold text-slate-500 whitespace-nowrap border-b border-slate-200 dark:border-slate-700">{h}</th>
                             ))}
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                          {importPreview.data.slice(0, 10).map((row, i) => (
+                          {(importPreview.isDominioFormat ? importPreview.data : importPreview.data.slice(0, 10)).map((row, i) => (
                             <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-700/30">
-                              <td className="px-3 py-2 text-slate-400 border-r border-slate-200 dark:border-slate-700">{i + 1}</td>
                               {importPreview.headers.map((h, j) => (
-                                <td key={j} className="px-3 py-2 text-slate-700 dark:text-slate-300 whitespace-nowrap">{row[h] || <span className="text-slate-400">-</span>}</td>
+                                <td key={j} className="px-3 py-2 text-slate-700 dark:text-slate-300 whitespace-nowrap text-xs">{row[h] || <span className="text-slate-400">-</span>}</td>
                               ))}
                             </tr>
                           ))}
                         </tbody>
                       </table>
                     </div>
-                    {importPreview.totalRows > 10 && (
+                    {!importPreview.isDominioFormat && importPreview.totalRows > 10 && (
                       <div className="p-3 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-200 dark:border-slate-700 text-center">
                         <p className="text-sm text-slate-500">... e mais {importPreview.totalRows - 10} registro(s)</p>
                       </div>
