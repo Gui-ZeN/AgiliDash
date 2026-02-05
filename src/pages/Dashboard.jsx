@@ -128,10 +128,14 @@ const Dashboard = () => {
   }, [activeTab, cnpjInfo.id]);
 
   // Calcular totais do DRE
-  const totalReceita = sumArray(dreData.receita);
-  const totalDespesa = sumArray(dreData.despesa);
+  // Prioriza dados importados (Análise Horizontal) se disponíveis
+  const analiseHorizontal = dadosContabeisImportados?.analiseHorizontal;
+  const totalReceita = analiseHorizontal?.totais?.totalReceitas
+    || (analiseHorizontal?.receitasMensais ? analiseHorizontal.receitasMensais.reduce((a, b) => a + b, 0) : sumArray(dreData.receita));
+  const totalDespesa = analiseHorizontal?.totais?.totalDespesas
+    || (analiseHorizontal?.despesasMensais ? analiseHorizontal.despesasMensais.reduce((a, b) => a + b, 0) : sumArray(dreData.despesa));
   const totalLucro = totalReceita - totalDespesa;
-  const margemLucro = ((totalLucro / totalReceita) * 100).toFixed(1);
+  const margemLucro = totalReceita > 0 ? ((totalLucro / totalReceita) * 100).toFixed(1) : '0.0';
 
   // Comparação com ano anterior
   const totalReceita2024 = sumArray(dreData2024.receita);
