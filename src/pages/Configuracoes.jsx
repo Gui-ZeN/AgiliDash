@@ -105,6 +105,7 @@ const Configuracoes = () => {
   const [importPreview, setImportPreview] = useState(null);
   const [importMapping, setImportMapping] = useState({});
   const [selectedCnpjImport, setSelectedCnpjImport] = useState('');
+  const [selectedTrimestre, setSelectedTrimestre] = useState('1'); // Para CSLL/IRPJ
 
   // Helpers
   const toggleGrupo = (grupoId) => {
@@ -214,8 +215,12 @@ const Configuracoes = () => {
     setImportPreview(null);
     setImportMapping({});
     setSelectedCnpjImport('');
+    setSelectedTrimestre('1');
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
+
+  // Verificar se relatorio eh trimestral (CSLL ou IRPJ)
+  const isRelatorioTrimestral = importRelatorio === 'csll' || importRelatorio === 'irpj';
 
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
@@ -293,7 +298,8 @@ const Configuracoes = () => {
           tipoRelatorio: importRelatorio,
           setorRelatorio: importSetor,
           dadosParsed,
-          parseError
+          parseError,
+          trimestreSelecionado: (importRelatorio === 'csll' || importRelatorio === 'irpj') ? selectedTrimestre : null
         });
         setImportStep(3);
       } else {
@@ -364,13 +370,20 @@ const Configuracoes = () => {
       if (importSetor === 'contabil') {
         result = importarRelatorioContabil(selectedCnpjImport, importRelatorio, importPreview.rawContent);
       } else if (importSetor === 'fiscal') {
-        result = importarRelatorioFiscal(selectedCnpjImport, importRelatorio, importPreview.rawContent);
+        // Passar trimestre selecionado para CSLL e IRPJ
+        const opcoes = (importRelatorio === 'csll' || importRelatorio === 'irpj')
+          ? { trimestre: importPreview.trimestreSelecionado || selectedTrimestre }
+          : {};
+        result = importarRelatorioFiscal(selectedCnpjImport, importRelatorio, importPreview.rawContent, opcoes);
       }
 
       if (result?.success) {
         count = 1;
         const relatorioNome = SETORES_CONFIG[importSetor]?.relatorios.find(r => r.id === importRelatorio)?.nome || importRelatorio;
-        showSuccess(`Relatorio ${relatorioNome} importado com sucesso!`);
+        const trimestreMsg = (importRelatorio === 'csll' || importRelatorio === 'irpj')
+          ? ` (${selectedTrimestre}o Trimestre)`
+          : '';
+        showSuccess(`Relatorio ${relatorioNome}${trimestreMsg} importado com sucesso!`);
       } else {
         errorMsg = result?.error || 'Erro ao processar arquivo';
       }
@@ -787,6 +800,43 @@ const Configuracoes = () => {
                       <strong>Importando:</strong> {importCategory === 'cadastros' ? importType.charAt(0).toUpperCase() + importType.slice(1) : `${SETORES_CONFIG[importSetor]?.nome} - ${SETORES_CONFIG[importSetor]?.relatorios.find(r => r.id === importRelatorio)?.nome}`}
                     </p>
                   </div>
+
+                  {/* Seletor de Trimestre para CSLL e IRPJ */}
+                  {isRelatorioTrimestral && (
+                    <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl">
+                      <label className="block text-sm font-semibold text-blue-800 dark:text-blue-300 mb-3">
+                        Selecione o Trimestre do Relatorio
+                      </label>
+                      <div className="grid grid-cols-4 gap-3">
+                        {[
+                          { value: '1', label: '1o Tri', desc: 'Jan-Mar' },
+                          { value: '2', label: '2o Tri', desc: 'Abr-Jun' },
+                          { value: '3', label: '3o Tri', desc: 'Jul-Set' },
+                          { value: '4', label: '4o Tri', desc: 'Out-Dez' }
+                        ].map(tri => (
+                          <button
+                            key={tri.value}
+                            onClick={() => setSelectedTrimestre(tri.value)}
+                            className={`p-3 rounded-lg border-2 text-center transition-all ${
+                              selectedTrimestre === tri.value
+                                ? 'border-blue-500 bg-blue-100 dark:bg-blue-900/50'
+                                : 'border-slate-200 dark:border-slate-600 hover:border-blue-300'
+                            }`}
+                          >
+                            <p className={`font-bold ${selectedTrimestre === tri.value ? 'text-blue-700 dark:text-blue-300' : 'text-slate-700 dark:text-slate-300'}`}>
+                              {tri.label}
+                            </p>
+                            <p className={`text-xs ${selectedTrimestre === tri.value ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500'}`}>
+                              {tri.desc}
+                            </p>
+                          </button>
+                        ))}
+                      </div>
+                      <p className="text-xs text-blue-600 dark:text-blue-400 mt-3">
+                        O Dominio exporta mes sequencial (jan, fev, mar, abr). Selecione o trimestre correto manualmente.
+                      </p>
+                    </div>
+                  )}
 
                   <div onClick={() => fileInputRef.current?.click()}
                     className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-12 text-center hover:border-[#0e4f6d] transition-colors cursor-pointer">

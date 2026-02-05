@@ -255,7 +255,7 @@ export const DataProvider = ({ children }) => {
   };
 
   // ===== DADOS FISCAIS =====
-  const importarRelatorioFiscal = (cnpjId, tipoRelatorio, csvContent) => {
+  const importarRelatorioFiscal = (cnpjId, tipoRelatorio, csvContent, opcoes = {}) => {
     try {
       let dadosParsed;
 
@@ -282,6 +282,12 @@ export const DataProvider = ({ children }) => {
           throw new Error(`Tipo de relatório fiscal desconhecido: ${tipoRelatorio}`);
       }
 
+      // Para CSLL e IRPJ, usar trimestre selecionado manualmente
+      if ((tipoRelatorio === 'csll' || tipoRelatorio === 'irpj') && opcoes.trimestre) {
+        dadosParsed.trimestreNumero = parseInt(opcoes.trimestre);
+        dadosParsed.trimestreLabel = `${opcoes.trimestre}o Trimestre`;
+      }
+
       setDadosFiscais(prev => {
         const cnpjData = prev[cnpjId] || {
           csll: [],
@@ -292,15 +298,22 @@ export const DataProvider = ({ children }) => {
           resumoAcumulador: null
         };
 
-        // CSLL e IRPJ são trimestrais, guardar array
+        // CSLL e IRPJ são trimestrais, guardar por número do trimestre
         if (tipoRelatorio === 'csll') {
-          const newCsll = [...cnpjData.csll, dadosParsed].slice(-4); // Máximo 4 trimestres
+          // Substituir se já existir trimestre igual, senão adicionar
+          const trimNum = dadosParsed.trimestreNumero || cnpjData.csll.length + 1;
+          let newCsll = cnpjData.csll.filter(c => c.trimestreNumero !== trimNum);
+          newCsll.push(dadosParsed);
+          newCsll = newCsll.sort((a, b) => (a.trimestreNumero || 0) - (b.trimestreNumero || 0));
           return {
             ...prev,
             [cnpjId]: { ...cnpjData, csll: newCsll }
           };
         } else if (tipoRelatorio === 'irpj') {
-          const newIrpj = [...cnpjData.irpj, dadosParsed].slice(-4);
+          const trimNum = dadosParsed.trimestreNumero || cnpjData.irpj.length + 1;
+          let newIrpj = cnpjData.irpj.filter(i => i.trimestreNumero !== trimNum);
+          newIrpj.push(dadosParsed);
+          newIrpj = newIrpj.sort((a, b) => (a.trimestreNumero || 0) - (b.trimestreNumero || 0));
           return {
             ...prev,
             [cnpjId]: { ...cnpjData, irpj: newIrpj }
