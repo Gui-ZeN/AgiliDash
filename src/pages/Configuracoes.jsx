@@ -799,16 +799,16 @@ const Configuracoes = () => {
                         <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-4 rounded-xl text-white">
                           <div className="flex items-center gap-2 mb-2">
                             <TrendingUp className="w-5 h-5 opacity-80" />
-                            <span className="text-sm opacity-80">Receita Bruta Total</span>
+                            <span className="text-sm opacity-80">Total Receitas (positivos)</span>
                           </div>
-                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totais?.receitaBruta || 0)}</p>
+                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totais?.totalReceitas || 0)}</p>
                         </div>
                         <div className="bg-gradient-to-br from-red-500 to-rose-600 p-4 rounded-xl text-white">
                           <div className="flex items-center gap-2 mb-2">
                             <TrendingDown className="w-5 h-5 opacity-80" />
-                            <span className="text-sm opacity-80">Despesas Totais</span>
+                            <span className="text-sm opacity-80">Total Despesas (negativos)</span>
                           </div>
-                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totais?.despesaTotal || 0)}</p>
+                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totais?.totalDespesas || 0)}</p>
                         </div>
                         <div className={`bg-gradient-to-br ${(importPreview.dadosParsed.totais?.lucroLiquido || 0) >= 0 ? 'from-blue-500 to-indigo-600' : 'from-orange-500 to-red-600'} p-4 rounded-xl text-white`}>
                           <div className="flex items-center gap-2 mb-2">
@@ -864,6 +864,22 @@ const Configuracoes = () => {
                                 <td className="px-3 py-2 font-bold text-slate-800 dark:text-white sticky left-0 bg-slate-50 dark:bg-slate-800/50">Resultado Líquido</td>
                                 {importPreview.dadosParsed.dados?.resultadoLiquido?.map((val, i) => (
                                   <td key={i} className={`px-3 py-2 text-right whitespace-nowrap font-bold ${val >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>{formatCurrency(val)}</td>
+                                ))}
+                              </tr>
+                              {/* Separador */}
+                              <tr className="bg-slate-200 dark:bg-slate-700">
+                                <td colSpan={13} className="px-3 py-1 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Classificação Automática (positivo = receita, negativo = despesa)</td>
+                              </tr>
+                              <tr className="bg-emerald-50 dark:bg-emerald-900/10">
+                                <td className="px-3 py-2 font-medium text-emerald-700 dark:text-emerald-400 sticky left-0 bg-emerald-50 dark:bg-emerald-900/10">Total Receitas (+)</td>
+                                {importPreview.dadosParsed.receitasMensais?.map((val, i) => (
+                                  <td key={i} className="px-3 py-2 text-right text-emerald-600 dark:text-emerald-400 whitespace-nowrap font-medium">{formatCurrency(val)}</td>
+                                ))}
+                              </tr>
+                              <tr className="bg-rose-50 dark:bg-rose-900/10">
+                                <td className="px-3 py-2 font-medium text-rose-700 dark:text-rose-400 sticky left-0 bg-rose-50 dark:bg-rose-900/10">Total Despesas (-)</td>
+                                {importPreview.dadosParsed.despesasMensais?.map((val, i) => (
+                                  <td key={i} className="px-3 py-2 text-right text-rose-600 dark:text-rose-400 whitespace-nowrap font-medium">{formatCurrency(val)}</td>
                                 ))}
                               </tr>
                             </tbody>

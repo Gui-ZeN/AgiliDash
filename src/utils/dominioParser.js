@@ -215,16 +215,38 @@ export const parseAnaliseHorizontal = (csvContent) => {
   console.log('Parser Análise Horizontal - Despesas Operacionais:', dados.despesasOperacionais);
   console.log('Parser Análise Horizontal - Resultado Líquido:', dados.resultadoLiquido);
 
+  // Calcular receitas e despesas por mês
+  // Regra: valores positivos = receitas, valores negativos = despesas
+  const receitasMensais = new Array(12).fill(0);
+  const despesasMensais = new Array(12).fill(0);
+
+  // Processar todas as categorias de dados
+  Object.values(dados).forEach(valores => {
+    valores.forEach((valor, mesIndex) => {
+      if (valor > 0) {
+        receitasMensais[mesIndex] += valor;
+      } else if (valor < 0) {
+        despesasMensais[mesIndex] += Math.abs(valor);
+      }
+    });
+  });
+
   return {
     empresaInfo,
     competencia,
     meses: mesNomes,
     dados,
+    // Receitas e Despesas mensais calculadas
+    receitasMensais,
+    despesasMensais,
     // Calcular totais
     totais: {
       receitaBruta: dados.receitaBruta.reduce((a, b) => a + b, 0),
       despesaTotal: dados.despesasOperacionais.reduce((a, b) => a + Math.abs(b), 0),
-      lucroLiquido: dados.resultadoLiquido.reduce((a, b) => a + b, 0)
+      lucroLiquido: dados.resultadoLiquido.reduce((a, b) => a + b, 0),
+      // Totais anuais de receitas e despesas
+      totalReceitas: receitasMensais.reduce((a, b) => a + b, 0),
+      totalDespesas: despesasMensais.reduce((a, b) => a + b, 0)
     }
   };
 };
