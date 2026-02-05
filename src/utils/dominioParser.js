@@ -435,3 +435,571 @@ export const consolidarBalancetesMensais = (balancetes) => {
 
   return { meses, series };
 };
+
+// ============================================
+// PARSERS PARA RELATÓRIOS FISCAIS
+// ============================================
+
+/**
+ * Parser para Contribuição Social (CSLL) Trimestral
+ * Extrai dados de CSLL por trimestre
+ */
+export const parseContribuicaoSocial = (csvContent) => {
+  const lines = csvContent.split('\n');
+  let empresaInfo = {};
+  let trimestre = '';
+  let dados = {};
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const cols = line.split(';').map(c => c.trim());
+
+    // Extrair informações da empresa
+    if (line.includes('C.N.P.J.:')) {
+      empresaInfo.cnpj = cols.find(c => c.match(/\d{2}\.\d{3}\.\d{3}/)) || cols[2];
+    }
+    if (line.includes('Trimestre:')) {
+      trimestre = cols.find(c => c.match(/\w{3}\/\d{2}/)) || cols[2];
+    }
+
+    // Extrair valores
+    if (cols[0]?.includes('Lucro líquido antes da CSLL')) {
+      dados.lucroLiquido = parseValorBR(cols[cols.length - 2]);
+    }
+    if (cols[0] === '(=) Base de cálculo antes da compensação') {
+      dados.baseCalculoAntes = parseValorBR(cols[cols.length - 2]);
+    }
+    if (cols[0] === '(-) Compensação') {
+      dados.compensacao = parseValorBR(cols[cols.length - 2]);
+    }
+    if (cols[0] === '(=) Base de cálculo') {
+      dados.baseCalculo = parseValorBR(cols[cols.length - 2]);
+    }
+    if (cols[0]?.includes('CSLL devida')) {
+      dados.csllDevida = parseValorBR(cols[cols.length - 2]);
+    }
+    if (cols[0] === '(=) CSLL a recolher') {
+      dados.csllRecolher = parseValorBR(cols[cols.length - 2]);
+    }
+    if (cols[0]?.includes('Valor a compensar para o período seguinte')) {
+      dados.valorCompensarProximo = parseValorBR(cols[cols.length - 2]);
+    }
+  }
+
+  return {
+    empresaInfo,
+    trimestre,
+    dados,
+    tipo: 'csll'
+  };
+};
+
+/**
+ * Parser para Imposto de Renda (IRPJ) Trimestral
+ * Extrai dados de IRPJ por trimestre
+ */
+export const parseImpostoRenda = (csvContent) => {
+  const lines = csvContent.split('\n');
+  let empresaInfo = {};
+  let trimestre = '';
+  let dados = {};
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const cols = line.split(';').map(c => c.trim());
+
+    // Extrair informações da empresa
+    if (line.includes('C.N.P.J.:')) {
+      empresaInfo.cnpj = cols.find(c => c.match(/\d{2}\.\d{3}\.\d{3}/)) || cols[2];
+    }
+    if (line.includes('Trimestre:')) {
+      trimestre = cols.find(c => c.match(/\w{3}\/\d{2}/)) || cols[2];
+    }
+
+    // Extrair valores
+    if (cols[0]?.includes('Lucro líquido antes do IRPJ')) {
+      dados.lucroLiquido = parseValorBR(cols[cols.length - 2]);
+    }
+    if (cols[0] === '(+) Adições') {
+      dados.adicoes = parseValorBR(cols[cols.length - 2]);
+    }
+    if (cols[0] === '(=) Lucro Real antes da compensação') {
+      dados.lucroRealAntes = parseValorBR(cols[cols.length - 2]);
+    }
+    if (cols[0] === '(-) Compensação') {
+      dados.compensacao = parseValorBR(cols[cols.length - 2]);
+    }
+    if (cols[0] === '(=) Lucro Real') {
+      dados.lucroReal = parseValorBR(cols[cols.length - 2]);
+    }
+    if (cols[0]?.includes('IRPJ devido')) {
+      dados.irpjDevido = parseValorBR(cols[cols.length - 2]);
+    }
+    if (cols[0] === '(+) Adicional de IRPJ') {
+      dados.adicionalIrpj = parseValorBR(cols[cols.length - 2]);
+    }
+    if (cols[0] === '(=) IRPJ a recolher') {
+      dados.irpjRecolher = parseValorBR(cols[cols.length - 2]);
+    }
+    if (cols[0]?.includes('Valor a compensar para o período seguinte')) {
+      dados.valorCompensarProximo = parseValorBR(cols[cols.length - 2]);
+    }
+  }
+
+  return {
+    empresaInfo,
+    trimestre,
+    dados,
+    tipo: 'irpj'
+  };
+};
+
+/**
+ * Parser para Demonstrativo Financeiro (Faturamento)
+ * Extrai faturamento mensal
+ */
+export const parseDemonstrativoFinanceiro = (csvContent) => {
+  const lines = csvContent.split('\n');
+  let empresaInfo = {};
+  const faturamento = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const cols = line.split(';').map(c => c.trim());
+
+    // Extrair informações da empresa
+    if (line.includes('Empresa:')) {
+      empresaInfo.razaoSocial = cols.find(c => c && !c.includes('Empresa') && c.length > 3) || '';
+    }
+    if (line.includes('CNPJ:')) {
+      empresaInfo.cnpj = cols.find(c => c.match(/\d{2}\.\d{3}\.\d{3}|\d+E\+\d+/)) || '';
+    }
+
+    // Identificar linhas de faturamento (começam com mês)
+    const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+    if (meses.includes(cols[0])) {
+      // Encontrar índices dos valores
+      const anoIndex = cols.findIndex(c => c.match(/^\d{4}$/));
+      if (anoIndex > 0) {
+        const ano = parseInt(cols[anoIndex]);
+        // Buscar valores após o ano
+        let saidas = 0, servicos = 0, outros = 0, total = 0;
+
+        for (let j = anoIndex + 1; j < cols.length; j++) {
+          const val = parseValorBR(cols[j]);
+          if (val > 0) {
+            if (saidas === 0) saidas = val;
+            else if (servicos === 0) servicos = val;
+            else if (outros === 0) outros = val;
+            else if (total === 0) total = val;
+          }
+        }
+
+        faturamento.push({
+          mes: cols[0],
+          ano,
+          saidas,
+          servicos,
+          outros,
+          total: total || saidas
+        });
+      }
+    }
+  }
+
+  // Separar por ano
+  const faturamento2024 = faturamento.filter(f => f.ano === 2024);
+  const faturamento2025 = faturamento.filter(f => f.ano === 2025);
+
+  // Calcular totais
+  const totalSaidas = faturamento.reduce((acc, f) => acc + f.saidas, 0);
+  const totalServicos = faturamento.reduce((acc, f) => acc + f.servicos, 0);
+  const totalOutros = faturamento.reduce((acc, f) => acc + f.outros, 0);
+
+  return {
+    empresaInfo,
+    faturamento,
+    faturamento2024,
+    faturamento2025,
+    totais: {
+      saidas: totalSaidas,
+      servicos: totalServicos,
+      outros: totalOutros,
+      total: totalSaidas + totalServicos + totalOutros
+    },
+    tipo: 'faturamento'
+  };
+};
+
+/**
+ * Parser para Demonstrativo Mensal (Entradas e Saídas)
+ * Extrai movimentação mensal detalhada
+ */
+export const parseDemonstrativoMensal = (csvContent) => {
+  const lines = csvContent.split('\n');
+  let empresaInfo = {};
+  const movimentacao = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const cols = line.split(';').map(c => c.trim());
+
+    // Extrair informações da empresa
+    if (line.includes('Empresa:')) {
+      empresaInfo.razaoSocial = cols.find(c => c && !c.includes('Empresa') && c.length > 3) || '';
+    }
+    if (line.includes('CNPJ:')) {
+      empresaInfo.cnpj = cols.find(c => c.match(/\d{2}\.\d{3}\.\d{3}|\d+E\+\d+/)) || '';
+    }
+
+    // Identificar linhas de movimentação (começam com mês)
+    const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+    if (meses.includes(cols[0])) {
+      const anoIndex = cols.findIndex(c => c.match(/^\d{4}$/));
+      if (anoIndex > 0) {
+        const ano = parseInt(cols[anoIndex]);
+        // Buscar valores de entradas e saídas
+        let entradas = 0, saidas = 0, servicos = 0;
+        let valorCount = 0;
+
+        for (let j = anoIndex + 1; j < cols.length; j++) {
+          const val = parseValorBR(cols[j]);
+          if (val > 0) {
+            valorCount++;
+            if (valorCount === 1) entradas = val;
+            else if (valorCount === 2) saidas = val;
+            else if (valorCount === 3) servicos = val;
+          }
+        }
+
+        movimentacao.push({
+          mes: cols[0],
+          ano,
+          entradas,
+          saidas,
+          servicos
+        });
+      }
+    }
+  }
+
+  // Separar por ano
+  const movimentacao2024 = movimentacao.filter(m => m.ano === 2024);
+  const movimentacao2025 = movimentacao.filter(m => m.ano === 2025);
+
+  // Calcular totais por ano
+  const totais2024 = {
+    entradas: movimentacao2024.reduce((acc, m) => acc + m.entradas, 0),
+    saidas: movimentacao2024.reduce((acc, m) => acc + m.saidas, 0),
+    servicos: movimentacao2024.reduce((acc, m) => acc + m.servicos, 0)
+  };
+  const totais2025 = {
+    entradas: movimentacao2025.reduce((acc, m) => acc + m.entradas, 0),
+    saidas: movimentacao2025.reduce((acc, m) => acc + m.saidas, 0),
+    servicos: movimentacao2025.reduce((acc, m) => acc + m.servicos, 0)
+  };
+
+  return {
+    empresaInfo,
+    movimentacao,
+    movimentacao2024,
+    movimentacao2025,
+    totais2024,
+    totais2025,
+    tipo: 'demonstrativoMensal'
+  };
+};
+
+/**
+ * Parser para Resumo dos Impostos
+ * Extrai impostos mensais com débitos, créditos e valores a recolher
+ */
+export const parseResumoImpostos = (csvContent) => {
+  const lines = csvContent.split('\n');
+  let empresaInfo = {};
+  const impostosPorMes = {};
+  let competenciaAtual = '';
+
+  // Lista de impostos conhecidos
+  const impostosConhecidos = [
+    'ICMS', 'IPI', 'ISS', 'Substituição Tributária', 'ISS Retido',
+    'IRRF', 'PIS', 'COFINS', 'INSS Retido', 'Contribuições Retidas',
+    'PIS Não Cumulativo', 'COFINS Não Cumulativa'
+  ];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const cols = line.split(';').map(c => c.trim());
+
+    // Extrair informações da empresa
+    if (line.includes('C.N.P.J.:') || line.includes('CNPJ:')) {
+      empresaInfo.cnpj = cols.find(c => c.match(/\d{8,}|\d{2}\.\d{3}\.\d{3}/)) || '';
+    }
+
+    // Identificar competência (mês)
+    if (cols[0]?.includes('Competência:')) {
+      const match = line.match(/(\d{2})\/(\d{4})/);
+      if (match) {
+        competenciaAtual = `${match[1]}/${match[2]}`;
+        if (!impostosPorMes[competenciaAtual]) {
+          impostosPorMes[competenciaAtual] = [];
+        }
+      }
+    }
+
+    // Identificar linhas de impostos
+    const primeiraCol = cols[0] || '';
+    const impostoMatch = impostosConhecidos.find(imp => primeiraCol.includes(imp));
+
+    if (impostoMatch && competenciaAtual) {
+      // Buscar valores na linha
+      const valores = cols.filter(c => c && parseValorBR(c) !== 0).map(c => parseValorBR(c));
+
+      // Estrutura típica: saldo credor anterior, saldo diferido, débitos, créditos, imposto a recolher, saldo credor
+      let imposto = {
+        nome: primeiraCol.split('-')[0].trim(),
+        saldoCredorAnterior: 0,
+        debitos: 0,
+        creditos: 0,
+        impostoRecolher: 0,
+        saldoCredorFinal: 0
+      };
+
+      // Tentar extrair valores baseado na posição
+      if (valores.length >= 2) {
+        // Procurar por padrões específicos nos valores
+        for (let j = 0; j < cols.length; j++) {
+          const val = parseValorBR(cols[j]);
+          if (val !== 0) {
+            // Valores aparecem em ordem: saldo credor ant, saldo dif ant, débitos, créditos, acréscimos, outras ded, imposto recolher, imposto dif, saldo credor
+            if (j < cols.length * 0.3) imposto.saldoCredorAnterior = val;
+            else if (j < cols.length * 0.5) imposto.debitos = val;
+            else if (j < cols.length * 0.6) imposto.creditos = val;
+            else if (j < cols.length * 0.8) imposto.impostoRecolher = val;
+            else imposto.saldoCredorFinal = val;
+          }
+        }
+      }
+
+      // Simplificar: pegar valores relevantes
+      const numericCols = cols.map(c => parseValorBR(c)).filter(v => v > 0);
+      if (numericCols.length >= 1) {
+        imposto.saldoCredorAnterior = numericCols[0] || 0;
+        imposto.debitos = numericCols[2] || 0;
+        imposto.creditos = numericCols[3] || 0;
+        imposto.impostoRecolher = numericCols[numericCols.length - 3] || 0;
+        imposto.saldoCredorFinal = numericCols[numericCols.length - 1] || 0;
+      }
+
+      impostosPorMes[competenciaAtual].push(imposto);
+    }
+  }
+
+  // Calcular totais por imposto
+  const totaisPorImposto = {};
+  Object.values(impostosPorMes).forEach(impostos => {
+    impostos.forEach(imp => {
+      if (!totaisPorImposto[imp.nome]) {
+        totaisPorImposto[imp.nome] = { recolher: 0, credito: 0 };
+      }
+      totaisPorImposto[imp.nome].recolher += imp.impostoRecolher;
+      totaisPorImposto[imp.nome].credito += imp.saldoCredorFinal;
+    });
+  });
+
+  return {
+    empresaInfo,
+    impostosPorMes,
+    totaisPorImposto,
+    competencias: Object.keys(impostosPorMes),
+    tipo: 'resumoImpostos'
+  };
+};
+
+/**
+ * Parser para Resumo por Acumulador
+ * Extrai entradas e saídas por código de acumulador
+ */
+export const parseResumoPorAcumulador = (csvContent) => {
+  const lines = csvContent.split('\n');
+  let empresaInfo = {};
+  let periodo = '';
+  const entradas = [];
+  const saidas = [];
+  let secaoAtual = null; // 'ENTRADAS' ou 'SAÍDAS'
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const cols = line.split(';').map(c => c.trim());
+
+    // Extrair informações da empresa
+    if (line.includes('CNPJ:')) {
+      empresaInfo.cnpj = cols.find(c => c.match(/\d{8,}/)) || '';
+    }
+    if (line.includes('Período:')) {
+      periodo = cols.find(c => c.match(/\d{2}\/\d{2}\/\d{4}/)) || '';
+    }
+
+    // Identificar seção
+    if (cols[0] === 'ENTRADAS') {
+      secaoAtual = 'ENTRADAS';
+      continue;
+    }
+    if (cols[0] === 'SAÍDAS') {
+      secaoAtual = 'SAÍDAS';
+      continue;
+    }
+    if (cols[0]?.includes('Total:')) {
+      continue;
+    }
+
+    // Processar linhas de dados
+    if (secaoAtual && cols[0] && /^\d+$/.test(cols[0])) {
+      const codigo = parseInt(cols[0]);
+      // Encontrar descrição (geralmente na coluna 2 ou após)
+      let descricao = '';
+      let vlrContabil = 0;
+      let baseIcms = 0;
+      let vlrIcms = 0;
+      let isentas = 0;
+      let outras = 0;
+      let vlrIpi = 0;
+      let bcIcmsSt = 0;
+      let vlrIcmsSt = 0;
+
+      // Buscar descrição
+      for (let j = 1; j < cols.length; j++) {
+        if (cols[j] && cols[j].length > 5 && !parseValorBR(cols[j])) {
+          descricao = cols[j];
+          break;
+        }
+      }
+
+      // Buscar valores numéricos (em ordem: Vlr Contábil, Base ICMS, Vlr ICMS, Isentas, Outras, Vlr IPI, BC ICMS ST, Vlr ICMS ST)
+      const valores = [];
+      for (let j = 0; j < cols.length; j++) {
+        const val = parseValorBR(cols[j]);
+        if (val > 0) {
+          valores.push(val);
+        }
+      }
+
+      if (valores.length >= 1) vlrContabil = valores[0];
+      if (valores.length >= 2) baseIcms = valores[1];
+      if (valores.length >= 3) vlrIcms = valores[2];
+      if (valores.length >= 4) isentas = valores[3];
+      if (valores.length >= 5) outras = valores[4];
+      if (valores.length >= 6) vlrIpi = valores[5];
+      if (valores.length >= 7) bcIcmsSt = valores[6];
+      if (valores.length >= 8) vlrIcmsSt = valores[7];
+
+      const item = {
+        codigo,
+        descricao,
+        vlrContabil,
+        baseIcms,
+        vlrIcms,
+        isentas,
+        outras,
+        vlrIpi,
+        bcIcmsSt,
+        vlrIcmsSt
+      };
+
+      if (secaoAtual === 'ENTRADAS') {
+        entradas.push(item);
+      } else if (secaoAtual === 'SAÍDAS') {
+        saidas.push(item);
+      }
+    }
+  }
+
+  // Calcular totais
+  const totalEntradas = entradas.reduce((acc, e) => acc + e.vlrContabil, 0);
+  const totalSaidas = saidas.reduce((acc, s) => acc + s.vlrContabil, 0);
+
+  // Categorias específicas para 380
+  const compraComercializacao = entradas
+    .filter(e => e.descricao.includes('COMERCIALIZA'))
+    .reduce((acc, e) => acc + e.vlrContabil, 0);
+
+  const vendaMercadoria = saidas
+    .filter(s => s.descricao.includes('VENDA') && (s.descricao.includes('MERCADORIA') || s.descricao.includes('PRODUTO')))
+    .reduce((acc, s) => acc + s.vlrContabil, 0);
+
+  return {
+    empresaInfo,
+    periodo,
+    entradas,
+    saidas,
+    totais: {
+      entradas: totalEntradas,
+      saidas: totalSaidas
+    },
+    categorias: {
+      compraComercializacao,
+      vendaMercadoria,
+      // Cálculo 380: Esperado = Compra Comercialização + 25%
+      esperado380: compraComercializacao * 1.25
+    },
+    tipo: 'resumoAcumulador'
+  };
+};
+
+/**
+ * Detecta tipo de relatório fiscal
+ */
+export const detectarTipoRelatorioFiscal = (csvContent) => {
+  const upper = csvContent.toUpperCase();
+
+  if (upper.includes('CONTRIBUIÇÃO SOCIAL') || upper.includes('CONTRIBUICAO SOCIAL')) {
+    if (upper.includes('CSLL DEVIDA') || upper.includes('CSLL A RECOLHER')) {
+      return 'csll';
+    }
+  }
+  if (upper.includes('IMPOSTO DE RENDA') && upper.includes('IRPJ')) {
+    return 'irpj';
+  }
+  if (upper.includes('DEMONSTRATIVO DE FATURAMENTO')) {
+    return 'faturamento';
+  }
+  if (upper.includes('DEMONSTRATIVO MENSAL') && upper.includes('ENTRADAS')) {
+    return 'demonstrativoMensal';
+  }
+  if (upper.includes('RESUMO DOS IMPOSTOS')) {
+    return 'resumoImpostos';
+  }
+  if (upper.includes('RESUMO POR ACUMULADOR')) {
+    return 'resumoAcumulador';
+  }
+
+  return 'desconhecido';
+};
+
+/**
+ * Parser universal para relatórios fiscais
+ */
+export const parseRelatorioFiscal = (csvContent) => {
+  const tipo = detectarTipoRelatorioFiscal(csvContent);
+
+  switch (tipo) {
+    case 'csll':
+      return { tipo, dados: parseContribuicaoSocial(csvContent) };
+    case 'irpj':
+      return { tipo, dados: parseImpostoRenda(csvContent) };
+    case 'faturamento':
+      return { tipo, dados: parseDemonstrativoFinanceiro(csvContent) };
+    case 'demonstrativoMensal':
+      return { tipo, dados: parseDemonstrativoMensal(csvContent) };
+    case 'resumoImpostos':
+      return { tipo, dados: parseResumoImpostos(csvContent) };
+    case 'resumoAcumulador':
+      return { tipo, dados: parseResumoPorAcumulador(csvContent) };
+    default:
+      throw new Error('Tipo de relatório fiscal não reconhecido');
+  }
+};
