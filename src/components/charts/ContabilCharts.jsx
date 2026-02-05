@@ -34,14 +34,22 @@ export const ComparativoReceitaDespesaChart = ({ dados }) => {
   const { isDarkMode } = useTheme();
 
   // Usar useMemo para evitar recriação de arrays em cada render
+  // Prioriza receitasMensais/despesasMensais (soma de todos positivos/negativos)
+  // Fallback para receitaBruta/despesasOperacionais se não disponível
   const meses = useMemo(() => dados?.meses || DEFAULT_MESES, [dados?.meses]);
-  const receitas = useMemo(() => dados?.dados?.receitaBruta || DEFAULT_VALORES, [dados?.dados?.receitaBruta]);
+  const receitas = useMemo(() => {
+    // Usa receitasMensais (todos positivos) se disponível
+    if (dados?.receitasMensais) return dados.receitasMensais;
+    return dados?.dados?.receitaBruta || DEFAULT_VALORES;
+  }, [dados?.receitasMensais, dados?.dados?.receitaBruta]);
   const despesas = useMemo(() => {
+    // Usa despesasMensais (todos negativos) se disponível
+    if (dados?.despesasMensais) return dados.despesasMensais;
     if (dados?.dados?.despesasOperacionais) {
       return dados.dados.despesasOperacionais.map(d => Math.abs(d));
     }
     return DEFAULT_VALORES;
-  }, [dados?.dados?.despesasOperacionais]);
+  }, [dados?.despesasMensais, dados?.dados?.despesasOperacionais]);
 
   useEffect(() => {
     if (!chartRef.current) return;
@@ -157,7 +165,13 @@ export const VariacaoLucroChart = ({ dadosAtual, dadosAnterior }) => {
   const { isDarkMode } = useTheme();
 
   // Calcular lucro mensal (Receita - Despesa) usando useMemo
+  // Prioriza receitasMensais/despesasMensais (classificação automática)
   const lucroAtual = useMemo(() => {
+    // Se tiver a classificação automática, usa ela
+    if (dadosAtual?.receitasMensais && dadosAtual?.despesasMensais) {
+      return dadosAtual.receitasMensais.map((rec, i) => rec - dadosAtual.despesasMensais[i]);
+    }
+    // Fallback para método antigo
     if (!dadosAtual?.dados?.receitaBruta) return DEFAULT_VALORES;
     return dadosAtual.dados.receitaBruta.map((rec, i) => {
       const desp = Math.abs(dadosAtual.dados.despesasOperacionais?.[i] || 0);
@@ -166,6 +180,11 @@ export const VariacaoLucroChart = ({ dadosAtual, dadosAnterior }) => {
   }, [dadosAtual]);
 
   const lucroAnterior = useMemo(() => {
+    // Se tiver a classificação automática, usa ela
+    if (dadosAnterior?.receitasMensais && dadosAnterior?.despesasMensais) {
+      return dadosAnterior.receitasMensais.map((rec, i) => rec - dadosAnterior.despesasMensais[i]);
+    }
+    // Fallback para método antigo
     if (!dadosAnterior?.dados?.receitaBruta) return DEFAULT_VALORES;
     return dadosAnterior.dados.receitaBruta.map((rec, i) => {
       const desp = Math.abs(dadosAnterior.dados.despesasOperacionais?.[i] || 0);
@@ -645,13 +664,18 @@ export const AplicacoesFinanceirasChart = ({ dados }) => {
 export const TabelaComparativoMensal = ({ dados }) => {
   const { isDarkMode } = useTheme();
 
-  const receitas = useMemo(() => dados?.dados?.receitaBruta || DEFAULT_VALORES, [dados?.dados?.receitaBruta]);
+  // Prioriza receitasMensais/despesasMensais (classificação automática)
+  const receitas = useMemo(() => {
+    if (dados?.receitasMensais) return dados.receitasMensais;
+    return dados?.dados?.receitaBruta || DEFAULT_VALORES;
+  }, [dados?.receitasMensais, dados?.dados?.receitaBruta]);
   const despesas = useMemo(() => {
+    if (dados?.despesasMensais) return dados.despesasMensais;
     if (dados?.dados?.despesasOperacionais) {
       return dados.dados.despesasOperacionais.map(d => Math.abs(d));
     }
     return DEFAULT_VALORES;
-  }, [dados?.dados?.despesasOperacionais]);
+  }, [dados?.despesasMensais, dados?.dados?.despesasOperacionais]);
 
   const { totalReceita, totalDespesa, totalLucro } = useMemo(() => {
     const totalRec = receitas.reduce((a, b) => a + b, 0);
@@ -739,13 +763,18 @@ export const TabelaComparativoMensal = ({ dados }) => {
 export const CardsMetricasContabil = ({ dados }) => {
   const { isDarkMode } = useTheme();
 
-  const receitas = useMemo(() => dados?.dados?.receitaBruta || DEFAULT_VALORES, [dados?.dados?.receitaBruta]);
+  // Prioriza receitasMensais/despesasMensais (classificação automática)
+  const receitas = useMemo(() => {
+    if (dados?.receitasMensais) return dados.receitasMensais;
+    return dados?.dados?.receitaBruta || DEFAULT_VALORES;
+  }, [dados?.receitasMensais, dados?.dados?.receitaBruta]);
   const despesas = useMemo(() => {
+    if (dados?.despesasMensais) return dados.despesasMensais;
     if (dados?.dados?.despesasOperacionais) {
       return dados.dados.despesasOperacionais.map(d => Math.abs(d));
     }
     return DEFAULT_VALORES;
-  }, [dados?.dados?.despesasOperacionais]);
+  }, [dados?.despesasMensais, dados?.dados?.despesasOperacionais]);
 
   const { totalReceita, totalDespesa, totalLucro, margem, variacaoReceita } = useMemo(() => {
     const totalRec = receitas.reduce((a, b) => a + b, 0);
