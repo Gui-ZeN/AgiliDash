@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { LogOut, Settings, ChevronDown, Building2, Check, Layers, FolderTree, Building, Menu, X, Sun, Moon, Users, Activity } from 'lucide-react';
+import { LogOut, Settings, ChevronDown, Building2, Check, Layers, FolderTree, Building, Menu, X, Sun, Moon, Users, Activity, User } from 'lucide-react';
 import Logo from './Logo';
 import { useEmpresa } from '../../context/EmpresaContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
 
 /**
  * Header do Dashboard
@@ -12,6 +13,7 @@ import { useTheme } from '../../context/ThemeContext';
 const Header = ({ activeTab, onTabChange, showTabs = true }) => {
   const navigate = useNavigate();
   const { isDarkMode, toggleTheme } = useTheme();
+  const { user, isAdmin, logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -42,6 +44,7 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
   ];
 
   const handleLogout = () => {
+    logout();
     navigate('/');
   };
 
@@ -263,17 +266,21 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
                   </button>
                 ))}
 
-                <div className="h-px bg-slate-100 dark:bg-slate-700 my-2" />
+                {isAdmin && (
+                  <>
+                    <div className="h-px bg-slate-100 dark:bg-slate-700 my-2" />
 
-                {/* Link para configurações */}
-                <Link
-                  to="/configuracoes"
-                  onClick={() => setDropdownOpen(false)}
-                  className="w-full px-4 py-2.5 flex items-center gap-2 text-sm text-[#0e4f6d] dark:text-cyan-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-                >
-                  <Settings className="w-4 h-4" />
-                  <span>Gerenciar Grupos, Empresas e CNPJs</span>
-                </Link>
+                    {/* Link para configurações - Apenas Admin */}
+                    <Link
+                      to="/configuracoes"
+                      onClick={() => setDropdownOpen(false)}
+                      className="w-full px-4 py-2.5 flex items-center gap-2 text-sm text-[#0e4f6d] dark:text-cyan-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                    >
+                      <Settings className="w-4 h-4" />
+                      <span>Gerenciar Grupos, Empresas e CNPJs</span>
+                    </Link>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -284,15 +291,32 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
             <p className="text-sm font-bold text-[#0e4f6d] dark:text-cyan-400">{cnpjInfo?.exercicio || '2025'}</p>
           </div>
 
+          {/* User Info */}
+          <div className="hidden lg:flex items-center gap-3 border-l border-slate-100 dark:border-slate-700 pl-4">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#0e4f6d] to-[#58a3a4] flex items-center justify-center">
+                <User className="w-4 h-4 text-white" />
+              </div>
+              <div className="text-right">
+                <p className="text-xs font-semibold text-slate-700 dark:text-slate-200">{user?.nome}</p>
+                <p className={`text-[10px] font-medium ${isAdmin ? 'text-[#0e4f6d] dark:text-cyan-400' : 'text-slate-400 dark:text-slate-500'}`}>
+                  {user?.perfil}
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Action Buttons */}
           <div className="hidden lg:flex items-center gap-1 border-l border-slate-100 dark:border-slate-700 pl-4">
-            <Link
-              to="/configuracoes"
-              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-              title="Painel Administrativo"
-            >
-              <Settings className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-            </Link>
+            {isAdmin && (
+              <Link
+                to="/configuracoes"
+                className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                title="Painel Administrativo"
+              >
+                <Settings className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+              </Link>
+            )}
             <button
               onClick={handleLogout}
               className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
@@ -345,6 +369,21 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="space-y-4">
+              {/* User Info */}
+              <div className="pb-4 border-b border-slate-100 dark:border-slate-700">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#0e4f6d] to-[#58a3a4] flex items-center justify-center">
+                    <User className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-slate-700 dark:text-slate-200">{user?.nome}</p>
+                    <p className={`text-xs font-medium ${isAdmin ? 'text-[#0e4f6d] dark:text-cyan-400' : 'text-slate-400 dark:text-slate-500'}`}>
+                      {user?.perfil}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <div className="pb-4 border-b border-slate-100 dark:border-slate-700">
                 <p className="text-xs text-slate-400 dark:text-slate-500 font-medium mb-1">Exercicio</p>
                 <p className="text-lg font-bold text-[#0e4f6d] dark:text-cyan-400">{cnpjInfo?.exercicio || '2025'}</p>
@@ -364,14 +403,16 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
                 </button>
               </div>
 
-              <Link
-                to="/configuracoes"
-                className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <Settings className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-                <span className="font-medium text-slate-700 dark:text-slate-300">Painel Administrativo</span>
-              </Link>
+              {isAdmin && (
+                <Link
+                  to="/configuracoes"
+                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Settings className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+                  <span className="font-medium text-slate-700 dark:text-slate-300">Painel Administrativo</span>
+                </Link>
+              )}
 
               <button
                 onClick={() => {

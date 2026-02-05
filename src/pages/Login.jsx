@@ -1,122 +1,149 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Mail, ArrowRight, Building2 } from 'lucide-react';
-import Logo from '../components/layout/Logo';
-import Button from '../components/common/Button';
+import { Lock, Mail, ArrowRight, Building2, Shield, Eye, EyeOff, User } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 /**
  * Página de Login
- * Página empresarial estilosa com autenticação mock
- * TODO: Integrar com Firebase Auth
+ * Visual limpo e moderno sem degradês
  */
 const Login = () => {
   const navigate = useNavigate();
+  const { login, isLoading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
     setError('');
 
-    // TODO: Integrar com Firebase Auth
-    // Por enquanto, qualquer credencial funciona (mock)
-    try {
-      // Simular delay de autenticação
-      await new Promise(resolve => setTimeout(resolve, 800));
+    if (!email || !password) {
+      setError('Por favor, preencha todos os campos.');
+      return;
+    }
 
-      // Mock: aceita qualquer credencial
-      if (email && password) {
-        navigate('/dashboard');
-      } else {
-        setError('Por favor, preencha todos os campos.');
-      }
-    } catch {
-      setError('Erro ao fazer login. Tente novamente.');
-    } finally {
-      setIsLoading(false);
+    const result = await login(email, password);
+
+    if (result.success) {
+      navigate('/dashboard');
+    } else {
+      setError(result.error);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-cyan-50 to-slate-100 flex">
+    <div className="min-h-screen bg-slate-100 flex">
       {/* Lado esquerdo - Branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-[#0e4f6d] relative overflow-hidden">
-        {/* Padrão de fundo decorativo */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-20 left-20 w-72 h-72 bg-white rounded-full blur-3xl" />
-          <div className="absolute bottom-40 right-10 w-96 h-96 bg-[#58a3a4] rounded-full blur-3xl" />
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] border border-white/20 rounded-full" />
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-white/10 rounded-full" />
+        {/* Padrão geométrico sutil */}
+        <div className="absolute inset-0">
+          <div className="absolute top-0 left-0 w-full h-full opacity-5">
+            <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
+                  <path d="M 60 0 L 0 0 0 60" fill="none" stroke="white" strokeWidth="1"/>
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#grid)" />
+            </svg>
+          </div>
+          {/* Círculos decorativos */}
+          <div className="absolute -top-20 -left-20 w-80 h-80 border border-white/10 rounded-full" />
+          <div className="absolute -bottom-40 -right-40 w-[500px] h-[500px] border border-white/10 rounded-full" />
+          <div className="absolute top-1/3 right-10 w-4 h-4 bg-[#58a3a4] rounded-full" />
+          <div className="absolute top-2/3 left-20 w-3 h-3 bg-white/30 rounded-full" />
         </div>
 
         {/* Conteúdo */}
         <div className="relative z-10 flex flex-col justify-center items-center w-full p-12 text-white">
           <div className="mb-12">
-            {/* Logo em branco */}
-            <svg width="280" height="105" viewBox="0 0 320 110" xmlns="http://www.w3.org/2000/svg">
-              <text x="0" y="70" fontFamily="Arial, sans-serif" fontWeight="bold" fontSize="75" fill="white">Ágili</text>
-              <rect x="175" y="55" width="14" height="15" rx="2" fill="#58a3a4" />
-              <rect x="194" y="45" width="14" height="25" rx="2" fill="#6bb3b4" />
-              <rect x="213" y="40" width="14" height="30" rx="2" fill="#7dc3c4" />
-              <rect x="232" y="35" width="14" height="35" rx="2" fill="#8fd3d4" />
-              <rect x="251" y="30" width="14" height="40" rx="2" fill="white" />
-              <rect x="175" y="78" width="105" height="5" rx="2" fill="white" />
-              <text x="180" y="102" fontFamily="Arial, sans-serif" fontWeight="bold" fontSize="28" fill="white">Complex</text>
+            {/* Logo */}
+            <svg width="260" height="100" viewBox="0 0 320 110" xmlns="http://www.w3.org/2000/svg">
+              <text x="0" y="70" fontFamily="Arial, sans-serif" fontWeight="bold" fontSize="72" fill="white">Agili</text>
+              <rect x="170" y="55" width="12" height="15" rx="2" fill="#58a3a4" />
+              <rect x="186" y="45" width="12" height="25" rx="2" fill="#6bb3b4" />
+              <rect x="202" y="38" width="12" height="32" rx="2" fill="#7dc3c4" />
+              <rect x="218" y="30" width="12" height="40" rx="2" fill="white" />
+              <rect x="170" y="78" width="75" height="4" rx="2" fill="white" />
+              <text x="172" y="100" fontFamily="Arial, sans-serif" fontWeight="600" fontSize="24" fill="white">Complex</text>
             </svg>
           </div>
 
-          <h1 className="text-4xl font-bold mb-4 text-center">Portal do Cliente</h1>
-          <p className="text-white/70 text-lg text-center max-w-md leading-relaxed">
-            Acesse seu dashboard fiscal, contábil e pessoal de forma segura e integrada.
+          <h1 className="text-3xl font-bold mb-3 text-center">Portal do Cliente</h1>
+          <p className="text-white/60 text-center max-w-sm">
+            Acesse seu dashboard fiscal, contabil e pessoal de forma segura e integrada.
           </p>
 
           {/* Features */}
-          <div className="mt-16 space-y-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center">
-                <Building2 className="w-6 h-6" />
+          <div className="mt-16 space-y-5 w-full max-w-xs">
+            <div className="flex items-center gap-4 p-4 bg-white/5 rounded-xl border border-white/10">
+              <div className="w-10 h-10 bg-[#58a3a4] rounded-lg flex items-center justify-center">
+                <Building2 className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-semibold">Gestão Empresarial</h3>
-                <p className="text-white/60 text-sm">Dados em tempo real da sua empresa</p>
+                <h3 className="font-medium text-sm">Gestao Empresarial</h3>
+                <p className="text-white/50 text-xs">Dados em tempo real</p>
               </div>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center">
-                <Lock className="w-6 h-6" />
+            <div className="flex items-center gap-4 p-4 bg-white/5 rounded-xl border border-white/10">
+              <div className="w-10 h-10 bg-[#58a3a4] rounded-lg flex items-center justify-center">
+                <Shield className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-semibold">Segurança Total</h3>
-                <p className="text-white/60 text-sm">Seus dados protegidos e criptografados</p>
+                <h3 className="font-medium text-sm">Seguranca Total</h3>
+                <p className="text-white/50 text-xs">Dados protegidos</p>
               </div>
             </div>
           </div>
+
+          {/* Versão */}
+          <p className="absolute bottom-8 text-white/30 text-xs">v1.0.0</p>
         </div>
       </div>
 
       {/* Lado direito - Formulário de Login */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-8">
         <div className="w-full max-w-md">
           {/* Logo mobile */}
           <div className="lg:hidden flex justify-center mb-8">
-            <Logo width={180} height={68} />
+            <svg width="160" height="60" viewBox="0 0 320 110" xmlns="http://www.w3.org/2000/svg">
+              <text x="30" y="70" fontFamily="Arial, sans-serif" fontWeight="bold" fontSize="72" fill="#0e4f6d">Agili</text>
+              <rect x="200" y="55" width="12" height="15" rx="2" fill="#58a3a4" />
+              <rect x="216" y="45" width="12" height="25" rx="2" fill="#0e4f6d" />
+              <rect x="232" y="38" width="12" height="32" rx="2" fill="#58a3a4" />
+              <rect x="248" y="30" width="12" height="40" rx="2" fill="#0e4f6d" />
+            </svg>
           </div>
 
           {/* Card de login */}
-          <div className="bg-white rounded-[2rem] p-10 shadow-xl border border-slate-100">
+          <div className="bg-white rounded-2xl p-8 sm:p-10 shadow-sm border border-slate-200">
             <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-slate-800 mb-2">Bem-vindo de volta!</h2>
-              <p className="text-slate-400">Entre com suas credenciais para acessar</p>
+              <h2 className="text-2xl font-bold text-slate-800 mb-2">Bem-vindo!</h2>
+              <p className="text-slate-500 text-sm">Entre com suas credenciais</p>
+            </div>
+
+            {/* Info de usuários de teste */}
+            <div className="mb-6 p-4 bg-slate-50 rounded-xl border border-slate-200">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Usuarios de teste:</p>
+              <div className="space-y-2 text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 bg-[#0e4f6d] text-white rounded font-medium">Admin</span>
+                  <span className="text-slate-600">admin@agili.com.br / admin123</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 bg-slate-400 text-white rounded font-medium">User</span>
+                  <span className="text-slate-600">usuario@agili.com.br / usuario123</span>
+                </div>
+              </div>
             </div>
 
             {/* Formulário */}
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-5">
               {/* Campo Email */}
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
+                <label className="block text-xs font-semibold text-slate-600 mb-2">
                   E-mail
                 </label>
                 <div className="relative">
@@ -126,86 +153,79 @@ const Login = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="seu@email.com"
-                    className="w-full pl-12 pr-4 py-4 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0e4f6d] focus:border-transparent transition-all"
+                    className="w-full pl-12 pr-4 py-3.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0e4f6d]/20 focus:border-[#0e4f6d] transition-all bg-white text-slate-800"
                   />
                 </div>
               </div>
 
               {/* Campo Senha */}
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
+                <label className="block text-xs font-semibold text-slate-600 mb-2">
                   Senha
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
                   <input
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full pl-12 pr-4 py-4 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0e4f6d] focus:border-transparent transition-all"
+                    placeholder="********"
+                    className="w-full pl-12 pr-12 py-3.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0e4f6d]/20 focus:border-[#0e4f6d] transition-all bg-white text-slate-800"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
                 </div>
               </div>
 
               {/* Erro */}
               {error && (
-                <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-xl text-sm">
+                <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm flex items-center gap-2">
+                  <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
                   {error}
                 </div>
               )}
 
-              {/* Esqueceu a senha */}
-              <div className="text-right">
-                <a href="#" className="text-sm text-[#0e4f6d] hover:underline font-medium">
-                  Esqueceu a senha?
-                </a>
-              </div>
-
               {/* Botão de Login */}
-              <Button
+              <button
                 type="submit"
-                variant="primary"
-                size="lg"
                 disabled={isLoading}
-                className="w-full"
+                className="w-full py-3.5 bg-[#0e4f6d] text-white rounded-xl font-semibold hover:bg-[#0d4560] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {isLoading ? (
-                  <span className="flex items-center gap-2">
+                  <>
                     <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
                     Entrando...
-                  </span>
+                  </>
                 ) : (
-                  <span className="flex items-center gap-2">
+                  <>
                     Entrar
                     <ArrowRight className="w-5 h-5" />
-                  </span>
+                  </>
                 )}
-              </Button>
+              </button>
             </form>
 
-            {/* Divisor */}
-            <div className="my-8 flex items-center">
-              <div className="flex-1 border-t border-slate-200" />
-              <span className="px-4 text-xs text-slate-400 uppercase tracking-widest">ou</span>
-              <div className="flex-1 border-t border-slate-200" />
-            </div>
-
-            {/* Contato suporte */}
-            <p className="text-center text-sm text-slate-400">
-              Não tem uma conta?{' '}
-              <a href="#" className="text-[#0e4f6d] font-semibold hover:underline">
-                Fale com o suporte
+            {/* Link esqueceu senha */}
+            <div className="mt-6 text-center">
+              <a href="#" className="text-sm text-slate-500 hover:text-[#0e4f6d] transition-colors">
+                Esqueceu a senha?
               </a>
-            </p>
+            </div>
           </div>
 
           {/* Footer */}
-          <p className="text-center text-xs text-slate-400 mt-8">
-            © 2025 Ágili Complex. Todos os direitos reservados.
+          <p className="text-center text-xs text-slate-400 mt-6">
+            2025 Agili Complex. Todos os direitos reservados.
           </p>
         </div>
       </div>
