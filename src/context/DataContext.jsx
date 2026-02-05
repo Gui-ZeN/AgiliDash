@@ -4,7 +4,13 @@ import {
   parseAnaliseHorizontal,
   parseDREComparativa,
   parseDREMensal,
-  consolidarBalancetesMensais
+  consolidarBalancetesMensais,
+  parseContribuicaoSocial,
+  parseImpostoRenda,
+  parseDemonstrativoFinanceiro,
+  parseDemonstrativoMensal,
+  parseResumoImpostos,
+  parseResumoPorAcumulador
 } from '../utils/dominioParser';
 
 const DataContext = createContext();
@@ -47,6 +53,11 @@ const initialDadosContabeis = {
   // cnpjId -> { balancetes: [], analiseHorizontal: null, dreComparativa: null, dreMensal: null }
 };
 
+// Estrutura inicial para dados fiscais
+const initialDadosFiscais = {
+  // cnpjId -> { csll: [], irpj: [], faturamento: null, demonstrativoMensal: null, resumoImpostos: null, resumoAcumulador: null }
+};
+
 export const DataProvider = ({ children }) => {
   // Estado para Grupos
   const [grupos, setGrupos] = useState(() => {
@@ -72,6 +83,12 @@ export const DataProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : initialDadosContabeis;
   });
 
+  // Estado para dados fiscais por CNPJ
+  const [dadosFiscais, setDadosFiscais] = useState(() => {
+    const saved = localStorage.getItem('agili_dados_fiscais');
+    return saved ? JSON.parse(saved) : initialDadosFiscais;
+  });
+
   // Persistir no localStorage
   useEffect(() => {
     localStorage.setItem('agili_grupos', JSON.stringify(grupos));
@@ -88,6 +105,10 @@ export const DataProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('agili_dados_contabeis', JSON.stringify(dadosContabeis));
   }, [dadosContabeis]);
+
+  useEffect(() => {
+    localStorage.setItem('agili_dados_fiscais', JSON.stringify(dadosFiscais));
+  }, [dadosFiscais]);
 
   // ===== CRUD GRUPOS =====
   const addGrupo = (grupo) => {
@@ -233,6 +254,84 @@ export const DataProvider = ({ children }) => {
     });
   };
 
+  // ===== DADOS FISCAIS =====
+  const importarRelatorioFiscal = (cnpjId, tipoRelatorio, csvContent) => {
+    try {
+      let dadosParsed;
+
+      switch (tipoRelatorio) {
+        case 'csll':
+          dadosParsed = parseContribuicaoSocial(csvContent);
+          break;
+        case 'irpj':
+          dadosParsed = parseImpostoRenda(csvContent);
+          break;
+        case 'faturamento':
+          dadosParsed = parseDemonstrativoFinanceiro(csvContent);
+          break;
+        case 'demonstrativoMensal':
+          dadosParsed = parseDemonstrativoMensal(csvContent);
+          break;
+        case 'resumoImpostos':
+          dadosParsed = parseResumoImpostos(csvContent);
+          break;
+        case 'resumoAcumulador':
+          dadosParsed = parseResumoPorAcumulador(csvContent);
+          break;
+        default:
+          throw new Error(`Tipo de relatório fiscal desconhecido: ${tipoRelatorio}`);
+      }
+
+      setDadosFiscais(prev => {
+        const cnpjData = prev[cnpjId] || {
+          csll: [],
+          irpj: [],
+          faturamento: null,
+          demonstrativoMensal: null,
+          resumoImpostos: null,
+          resumoAcumulador: null
+        };
+
+        // CSLL e IRPJ são trimestrais, guardar array
+        if (tipoRelatorio === 'csll') {
+          const newCsll = [...cnpjData.csll, dadosParsed].slice(-4); // Máximo 4 trimestres
+          return {
+            ...prev,
+            [cnpjId]: { ...cnpjData, csll: newCsll }
+          };
+        } else if (tipoRelatorio === 'irpj') {
+          const newIrpj = [...cnpjData.irpj, dadosParsed].slice(-4);
+          return {
+            ...prev,
+            [cnpjId]: { ...cnpjData, irpj: newIrpj }
+          };
+        } else {
+          return {
+            ...prev,
+            [cnpjId]: { ...cnpjData, [tipoRelatorio]: dadosParsed }
+          };
+        }
+      });
+
+      return { success: true, dados: dadosParsed };
+    } catch (error) {
+      console.error('Erro ao importar relatório fiscal:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  const getDadosFiscais = (cnpjId) => {
+    return dadosFiscais[cnpjId] || null;
+  };
+
+  const limparDadosFiscais = (cnpjId) => {
+    setDadosFiscais(prev => {
+      const newData = { ...prev };
+      delete newData[cnpjId];
+      return newData;
+    });
+  };
+
   // ===== ESTATISTICAS =====
   const getStats = () => ({
     totalGrupos: grupos.length,
@@ -277,6 +376,12 @@ export const DataProvider = ({ children }) => {
     importarRelatorioContabil,
     getDadosContabeis,
     limparDadosContabeis,
+
+    // Dados Fiscais
+    dadosFiscais,
+    importarRelatorioFiscal,
+    getDadosFiscais,
+    limparDadosFiscais,
 
     // Utils
     getStats,

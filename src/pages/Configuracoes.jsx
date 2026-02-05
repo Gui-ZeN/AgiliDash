@@ -9,7 +9,11 @@ import {
 import Logo from '../components/layout/Logo';
 import { useTheme } from '../context/ThemeContext';
 import { useData } from '../context/DataContext';
-import { parseAnaliseHorizontal, parseBalancete, parseDREComparativa, parseDREMensal } from '../utils/dominioParser';
+import {
+  parseAnaliseHorizontal, parseBalancete, parseDREComparativa, parseDREMensal,
+  parseContribuicaoSocial, parseImpostoRenda, parseDemonstrativoFinanceiro,
+  parseDemonstrativoMensal, parseResumoImpostos, parseResumoPorAcumulador
+} from '../utils/dominioParser';
 import { formatCurrency } from '../utils/formatters';
 
 // Definicao dos setores e seus relatorios
@@ -32,11 +36,12 @@ const SETORES_CONFIG = {
     icon: FileText,
     cor: 'blue',
     relatorios: [
-      { id: 'icms', nome: 'Apuracao ICMS', campos: ['periodo', 'icmsEntradas', 'icmsSaidas', 'icmsAPagar', 'icmsCredito'] },
-      { id: 'pisCofins', nome: 'Apuracao PIS/COFINS', campos: ['periodo', 'pisDebito', 'pisCredito', 'cofinsDebito', 'cofinsCredito'] },
-      { id: 'irpjCsll', nome: 'IRPJ e CSLL', campos: ['trimestre', 'lucroReal', 'irpj', 'adicionalIR', 'csll'] },
-      { id: 'notasFiscais', nome: 'Notas Fiscais', campos: ['numero', 'data', 'cnpjEmitente', 'valor', 'icms', 'pis', 'cofins', 'tipo'] },
-      { id: 'spedFiscal', nome: 'SPED Fiscal', campos: ['registro', 'campo1', 'campo2', 'campo3', 'campo4'] }
+      { id: 'csll', nome: 'Contribuicao Social (CSLL)', descricao: 'Exportar do Dominio: Relatorios > Fiscal > Livro de Apuracao do Lucro Real > Contribuicao Social (trimestral)', formato: 'dominio' },
+      { id: 'irpj', nome: 'Imposto de Renda (IRPJ)', descricao: 'Exportar do Dominio: Relatorios > Fiscal > Livro de Apuracao do Lucro Real > Imposto de Renda (trimestral)', formato: 'dominio' },
+      { id: 'faturamento', nome: 'Demonstrativo Financeiro', descricao: 'Exportar do Dominio: Relatorios > Fiscal > Faturamento > Demonstrativo Financeiro', formato: 'dominio' },
+      { id: 'demonstrativoMensal', nome: 'Demonstrativo Mensal', descricao: 'Exportar do Dominio: Relatorios > Fiscal > Demonstrativo Mensal de Entradas e Saidas', formato: 'dominio' },
+      { id: 'resumoImpostos', nome: 'Resumo dos Impostos', descricao: 'Exportar do Dominio: Relatorios > Fiscal > Resumo dos Impostos por Periodo', formato: 'dominio' },
+      { id: 'resumoAcumulador', nome: 'Resumo por Acumulador', descricao: 'Exportar do Dominio: Relatorios > Fiscal > Resumo por Acumulador', formato: 'dominio' }
     ]
   },
   pessoal: {
@@ -71,7 +76,7 @@ const Configuracoes = () => {
   const {
     grupos, cnpjs, usuarios, addGrupo, updateGrupo, deleteGrupo,
     addCnpj, updateCnpj, deleteCnpj, addUsuario, updateUsuario, deleteUsuario,
-    getCnpjsByGrupo, getStats, setoresDisponiveis, importarRelatorioContabil
+    getCnpjsByGrupo, getStats, setoresDisponiveis, importarRelatorioContabil, importarRelatorioFiscal
   } = useData();
 
   // Estados principais
@@ -220,30 +225,58 @@ const Configuracoes = () => {
     reader.onload = (event) => {
       const text = event.target.result;
 
-      // Verificar se e formato Dominio (setor contabil) ou CSV normal
-      const isContabilDominio = importCategory === 'setores' && importSetor === 'contabil';
+      // Verificar se e formato Dominio (setor contabil ou fiscal) ou CSV normal
+      const isDominioFormat = importCategory === 'setores' && (importSetor === 'contabil' || importSetor === 'fiscal');
 
-      if (isContabilDominio) {
+      if (isDominioFormat) {
         // Para relatórios do Domínio, parsear os dados imediatamente para preview inteligente
         let dadosParsed = null;
         let parseError = null;
 
         try {
-          switch (importRelatorio) {
-            case 'analiseHorizontal':
-              dadosParsed = parseAnaliseHorizontal(text);
-              break;
-            case 'balancete':
-              dadosParsed = parseBalancete(text);
-              break;
-            case 'dreComparativa':
-              dadosParsed = parseDREComparativa(text);
-              break;
-            case 'dreMensal':
-              dadosParsed = parseDREMensal(text);
-              break;
-            default:
-              parseError = 'Tipo de relatório não reconhecido';
+          // Parsers do setor Contábil
+          if (importSetor === 'contabil') {
+            switch (importRelatorio) {
+              case 'analiseHorizontal':
+                dadosParsed = parseAnaliseHorizontal(text);
+                break;
+              case 'balancete':
+                dadosParsed = parseBalancete(text);
+                break;
+              case 'dreComparativa':
+                dadosParsed = parseDREComparativa(text);
+                break;
+              case 'dreMensal':
+                dadosParsed = parseDREMensal(text);
+                break;
+              default:
+                parseError = 'Tipo de relatorio contabil nao reconhecido';
+            }
+          }
+          // Parsers do setor Fiscal
+          else if (importSetor === 'fiscal') {
+            switch (importRelatorio) {
+              case 'csll':
+                dadosParsed = parseContribuicaoSocial(text);
+                break;
+              case 'irpj':
+                dadosParsed = parseImpostoRenda(text);
+                break;
+              case 'faturamento':
+                dadosParsed = parseDemonstrativoFinanceiro(text);
+                break;
+              case 'demonstrativoMensal':
+                dadosParsed = parseDemonstrativoMensal(text);
+                break;
+              case 'resumoImpostos':
+                dadosParsed = parseResumoImpostos(text);
+                break;
+              case 'resumoAcumulador':
+                dadosParsed = parseResumoPorAcumulador(text);
+                break;
+              default:
+                parseError = 'Tipo de relatorio fiscal nao reconhecido';
+            }
           }
         } catch (err) {
           parseError = err.message;
@@ -258,6 +291,7 @@ const Configuracoes = () => {
           rawContent: text,
           isDominioFormat: true,
           tipoRelatorio: importRelatorio,
+          setorRelatorio: importSetor,
           dadosParsed,
           parseError
         });
@@ -323,15 +357,22 @@ const Configuracoes = () => {
           }
         });
       }
-    } else if (importCategory === 'setores' && importSetor === 'contabil' && importPreview.isDominioFormat) {
-      // Usar parser especifico do Dominio para setor contabil
-      const result = importarRelatorioContabil(selectedCnpjImport, importRelatorio, importPreview.rawContent);
+    } else if (importCategory === 'setores' && importPreview.isDominioFormat) {
+      // Usar parser especifico do Dominio para setor contabil ou fiscal
+      let result;
 
-      if (result.success) {
+      if (importSetor === 'contabil') {
+        result = importarRelatorioContabil(selectedCnpjImport, importRelatorio, importPreview.rawContent);
+      } else if (importSetor === 'fiscal') {
+        result = importarRelatorioFiscal(selectedCnpjImport, importRelatorio, importPreview.rawContent);
+      }
+
+      if (result?.success) {
         count = 1;
-        showSuccess(`Relatorio ${SETORES_CONFIG.contabil.relatorios.find(r => r.id === importRelatorio)?.nome} importado com sucesso!`);
+        const relatorioNome = SETORES_CONFIG[importSetor]?.relatorios.find(r => r.id === importRelatorio)?.nome || importRelatorio;
+        showSuccess(`Relatorio ${relatorioNome} importado com sucesso!`);
       } else {
-        errorMsg = result.error || 'Erro ao processar arquivo';
+        errorMsg = result?.error || 'Erro ao processar arquivo';
       }
     } else {
       // Para outros setores, salvamos no localStorage por enquanto (futuro: Firebase)

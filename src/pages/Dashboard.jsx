@@ -69,6 +69,17 @@ import {
   TabelaComparativoMensal,
   CardsMetricasContabil
 } from '../components/charts/ContabilCharts';
+import {
+  FaturamentoPorCategoriaChart,
+  FaturamentoPorTrimestreChart,
+  TabelaAcumuladores,
+  ImpostosPorPeriodoChart,
+  ImpostosPorTipoChart,
+  CompraVendaChart,
+  Situacao380Chart,
+  Tabela380,
+  CardsMetricasFiscais
+} from '../components/charts/FiscalCharts';
 import { useData } from '../context/DataContext';
 import FaturamentoChart from '../components/charts/FaturamentoChart';
 import IRPJChart from '../components/charts/IRPJChart';
@@ -105,11 +116,15 @@ const Dashboard = () => {
   // Usar contexto da empresa e tema
   const { cnpjInfo, cnpjDados, isConsolidado, totaisConsolidados } = useEmpresa();
   const { isDarkMode } = useTheme();
-  const { getDadosContabeis } = useData();
+  const { getDadosContabeis, getDadosFiscais } = useData();
 
   // Obter dados contábeis importados para o CNPJ selecionado
   const dadosContabeisImportados = getDadosContabeis(cnpjInfo?.id);
   const temDadosContabeis = dadosContabeisImportados?.analiseHorizontal || dadosContabeisImportados?.balancetesConsolidados;
+
+  // Obter dados fiscais importados para o CNPJ selecionado
+  const dadosFiscaisImportados = getDadosFiscais(cnpjInfo?.id);
+  const temDadosFiscais = dadosFiscaisImportados?.resumoAcumulador || dadosFiscaisImportados?.demonstrativoMensal || dadosFiscaisImportados?.resumoImpostos;
 
   // Dados do CNPJ selecionado
   const dreData = selectedYear === 2025 ? cnpjDados.dreData2025 : cnpjDados.dreData2024;
@@ -776,27 +791,27 @@ const Dashboard = () => {
         {activeTab === 'fiscal' && (
           <div className="space-y-8">
             {/* Header */}
-            <section className={`flex items-start justify-between transition-all duration-500 ${cardAnimation}`}>
+            <section className={`flex flex-col lg:flex-row items-start justify-between gap-4 transition-all duration-500 ${cardAnimation}`}>
               <div>
                 <div className="flex items-center gap-3 mb-2">
                   <div className="p-2 bg-indigo-600 rounded-lg">
                     <FileSpreadsheet className="w-5 h-5 text-white" />
                   </div>
-                  <span className="text-xs font-bold text-indigo-600 uppercase tracking-widest">
+                  <span className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'}`}>
                     Departamento Fiscal
                   </span>
                 </div>
-                <h1 className="text-4xl font-extrabold text-[#1e293b] mb-1">
-                  Análise Tributária
+                <h1 className={`text-4xl font-extrabold mb-1 ${isDarkMode ? 'text-white' : 'text-[#1e293b]'}`}>
+                  Analise Tributaria
                 </h1>
-                <p className="text-lg text-slate-400 font-medium">
-                  Apuração trimestral sobre Lucro Real.
+                <p className={`text-lg font-medium ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                  Apuracao trimestral sobre Lucro Real - Dados importados do Sistema Dominio.
                 </p>
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={() => handleExportReport('pdf')}
-                  className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors"
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${isDarkMode ? 'bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
                 >
                   <FileDown className="w-4 h-4" />
                   PDF
@@ -811,160 +826,291 @@ const Dashboard = () => {
               </div>
             </section>
 
-            {/* Cards de impostos */}
-            <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 transition-all duration-500 delay-100 ${cardAnimation}`}>
-              <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="p-3 bg-red-50 rounded-xl">
-                    <Receipt className="w-6 h-6 text-red-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-slate-400 uppercase">Total IRPJ</p>
-                    <p className="text-2xl font-black text-slate-800">{formatCurrency(totaisFiscais.irpj)}</p>
-                  </div>
-                </div>
-                <div className="h-1 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-red-500 rounded-full" style={{ width: '70%' }} />
-                </div>
+            {/* Banner de status de dados importados */}
+            {!temDadosFiscais && (
+              <div className={`p-4 rounded-2xl flex items-center gap-3 ${isDarkMode ? 'bg-amber-900/30 border border-amber-700/50' : 'bg-amber-50 border border-amber-200'}`}>
+                <AlertCircle className={`w-5 h-5 ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`} />
+                <span className={isDarkMode ? 'text-amber-300' : 'text-amber-800'}>
+                  Nenhum relatorio fiscal importado. Acesse <strong>Configuracoes</strong> para importar dados do Dominio (Resumo por Acumulador, Demonstrativo Mensal, Resumo dos Impostos).
+                </span>
               </div>
+            )}
 
-              <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="p-3 bg-cyan-50 rounded-xl">
-                    <CircleDollarSign className="w-6 h-6 text-cyan-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-slate-400 uppercase">Total CSLL</p>
-                    <p className="text-2xl font-black text-slate-800">{formatCurrency(totaisFiscais.csll)}</p>
-                  </div>
-                </div>
-                <div className="h-1 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-cyan-500 rounded-full" style={{ width: '30%' }} />
-                </div>
+            {/* Cards de métricas - usando dados importados ou mock */}
+            {temDadosFiscais ? (
+              <div className={`transition-all duration-500 delay-100 ${cardAnimation}`}>
+                <CardsMetricasFiscais
+                  dados={dadosFiscaisImportados?.resumoAcumulador}
+                  dadosImpostos={dadosFiscaisImportados?.resumoImpostos}
+                />
               </div>
-
-              <div className="bg-gradient-to-br from-[#0e4f6d] to-[#1a6b8a] p-6 rounded-2xl text-white shadow-lg">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="p-3 bg-white/10 rounded-xl">
-                    <Wallet className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-white/60 uppercase">Carga Total</p>
-                    <p className="text-2xl font-black">{formatCurrency(totaisFiscais.cargaTributariaTotal)}</p>
-                  </div>
-                </div>
-                <p className="text-sm text-white/70">Carga tributária do exercício</p>
-              </div>
-            </div>
-
-            {/* Distribuição e resumo */}
-            <div className={`bg-white p-8 rounded-3xl border border-slate-100 shadow-sm transition-all duration-500 delay-200 ${cardAnimation}`}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                <div>
-                  <h3 className="text-xl font-bold text-slate-800 mb-2">Distribuição do Fluxo</h3>
-                  <p className="text-sm text-slate-400 mb-6">Comparativo entrada e saída</p>
-                  <DistribuicaoChart onDataCalculated={handleFiscalDataCalculated} />
-                </div>
-
-                <div className="bg-slate-50 rounded-2xl p-6">
-                  <h4 className="text-sm font-bold text-slate-500 uppercase mb-4 pb-3 border-b border-slate-200">
-                    Resumo Operacional 2025
-                  </h4>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between p-3 bg-white rounded-xl">
-                      <div className="flex items-center gap-3">
-                        <div className="w-3 h-3 rounded-full bg-red-500" />
-                        <span className="font-medium text-slate-600">Entradas</span>
-                      </div>
-                      <span className="font-bold text-red-600">
-                        {fiscalData ? formatCurrency(fiscalData.totalEntradas) : 'R$ 0,00'}
-                      </span>
+            ) : (
+              <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 transition-all duration-500 delay-100 ${cardAnimation}`}>
+                <div className={`p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-red-900/30' : 'bg-red-50'}`}>
+                      <Receipt className={`w-6 h-6 ${isDarkMode ? 'text-red-400' : 'text-red-600'}`} />
                     </div>
-                    <div className="flex items-center justify-between p-3 bg-white rounded-xl">
-                      <div className="flex items-center gap-3">
-                        <div className="w-3 h-3 rounded-full bg-green-500" />
-                        <span className="font-medium text-slate-600">Saídas</span>
-                      </div>
-                      <span className="font-bold text-green-600">
-                        {fiscalData ? formatCurrency(fiscalData.totalSaidas) : 'R$ 0,00'}
-                      </span>
-                    </div>
-                    <div className="pt-4 mt-4 border-t-2 border-slate-200">
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-slate-800">Total</span>
-                        <span className="text-xl font-black text-[#0e4f6d]">
-                          {fiscalData ? formatCurrency(fiscalData.totalGeral) : 'R$ 0,00'}
-                        </span>
-                      </div>
+                    <div>
+                      <p className={`text-xs font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Total IRPJ</p>
+                      <p className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{formatCurrency(totaisFiscais.irpj)}</p>
                     </div>
                   </div>
+                  <div className={`h-1 rounded-full overflow-hidden ${isDarkMode ? 'bg-slate-700' : 'bg-slate-100'}`}>
+                    <div className="h-full bg-red-500 rounded-full" style={{ width: '70%' }} />
+                  </div>
+                </div>
+
+                <div className={`p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-cyan-900/30' : 'bg-cyan-50'}`}>
+                      <CircleDollarSign className={`w-6 h-6 ${isDarkMode ? 'text-cyan-400' : 'text-cyan-600'}`} />
+                    </div>
+                    <div>
+                      <p className={`text-xs font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Total CSLL</p>
+                      <p className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{formatCurrency(totaisFiscais.csll)}</p>
+                    </div>
+                  </div>
+                  <div className={`h-1 rounded-full overflow-hidden ${isDarkMode ? 'bg-slate-700' : 'bg-slate-100'}`}>
+                    <div className="h-full bg-cyan-500 rounded-full" style={{ width: '30%' }} />
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-br from-[#0e4f6d] to-[#1a6b8a] p-6 rounded-2xl text-white shadow-lg">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="p-3 bg-white/10 rounded-xl">
+                      <Wallet className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-white/60 uppercase">Carga Total</p>
+                      <p className="text-2xl font-black">{formatCurrency(totaisFiscais.cargaTributariaTotal)}</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-white/70">Carga tributaria do exercicio</p>
                 </div>
               </div>
-            </div>
+            )}
 
-            {/* Faturamento */}
-            <div className={`bg-white p-8 rounded-3xl border border-slate-100 shadow-sm transition-all duration-500 delay-300 ${cardAnimation}`}>
-              <div className="flex items-center justify-between mb-8">
+            {/* ===== SEÇÃO FATURAMENTO ===== */}
+            <section className={`transition-all duration-500 delay-200 ${cardAnimation}`}>
+              <div className="flex items-center gap-3 mb-6">
+                <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-green-900/50' : 'bg-green-100'}`}>
+                  <BarChartBig className={`w-5 h-5 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`} />
+                </div>
+                <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                  Faturamento
+                </h2>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Gráfico de Rosca - Faturamento por Categoria */}
+                <div className={`p-6 rounded-3xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                  <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                    Por Categoria
+                  </h3>
+                  <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                    Entradas, Servicos e Saidas
+                  </p>
+                  {temDadosFiscais ? (
+                    <FaturamentoPorCategoriaChart dados={dadosFiscaisImportados?.demonstrativoMensal || dadosFiscaisImportados?.resumoAcumulador} />
+                  ) : (
+                    <div className="h-[300px] flex items-center justify-center">
+                      <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Importe Demonstrativo Mensal</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Gráfico de Barras - Faturamento por Trimestre */}
+                <div className={`lg:col-span-2 p-6 rounded-3xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                        Evolucao Mensal
+                      </h3>
+                      <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                        Entradas vs Saidas por mes
+                      </p>
+                    </div>
+                  </div>
+                  {temDadosFiscais && dadosFiscaisImportados?.demonstrativoMensal ? (
+                    <FaturamentoPorTrimestreChart dados={dadosFiscaisImportados.demonstrativoMensal} />
+                  ) : (
+                    <div className="h-[350px] flex items-center justify-center">
+                      <FaturamentoChart />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Tabela de Acumuladores */}
+              {temDadosFiscais && dadosFiscaisImportados?.resumoAcumulador && (
+                <div className={`mt-6 rounded-3xl shadow-sm overflow-hidden ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                  <div className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
+                    <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                      Principais Acumuladores - Entradas
+                    </h3>
+                    <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                      Categorias com maior valor contabil
+                    </p>
+                  </div>
+                  <TabelaAcumuladores dados={dadosFiscaisImportados.resumoAcumulador} tipo="entradas" />
+                </div>
+              )}
+            </section>
+
+            {/* ===== SEÇÃO SITUAÇÃO FISCAL ===== */}
+            <section className={`transition-all duration-500 delay-300 ${cardAnimation}`}>
+              <div className="flex items-center gap-3 mb-6">
+                <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-indigo-900/50' : 'bg-indigo-100'}`}>
+                  <Receipt className={`w-5 h-5 ${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'}`} />
+                </div>
+                <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                  Situacao Fiscal
+                </h2>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Gráfico de Barras Verticais - Impostos por Período */}
+                <div className={`p-6 rounded-3xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                  <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                    Impostos por Periodo
+                  </h3>
+                  <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                    Total a recolher por mes
+                  </p>
+                  {temDadosFiscais && dadosFiscaisImportados?.resumoImpostos ? (
+                    <ImpostosPorPeriodoChart dados={dadosFiscaisImportados.resumoImpostos} />
+                  ) : (
+                    <div className="h-[300px]">
+                      <IRPJChart />
+                    </div>
+                  )}
+                </div>
+
+                {/* Gráfico de Barras Horizontais - Por Tipo de Imposto */}
+                <div className={`p-6 rounded-3xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                  <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                    Por Tipo de Imposto
+                  </h3>
+                  <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                    Distribuicao por tributo
+                  </p>
+                  {temDadosFiscais && dadosFiscaisImportados?.resumoImpostos ? (
+                    <ImpostosPorTipoChart dados={dadosFiscaisImportados.resumoImpostos} />
+                  ) : (
+                    <div className="h-[400px]">
+                      <CSLLChart />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </section>
+
+            {/* ===== SEÇÃO COMPARATIVO 380 ===== */}
+            <section className={`transition-all duration-500 delay-400 ${cardAnimation}`}>
+              <div className="flex items-center gap-3 mb-6">
+                <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-purple-900/50' : 'bg-purple-100'}`}>
+                  <Scale className={`w-5 h-5 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`} />
+                </div>
+                <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                  Comparativo 380
+                </h2>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Gráfico de Rosca - Compra vs Venda */}
+                <div className={`p-6 rounded-3xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                  <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                    Compra vs Venda
+                  </h3>
+                  <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                    Comparativo de comercializacao
+                  </p>
+                  {temDadosFiscais && dadosFiscaisImportados?.resumoAcumulador ? (
+                    <CompraVendaChart dados={dadosFiscaisImportados.resumoAcumulador} />
+                  ) : (
+                    <div className="h-[300px] flex items-center justify-center">
+                      <DistribuicaoChart onDataCalculated={handleFiscalDataCalculated} />
+                    </div>
+                  )}
+                </div>
+
+                {/* Gráfico de Rosca - Situação 380 */}
+                <div className={`p-6 rounded-3xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                  <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                    Situacao 380
+                  </h3>
+                  <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                    Vendido vs Falta Vender (Esperado = Compra x 1.25)
+                  </p>
+                  {temDadosFiscais && dadosFiscaisImportados?.resumoAcumulador ? (
+                    <Situacao380Chart dados={dadosFiscaisImportados.resumoAcumulador} />
+                  ) : (
+                    <div className="h-[300px] flex items-center justify-center">
+                      <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Importe Resumo por Acumulador</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Tabela 380 */}
+              {temDadosFiscais && dadosFiscaisImportados?.resumoAcumulador && (
+                <div className={`mt-6 rounded-3xl shadow-sm overflow-hidden ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                  <div className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
+                    <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                      Calculo 380
+                    </h3>
+                    <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                      Periodo | Compra | Venda | Esperado | Receita Complementar | Situacao
+                    </p>
+                  </div>
+                  <Tabela380
+                    dados={dadosFiscaisImportados.resumoAcumulador}
+                    dadosMensais={dadosFiscaisImportados.demonstrativoMensal}
+                  />
+                </div>
+              )}
+            </section>
+
+            {/* Fluxo Fiscal - mantido para compatibilidade */}
+            {!temDadosFiscais && (
+              <div className={`p-8 rounded-3xl shadow-sm transition-all duration-500 delay-500 ${cardAnimation} ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                <div className="flex items-center justify-between mb-8">
+                  <div>
+                    <h3 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Operacoes Mensais</h3>
+                    <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Entradas vs Saidas por mes</p>
+                  </div>
+                  <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-slate-700' : 'bg-slate-100'}`}>
+                    <BarChartHorizontal className={`w-6 h-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`} />
+                  </div>
+                </div>
+                <FluxoFiscalChart />
+              </div>
+            )}
+
+            {/* Card de análise */}
+            <div className={`bg-gradient-to-r from-indigo-600 to-purple-600 p-8 rounded-3xl text-white shadow-xl transition-all duration-500 delay-600 ${cardAnimation}`}>
+              <div className="flex items-start gap-6">
+                <div className="p-4 bg-white/10 rounded-2xl backdrop-blur-sm">
+                  <Award className="w-8 h-8" />
+                </div>
                 <div>
-                  <h3 className="text-xl font-bold text-slate-800">Faturamento Bruto</h3>
-                  <p className="text-sm text-slate-400">Histórico mensal de notas emitidas</p>
-                </div>
-                <div className="p-3 bg-indigo-50 rounded-xl">
-                  <BarChartBig className="w-6 h-6 text-indigo-600" />
-                </div>
-              </div>
-              <FaturamentoChart />
-            </div>
-
-            {/* IRPJ e CSLL */}
-            <div className={`grid grid-cols-1 lg:grid-cols-2 gap-6 transition-all duration-500 delay-400 ${cardAnimation}`}>
-              <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-                <div className="mb-6">
-                  <h3 className="text-lg font-bold text-slate-800">IRPJ Trimestral</h3>
-                  <p className="text-sm text-slate-400">Base (15%) + Adicional (10%)</p>
-                </div>
-                <div className="h-[320px]">
-                  <IRPJChart />
-                </div>
-              </div>
-
-              <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-                <div className="mb-6">
-                  <h3 className="text-lg font-bold text-slate-800">CSLL Trimestral</h3>
-                  <p className="text-sm text-slate-400">Alíquota de 9%</p>
-                </div>
-                <div className="h-[320px]">
-                  <CSLLChart />
-                </div>
-              </div>
-            </div>
-
-            {/* Fluxo Fiscal */}
-            <div className={`bg-white p-8 rounded-3xl border border-slate-100 shadow-sm transition-all duration-500 delay-500 ${cardAnimation}`}>
-              <div className="flex items-center justify-between mb-8">
-                <div>
-                  <h3 className="text-xl font-bold text-slate-800">Operações Mensais</h3>
-                  <p className="text-sm text-slate-400">Entradas vs Saídas por mês</p>
-                </div>
-                <div className="p-3 bg-slate-100 rounded-xl">
-                  <BarChartHorizontal className="w-6 h-6 text-slate-600" />
-                </div>
-              </div>
-              <FluxoFiscalChart />
-            </div>
-
-            {/* Alerta */}
-            <div className={`bg-amber-50 border border-amber-200 p-8 rounded-3xl transition-all duration-500 delay-600 ${cardAnimation}`}>
-              <div className="flex items-start gap-4">
-                <div className="p-3 bg-amber-100 rounded-xl">
-                  <AlertCircle className="w-6 h-6 text-amber-600" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-amber-800 mb-2">Análise Tributária</h3>
-                  <p className="text-amber-900/80 leading-relaxed">
-                    Volume de entradas superior a <strong>R$ 45 milhões</strong> contra saídas de
-                    <strong> R$ 15,6 milhões</strong> sugere formação de estoque ou aquisição de
-                    insumos para produção futura. Recomenda-se acompanhamento do fluxo de caixa.
+                  <h3 className="text-xl font-bold mb-3">Analise Fiscal {selectedYear}</h3>
+                  <p className="text-white/80 leading-relaxed">
+                    {temDadosFiscais ? (
+                      <>
+                        Dados importados do Sistema Dominio. Os relatorios fiscais mostram a movimentacao
+                        de entradas e saidas, impostos a recolher e situacao do 380 (comercializacao de mercadorias).
+                        Acompanhe mensalmente para garantir conformidade tributaria.
+                      </>
+                    ) : (
+                      <>
+                        Para visualizar dados reais, importe os relatorios do Sistema Dominio
+                        (Resumo por Acumulador, Demonstrativo Mensal, Resumo dos Impostos) na area de Configuracoes.
+                        Volume de entradas superior a <strong>R$ 45 milhoes</strong> contra saidas de
+                        <strong> R$ 15,6 milhoes</strong> sugere formacao de estoque ou aquisicao de insumos.
+                      </>
+                    )}
                   </p>
                 </div>
               </div>
