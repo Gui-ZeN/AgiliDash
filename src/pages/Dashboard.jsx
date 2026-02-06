@@ -981,9 +981,7 @@ const Dashboard = () => {
                   {temDadosFiscais && dadosFiscaisImportados?.resumoImpostos ? (
                     <ImpostosPorPeriodoChart dados={dadosFiscaisImportados.resumoImpostos} />
                   ) : (
-                    <div className="h-[300px]">
-                      <IRPJChart />
-                    </div>
+                    <IRPJChart />
                   )}
                 </div>
 
@@ -998,9 +996,7 @@ const Dashboard = () => {
                   {temDadosFiscais && dadosFiscaisImportados?.resumoImpostos ? (
                     <ImpostosPorTipoChart dados={dadosFiscaisImportados.resumoImpostos} />
                   ) : (
-                    <div className="h-[400px]">
-                      <CSLLChart />
-                    </div>
+                    <CSLLChart />
                   )}
                 </div>
               </div>
