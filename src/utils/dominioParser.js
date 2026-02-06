@@ -877,7 +877,7 @@ export const parseResumoPorAcumulador = (csvContent) => {
     // Processar linhas de dados
     if (secaoAtual && cols[0] && /^\d+$/.test(cols[0])) {
       const codigo = parseInt(cols[0]);
-      // Encontrar descrição (geralmente na coluna 2 ou após)
+      // Encontrar descrição (geralmente na coluna 2 ou 3)
       let descricao = '';
       let vlrContabil = 0;
       let baseIcms = 0;
@@ -888,23 +888,27 @@ export const parseResumoPorAcumulador = (csvContent) => {
       let bcIcmsSt = 0;
       let vlrIcmsSt = 0;
 
-      // Buscar descrição
-      for (let j = 1; j < cols.length; j++) {
-        if (cols[j] && cols[j].length > 5 && !parseValorBR(cols[j])) {
+      // Buscar descrição (texto com mais de 5 caracteres)
+      for (let j = 1; j < Math.min(cols.length, 10); j++) {
+        if (cols[j] && cols[j].length > 5 && isNaN(parseFloat(cols[j].replace(/\./g, '').replace(',', '.')))) {
           descricao = cols[j];
           break;
         }
       }
 
-      // Buscar valores numéricos (em ordem: Vlr Contábil, Base ICMS, Vlr ICMS, Isentas, Outras, Vlr IPI, BC ICMS ST, Vlr ICMS ST)
+      // Buscar valores numéricos - COMEÇAR A PARTIR DA COLUNA 5 para pular código e descrição
+      // O formato do CSV é: Código;;Descrição;;;;;;Vlr Contábil;;;;;;;Base ICMS;;etc
       const valores = [];
-      for (let j = 0; j < cols.length; j++) {
-        const val = parseValorBR(cols[j]);
-        if (val > 0) {
-          valores.push(val);
+      for (let j = 5; j < cols.length; j++) {
+        const colValue = cols[j];
+        // Só considerar valores no formato brasileiro (com vírgula decimal)
+        if (colValue && colValue.includes(',')) {
+          const val = parseValorBR(colValue);
+          valores.push(val); // Incluir mesmo 0,00 para manter posição
         }
       }
 
+      // Valores na ordem do CSV: Vlr Contábil, Base ICMS, Vlr ICMS, Isentas, Outras, Vlr IPI, BC ICMS ST, Vlr ICMS ST
       if (valores.length >= 1) vlrContabil = valores[0];
       if (valores.length >= 2) baseIcms = valores[1];
       if (valores.length >= 3) vlrIcms = valores[2];
