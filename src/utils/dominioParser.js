@@ -1266,121 +1266,192 @@ export const parseDemonstrativoFGTS = (csvContent) => {
   // Totais por ano
   const totaisPorAno = {};
 
+  // Totais extraídos do totalizador
+  let totalBaseSistema = 0;
+  let totalValorSistema = 0;
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const cols = line.split(';').map(c => c.trim());
 
-    // Extrair informações da empresa
-    if (line.includes('Empresa:') || line.includes('EMPRESA:')) {
-      empresaInfo.razaoSocial = cols.find(c => c && !c.includes('Empresa') && !c.includes('EMPRESA') && c.length > 3) || '';
+    // Extrair informações da empresa (formato: Empresa:;;;;;;;NOME DA EMPRESA)
+    if (/^Empresa:/i.test(line)) {
+      // Procurar texto significativo após "Empresa:"
+      for (const col of cols) {
+        if (col && !col.includes('Empresa') && col.length > 5 && !/^\d+$/.test(col) && !col.includes('Página')) {
+          empresaInfo.razaoSocial = col.replace(/^\d+\s*-\s*/, ''); // Remove código numérico do início
+          break;
+        }
+      }
     }
-    if (/C\.?N\.?P\.?J\.?:/i.test(line) || /CNPJ:/i.test(line)) {
-      const cnpjMatch = line.match(/\d{14}|\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}/);
+
+    // Extrair CNPJ
+    if (/^CNPJ:/i.test(line)) {
+      const cnpjMatch = line.match(/\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}/);
       if (cnpjMatch) empresaInfo.cnpj = cnpjMatch[0];
     }
 
-    // Identificar competência (formato MM/AAAA ou Competência: MM/AAAA)
-    const compMatch = line.match(/(\d{2})\/(\d{4})/);
-    if (compMatch && /compet/i.test(line)) {
-      competenciaAtual = `${compMatch[1]}/${compMatch[2]}`;
+    // Identificar competência (formato: Competência:;;;;;;;12/2025)
+    if (/^Compet/i.test(line)) {
+      const compMatch = line.match(/(\d{2})\/(\d{4})/);
+      if (compMatch) {
+        competenciaAtual = `${compMatch[1]}/${compMatch[2]}`;
+      }
       continue;
     }
 
-    // Verificar se é linha de dados (começa com número - código do colaborador ou sequência)
-    // Formato típico: Competência;Colaboradores;Tipo;Base;Valor FGTS
-    if (cols[0] && /^\d{2}\/\d{4}$/.test(cols[0])) {
-      competenciaAtual = cols[0];
-      const competenciaParts = cols[0].split('/');
-      const ano = parseInt(competenciaParts[1]);
-      const mes = parseInt(competenciaParts[0]);
-
-      // Buscar valores na linha
-      // Colaboradores geralmente está na segunda ou terceira coluna
-      let colaboradores = 0;
-      let tipo = '';
-      let base = 0;
-      let valorFGTS = 0;
-
-      // Procurar número de colaboradores (inteiro entre 1-9999)
-      for (let j = 1; j < cols.length; j++) {
-        const val = cols[j];
-        if (val && /^\d+$/.test(val) && parseInt(val) >= 1 && parseInt(val) <= 9999) {
-          colaboradores = parseInt(val);
+    // Capturar totais do totalizador (Base sistema: e Valor sistema:)
+    if (/Base sistema:/i.test(line)) {
+      for (const col of cols) {
+        if (col && /^[\d.]+,\d{2}$/.test(col)) {
+          totalBaseSistema = parseValorBR(col);
           break;
         }
       }
-
-      // Procurar tipo (texto como "Mensal", "13º Salário", "Rescisão", etc)
-      for (let j = 1; j < cols.length; j++) {
-        const val = cols[j].toLowerCase();
-        if (val.includes('mensal') || val.includes('13') || val.includes('rescis') ||
-            val.includes('aviso') || val.includes('dissid') || val.includes('retif')) {
-          tipo = cols[j];
+      continue;
+    }
+    if (/Valor sistema:/i.test(line)) {
+      for (const col of cols) {
+        if (col && /^[\d.]+,\d{2}$/.test(col)) {
+          totalValorSistema = parseValorBR(col);
           break;
         }
       }
+      continue;
+    }
 
-      // Procurar valores monetários (base e FGTS)
-      const valoresMonetarios = [];
-      for (let j = 1; j < cols.length; j++) {
-        const val = cols[j];
-        if (val && /^[\d.]+,\d{2}$/.test(val)) {
-          valoresMonetarios.push(parseValorBR(val));
-        }
+    // Identificar linhas de dados de funcionários
+    // Formato: ;código;;códigoEsocial;;nome;;;;;;base;;valor;;;baseEsocial;;valorEsocial;;;;situação
+    // Critério: deve ter um código numérico e um nome de pessoa
+    let codigo = null;
+    let nome = null;
+    let base = 0;
+    let valorFGTS = 0;
+    let situacao = '';
+
+    // Procurar código (número de 1-4 dígitos)
+    for (let j = 0; j < Math.min(5, cols.length); j++) {
+      if (cols[j] && /^\d{1,4}$/.test(cols[j])) {
+        codigo = parseInt(cols[j]);
+        break;
       }
+    }
 
-      if (valoresMonetarios.length >= 2) {
-        base = valoresMonetarios[valoresMonetarios.length - 2];
-        valorFGTS = valoresMonetarios[valoresMonetarios.length - 1];
-      } else if (valoresMonetarios.length === 1) {
-        valorFGTS = valoresMonetarios[0];
+    // Se não tem código, não é linha de dados
+    if (codigo === null) continue;
+
+    // Procurar nome (texto longo com espaços, provavelmente nome de pessoa)
+    for (let j = 0; j < cols.length; j++) {
+      const col = cols[j];
+      if (col && col.length > 10 && /[A-Za-z]/.test(col) && col.includes(' ') &&
+          !/sistema|esocial|total|base|valor|enviado|pendente|página|emissão/i.test(col)) {
+        nome = col;
+        break;
       }
+    }
 
-      // Determinar tipo se não encontrado
-      if (!tipo) {
-        if (mes === 12 || mes === 13) tipo = '13º Salário';
-        else tipo = 'Mensal';
+    // Se não tem nome, não é linha de dados
+    if (!nome) continue;
+
+    // Procurar valores monetários (formato 0,00 ou 1.234,56)
+    const valoresMonetarios = [];
+    for (let j = 0; j < cols.length; j++) {
+      const col = cols[j];
+      if (col && /^[\d.]+,\d{2}$/.test(col)) {
+        valoresMonetarios.push(parseValorBR(col));
       }
+    }
 
-      const registro = {
-        competencia: competenciaAtual,
-        mes,
-        ano,
-        colaboradores,
-        tipo,
-        base,
-        valorFGTS
-      };
+    // Os valores vêm em pares: Base sistema, Valor sistema, Base eSocial, Valor eSocial
+    // Geralmente os 2 primeiros são do sistema
+    if (valoresMonetarios.length >= 2) {
+      base = valoresMonetarios[0];
+      valorFGTS = valoresMonetarios[1];
+    } else if (valoresMonetarios.length === 1) {
+      valorFGTS = valoresMonetarios[0];
+    }
 
-      registros.push(registro);
-
-      // Acumular totais por tipo
-      if (!totaisPorTipo[tipo]) {
-        totaisPorTipo[tipo] = { quantidade: 0, base: 0, valorFGTS: 0 };
+    // Procurar situação (Enviado, Pendente, etc)
+    for (let j = cols.length - 1; j >= 0; j--) {
+      const col = cols[j].toLowerCase();
+      if (col === 'enviado' || col === 'pendente' || col === 'erro') {
+        situacao = cols[j];
+        break;
       }
-      totaisPorTipo[tipo].quantidade += colaboradores;
-      totaisPorTipo[tipo].base += base;
-      totaisPorTipo[tipo].valorFGTS += valorFGTS;
+    }
 
-      // Acumular totais por competência
+    // Extrair ano e mês da competência
+    let ano = new Date().getFullYear();
+    let mes = new Date().getMonth() + 1;
+    if (competenciaAtual) {
+      const parts = competenciaAtual.split('/');
+      if (parts.length === 2) {
+        mes = parseInt(parts[0]);
+        ano = parseInt(parts[1]);
+      }
+    }
+
+    // Determinar tipo de recolhimento
+    const tipo = 'Mensal'; // No formato atual, todos são mensais
+
+    const registro = {
+      codigo,
+      nome,
+      competencia: competenciaAtual,
+      mes,
+      ano,
+      base,
+      valorFGTS,
+      situacao,
+      tipo
+    };
+
+    registros.push(registro);
+
+    // Acumular totais por tipo
+    if (!totaisPorTipo[tipo]) {
+      totaisPorTipo[tipo] = { quantidade: 0, base: 0, valorFGTS: 0 };
+    }
+    totaisPorTipo[tipo].quantidade++;
+    totaisPorTipo[tipo].base += base;
+    totaisPorTipo[tipo].valorFGTS += valorFGTS;
+
+    // Acumular totais por competência
+    if (competenciaAtual) {
       if (!totaisPorCompetencia[competenciaAtual]) {
         totaisPorCompetencia[competenciaAtual] = { colaboradores: 0, base: 0, valorFGTS: 0 };
       }
-      totaisPorCompetencia[competenciaAtual].colaboradores = Math.max(
-        totaisPorCompetencia[competenciaAtual].colaboradores,
-        colaboradores
-      );
+      totaisPorCompetencia[competenciaAtual].colaboradores++;
       totaisPorCompetencia[competenciaAtual].base += base;
       totaisPorCompetencia[competenciaAtual].valorFGTS += valorFGTS;
-
-      // Acumular totais por ano
-      if (!totaisPorAno[ano]) {
-        totaisPorAno[ano] = { base: 0, valorFGTS: 0, meses: 0 };
-      }
-      totaisPorAno[ano].base += base;
-      totaisPorAno[ano].valorFGTS += valorFGTS;
-      totaisPorAno[ano].meses++;
     }
+
+    // Acumular totais por ano
+    if (!totaisPorAno[ano]) {
+      totaisPorAno[ano] = { base: 0, valorFGTS: 0, meses: 0 };
+    }
+    totaisPorAno[ano].base += base;
+    totaisPorAno[ano].valorFGTS += valorFGTS;
+  }
+
+  // Se não encontrou registros mas tem totalizador, usar os valores do totalizador
+  if (registros.length === 0 && (totalBaseSistema > 0 || totalValorSistema > 0)) {
+    let ano = new Date().getFullYear();
+    let mes = new Date().getMonth() + 1;
+    if (competenciaAtual) {
+      const parts = competenciaAtual.split('/');
+      if (parts.length === 2) {
+        mes = parseInt(parts[0]);
+        ano = parseInt(parts[1]);
+      }
+    }
+
+    const tipo = 'Mensal';
+    totaisPorTipo[tipo] = { quantidade: 1, base: totalBaseSistema, valorFGTS: totalValorSistema };
+    if (competenciaAtual) {
+      totaisPorCompetencia[competenciaAtual] = { colaboradores: 1, base: totalBaseSistema, valorFGTS: totalValorSistema };
+    }
+    totaisPorAno[ano] = { base: totalBaseSistema, valorFGTS: totalValorSistema, meses: 1 };
   }
 
   // Ordenar competências
@@ -1393,10 +1464,10 @@ export const parseDemonstrativoFGTS = (csvContent) => {
   // Últimos 3 meses para gráfico
   const ultimos3Meses = competencias.slice(-3);
 
-  // Total geral
+  // Total geral (usar totalizador se disponível, senão somar registros)
   const totalGeral = {
-    base: registros.reduce((acc, r) => acc + r.base, 0),
-    valorFGTS: registros.reduce((acc, r) => acc + r.valorFGTS, 0)
+    base: totalBaseSistema > 0 ? totalBaseSistema : registros.reduce((acc, r) => acc + r.base, 0),
+    valorFGTS: totalValorSistema > 0 ? totalValorSistema : registros.reduce((acc, r) => acc + r.valorFGTS, 0)
   };
 
   return {
