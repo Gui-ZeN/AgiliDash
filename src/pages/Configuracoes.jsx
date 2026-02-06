@@ -1190,32 +1190,102 @@ const Configuracoes = () => {
                   {/* Preview Resumo dos Impostos */}
                   {importPreview.isDominioFormat && importPreview.tipoRelatorio === 'resumoImpostos' && importPreview.dadosParsed && (
                     <div className="space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="bg-gradient-to-br from-[#0e4f6d] to-[#1a6b8a] p-4 rounded-xl text-white">
+                      {/* Cards de Resumo */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-gradient-to-br from-red-500 to-rose-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Total Impostos a Recolher</p>
                           <p className="text-2xl font-bold">
                             {formatCurrency(Object.values(importPreview.dadosParsed.totaisPorImposto || {}).reduce((acc, i) => acc + (i.recolher || 0), 0))}
                           </p>
                         </div>
+                        <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Total Saldo Credor</p>
+                          <p className="text-2xl font-bold">
+                            {formatCurrency(Object.values(importPreview.dadosParsed.totaisPorImposto || {}).reduce((acc, i) => acc + (i.credito || 0), 0))}
+                          </p>
+                        </div>
                         <div className="bg-gradient-to-br from-purple-500 to-violet-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Periodos Importados</p>
-                          <p className="text-2xl font-bold">{Object.keys(importPreview.dadosParsed.impostosPorMes || {}).length} meses</p>
+                          <p className="text-2xl font-bold">{importPreview.dadosParsed.periodosImportados || Object.keys(importPreview.dadosParsed.impostosPorMes || {}).length} meses</p>
                         </div>
                       </div>
+
+                      {/* Tabela de Totais por Imposto */}
                       <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
                         <div className="p-4 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
-                          <h3 className="font-semibold text-slate-800 dark:text-white">Totais por Tipo de Imposto</h3>
+                          <h3 className="font-semibold text-slate-800 dark:text-white">Totais por Tipo de Imposto (Ano)</h3>
                         </div>
-                        <table className="w-full text-sm">
-                          <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                            {Object.entries(importPreview.dadosParsed.totaisPorImposto || {}).map(([nome, valores]) => (
-                              <tr key={nome}>
-                                <td className="px-4 py-2 font-medium text-slate-700 dark:text-slate-300">{nome}</td>
-                                <td className="px-4 py-2 text-right text-red-600">{formatCurrency(valores.recolher || 0)}</td>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm">
+                            <thead className="bg-slate-100 dark:bg-slate-800">
+                              <tr>
+                                <th className="px-4 py-2 text-left text-xs font-semibold text-slate-500">Imposto</th>
+                                <th className="px-4 py-2 text-right text-xs font-semibold text-slate-500">Debitos</th>
+                                <th className="px-4 py-2 text-right text-xs font-semibold text-slate-500">Creditos</th>
+                                <th className="px-4 py-2 text-right text-xs font-semibold text-slate-500">A Recolher</th>
+                                <th className="px-4 py-2 text-right text-xs font-semibold text-slate-500">Saldo Credor</th>
                               </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                              {Object.entries(importPreview.dadosParsed.totaisPorImposto || {}).map(([nome, valores]) => (
+                                <tr key={nome}>
+                                  <td className="px-4 py-2 font-medium text-slate-700 dark:text-slate-300">{nome}</td>
+                                  <td className="px-4 py-2 text-right text-orange-600">{formatCurrency(valores.debitos || 0)}</td>
+                                  <td className="px-4 py-2 text-right text-blue-600">{formatCurrency(valores.creditos || 0)}</td>
+                                  <td className="px-4 py-2 text-right text-red-600 font-semibold">{formatCurrency(valores.recolher || 0)}</td>
+                                  <td className="px-4 py-2 text-right text-green-600">{formatCurrency(valores.credito || 0)}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+
+                      {/* Detalhamento por Mes */}
+                      <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+                        <div className="p-4 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
+                          <h3 className="font-semibold text-slate-800 dark:text-white">Detalhamento por Mes</h3>
+                        </div>
+                        <div className="max-h-96 overflow-y-auto">
+                          {Object.entries(importPreview.dadosParsed.impostosPorMes || {}).sort().map(([mes, dados]) => (
+                            <details key={mes} className="border-b border-slate-100 dark:border-slate-700 last:border-b-0">
+                              <summary className="px-4 py-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 flex justify-between items-center">
+                                <span className="font-medium text-slate-700 dark:text-slate-300">
+                                  {mes} - {dados.impostos?.length || 0} impostos
+                                </span>
+                                <span className="text-sm text-red-600 font-semibold">
+                                  A Recolher: {formatCurrency(dados.impostos?.reduce((acc, i) => acc + (i.impostoRecolher || 0), 0) || 0)}
+                                </span>
+                              </summary>
+                              <div className="px-4 pb-3 bg-slate-50/50 dark:bg-slate-900/30">
+                                <table className="w-full text-xs">
+                                  <thead>
+                                    <tr className="text-slate-500">
+                                      <th className="py-1 text-left">Imposto</th>
+                                      <th className="py-1 text-right">Saldo Ant.</th>
+                                      <th className="py-1 text-right">Debitos</th>
+                                      <th className="py-1 text-right">Creditos</th>
+                                      <th className="py-1 text-right">A Recolher</th>
+                                      <th className="py-1 text-right">Saldo Cred.</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {(dados.impostos || []).map((imp, idx) => (
+                                      <tr key={idx} className="border-t border-slate-100 dark:border-slate-700">
+                                        <td className="py-1 text-slate-700 dark:text-slate-300">{imp.nome}</td>
+                                        <td className="py-1 text-right text-slate-600">{formatCurrency(imp.saldoCredorAnterior || 0)}</td>
+                                        <td className="py-1 text-right text-orange-600">{formatCurrency(imp.debitos || 0)}</td>
+                                        <td className="py-1 text-right text-blue-600">{formatCurrency(imp.creditos || 0)}</td>
+                                        <td className="py-1 text-right text-red-600 font-semibold">{formatCurrency(imp.impostoRecolher || 0)}</td>
+                                        <td className="py-1 text-right text-green-600">{formatCurrency(imp.saldoCredorFinal || 0)}</td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </details>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   )}
