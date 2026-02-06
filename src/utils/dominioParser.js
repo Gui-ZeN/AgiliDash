@@ -923,13 +923,33 @@ export const parseResumoPorAcumulador = (csvContent) => {
   const totalSaidas = saidas.reduce((acc, s) => acc + s.vlrContabil, 0);
 
   // Categorias específicas para 380
-  const compraComercializacao = entradas
-    .filter(e => e.descricao.includes('COMERCIALIZA'))
-    .reduce((acc, e) => acc + e.vlrContabil, 0);
+  // Compras para comercialização (códigos 5, 7 e similares)
+  const itensCompraComercializacao = entradas.filter(e =>
+    e.descricao.toUpperCase().includes('COMERCIALIZA') ||
+    e.descricao.toUpperCase().includes('COMERCIALIZAÇÃO')
+  );
+  const compraComercializacao = itensCompraComercializacao.reduce((acc, e) => acc + e.vlrContabil, 0);
 
-  const vendaMercadoria = saidas
-    .filter(s => s.descricao.includes('VENDA') && (s.descricao.includes('MERCADORIA') || s.descricao.includes('PRODUTO')))
-    .reduce((acc, s) => acc + s.vlrContabil, 0);
+  // Vendas por categoria
+  const itensVendaMercadoria = saidas.filter(s =>
+    s.descricao.toUpperCase().includes('VENDA') &&
+    s.descricao.toUpperCase().includes('MERCADORIA')
+  );
+  const vendaMercadoria = itensVendaMercadoria.reduce((acc, s) => acc + s.vlrContabil, 0);
+
+  const itensVendaProduto = saidas.filter(s =>
+    s.descricao.toUpperCase().includes('VENDA') &&
+    (s.descricao.toUpperCase().includes('PRODUTO') || s.descricao.toUpperCase().includes('PRODUÇÃO'))
+  );
+  const vendaProduto = itensVendaProduto.reduce((acc, s) => acc + s.vlrContabil, 0);
+
+  const itensVendaExterior = saidas.filter(s =>
+    s.descricao.toUpperCase().includes('EXTERIOR')
+  );
+  const vendaExterior = itensVendaExterior.reduce((acc, s) => acc + s.vlrContabil, 0);
+
+  // Total de vendas para 380 (MERCADORIA + PRODUTO + EXTERIOR)
+  const totalVendas380 = vendaMercadoria + vendaProduto + vendaExterior;
 
   return {
     empresaInfo,
@@ -943,8 +963,18 @@ export const parseResumoPorAcumulador = (csvContent) => {
     categorias: {
       compraComercializacao,
       vendaMercadoria,
+      vendaProduto,
+      vendaExterior,
+      totalVendas380,
       // Cálculo 380: Esperado = Compra Comercialização + 25%
       esperado380: compraComercializacao * 1.25
+    },
+    // Detalhes para gráfico de barras horizontais
+    detalhes380: {
+      compras: itensCompraComercializacao,
+      vendasMercadoria: itensVendaMercadoria,
+      vendasProduto: itensVendaProduto,
+      vendasExterior: itensVendaExterior
     },
     tipo: 'resumoAcumulador'
   };

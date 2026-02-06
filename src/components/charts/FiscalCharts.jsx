@@ -369,7 +369,7 @@ export const TabelaAcumuladores = ({ dados, tipo = 'entradas' }) => {
  * 4. Gráfico de Barras Verticais - Impostos por Período
  * Opção de ver ano todo ou meses selecionados
  */
-export const ImpostosPorPeriodoChart = ({ dados, mesesSelecionados = null }) => {
+export const ImpostosPorPeriodoChart = ({ dados, mesesSelecionados = null, trimestre = null }) => {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
   const { isDarkMode } = useTheme();
@@ -381,7 +381,21 @@ export const ImpostosPorPeriodoChart = ({ dados, mesesSelecionados = null }) => 
     const mesesNomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
     let competenciasFiltradas = competencias;
-    if (mesesSelecionados && mesesSelecionados.length > 0) {
+
+    // Filtrar por trimestre se especificado
+    if (trimestre) {
+      const trimestreRanges = {
+        1: [1, 2, 3],   // Jan-Mar
+        2: [4, 5, 6],   // Abr-Jun
+        3: [7, 8, 9],   // Jul-Set
+        4: [10, 11, 12] // Out-Dez
+      };
+      const mesesTrimestre = trimestreRanges[trimestre];
+      competenciasFiltradas = competencias.filter(c => {
+        const [mes] = c.split('/');
+        return mesesTrimestre.includes(parseInt(mes));
+      });
+    } else if (mesesSelecionados && mesesSelecionados.length > 0) {
       competenciasFiltradas = competencias.filter(c => mesesSelecionados.includes(c));
     }
 
@@ -396,7 +410,7 @@ export const ImpostosPorPeriodoChart = ({ dados, mesesSelecionados = null }) => 
     });
 
     return { labels, valores };
-  }, [dados, mesesSelecionados]);
+  }, [dados, mesesSelecionados, trimestre]);
 
   useEffect(() => {
     if (!chartRef.current) return;
@@ -592,7 +606,8 @@ export const CompraVendaChart = ({ dados }) => {
     if (!dados?.categorias) return { compra: 0, venda: 0 };
     return {
       compra: dados.categorias.compraComercializacao || 0,
-      venda: dados.categorias.vendaMercadoria || 0
+      // Usar total de vendas 380 (Mercadoria + Produto + Exterior)
+      venda: dados.categorias.totalVendas380 || dados.categorias.vendaMercadoria || 0
     };
   }, [dados]);
 
@@ -667,6 +682,146 @@ export const CompraVendaChart = ({ dados }) => {
 };
 
 /**
+ * 6.5. Gráfico de Barras Horizontais - Detalhamento Compra vs Venda (380)
+ * Mostra cada categoria de compra e venda separadamente
+ */
+export const Detalhamento380Chart = ({ dados }) => {
+  const chartRef = useRef(null);
+  const chartInstance = useRef(null);
+  const { isDarkMode } = useTheme();
+
+  const dadosGrafico = useMemo(() => {
+    if (!dados?.categorias) return { labels: [], valores: [], cores: [] };
+
+    const items = [];
+
+    // Adicionar compras
+    if (dados.categorias.compraComercializacao > 0) {
+      items.push({
+        label: 'Compra p/ Comercialização',
+        valor: dados.categorias.compraComercializacao,
+        cor: COLORS.info,
+        tipo: 'compra'
+      });
+    }
+
+    // Adicionar vendas
+    if (dados.categorias.vendaMercadoria > 0) {
+      items.push({
+        label: 'Venda de Mercadoria',
+        valor: dados.categorias.vendaMercadoria,
+        cor: COLORS.success,
+        tipo: 'venda'
+      });
+    }
+    if (dados.categorias.vendaProduto > 0) {
+      items.push({
+        label: 'Venda de Produto',
+        valor: dados.categorias.vendaProduto,
+        cor: COLORS.secondary,
+        tipo: 'venda'
+      });
+    }
+    if (dados.categorias.vendaExterior > 0) {
+      items.push({
+        label: 'Venda p/ Exterior',
+        valor: dados.categorias.vendaExterior,
+        cor: COLORS.purple,
+        tipo: 'venda'
+      });
+    }
+
+    // Ordenar por valor
+    items.sort((a, b) => b.valor - a.valor);
+
+    return {
+      labels: items.map(i => i.label),
+      valores: items.map(i => i.valor),
+      cores: items.map(i => i.cor)
+    };
+  }, [dados]);
+
+  useEffect(() => {
+    if (!chartRef.current) return;
+
+    if (chartInstance.current) {
+      chartInstance.current.destroy();
+    }
+
+    const ctx = chartRef.current.getContext('2d');
+
+    chartInstance.current = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: dadosGrafico.labels,
+        datasets: [{
+          label: 'Valor',
+          data: dadosGrafico.valores,
+          backgroundColor: dadosGrafico.cores.map(c => c + 'CC'),
+          borderColor: dadosGrafico.cores,
+          borderWidth: 2,
+          borderRadius: 6
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: isDarkMode ? '#1e293b' : 'white',
+            titleColor: isDarkMode ? '#f1f5f9' : '#1e293b',
+            bodyColor: isDarkMode ? '#cbd5e1' : '#475569',
+            borderColor: isDarkMode ? '#334155' : '#e2e8f0',
+            borderWidth: 1,
+            padding: 16,
+            cornerRadius: 12,
+            callbacks: {
+              label: (context) => {
+                const total = dadosGrafico.valores.reduce((a, b) => a + b, 0);
+                const percentage = total > 0 ? ((context.raw / total) * 100).toFixed(1) : 0;
+                return `${formatCurrency(context.raw)} (${percentage}%)`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: {
+              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)'
+            },
+            ticks: {
+              color: isDarkMode ? '#94a3b8' : '#64748b',
+              callback: (value) => formatCurrency(value)
+            }
+          },
+          y: {
+            grid: { display: false },
+            ticks: {
+              color: isDarkMode ? '#94a3b8' : '#64748b',
+              font: { weight: '600', size: 11 }
+            }
+          }
+        }
+      }
+    });
+
+    return () => {
+      if (chartInstance.current) {
+        chartInstance.current.destroy();
+      }
+    };
+  }, [dadosGrafico, isDarkMode]);
+
+  return (
+    <div className="h-[250px]">
+      <canvas ref={chartRef} />
+    </div>
+  );
+};
+
+/**
  * 7. Gráfico de Rosca - Situação 380
  * Mostra valor vendido vs falta vender
  */
@@ -679,7 +834,8 @@ export const Situacao380Chart = ({ dados }) => {
     if (!dados?.categorias) return { vendido: 0, faltaVender: 0 };
 
     const esperado = dados.categorias.esperado380 || 0;
-    const vendido = dados.categorias.vendaMercadoria || 0;
+    // Usar total de vendas 380 (Mercadoria + Produto + Exterior)
+    const vendido = dados.categorias.totalVendas380 || dados.categorias.vendaMercadoria || 0;
     const faltaVender = Math.max(0, esperado - vendido);
 
     return { vendido, faltaVender, esperado };
@@ -793,12 +949,19 @@ export const Tabela380 = ({ dados, dadosMensais }) => {
   const resumo = useMemo(() => {
     if (!dados?.categorias) return null;
 
+    const compra = dados.categorias.compraComercializacao || 0;
+    // Total de vendas 380 (Mercadoria + Produto + Exterior)
+    const venda = dados.categorias.totalVendas380 || dados.categorias.vendaMercadoria || 0;
+    const esperado = dados.categorias.esperado380 || (compra * 1.25);
+    const receitaComplementar = Math.max(0, esperado - venda);
+    const sit380 = venda >= esperado ? 'OK' : 'Pendente';
+
     return {
-      compra: dados.categorias.compraComercializacao,
-      venda: dados.categorias.vendaMercadoria,
-      esperado: dados.categorias.esperado380,
-      receitaComplementar: Math.max(0, dados.categorias.esperado380 - dados.categorias.vendaMercadoria),
-      sit380: dados.categorias.vendaMercadoria >= dados.categorias.esperado380 ? 'OK' : 'Pendente'
+      compra,
+      venda,
+      esperado,
+      receitaComplementar,
+      sit380
     };
   }, [dados]);
 
@@ -943,6 +1106,7 @@ export default {
   ImpostosPorPeriodoChart,
   ImpostosPorTipoChart,
   CompraVendaChart,
+  Detalhamento380Chart,
   Situacao380Chart,
   Tabela380,
   CardsMetricasFiscais

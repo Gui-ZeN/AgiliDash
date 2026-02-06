@@ -76,6 +76,7 @@ import {
   ImpostosPorPeriodoChart,
   ImpostosPorTipoChart,
   CompraVendaChart,
+  Detalhamento380Chart,
   Situacao380Chart,
   Tabela380,
   CardsMetricasFiscais
@@ -112,6 +113,10 @@ const Dashboard = () => {
   const [fiscalData, setFiscalData] = useState(null);
   const [animateCards, setAnimateCards] = useState(false);
   const [periodFilter, setPeriodFilter] = useState({ type: 'year', year: 2025 });
+  // Seletores de período para gráficos fiscais
+  const [fiscalViewMode, setFiscalViewMode] = useState('ano'); // 'ano' | 'trimestre'
+  const [fiscalTrimestre, setFiscalTrimestre] = useState(null); // 1, 2, 3, 4 ou null (ano todo)
+  const [mesesSelecionados, setMesesSelecionados] = useState([]); // Para seleção de meses específicos
 
   // Usar contexto da empresa e tema
   const { cnpjInfo, cnpjDados, isConsolidado, totaisConsolidados } = useEmpresa();
@@ -931,9 +936,35 @@ const Dashboard = () => {
                         Entradas vs Saidas por mes
                       </p>
                     </div>
+                    {/* Seletor de Período */}
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => setFiscalTrimestre(null)}
+                        className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                          fiscalTrimestre === null
+                            ? 'bg-[#0e4f6d] text-white'
+                            : isDarkMode ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        }`}
+                      >
+                        Ano
+                      </button>
+                      {[1, 2, 3, 4].map(t => (
+                        <button
+                          key={t}
+                          onClick={() => setFiscalTrimestre(t)}
+                          className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                            fiscalTrimestre === t
+                              ? 'bg-[#0e4f6d] text-white'
+                              : isDarkMode ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                          }`}
+                        >
+                          {t}T
+                        </button>
+                      ))}
+                    </div>
                   </div>
                   {temDadosFiscais && dadosFiscaisImportados?.demonstrativoMensal ? (
-                    <FaturamentoPorTrimestreChart dados={dadosFiscaisImportados.demonstrativoMensal} />
+                    <FaturamentoPorTrimestreChart dados={dadosFiscaisImportados.demonstrativoMensal} trimestre={fiscalTrimestre} />
                   ) : (
                     <div className="h-[350px] flex items-center justify-center">
                       <FaturamentoChart />
@@ -972,14 +1003,44 @@ const Dashboard = () => {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Gráfico de Barras Verticais - Impostos por Período */}
                 <div className={`p-6 rounded-3xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
-                  <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                    Impostos por Periodo
-                  </h3>
-                  <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                    Total a recolher por mes
-                  </p>
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                        Impostos por Periodo
+                      </h3>
+                      <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                        Total a recolher por mes
+                      </p>
+                    </div>
+                    {/* Seletor de Período */}
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => setFiscalTrimestre(null)}
+                        className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                          fiscalTrimestre === null
+                            ? 'bg-[#0e4f6d] text-white'
+                            : isDarkMode ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        }`}
+                      >
+                        Ano
+                      </button>
+                      {[1, 2, 3, 4].map(t => (
+                        <button
+                          key={t}
+                          onClick={() => setFiscalTrimestre(t)}
+                          className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                            fiscalTrimestre === t
+                              ? 'bg-[#0e4f6d] text-white'
+                              : isDarkMode ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                          }`}
+                        >
+                          {t}T
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   {temDadosFiscais && dadosFiscaisImportados?.resumoImpostos ? (
-                    <ImpostosPorPeriodoChart dados={dadosFiscaisImportados.resumoImpostos} />
+                    <ImpostosPorPeriodoChart dados={dadosFiscaisImportados.resumoImpostos} trimestre={fiscalTrimestre} />
                   ) : (
                     <IRPJChart />
                   )}
@@ -1020,7 +1081,7 @@ const Dashboard = () => {
                     Compra vs Venda
                   </h3>
                   <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                    Comparativo de comercializacao
+                    Total de comercializacao
                   </p>
                   {temDadosFiscais && dadosFiscaisImportados?.resumoAcumulador ? (
                     <CompraVendaChart dados={dadosFiscaisImportados.resumoAcumulador} />
@@ -1031,18 +1092,18 @@ const Dashboard = () => {
                   )}
                 </div>
 
-                {/* Gráfico de Rosca - Situação 380 */}
+                {/* Gráfico de Barras Horizontais - Detalhamento */}
                 <div className={`p-6 rounded-3xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
                   <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                    Situacao 380
+                    Por Categoria
                   </h3>
                   <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                    Vendido vs Falta Vender (Esperado = Compra x 1.25)
+                    Compra Comercializacao vs Vendas (Mercadoria, Produto, Exterior)
                   </p>
                   {temDadosFiscais && dadosFiscaisImportados?.resumoAcumulador ? (
-                    <Situacao380Chart dados={dadosFiscaisImportados.resumoAcumulador} />
+                    <Detalhamento380Chart dados={dadosFiscaisImportados.resumoAcumulador} />
                   ) : (
-                    <div className="h-[300px] flex items-center justify-center">
+                    <div className="h-[250px] flex items-center justify-center">
                       <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Importe Resumo por Acumulador</p>
                     </div>
                   )}
@@ -1066,6 +1127,64 @@ const Dashboard = () => {
                   />
                 </div>
               )}
+
+              {/* Gráfico de Rosca - Situação 380 */}
+              <div className={`mt-6 p-6 rounded-3xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                  Situacao 380
+                </h3>
+                <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                  Vendido vs Falta Vender (Esperado = Compra x 1.25)
+                </p>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
+                  <div className="flex justify-center">
+                    {temDadosFiscais && dadosFiscaisImportados?.resumoAcumulador ? (
+                      <Situacao380Chart dados={dadosFiscaisImportados.resumoAcumulador} />
+                    ) : (
+                      <div className="h-[300px] flex items-center justify-center">
+                        <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Importe Resumo por Acumulador</p>
+                      </div>
+                    )}
+                  </div>
+                  {temDadosFiscais && dadosFiscaisImportados?.resumoAcumulador && (
+                    <div className={`p-6 rounded-2xl ${isDarkMode ? 'bg-slate-700/50' : 'bg-slate-50'}`}>
+                      <h4 className={`text-sm font-bold mb-4 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>Resumo da Situacao</h4>
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className={isDarkMode ? 'text-slate-400' : 'text-slate-500'}>Compra p/ Comercializacao</span>
+                          <span className={`font-bold ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                            {formatCurrency(dadosFiscaisImportados.resumoAcumulador?.categorias?.compraComercializacao || 0)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className={isDarkMode ? 'text-slate-400' : 'text-slate-500'}>Esperado (Compra + 25%)</span>
+                          <span className={`font-bold ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`}>
+                            {formatCurrency(dadosFiscaisImportados.resumoAcumulador?.categorias?.esperado380 || 0)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className={isDarkMode ? 'text-slate-400' : 'text-slate-500'}>Total Vendido</span>
+                          <span className={`font-bold ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}>
+                            {formatCurrency(dadosFiscaisImportados.resumoAcumulador?.categorias?.totalVendas380 || 0)}
+                          </span>
+                        </div>
+                        <div className={`pt-3 mt-3 border-t ${isDarkMode ? 'border-slate-600' : 'border-slate-200'}`}>
+                          <div className="flex justify-between items-center">
+                            <span className={`font-semibold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Situacao</span>
+                            <span className={`px-3 py-1 rounded-full text-sm font-bold ${
+                              (dadosFiscaisImportados.resumoAcumulador?.categorias?.totalVendas380 || 0) >= (dadosFiscaisImportados.resumoAcumulador?.categorias?.esperado380 || 0)
+                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                            }`}>
+                              {(dadosFiscaisImportados.resumoAcumulador?.categorias?.totalVendas380 || 0) >= (dadosFiscaisImportados.resumoAcumulador?.categorias?.esperado380 || 0) ? 'OK' : 'Pendente'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </section>
 
             {/* Fluxo Fiscal - mantido para compatibilidade */}
