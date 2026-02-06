@@ -10,7 +10,13 @@ import {
   parseDemonstrativoFinanceiro,
   parseDemonstrativoMensal,
   parseResumoImpostos,
-  parseResumoPorAcumulador
+  parseResumoPorAcumulador,
+  // Parsers do Setor Pessoal
+  parseDemonstrativoFGTS,
+  parseFolhaINSS,
+  parseRelacaoEmpregados,
+  parseSalarioBase,
+  parseProgramacaoFerias
 } from '../utils/dominioParser';
 
 const DataContext = createContext();
@@ -58,6 +64,11 @@ const initialDadosFiscais = {
   // cnpjId -> { csll: [], irpj: [], faturamento: null, demonstrativoMensal: null, resumoImpostos: null, resumoAcumulador: null }
 };
 
+// Estrutura inicial para dados do setor pessoal
+const initialDadosPessoal = {
+  // cnpjId -> { fgts: null, inss: null, empregados: null, salarioBase: null, ferias: null }
+};
+
 export const DataProvider = ({ children }) => {
   // Estado para Grupos
   const [grupos, setGrupos] = useState(() => {
@@ -89,6 +100,12 @@ export const DataProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : initialDadosFiscais;
   });
 
+  // Estado para dados do setor pessoal por CNPJ
+  const [dadosPessoal, setDadosPessoal] = useState(() => {
+    const saved = localStorage.getItem('agili_dados_pessoal');
+    return saved ? JSON.parse(saved) : initialDadosPessoal;
+  });
+
   // Persistir no localStorage
   useEffect(() => {
     localStorage.setItem('agili_grupos', JSON.stringify(grupos));
@@ -109,6 +126,10 @@ export const DataProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('agili_dados_fiscais', JSON.stringify(dadosFiscais));
   }, [dadosFiscais]);
+
+  useEffect(() => {
+    localStorage.setItem('agili_dados_pessoal', JSON.stringify(dadosPessoal));
+  }, [dadosPessoal]);
 
   // ===== CRUD GRUPOS =====
   const addGrupo = (grupo) => {
@@ -345,6 +366,68 @@ export const DataProvider = ({ children }) => {
     });
   };
 
+  // ===== DADOS PESSOAL (RH) =====
+  const importarRelatorioPessoal = (cnpjId, tipoRelatorio, csvContent) => {
+    try {
+      let dadosParsed;
+
+      switch (tipoRelatorio) {
+        case 'fgts':
+          dadosParsed = parseDemonstrativoFGTS(csvContent);
+          break;
+        case 'inss':
+          dadosParsed = parseFolhaINSS(csvContent);
+          break;
+        case 'empregados':
+          dadosParsed = parseRelacaoEmpregados(csvContent);
+          break;
+        case 'salarioBase':
+          dadosParsed = parseSalarioBase(csvContent);
+          break;
+        case 'ferias':
+          dadosParsed = parseProgramacaoFerias(csvContent);
+          break;
+        default:
+          throw new Error(`Tipo de relatório pessoal desconhecido: ${tipoRelatorio}`);
+      }
+
+      setDadosPessoal(prev => {
+        const cnpjData = prev[cnpjId] || {
+          fgts: null,
+          inss: null,
+          empregados: null,
+          salarioBase: null,
+          ferias: null
+        };
+
+        return {
+          ...prev,
+          [cnpjId]: {
+            ...cnpjData,
+            [tipoRelatorio]: dadosParsed
+          }
+        };
+      });
+
+      return { success: true, dados: dadosParsed };
+    } catch (error) {
+      console.error('Erro ao importar relatório pessoal:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  const getDadosPessoal = (cnpjId) => {
+    return dadosPessoal[cnpjId] || null;
+  };
+
+  const limparDadosPessoal = (cnpjId) => {
+    setDadosPessoal(prev => {
+      const newData = { ...prev };
+      delete newData[cnpjId];
+      return newData;
+    });
+  };
+
   // ===== ESTATISTICAS =====
   const getStats = () => ({
     totalGrupos: grupos.length,
@@ -395,6 +478,12 @@ export const DataProvider = ({ children }) => {
     importarRelatorioFiscal,
     getDadosFiscais,
     limparDadosFiscais,
+
+    // Dados Pessoal (RH)
+    dadosPessoal,
+    importarRelatorioPessoal,
+    getDadosPessoal,
+    limparDadosPessoal,
 
     // Utils
     getStats,

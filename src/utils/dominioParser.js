@@ -1244,3 +1244,826 @@ export const parseRelatorioFiscal = (csvContent) => {
       throw new Error('Tipo de relatório fiscal não reconhecido');
   }
 };
+
+// ============================================
+// PARSERS PARA SETOR PESSOAL (RH)
+// ============================================
+
+/**
+ * Parser para Demonstrativo FGTS Folha e e-Social
+ * Extrai dados de FGTS por competência
+ */
+export const parseDemonstrativoFGTS = (csvContent) => {
+  const lines = csvContent.split('\n');
+  let empresaInfo = {};
+  const registros = [];
+  let competenciaAtual = '';
+
+  // Totais por tipo de recolhimento
+  const totaisPorTipo = {};
+  // Totais por competência
+  const totaisPorCompetencia = {};
+  // Totais por ano
+  const totaisPorAno = {};
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const cols = line.split(';').map(c => c.trim());
+
+    // Extrair informações da empresa
+    if (line.includes('Empresa:') || line.includes('EMPRESA:')) {
+      empresaInfo.razaoSocial = cols.find(c => c && !c.includes('Empresa') && !c.includes('EMPRESA') && c.length > 3) || '';
+    }
+    if (/C\.?N\.?P\.?J\.?:/i.test(line) || /CNPJ:/i.test(line)) {
+      const cnpjMatch = line.match(/\d{14}|\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}/);
+      if (cnpjMatch) empresaInfo.cnpj = cnpjMatch[0];
+    }
+
+    // Identificar competência (formato MM/AAAA ou Competência: MM/AAAA)
+    const compMatch = line.match(/(\d{2})\/(\d{4})/);
+    if (compMatch && /compet/i.test(line)) {
+      competenciaAtual = `${compMatch[1]}/${compMatch[2]}`;
+      continue;
+    }
+
+    // Verificar se é linha de dados (começa com número - código do colaborador ou sequência)
+    // Formato típico: Competência;Colaboradores;Tipo;Base;Valor FGTS
+    if (cols[0] && /^\d{2}\/\d{4}$/.test(cols[0])) {
+      competenciaAtual = cols[0];
+      const competenciaParts = cols[0].split('/');
+      const ano = parseInt(competenciaParts[1]);
+      const mes = parseInt(competenciaParts[0]);
+
+      // Buscar valores na linha
+      // Colaboradores geralmente está na segunda ou terceira coluna
+      let colaboradores = 0;
+      let tipo = '';
+      let base = 0;
+      let valorFGTS = 0;
+
+      // Procurar número de colaboradores (inteiro entre 1-9999)
+      for (let j = 1; j < cols.length; j++) {
+        const val = cols[j];
+        if (val && /^\d+$/.test(val) && parseInt(val) >= 1 && parseInt(val) <= 9999) {
+          colaboradores = parseInt(val);
+          break;
+        }
+      }
+
+      // Procurar tipo (texto como "Mensal", "13º Salário", "Rescisão", etc)
+      for (let j = 1; j < cols.length; j++) {
+        const val = cols[j].toLowerCase();
+        if (val.includes('mensal') || val.includes('13') || val.includes('rescis') ||
+            val.includes('aviso') || val.includes('dissid') || val.includes('retif')) {
+          tipo = cols[j];
+          break;
+        }
+      }
+
+      // Procurar valores monetários (base e FGTS)
+      const valoresMonetarios = [];
+      for (let j = 1; j < cols.length; j++) {
+        const val = cols[j];
+        if (val && /^[\d.]+,\d{2}$/.test(val)) {
+          valoresMonetarios.push(parseValorBR(val));
+        }
+      }
+
+      if (valoresMonetarios.length >= 2) {
+        base = valoresMonetarios[valoresMonetarios.length - 2];
+        valorFGTS = valoresMonetarios[valoresMonetarios.length - 1];
+      } else if (valoresMonetarios.length === 1) {
+        valorFGTS = valoresMonetarios[0];
+      }
+
+      // Determinar tipo se não encontrado
+      if (!tipo) {
+        if (mes === 12 || mes === 13) tipo = '13º Salário';
+        else tipo = 'Mensal';
+      }
+
+      const registro = {
+        competencia: competenciaAtual,
+        mes,
+        ano,
+        colaboradores,
+        tipo,
+        base,
+        valorFGTS
+      };
+
+      registros.push(registro);
+
+      // Acumular totais por tipo
+      if (!totaisPorTipo[tipo]) {
+        totaisPorTipo[tipo] = { quantidade: 0, base: 0, valorFGTS: 0 };
+      }
+      totaisPorTipo[tipo].quantidade += colaboradores;
+      totaisPorTipo[tipo].base += base;
+      totaisPorTipo[tipo].valorFGTS += valorFGTS;
+
+      // Acumular totais por competência
+      if (!totaisPorCompetencia[competenciaAtual]) {
+        totaisPorCompetencia[competenciaAtual] = { colaboradores: 0, base: 0, valorFGTS: 0 };
+      }
+      totaisPorCompetencia[competenciaAtual].colaboradores = Math.max(
+        totaisPorCompetencia[competenciaAtual].colaboradores,
+        colaboradores
+      );
+      totaisPorCompetencia[competenciaAtual].base += base;
+      totaisPorCompetencia[competenciaAtual].valorFGTS += valorFGTS;
+
+      // Acumular totais por ano
+      if (!totaisPorAno[ano]) {
+        totaisPorAno[ano] = { base: 0, valorFGTS: 0, meses: 0 };
+      }
+      totaisPorAno[ano].base += base;
+      totaisPorAno[ano].valorFGTS += valorFGTS;
+      totaisPorAno[ano].meses++;
+    }
+  }
+
+  // Ordenar competências
+  const competencias = Object.keys(totaisPorCompetencia).sort((a, b) => {
+    const [mesA, anoA] = a.split('/').map(Number);
+    const [mesB, anoB] = b.split('/').map(Number);
+    return anoA !== anoB ? anoA - anoB : mesA - mesB;
+  });
+
+  // Últimos 3 meses para gráfico
+  const ultimos3Meses = competencias.slice(-3);
+
+  // Total geral
+  const totalGeral = {
+    base: registros.reduce((acc, r) => acc + r.base, 0),
+    valorFGTS: registros.reduce((acc, r) => acc + r.valorFGTS, 0)
+  };
+
+  return {
+    empresaInfo,
+    registros,
+    totaisPorTipo,
+    totaisPorCompetencia,
+    totaisPorAno,
+    competencias,
+    ultimos3Meses,
+    totalGeral,
+    anos: Object.keys(totaisPorAno).map(Number).sort(),
+    tipo: 'fgts'
+  };
+};
+
+/**
+ * Parser para Folha de INSS
+ * Extrai dados de INSS por competência e empresa
+ */
+export const parseFolhaINSS = (csvContent) => {
+  const lines = csvContent.split('\n');
+  let empresaInfo = {};
+  const registros = [];
+  let competenciaAtual = '';
+  let empresaAtual = '';
+
+  // Totais por empresa
+  const totaisPorEmpresa = {};
+  // Totais por competência
+  const totaisPorCompetencia = {};
+  // Contagem por tipo (Original/Retificador)
+  const totaisPorTipo = { original: 0, retificador: 0 };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const cols = line.split(';').map(c => c.trim());
+
+    // Extrair informações da empresa principal
+    if (/C\.?N\.?P\.?J\.?:/i.test(line) || /CNPJ:/i.test(line)) {
+      const cnpjMatch = line.match(/\d{14}|\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}/);
+      if (cnpjMatch) empresaInfo.cnpj = cnpjMatch[0];
+    }
+
+    // Identificar competência
+    const compMatch = line.match(/compet[êe]ncia[:\s]+(\d{2})\/(\d{4})/i);
+    if (compMatch) {
+      competenciaAtual = `${compMatch[1]}/${compMatch[2]}`;
+      continue;
+    }
+
+    // Verificar se linha tem dados de INSS
+    // Formato: Competência;Empregados;Base Cálculo;Taxa;Valor INSS;Tipo
+    if (cols[0] && /^\d{2}\/\d{4}$/.test(cols[0])) {
+      competenciaAtual = cols[0];
+      const competenciaParts = cols[0].split('/');
+      const ano = parseInt(competenciaParts[1]);
+      const mes = parseInt(competenciaParts[0]);
+
+      let empregados = 0;
+      let baseCalculo = 0;
+      let taxa = 0;
+      let valorINSS = 0;
+      let tipoGuia = 'Original';
+
+      // Procurar número de empregados
+      for (let j = 1; j < cols.length; j++) {
+        const val = cols[j];
+        if (val && /^\d+$/.test(val) && parseInt(val) >= 1 && parseInt(val) <= 9999) {
+          empregados = parseInt(val);
+          break;
+        }
+      }
+
+      // Procurar valores monetários
+      const valoresMonetarios = [];
+      for (let j = 1; j < cols.length; j++) {
+        const val = cols[j];
+        if (val && /^[\d.]+,\d{2}$/.test(val)) {
+          valoresMonetarios.push(parseValorBR(val));
+        }
+      }
+
+      if (valoresMonetarios.length >= 3) {
+        baseCalculo = valoresMonetarios[0];
+        taxa = valoresMonetarios[1];
+        valorINSS = valoresMonetarios[2];
+      } else if (valoresMonetarios.length === 2) {
+        baseCalculo = valoresMonetarios[0];
+        valorINSS = valoresMonetarios[1];
+      } else if (valoresMonetarios.length === 1) {
+        valorINSS = valoresMonetarios[0];
+      }
+
+      // Verificar tipo de guia
+      if (/retif/i.test(line)) {
+        tipoGuia = 'Retificador';
+        totaisPorTipo.retificador++;
+      } else {
+        totaisPorTipo.original++;
+      }
+
+      const registro = {
+        competencia: competenciaAtual,
+        mes,
+        ano,
+        empresa: empresaAtual || empresaInfo.razaoSocial || 'Empresa Principal',
+        empregados,
+        baseCalculo,
+        taxa,
+        valorINSS,
+        tipoGuia
+      };
+
+      registros.push(registro);
+
+      // Acumular por empresa
+      const nomeEmpresa = registro.empresa;
+      if (!totaisPorEmpresa[nomeEmpresa]) {
+        totaisPorEmpresa[nomeEmpresa] = { empregados: 0, baseCalculo: 0, valorINSS: 0 };
+      }
+      totaisPorEmpresa[nomeEmpresa].empregados = Math.max(
+        totaisPorEmpresa[nomeEmpresa].empregados,
+        empregados
+      );
+      totaisPorEmpresa[nomeEmpresa].baseCalculo += baseCalculo;
+      totaisPorEmpresa[nomeEmpresa].valorINSS += valorINSS;
+
+      // Acumular por competência
+      if (!totaisPorCompetencia[competenciaAtual]) {
+        totaisPorCompetencia[competenciaAtual] = { empregados: 0, baseCalculo: 0, valorINSS: 0 };
+      }
+      totaisPorCompetencia[competenciaAtual].empregados = Math.max(
+        totaisPorCompetencia[competenciaAtual].empregados,
+        empregados
+      );
+      totaisPorCompetencia[competenciaAtual].baseCalculo += baseCalculo;
+      totaisPorCompetencia[competenciaAtual].valorINSS += valorINSS;
+    }
+
+    // Verificar se é nome de empresa (linha que não tem dados numéricos)
+    if (cols[0] && cols[0].length > 10 && !/^\d/.test(cols[0]) && !/:/.test(cols[0])) {
+      const potencialEmpresa = cols[0].trim();
+      if (potencialEmpresa && !/total|compet|cnpj|empresa|inss/i.test(potencialEmpresa)) {
+        empresaAtual = potencialEmpresa;
+      }
+    }
+  }
+
+  // Ordenar competências
+  const competencias = Object.keys(totaisPorCompetencia).sort((a, b) => {
+    const [mesA, anoA] = a.split('/').map(Number);
+    const [mesB, anoB] = b.split('/').map(Number);
+    return anoA !== anoB ? anoA - anoB : mesA - mesB;
+  });
+
+  // Total geral
+  const totalGeral = {
+    baseCalculo: registros.reduce((acc, r) => acc + r.baseCalculo, 0),
+    valorINSS: registros.reduce((acc, r) => acc + r.valorINSS, 0)
+  };
+
+  return {
+    empresaInfo,
+    registros,
+    totaisPorEmpresa,
+    totaisPorCompetencia,
+    totaisPorTipo,
+    competencias,
+    totalGeral,
+    tipo: 'inss'
+  };
+};
+
+/**
+ * Parser para Relação de Empregados
+ * Extrai lista de empregados com dados de admissão, demissão e situação
+ */
+export const parseRelacaoEmpregados = (csvContent) => {
+  const lines = csvContent.split('\n');
+  let empresaInfo = {};
+  const empregados = [];
+
+  // Estatísticas
+  let totalAtivos = 0;
+  let totalDemitidos = 0;
+  let totalAfastados = 0;
+  const admissoesPorMes = {};
+  const demissoesPorMes = {};
+  const empregadosPorCargo = {};
+  const empregadosPorSituacao = {};
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const cols = line.split(';').map(c => c.trim());
+
+    // Extrair informações da empresa
+    if (line.includes('Empresa:') || line.includes('EMPRESA:')) {
+      empresaInfo.razaoSocial = cols.find(c => c && !c.includes('Empresa') && !c.includes('EMPRESA') && c.length > 3) || '';
+    }
+    if (/C\.?N\.?P\.?J\.?:/i.test(line) || /CNPJ:/i.test(line)) {
+      const cnpjMatch = line.match(/\d{14}|\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}/);
+      if (cnpjMatch) empresaInfo.cnpj = cnpjMatch[0];
+    }
+
+    // Verificar se é linha de empregado (começa com código numérico)
+    if (cols[0] && /^\d+$/.test(cols[0]) && cols.length >= 4) {
+      const codigo = parseInt(cols[0]);
+
+      // Procurar dados nas colunas
+      let nome = '';
+      let cargo = '';
+      let dataAdmissao = null;
+      let situacao = '';
+      let dataSituacao = null;
+      let salario = 0;
+
+      // Procurar nome (texto longo sem data)
+      for (let j = 1; j < cols.length; j++) {
+        const val = cols[j];
+        if (val && val.length > 5 && !/^\d{2}\/\d{2}\/\d{4}$/.test(val) &&
+            !/^[\d.,]+$/.test(val) && !nome) {
+          nome = val;
+        }
+      }
+
+      // Procurar cargo (segundo texto longo)
+      for (let j = 1; j < cols.length; j++) {
+        const val = cols[j];
+        if (val && val.length >= 3 && val !== nome &&
+            !/^\d{2}\/\d{2}\/\d{4}$/.test(val) && !/^[\d.,]+$/.test(val)) {
+          cargo = val;
+          break;
+        }
+      }
+
+      // Procurar datas (formato DD/MM/AAAA)
+      const datas = [];
+      for (let j = 1; j < cols.length; j++) {
+        const val = cols[j];
+        if (val && /^\d{2}\/\d{2}\/\d{4}$/.test(val)) {
+          datas.push(val);
+        }
+      }
+
+      if (datas.length >= 1) dataAdmissao = datas[0];
+      if (datas.length >= 2) dataSituacao = datas[1];
+
+      // Procurar situação (geralmente após a data de admissão)
+      for (let j = 1; j < cols.length; j++) {
+        const val = cols[j].toUpperCase();
+        if (val === 'ATIVO' || val === 'DEMITIDO' || val === 'AFASTADO' ||
+            val === 'LICENÇA' || val === 'FÉRIAS' || val.includes('FERIAS') ||
+            val === 'ST' || val === 'LICENCA') {
+          situacao = cols[j];
+          break;
+        }
+      }
+
+      // Procurar salário (valor monetário)
+      for (let j = 1; j < cols.length; j++) {
+        const val = cols[j];
+        if (val && /^[\d.]+,\d{2}$/.test(val)) {
+          salario = parseValorBR(val);
+          break;
+        }
+      }
+
+      // Normalizar situação
+      const situacaoUpper = situacao.toUpperCase();
+      let situacaoNormalizada = 'Ativo';
+      if (situacaoUpper.includes('DEMIT') || situacaoUpper === 'D') {
+        situacaoNormalizada = 'Demitido';
+        totalDemitidos++;
+      } else if (situacaoUpper.includes('AFAST') || situacaoUpper.includes('LICEN') ||
+                 situacaoUpper.includes('LICENÇA')) {
+        situacaoNormalizada = 'Afastado';
+        totalAfastados++;
+      } else {
+        totalAtivos++;
+      }
+
+      const empregado = {
+        codigo,
+        nome: nome || `Empregado ${codigo}`,
+        cargo: cargo || 'Não informado',
+        dataAdmissao,
+        situacao: situacaoNormalizada,
+        dataSituacao,
+        salario
+      };
+
+      empregados.push(empregado);
+
+      // Contabilizar por cargo
+      if (!empregadosPorCargo[empregado.cargo]) {
+        empregadosPorCargo[empregado.cargo] = { total: 0, ativos: 0, salarioTotal: 0 };
+      }
+      empregadosPorCargo[empregado.cargo].total++;
+      if (situacaoNormalizada === 'Ativo') {
+        empregadosPorCargo[empregado.cargo].ativos++;
+        empregadosPorCargo[empregado.cargo].salarioTotal += salario;
+      }
+
+      // Contabilizar por situação
+      if (!empregadosPorSituacao[situacaoNormalizada]) {
+        empregadosPorSituacao[situacaoNormalizada] = 0;
+      }
+      empregadosPorSituacao[situacaoNormalizada]++;
+
+      // Contabilizar admissões por mês
+      if (dataAdmissao) {
+        const [dia, mes, ano] = dataAdmissao.split('/');
+        const competencia = `${mes}/${ano}`;
+        if (!admissoesPorMes[competencia]) admissoesPorMes[competencia] = 0;
+        admissoesPorMes[competencia]++;
+      }
+
+      // Contabilizar demissões por mês
+      if (situacaoNormalizada === 'Demitido' && dataSituacao) {
+        const [dia, mes, ano] = dataSituacao.split('/');
+        const competencia = `${mes}/${ano}`;
+        if (!demissoesPorMes[competencia]) demissoesPorMes[competencia] = 0;
+        demissoesPorMes[competencia]++;
+      }
+    }
+  }
+
+  // Ordenar competências de admissão e demissão
+  const ordenarCompetencias = (obj) => {
+    return Object.keys(obj).sort((a, b) => {
+      const [mesA, anoA] = a.split('/').map(Number);
+      const [mesB, anoB] = b.split('/').map(Number);
+      return anoA !== anoB ? anoA - anoB : mesA - mesB;
+    });
+  };
+
+  return {
+    empresaInfo,
+    empregados,
+    estatisticas: {
+      total: empregados.length,
+      ativos: totalAtivos,
+      demitidos: totalDemitidos,
+      afastados: totalAfastados
+    },
+    empregadosPorCargo,
+    empregadosPorSituacao,
+    admissoesPorMes,
+    demissoesPorMes,
+    competenciasAdmissao: ordenarCompetencias(admissoesPorMes),
+    competenciasDemissao: ordenarCompetencias(demissoesPorMes),
+    tipo: 'empregados'
+  };
+};
+
+/**
+ * Parser para Salário Base
+ * Extrai dados de salário por cargo
+ */
+export const parseSalarioBase = (csvContent) => {
+  const lines = csvContent.split('\n');
+  let empresaInfo = {};
+  const empregados = [];
+  const salariosPorCargo = {};
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const cols = line.split(';').map(c => c.trim());
+
+    // Extrair informações da empresa
+    if (line.includes('Empresa:') || line.includes('EMPRESA:')) {
+      empresaInfo.razaoSocial = cols.find(c => c && !c.includes('Empresa') && !c.includes('EMPRESA') && c.length > 3) || '';
+    }
+    if (/C\.?N\.?P\.?J\.?:/i.test(line) || /CNPJ:/i.test(line)) {
+      const cnpjMatch = line.match(/\d{14}|\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}/);
+      if (cnpjMatch) empresaInfo.cnpj = cnpjMatch[0];
+    }
+
+    // Verificar se é linha de empregado
+    if (cols[0] && /^\d+$/.test(cols[0]) && cols.length >= 3) {
+      const codigo = parseInt(cols[0]);
+      let nome = '';
+      let cargo = '';
+      let salario = 0;
+
+      // Procurar nome
+      for (let j = 1; j < cols.length; j++) {
+        const val = cols[j];
+        if (val && val.length > 5 && !/^[\d.,]+$/.test(val)) {
+          nome = val;
+          break;
+        }
+      }
+
+      // Procurar cargo (segundo texto)
+      let foundNome = false;
+      for (let j = 1; j < cols.length; j++) {
+        const val = cols[j];
+        if (val && val.length > 2 && !/^[\d.,]+$/.test(val)) {
+          if (!foundNome) {
+            foundNome = true;
+          } else {
+            cargo = val;
+            break;
+          }
+        }
+      }
+
+      // Procurar salário (último valor monetário)
+      for (let j = cols.length - 1; j >= 0; j--) {
+        const val = cols[j];
+        if (val && /^[\d.]+,\d{2}$/.test(val)) {
+          salario = parseValorBR(val);
+          break;
+        }
+      }
+
+      if (nome || salario > 0) {
+        empregados.push({
+          codigo,
+          nome: nome || `Empregado ${codigo}`,
+          cargo: cargo || 'Não informado',
+          salario
+        });
+
+        // Agrupar por cargo
+        const cargoNome = cargo || 'Não informado';
+        if (!salariosPorCargo[cargoNome]) {
+          salariosPorCargo[cargoNome] = { quantidade: 0, salarioTotal: 0, salarioMedio: 0, salarioMin: Infinity, salarioMax: 0 };
+        }
+        salariosPorCargo[cargoNome].quantidade++;
+        salariosPorCargo[cargoNome].salarioTotal += salario;
+        salariosPorCargo[cargoNome].salarioMin = Math.min(salariosPorCargo[cargoNome].salarioMin, salario);
+        salariosPorCargo[cargoNome].salarioMax = Math.max(salariosPorCargo[cargoNome].salarioMax, salario);
+      }
+    }
+  }
+
+  // Calcular médias
+  Object.keys(salariosPorCargo).forEach(cargo => {
+    const dados = salariosPorCargo[cargo];
+    dados.salarioMedio = dados.quantidade > 0 ? dados.salarioTotal / dados.quantidade : 0;
+    if (dados.salarioMin === Infinity) dados.salarioMin = 0;
+  });
+
+  // Ordenar cargos por salário médio (decrescente)
+  const cargosOrdenados = Object.entries(salariosPorCargo)
+    .sort((a, b) => b[1].salarioMedio - a[1].salarioMedio)
+    .map(([cargo, dados]) => ({ cargo, ...dados }));
+
+  // Totais
+  const totalSalarios = empregados.reduce((acc, e) => acc + e.salario, 0);
+  const salarioMedioGeral = empregados.length > 0 ? totalSalarios / empregados.length : 0;
+
+  return {
+    empresaInfo,
+    empregados,
+    salariosPorCargo,
+    cargosOrdenados,
+    estatisticas: {
+      totalEmpregados: empregados.length,
+      totalSalarios,
+      salarioMedioGeral,
+      quantidadeCargos: Object.keys(salariosPorCargo).length
+    },
+    tipo: 'salarioBase'
+  };
+};
+
+/**
+ * Parser para Programação de Férias
+ * Extrai dados de férias programadas
+ */
+export const parseProgramacaoFerias = (csvContent) => {
+  const lines = csvContent.split('\n');
+  let empresaInfo = {};
+  const ferias = [];
+  const feriasPorMes = {};
+  const feriasPorStatus = { programadas: 0, gozadas: 0, pendentes: 0 };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const cols = line.split(';').map(c => c.trim());
+
+    // Extrair informações da empresa
+    if (line.includes('Empresa:') || line.includes('EMPRESA:')) {
+      empresaInfo.razaoSocial = cols.find(c => c && !c.includes('Empresa') && !c.includes('EMPRESA') && c.length > 3) || '';
+    }
+    if (/C\.?N\.?P\.?J\.?:/i.test(line) || /CNPJ:/i.test(line)) {
+      const cnpjMatch = line.match(/\d{14}|\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}/);
+      if (cnpjMatch) empresaInfo.cnpj = cnpjMatch[0];
+    }
+
+    // Verificar se é linha de férias (começa com código)
+    if (cols[0] && /^\d+$/.test(cols[0]) && cols.length >= 4) {
+      const codigo = parseInt(cols[0]);
+      let nome = '';
+      let dataInicio = null;
+      let dataFim = null;
+      let diasDireito = 0;
+      let diasGozados = 0;
+      let diasRestantes = 0;
+
+      // Procurar nome
+      for (let j = 1; j < cols.length; j++) {
+        const val = cols[j];
+        if (val && val.length > 5 && !/^\d{2}\/\d{2}\/\d{4}$/.test(val) &&
+            !/^[\d.,]+$/.test(val)) {
+          nome = val;
+          break;
+        }
+      }
+
+      // Procurar datas
+      const datas = [];
+      for (let j = 1; j < cols.length; j++) {
+        const val = cols[j];
+        if (val && /^\d{2}\/\d{2}\/\d{4}$/.test(val)) {
+          datas.push(val);
+        }
+      }
+
+      if (datas.length >= 1) dataInicio = datas[0];
+      if (datas.length >= 2) dataFim = datas[1];
+
+      // Procurar dias (números inteiros de 1 a 60)
+      const dias = [];
+      for (let j = 1; j < cols.length; j++) {
+        const val = cols[j];
+        if (val && /^\d+$/.test(val)) {
+          const num = parseInt(val);
+          if (num >= 1 && num <= 60) {
+            dias.push(num);
+          }
+        }
+      }
+
+      if (dias.length >= 1) diasDireito = dias[0];
+      if (dias.length >= 2) diasGozados = dias[1];
+      diasRestantes = diasDireito - diasGozados;
+
+      // Determinar status
+      let status = 'Programada';
+      if (diasGozados >= diasDireito) {
+        status = 'Gozadas';
+        feriasPorStatus.gozadas++;
+      } else if (diasGozados > 0) {
+        status = 'Parcial';
+        feriasPorStatus.pendentes++;
+      } else {
+        feriasPorStatus.programadas++;
+      }
+
+      const registro = {
+        codigo,
+        nome: nome || `Empregado ${codigo}`,
+        dataInicio,
+        dataFim,
+        diasDireito,
+        diasGozados,
+        diasRestantes,
+        status
+      };
+
+      ferias.push(registro);
+
+      // Agrupar por mês de início
+      if (dataInicio) {
+        const [dia, mes, ano] = dataInicio.split('/');
+        const competencia = `${mes}/${ano}`;
+        if (!feriasPorMes[competencia]) {
+          feriasPorMes[competencia] = { quantidade: 0, diasTotal: 0, empregados: [] };
+        }
+        feriasPorMes[competencia].quantidade++;
+        feriasPorMes[competencia].diasTotal += diasDireito;
+        feriasPorMes[competencia].empregados.push(nome);
+      }
+    }
+  }
+
+  // Ordenar por data de início
+  ferias.sort((a, b) => {
+    if (!a.dataInicio) return 1;
+    if (!b.dataInicio) return -1;
+    const [diaA, mesA, anoA] = a.dataInicio.split('/').map(Number);
+    const [diaB, mesB, anoB] = b.dataInicio.split('/').map(Number);
+    if (anoA !== anoB) return anoA - anoB;
+    if (mesA !== mesB) return mesA - mesB;
+    return diaA - diaB;
+  });
+
+  // Ordenar meses
+  const mesesOrdenados = Object.keys(feriasPorMes).sort((a, b) => {
+    const [mesA, anoA] = a.split('/').map(Number);
+    const [mesB, anoB] = b.split('/').map(Number);
+    return anoA !== anoB ? anoA - anoB : mesA - mesB;
+  });
+
+  return {
+    empresaInfo,
+    ferias,
+    feriasPorMes,
+    feriasPorStatus,
+    mesesOrdenados,
+    estatisticas: {
+      totalRegistros: ferias.length,
+      diasTotalProgramados: ferias.reduce((acc, f) => acc + f.diasDireito, 0),
+      diasTotalGozados: ferias.reduce((acc, f) => acc + f.diasGozados, 0),
+      diasRestantes: ferias.reduce((acc, f) => acc + f.diasRestantes, 0)
+    },
+    tipo: 'ferias'
+  };
+};
+
+/**
+ * Detecta tipo de relatório do Setor Pessoal
+ */
+export const detectarTipoRelatorioPessoal = (csvContent) => {
+  const upper = csvContent.toUpperCase();
+
+  if (upper.includes('FGTS') || upper.includes('DEMONSTRATIVO') && upper.includes('FOLHA')) {
+    if (upper.includes('E-SOCIAL') || upper.includes('ESOCIAL') || upper.includes('FGTS')) {
+      return 'fgts';
+    }
+  }
+  if (upper.includes('INSS') || (upper.includes('FOLHA') && upper.includes('PREVIDENCIA'))) {
+    return 'inss';
+  }
+  if (upper.includes('EMPREGADO') || upper.includes('COLABORADOR')) {
+    if (upper.includes('ADMISS') || upper.includes('SITUA')) {
+      return 'empregados';
+    }
+    if (upper.includes('SAL') && upper.includes('BASE')) {
+      return 'salarioBase';
+    }
+  }
+  if (upper.includes('FÉRIAS') || upper.includes('FERIAS') || upper.includes('PROGRAMA')) {
+    if (upper.includes('FÉRIAS') || upper.includes('FERIAS')) {
+      return 'ferias';
+    }
+  }
+  if (upper.includes('SALÁRIO') || upper.includes('SALARIO')) {
+    return 'salarioBase';
+  }
+
+  return 'desconhecido';
+};
+
+/**
+ * Parser universal para relatórios do Setor Pessoal
+ */
+export const parseRelatorioPessoal = (csvContent) => {
+  const tipo = detectarTipoRelatorioPessoal(csvContent);
+
+  switch (tipo) {
+    case 'fgts':
+      return { tipo, dados: parseDemonstrativoFGTS(csvContent) };
+    case 'inss':
+      return { tipo, dados: parseFolhaINSS(csvContent) };
+    case 'empregados':
+      return { tipo, dados: parseRelacaoEmpregados(csvContent) };
+    case 'salarioBase':
+      return { tipo, dados: parseSalarioBase(csvContent) };
+    case 'ferias':
+      return { tipo, dados: parseProgramacaoFerias(csvContent) };
+    default:
+      throw new Error('Tipo de relatório pessoal não reconhecido');
+  }
+};

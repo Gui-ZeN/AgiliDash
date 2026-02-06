@@ -82,6 +82,20 @@ import {
   Tabela380,
   CardsMetricasFiscais
 } from '../components/charts/FiscalCharts';
+import {
+  FGTSPorTipoChart,
+  FGTSPorAnoChart,
+  FGTSUltimos3MesesChart,
+  FGTSMensalChart,
+  INSSPorEmpresaChart,
+  INSSPorTipoGuiaChart,
+  INSSMensalChart,
+  AdmissoesDemissoesChart,
+  EmpregadosPorSituacaoChart,
+  SalarioPorCargoChart,
+  TabelaFerias,
+  CardsMetricasPessoal
+} from '../components/charts/PessoalCharts';
 import { useData } from '../context/DataContext';
 import FaturamentoChart from '../components/charts/FaturamentoChart';
 import IRPJChart from '../components/charts/IRPJChart';
@@ -122,7 +136,7 @@ const Dashboard = () => {
   // Usar contexto da empresa e tema
   const { cnpjInfo, cnpjDados, isConsolidado, totaisConsolidados } = useEmpresa();
   const { isDarkMode } = useTheme();
-  const { getDadosContabeis, getDadosFiscais } = useData();
+  const { getDadosContabeis, getDadosFiscais, getDadosPessoal } = useData();
 
   // Obter dados contábeis importados para o CNPJ selecionado
   const dadosContabeisImportados = getDadosContabeis(cnpjInfo?.id);
@@ -131,6 +145,10 @@ const Dashboard = () => {
   // Obter dados fiscais importados para o CNPJ selecionado
   const dadosFiscaisImportados = getDadosFiscais(cnpjInfo?.id);
   const temDadosFiscais = dadosFiscaisImportados?.resumoAcumulador || dadosFiscaisImportados?.demonstrativoMensal || dadosFiscaisImportados?.resumoImpostos;
+
+  // Obter dados do setor pessoal importados para o CNPJ selecionado
+  const dadosPessoalImportados = getDadosPessoal(cnpjInfo?.id);
+  const temDadosPessoal = dadosPessoalImportados?.fgts || dadosPessoalImportados?.inss || dadosPessoalImportados?.empregados || dadosPessoalImportados?.salarioBase || dadosPessoalImportados?.ferias;
 
   // Dados do CNPJ selecionado
   const dreData = selectedYear === 2025 ? cnpjDados.dreData2025 : cnpjDados.dreData2024;
@@ -1418,6 +1436,194 @@ const Dashboard = () => {
               </div>
             </div>
 
+            {/* ===== SEÇÃO: DADOS IMPORTADOS DO SETOR PESSOAL ===== */}
+            {temDadosPessoal && (
+              <>
+                {/* Separador */}
+                <div className={`flex items-center gap-4 transition-all duration-500 delay-500 ${cardAnimation}`}>
+                  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-teal-300 to-transparent"></div>
+                  <span className="px-4 py-2 bg-teal-50 text-teal-700 rounded-full text-sm font-bold uppercase tracking-wider dark:bg-teal-900/30 dark:text-teal-400">
+                    Dados Importados
+                  </span>
+                  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-teal-300 to-transparent"></div>
+                </div>
+
+                {/* Cards de métricas importadas */}
+                <div className={`transition-all duration-500 delay-600 ${cardAnimation}`}>
+                  <CardsMetricasPessoal
+                    dadosFGTS={dadosPessoalImportados?.fgts}
+                    dadosINSS={dadosPessoalImportados?.inss}
+                    dadosEmpregados={dadosPessoalImportados?.empregados}
+                    dadosSalario={dadosPessoalImportados?.salarioBase}
+                  />
+                </div>
+
+                {/* Gráficos FGTS */}
+                {dadosPessoalImportados?.fgts && (
+                  <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 transition-all duration-500 delay-700 ${cardAnimation}`}>
+                    <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm`}>
+                      <div className="flex items-center justify-between mb-6">
+                        <div>
+                          <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>FGTS por Tipo</h3>
+                          <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Mensal, 13o, Rescisao</p>
+                        </div>
+                        <div className="p-3 bg-blue-50 rounded-xl dark:bg-blue-900/30">
+                          <PieChart className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                        </div>
+                      </div>
+                      <FGTSPorTipoChart dados={dadosPessoalImportados.fgts} />
+                    </div>
+
+                    <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm`}>
+                      <div className="flex items-center justify-between mb-6">
+                        <div>
+                          <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>FGTS Ultimos 3 Meses</h3>
+                          <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Comparativo recente</p>
+                        </div>
+                        <div className="p-3 bg-teal-50 rounded-xl dark:bg-teal-900/30">
+                          <BarChart2 className="w-6 h-6 text-teal-600 dark:text-teal-400" />
+                        </div>
+                      </div>
+                      <FGTSUltimos3MesesChart dados={dadosPessoalImportados.fgts} />
+                    </div>
+                  </div>
+                )}
+
+                {/* FGTS Mensal + Por Ano */}
+                {dadosPessoalImportados?.fgts && (
+                  <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 transition-all duration-500 delay-800 ${cardAnimation}`}>
+                    <div className={`md:col-span-2 ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm`}>
+                      <div className="flex items-center justify-between mb-6">
+                        <div>
+                          <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>FGTS Mes a Mes</h3>
+                          <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Evolucao mensal do FGTS</p>
+                        </div>
+                      </div>
+                      <FGTSMensalChart dados={dadosPessoalImportados.fgts} />
+                    </div>
+
+                    <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm`}>
+                      <div className="flex items-center justify-between mb-6">
+                        <div>
+                          <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>FGTS por Ano</h3>
+                          <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Acumulado anual</p>
+                        </div>
+                      </div>
+                      <FGTSPorAnoChart dados={dadosPessoalImportados.fgts} />
+                    </div>
+                  </div>
+                )}
+
+                {/* Gráficos INSS */}
+                {dadosPessoalImportados?.inss && (
+                  <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 transition-all duration-500 delay-900 ${cardAnimation}`}>
+                    <div className={`md:col-span-2 ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm`}>
+                      <div className="flex items-center justify-between mb-6">
+                        <div>
+                          <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>INSS por Empresa</h3>
+                          <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Distribuicao por empresa</p>
+                        </div>
+                        <div className="p-3 bg-purple-50 rounded-xl dark:bg-purple-900/30">
+                          <BarChartHorizontal className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                        </div>
+                      </div>
+                      <INSSPorEmpresaChart dados={dadosPessoalImportados.inss} />
+                    </div>
+
+                    <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm`}>
+                      <div className="flex items-center justify-between mb-6">
+                        <div>
+                          <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Tipo de Guia</h3>
+                          <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Original vs Retificador</p>
+                        </div>
+                      </div>
+                      <INSSPorTipoGuiaChart dados={dadosPessoalImportados.inss} />
+                    </div>
+                  </div>
+                )}
+
+                {/* INSS Mensal */}
+                {dadosPessoalImportados?.inss && (
+                  <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm transition-all duration-500 delay-1000 ${cardAnimation}`}>
+                    <div className="flex items-center justify-between mb-6">
+                      <div>
+                        <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>INSS Mes a Mes</h3>
+                        <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Evolucao mensal do INSS</p>
+                      </div>
+                    </div>
+                    <INSSMensalChart dados={dadosPessoalImportados.inss} />
+                  </div>
+                )}
+
+                {/* Gráficos de Empregados */}
+                {(dadosPessoalImportados?.empregados || dadosPessoalImportados?.salarioBase) && (
+                  <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 transition-all duration-500 delay-1100 ${cardAnimation}`}>
+                    {dadosPessoalImportados?.empregados && (
+                      <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm`}>
+                        <div className="flex items-center justify-between mb-6">
+                          <div>
+                            <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Admissoes e Demissoes</h3>
+                            <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Movimentacao de pessoal</p>
+                          </div>
+                          <div className="p-3 bg-green-50 rounded-xl dark:bg-green-900/30">
+                            <UserPlus className="w-6 h-6 text-green-600 dark:text-green-400" />
+                          </div>
+                        </div>
+                        <AdmissoesDemissoesChart dados={dadosPessoalImportados.empregados} />
+                      </div>
+                    )}
+
+                    {dadosPessoalImportados?.empregados && (
+                      <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm`}>
+                        <div className="flex items-center justify-between mb-6">
+                          <div>
+                            <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Por Situacao</h3>
+                            <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Ativos, Demitidos, Afastados</p>
+                          </div>
+                          <div className="p-3 bg-amber-50 rounded-xl dark:bg-amber-900/30">
+                            <PieChart className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                          </div>
+                        </div>
+                        <EmpregadosPorSituacaoChart dados={dadosPessoalImportados.empregados} />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Salário por Cargo */}
+                {dadosPessoalImportados?.salarioBase && (
+                  <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm transition-all duration-500 delay-1200 ${cardAnimation}`}>
+                    <div className="flex items-center justify-between mb-6">
+                      <div>
+                        <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Salario Medio por Cargo</h3>
+                        <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Top 10 cargos por salario</p>
+                      </div>
+                      <div className="p-3 bg-emerald-50 rounded-xl dark:bg-emerald-900/30">
+                        <Banknote className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                      </div>
+                    </div>
+                    <SalarioPorCargoChart dados={dadosPessoalImportados.salarioBase} />
+                  </div>
+                )}
+
+                {/* Tabela de Férias */}
+                {dadosPessoalImportados?.ferias && (
+                  <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} rounded-3xl border shadow-sm overflow-hidden transition-all duration-500 delay-1300 ${cardAnimation}`}>
+                    <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
+                      <div>
+                        <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Programacao de Ferias</h3>
+                        <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Proximas ferias programadas</p>
+                      </div>
+                      <span className="px-3 py-1 bg-teal-50 text-teal-700 rounded-full text-sm font-medium dark:bg-teal-900/30 dark:text-teal-400">
+                        {dadosPessoalImportados.ferias?.ferias?.length || 0} registros
+                      </span>
+                    </div>
+                    <TabelaFerias dados={dadosPessoalImportados.ferias} />
+                  </div>
+                )}
+              </>
+            )}
+
             {/* Card de resumo */}
             <div className={`bg-gradient-to-r from-teal-600 to-cyan-600 p-8 rounded-3xl text-white shadow-xl transition-all duration-500 delay-500 ${cardAnimation}`}>
               <div className="flex items-start gap-6">
@@ -1425,12 +1631,12 @@ const Dashboard = () => {
                   <UserCheck className="w-8 h-8" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold mb-3">Resumo de Gestão de Pessoas</h3>
+                  <h3 className="text-xl font-bold mb-3">Resumo de Gestao de Pessoas</h3>
                   <p className="text-white/80 leading-relaxed">
                     O quadro atual conta com <strong>{pessoalData.funcionarios} colaboradores</strong>,
                     com custo total mensal de <strong>{formatCurrency(pessoalData.folhaMensal + pessoalData.encargos + pessoalData.beneficios)}</strong>
-                    (folha + encargos + benefícios). A área de <strong>Produção</strong> representa
-                    a maior concentração de funcionários, alinhada com a operação industrial da empresa.
+                    (folha + encargos + beneficios). A area de <strong>Producao</strong> representa
+                    a maior concentracao de funcionarios, alinhada com a operacao industrial da empresa.
                   </p>
                 </div>
               </div>

@@ -12,7 +12,10 @@ import { useData } from '../context/DataContext';
 import {
   parseAnaliseHorizontal, parseBalancete, parseDREComparativa, parseDREMensal,
   parseContribuicaoSocial, parseImpostoRenda, parseDemonstrativoFinanceiro,
-  parseDemonstrativoMensal, parseResumoImpostos, parseResumoPorAcumulador
+  parseDemonstrativoMensal, parseResumoImpostos, parseResumoPorAcumulador,
+  // Parsers do Setor Pessoal
+  parseDemonstrativoFGTS, parseFolhaINSS, parseRelacaoEmpregados,
+  parseSalarioBase, parseProgramacaoFerias
 } from '../utils/dominioParser';
 import { formatCurrency } from '../utils/formatters';
 
@@ -50,11 +53,11 @@ const SETORES_CONFIG = {
     icon: Users,
     cor: 'violet',
     relatorios: [
-      { id: 'folha', nome: 'Folha de Pagamento', campos: ['matricula', 'nome', 'cargo', 'salarioBruto', 'inss', 'irrf', 'valeTransporte', 'salarioLiquido'] },
-      { id: 'funcionarios', nome: 'Cadastro de Funcionarios', campos: ['matricula', 'nome', 'cpf', 'cargo', 'departamento', 'dataAdmissao', 'salario'] },
-      { id: 'ferias', nome: 'Controle de Ferias', campos: ['matricula', 'nome', 'periodoAquisitivo', 'diasDireito', 'diasGozados', 'saldo'] },
-      { id: 'rescisoes', nome: 'Rescisoes', campos: ['matricula', 'nome', 'dataDesligamento', 'motivoDesligamento', 'valorRescisao'] },
-      { id: 'encargos', nome: 'Encargos Sociais', campos: ['competencia', 'inssEmpresa', 'fgts', 'rat', 'terceiros', 'total'] }
+      { id: 'fgts', nome: 'Demonstrativo FGTS', descricao: 'Exportar do Dominio: Relatorios > Pessoal > Demonstrativo FGTS Folha e e-Social', formato: 'dominio' },
+      { id: 'inss', nome: 'Folha de INSS', descricao: 'Exportar do Dominio: Relatorios > Pessoal > Folha de INSS', formato: 'dominio' },
+      { id: 'empregados', nome: 'Relacao de Empregados', descricao: 'Exportar do Dominio: Relatorios > Pessoal > Relacao de Empregados', formato: 'dominio' },
+      { id: 'salarioBase', nome: 'Salario Base', descricao: 'Exportar do Dominio: Relatorios > Pessoal > Salario Base', formato: 'dominio' },
+      { id: 'ferias', nome: 'Programacao de Ferias', descricao: 'Exportar do Dominio: Relatorios > Pessoal > Programacao de Ferias', formato: 'dominio' }
     ]
   },
   administrativo: {
@@ -76,7 +79,8 @@ const Configuracoes = () => {
   const {
     grupos, cnpjs, usuarios, addGrupo, updateGrupo, deleteGrupo,
     addCnpj, updateCnpj, deleteCnpj, addUsuario, updateUsuario, deleteUsuario,
-    getCnpjsByGrupo, getStats, setoresDisponiveis, importarRelatorioContabil, importarRelatorioFiscal
+    getCnpjsByGrupo, getStats, setoresDisponiveis, importarRelatorioContabil, importarRelatorioFiscal,
+    importarRelatorioPessoal
   } = useData();
 
   // Estados principais
@@ -230,8 +234,8 @@ const Configuracoes = () => {
     reader.onload = (event) => {
       const text = event.target.result;
 
-      // Verificar se e formato Dominio (setor contabil ou fiscal) ou CSV normal
-      const isDominioFormat = importCategory === 'setores' && (importSetor === 'contabil' || importSetor === 'fiscal');
+      // Verificar se e formato Dominio (setor contabil, fiscal ou pessoal) ou CSV normal
+      const isDominioFormat = importCategory === 'setores' && (importSetor === 'contabil' || importSetor === 'fiscal' || importSetor === 'pessoal');
 
       if (isDominioFormat) {
         // Para relatórios do Domínio, parsear os dados imediatamente para preview inteligente
@@ -281,6 +285,28 @@ const Configuracoes = () => {
                 break;
               default:
                 parseError = 'Tipo de relatorio fiscal nao reconhecido';
+            }
+          }
+          // Parsers do setor Pessoal
+          else if (importSetor === 'pessoal') {
+            switch (importRelatorio) {
+              case 'fgts':
+                dadosParsed = parseDemonstrativoFGTS(text);
+                break;
+              case 'inss':
+                dadosParsed = parseFolhaINSS(text);
+                break;
+              case 'empregados':
+                dadosParsed = parseRelacaoEmpregados(text);
+                break;
+              case 'salarioBase':
+                dadosParsed = parseSalarioBase(text);
+                break;
+              case 'ferias':
+                dadosParsed = parseProgramacaoFerias(text);
+                break;
+              default:
+                parseError = 'Tipo de relatorio pessoal nao reconhecido';
             }
           }
         } catch (err) {
@@ -364,7 +390,7 @@ const Configuracoes = () => {
         });
       }
     } else if (importCategory === 'setores' && importPreview.isDominioFormat) {
-      // Usar parser especifico do Dominio para setor contabil ou fiscal
+      // Usar parser especifico do Dominio para setor contabil, fiscal ou pessoal
       let result;
 
       if (importSetor === 'contabil') {
@@ -375,6 +401,8 @@ const Configuracoes = () => {
           ? { trimestre: importPreview.trimestreSelecionado || selectedTrimestre }
           : {};
         result = importarRelatorioFiscal(selectedCnpjImport, importRelatorio, importPreview.rawContent, opcoes);
+      } else if (importSetor === 'pessoal') {
+        result = importarRelatorioPessoal(selectedCnpjImport, importRelatorio, importPreview.rawContent);
       }
 
       if (result?.success) {
@@ -1364,6 +1392,193 @@ const Configuracoes = () => {
                             <p className={`font-bold ${(importPreview.dadosParsed.categorias?.vendaMercadoria || 0) >= (importPreview.dadosParsed.categorias?.esperado380 || 0) ? 'text-green-600' : 'text-red-600'}`}>
                               {(importPreview.dadosParsed.categorias?.vendaMercadoria || 0) >= (importPreview.dadosParsed.categorias?.esperado380 || 0) ? 'OK' : 'Pendente'}
                             </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ============================================ */}
+                  {/* PREVIEWS DO SETOR PESSOAL */}
+                  {/* ============================================ */}
+
+                  {/* Preview Demonstrativo FGTS */}
+                  {importPreview.isDominioFormat && importPreview.tipoRelatorio === 'fgts' && importPreview.dadosParsed && (
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Total FGTS</p>
+                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totalGeral?.valorFGTS || 0)}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Base de Calculo</p>
+                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totalGeral?.base || 0)}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-purple-500 to-violet-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Competencias</p>
+                          <p className="text-2xl font-bold">{importPreview.dadosParsed.competencias?.length || 0}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-teal-500 to-cyan-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Registros</p>
+                          <p className="text-2xl font-bold">{importPreview.dadosParsed.registros?.length || 0}</p>
+                        </div>
+                      </div>
+                      {importPreview.dadosParsed.totaisPorTipo && Object.keys(importPreview.dadosParsed.totaisPorTipo).length > 0 && (
+                        <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl">
+                          <p className="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-3">FGTS por Tipo de Recolhimento</p>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            {Object.entries(importPreview.dadosParsed.totaisPorTipo).map(([tipo, dados]) => (
+                              <div key={tipo} className="bg-white dark:bg-slate-800 p-3 rounded-lg border border-blue-100 dark:border-blue-800">
+                                <p className="text-xs text-blue-600 dark:text-blue-400">{tipo}</p>
+                                <p className="font-bold text-blue-800 dark:text-blue-200">{formatCurrency(dados.valorFGTS || 0)}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Preview Folha de INSS */}
+                  {importPreview.isDominioFormat && importPreview.tipoRelatorio === 'inss' && importPreview.dadosParsed && (
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="bg-gradient-to-br from-purple-500 to-violet-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Total INSS</p>
+                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totalGeral?.valorINSS || 0)}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Base de Calculo</p>
+                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totalGeral?.baseCalculo || 0)}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Guias Originais</p>
+                          <p className="text-2xl font-bold">{importPreview.dadosParsed.totaisPorTipo?.original || 0}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Retificadores</p>
+                          <p className="text-2xl font-bold">{importPreview.dadosParsed.totaisPorTipo?.retificador || 0}</p>
+                        </div>
+                      </div>
+                      <div className="p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-xl">
+                        <p className="text-sm font-semibold text-purple-800 dark:text-purple-300 mb-2">Competencias Importadas: {importPreview.dadosParsed.competencias?.length || 0}</p>
+                        <p className="text-sm text-purple-600 dark:text-purple-400">
+                          {importPreview.dadosParsed.competencias?.join(', ') || 'Nenhuma competencia encontrada'}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Preview Relacao de Empregados */}
+                  {importPreview.isDominioFormat && importPreview.tipoRelatorio === 'empregados' && importPreview.dadosParsed && (
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="bg-gradient-to-br from-teal-500 to-cyan-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Total Empregados</p>
+                          <p className="text-2xl font-bold">{importPreview.dadosParsed.estatisticas?.total || 0}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Ativos</p>
+                          <p className="text-2xl font-bold">{importPreview.dadosParsed.estatisticas?.ativos || 0}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-red-500 to-rose-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Demitidos</p>
+                          <p className="text-2xl font-bold">{importPreview.dadosParsed.estatisticas?.demitidos || 0}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Afastados</p>
+                          <p className="text-2xl font-bold">{importPreview.dadosParsed.estatisticas?.afastados || 0}</p>
+                        </div>
+                      </div>
+                      {importPreview.dadosParsed.empregadosPorCargo && Object.keys(importPreview.dadosParsed.empregadosPorCargo).length > 0 && (
+                        <div className="p-4 bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-700 rounded-xl">
+                          <p className="text-sm font-semibold text-teal-800 dark:text-teal-300 mb-3">Empregados por Cargo</p>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            {Object.entries(importPreview.dadosParsed.empregadosPorCargo).slice(0, 8).map(([cargo, dados]) => (
+                              <div key={cargo} className="bg-white dark:bg-slate-800 p-3 rounded-lg border border-teal-100 dark:border-teal-800">
+                                <p className="text-xs text-teal-600 dark:text-teal-400 truncate">{cargo}</p>
+                                <p className="font-bold text-teal-800 dark:text-teal-200">{dados.total} funcionario(s)</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Preview Salario Base */}
+                  {importPreview.isDominioFormat && importPreview.tipoRelatorio === 'salarioBase' && importPreview.dadosParsed && (
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Folha Total</p>
+                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.estatisticas?.totalSalarios || 0)}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Salario Medio</p>
+                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.estatisticas?.salarioMedioGeral || 0)}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-purple-500 to-violet-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Total Empregados</p>
+                          <p className="text-2xl font-bold">{importPreview.dadosParsed.estatisticas?.totalEmpregados || 0}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-teal-500 to-cyan-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Cargos Diferentes</p>
+                          <p className="text-2xl font-bold">{importPreview.dadosParsed.estatisticas?.quantidadeCargos || 0}</p>
+                        </div>
+                      </div>
+                      {importPreview.dadosParsed.cargosOrdenados && importPreview.dadosParsed.cargosOrdenados.length > 0 && (
+                        <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 rounded-xl">
+                          <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300 mb-3">Top Cargos por Salario Medio</p>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            {importPreview.dadosParsed.cargosOrdenados.slice(0, 4).map((item) => (
+                              <div key={item.cargo} className="bg-white dark:bg-slate-800 p-3 rounded-lg border border-emerald-100 dark:border-emerald-800">
+                                <p className="text-xs text-emerald-600 dark:text-emerald-400 truncate">{item.cargo}</p>
+                                <p className="font-bold text-emerald-800 dark:text-emerald-200">{formatCurrency(item.salarioMedio)}</p>
+                                <p className="text-xs text-slate-500">{item.quantidade} pessoa(s)</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Preview Programacao de Ferias */}
+                  {importPreview.isDominioFormat && importPreview.tipoRelatorio === 'ferias' && importPreview.dadosParsed && (
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Total Registros</p>
+                          <p className="text-2xl font-bold">{importPreview.dadosParsed.estatisticas?.totalRegistros || 0}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Dias Programados</p>
+                          <p className="text-2xl font-bold">{importPreview.dadosParsed.estatisticas?.diasTotalProgramados || 0}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-teal-500 to-cyan-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Dias Gozados</p>
+                          <p className="text-2xl font-bold">{importPreview.dadosParsed.estatisticas?.diasTotalGozados || 0}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Dias Restantes</p>
+                          <p className="text-2xl font-bold">{importPreview.dadosParsed.estatisticas?.diasRestantes || 0}</p>
+                        </div>
+                      </div>
+                      <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl">
+                        <p className="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-2">Status das Ferias</p>
+                        <div className="grid grid-cols-3 gap-4 text-sm">
+                          <div>
+                            <p className="text-blue-600 dark:text-blue-400">Programadas</p>
+                            <p className="font-bold text-blue-800 dark:text-blue-200">{importPreview.dadosParsed.feriasPorStatus?.programadas || 0}</p>
+                          </div>
+                          <div>
+                            <p className="text-green-600 dark:text-green-400">Gozadas</p>
+                            <p className="font-bold text-green-800 dark:text-green-200">{importPreview.dadosParsed.feriasPorStatus?.gozadas || 0}</p>
+                          </div>
+                          <div>
+                            <p className="text-amber-600 dark:text-amber-400">Pendentes</p>
+                            <p className="font-bold text-amber-800 dark:text-amber-200">{importPreview.dadosParsed.feriasPorStatus?.pendentes || 0}</p>
                           </div>
                         </div>
                       </div>
