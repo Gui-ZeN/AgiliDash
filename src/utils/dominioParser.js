@@ -119,7 +119,7 @@ export const parseBalancete = (csvContent) => {
 
 /**
  * Parser para Análise Horizontal (DRE Horizontal)
- * Extrai dados mensais comparativos
+ * Extrai dados mensais comparativos - SUPORTA MÚLTIPLOS ANOS
  */
 export const parseAnaliseHorizontal = (csvContent) => {
   const lines = csvContent.split('\n');
@@ -127,6 +127,8 @@ export const parseAnaliseHorizontal = (csvContent) => {
 
   let empresaInfo = {};
   let competencia = '';
+  let anoExercicio = new Date().getFullYear(); // Ano padrão
+
   const dados = {
     receitaBruta: new Array(12).fill(0),
     deducoes: new Array(12).fill(0),
@@ -181,8 +183,21 @@ export const parseAnaliseHorizontal = (csvContent) => {
     if (line.includes('C.N.P.J.:')) {
       empresaInfo.cnpj = cols[3] || cols.find(c => c.match(/\d{2}\.\d{3}\.\d{3}/)) || '';
     }
+    // Extrair competência E ano do exercício
     if (line.includes('Compet')) {
       competencia = cols[3] || cols.find(c => c.match(/\d{2}\/\d{4}/)) || '';
+      // Extrair ano da competência (formato: MM/YYYY ou similar)
+      const anoMatch = competencia.match(/\/(\d{4})/);
+      if (anoMatch) {
+        anoExercicio = parseInt(anoMatch[1]);
+      }
+    }
+    // Também tentar extrair de "Exercício" ou "Periodo"
+    if (line.includes('Exerc') || line.includes('Periodo')) {
+      const anoMatch = line.match(/(\d{4})/);
+      if (anoMatch) {
+        anoExercicio = parseInt(anoMatch[1]);
+      }
     }
 
     // Identificar linhas de dados
@@ -211,12 +226,11 @@ export const parseAnaliseHorizontal = (csvContent) => {
   }
 
   // Debug: log dos valores encontrados
+  console.log('Parser Análise Horizontal - Ano:', anoExercicio);
   console.log('Parser Análise Horizontal - Receita Bruta:', dados.receitaBruta);
-  console.log('Parser Análise Horizontal - Despesas Operacionais:', dados.despesasOperacionais);
   console.log('Parser Análise Horizontal - Resultado Líquido:', dados.resultadoLiquido);
 
   // Calcular receitas e despesas por mês
-  // Regra: valores positivos = receitas, valores negativos = despesas
   const receitasMensais = new Array(12).fill(0);
   const despesasMensais = new Array(12).fill(0);
 
@@ -231,11 +245,36 @@ export const parseAnaliseHorizontal = (csvContent) => {
     });
   });
 
+  // Criar estrutura de dados por competência (MM/YYYY)
+  const dadosPorCompetencia = {};
+  for (let m = 0; m < 12; m++) {
+    const competenciaKey = `${String(m + 1).padStart(2, '0')}/${anoExercicio}`;
+    dadosPorCompetencia[competenciaKey] = {
+      mes: m + 1,
+      ano: anoExercicio,
+      mesNome: mesNomes[m],
+      receitaBruta: dados.receitaBruta[m],
+      deducoes: dados.deducoes[m],
+      receitaLiquida: dados.receitaLiquida[m],
+      cmv: dados.cmv[m],
+      lucroBruto: dados.lucroBruto[m],
+      despesasOperacionais: dados.despesasOperacionais[m],
+      despesasPessoal: dados.despesasPessoal[m],
+      despesasGerais: dados.despesasGerais[m],
+      resultadoFinanceiro: dados.resultadoFinanceiro[m],
+      resultadoLiquido: dados.resultadoLiquido[m],
+      receita: receitasMensais[m],
+      despesa: despesasMensais[m]
+    };
+  }
+
   return {
     empresaInfo,
     competencia,
+    anoExercicio, // ANO EXTRAÍDO DO ARQUIVO
     meses: mesNomes,
     dados,
+    dadosPorCompetencia, // NOVA ESTRUTURA POR COMPETÊNCIA
     // Receitas e Despesas mensais calculadas
     receitasMensais,
     despesasMensais,
@@ -244,7 +283,6 @@ export const parseAnaliseHorizontal = (csvContent) => {
       receitaBruta: dados.receitaBruta.reduce((a, b) => a + b, 0),
       despesaTotal: dados.despesasOperacionais.reduce((a, b) => a + Math.abs(b), 0),
       lucroLiquido: dados.resultadoLiquido.reduce((a, b) => a + b, 0),
-      // Totais anuais de receitas e despesas
       totalReceitas: receitasMensais.reduce((a, b) => a + b, 0),
       totalDespesas: despesasMensais.reduce((a, b) => a + b, 0)
     }

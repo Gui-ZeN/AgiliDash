@@ -158,11 +158,24 @@ export const ComparativoReceitaDespesaChart = ({ dados }) => {
  * 2. Gráfico de Linhas - Variação Anual do Lucro
  * Linha sólida (ano atual) e pontilhada (ano anterior)
  * Fonte: DRE Horizontal
+ * SUPORTA múltiplos anos com labels dinâmicos
  */
 export const VariacaoLucroChart = ({ dadosAtual, dadosAnterior }) => {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
   const { isDarkMode } = useTheme();
+
+  // Labels de meses dinâmicos
+  const meses = useMemo(() => dadosAtual?.meses || DEFAULT_MESES, [dadosAtual?.meses]);
+
+  // Anos dinâmicos baseados nos dados
+  const anoAtual = useMemo(() => {
+    return dadosAtual?.anoExercicio || new Date().getFullYear();
+  }, [dadosAtual?.anoExercicio]);
+
+  const anoAnterior = useMemo(() => {
+    return dadosAnterior?.anoExercicio || (anoAtual - 1);
+  }, [dadosAnterior?.anoExercicio, anoAtual]);
 
   // Calcular lucro mensal (Receita - Despesa) usando useMemo
   // Prioriza receitasMensais/despesasMensais (classificação automática)
@@ -204,10 +217,10 @@ export const VariacaoLucroChart = ({ dadosAtual, dadosAnterior }) => {
     chartInstance.current = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: DEFAULT_MESES,
+        labels: meses,
         datasets: [
           {
-            label: '2025',
+            label: String(anoAtual),
             data: lucroAtual,
             borderColor: COLORS.primary,
             backgroundColor: isDarkMode ? 'rgba(14, 79, 109, 0.2)' : 'rgba(14, 79, 109, 0.1)',
@@ -221,7 +234,7 @@ export const VariacaoLucroChart = ({ dadosAtual, dadosAnterior }) => {
             pointHoverRadius: 8
           },
           {
-            label: '2024',
+            label: String(anoAnterior),
             data: lucroAnterior,
             borderColor: COLORS.secondary,
             backgroundColor: 'transparent',
@@ -295,7 +308,7 @@ export const VariacaoLucroChart = ({ dadosAtual, dadosAnterior }) => {
         chartInstance.current.destroy();
       }
     };
-  }, [lucroAtual, lucroAnterior, isDarkMode]);
+  }, [meses, lucroAtual, lucroAnterior, anoAtual, anoAnterior, isDarkMode]);
 
   return (
     <div className="h-[350px]">
@@ -660,9 +673,13 @@ export const AplicacoesFinanceirasChart = ({ dados }) => {
 /**
  * Tabela de Comparativo Mensal
  * Mês | Entradas | Saídas | Lucro
+ * SUPORTA múltiplos anos com labels dinâmicos
  */
 export const TabelaComparativoMensal = ({ dados }) => {
   const { isDarkMode } = useTheme();
+
+  // Usar meses dinâmicos (com ano) se disponíveis
+  const meses = useMemo(() => dados?.meses || DEFAULT_MESES, [dados?.meses]);
 
   // Prioriza receitasMensais/despesasMensais (classificação automática)
   const receitas = useMemo(() => {
@@ -707,15 +724,15 @@ export const TabelaComparativoMensal = ({ dados }) => {
           </tr>
         </thead>
         <tbody className={`divide-y ${isDarkMode ? 'divide-slate-700' : 'divide-slate-100'}`}>
-          {DEFAULT_MESES.map((mes, i) => {
-            const lucro = receitas[i] - despesas[i];
+          {meses.map((mes, i) => {
+            const lucro = (receitas[i] || 0) - (despesas[i] || 0);
             return (
               <tr
-                key={mes}
+                key={`${mes}-${i}`}
                 className={`transition-colors ${isDarkMode ? 'hover:bg-slate-700/30' : 'hover:bg-slate-50'}`}
               >
                 <td className={`px-4 py-3 font-semibold ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
-                  {mes}/2025
+                  {mes}
                 </td>
                 <td className={`px-4 py-3 text-right ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}>
                   {formatCurrency(receitas[i])}

@@ -245,6 +245,55 @@ export const DataProvider = ({ children }) => {
               balancetesConsolidados: consolidarBalancetesMensais(newBalancetes)
             }
           };
+        } else if (tipoRelatorio === 'analiseHorizontal') {
+          // MESCLAR dados por competência - suporta múltiplos anos
+          const existingData = cnpjData.analiseHorizontal || {};
+          const existingCompetencias = existingData.dadosPorCompetencia || {};
+
+          // Mesclar competências existentes com novas
+          const mergedCompetencias = {
+            ...existingCompetencias,
+            ...dadosParsed.dadosPorCompetencia
+          };
+
+          // Ordenar competências cronologicamente
+          const competenciasOrdenadas = Object.keys(mergedCompetencias).sort((a, b) => {
+            const [mesA, anoA] = a.split('/').map(Number);
+            const [mesB, anoB] = b.split('/').map(Number);
+            return anoA !== anoB ? anoA - anoB : mesA - mesB;
+          });
+
+          // Reconstruir arrays ordenados para gráficos
+          const mesesLabels = competenciasOrdenadas.map(c => {
+            const dados = mergedCompetencias[c];
+            return `${dados.mesNome}/${String(dados.ano).slice(-2)}`;
+          });
+          const receitasMensais = competenciasOrdenadas.map(c => mergedCompetencias[c].receita);
+          const despesasMensais = competenciasOrdenadas.map(c => mergedCompetencias[c].despesa);
+
+          // Calcular totais
+          const totalReceitas = receitasMensais.reduce((a, b) => a + b, 0);
+          const totalDespesas = despesasMensais.reduce((a, b) => a + b, 0);
+
+          return {
+            ...prev,
+            [cnpjId]: {
+              ...cnpjData,
+              analiseHorizontal: {
+                ...dadosParsed,
+                dadosPorCompetencia: mergedCompetencias,
+                competenciasOrdenadas,
+                meses: mesesLabels, // Labels com ano (ex: "Jan/25", "Jan/26")
+                receitasMensais,
+                despesasMensais,
+                totais: {
+                  ...dadosParsed.totais,
+                  totalReceitas,
+                  totalDespesas
+                }
+              }
+            }
+          };
         } else {
           return {
             ...prev,
