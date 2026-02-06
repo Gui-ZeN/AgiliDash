@@ -50,7 +50,8 @@ import {
   Shield,
   Package,
   Wrench,
-  MoreHorizontal
+  MoreHorizontal,
+  Upload
 } from 'lucide-react';
 import Header from '../components/layout/Header';
 import Card, { PrimaryCard, AlertCard, InfoCard, MetricCard, TeamCard } from '../components/common/Card';
@@ -1263,24 +1264,24 @@ const Dashboard = () => {
             <section className={`flex items-start justify-between transition-all duration-500 ${cardAnimation}`}>
               <div>
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-teal-600 rounded-lg">
+                  <div className={`p-2 ${isDarkMode ? 'bg-teal-600' : 'bg-teal-600'} rounded-lg`}>
                     <Users className="w-5 h-5 text-white" />
                   </div>
-                  <span className="text-xs font-bold text-teal-600 uppercase tracking-widest">
+                  <span className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-teal-400' : 'text-teal-600'}`}>
                     Departamento Pessoal
                   </span>
                 </div>
-                <h1 className="text-4xl font-extrabold text-[#1e293b] mb-1">
-                  Gestão de Pessoas
+                <h1 className={`text-4xl font-extrabold mb-1 ${isDarkMode ? 'text-white' : 'text-[#1e293b]'}`}>
+                  Gestao de Pessoas
                 </h1>
-                <p className="text-lg text-slate-400 font-medium">
-                  Recursos humanos e obrigações sociais.
+                <p className={`text-lg font-medium ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>
+                  Recursos humanos e obrigacoes sociais
                 </p>
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={() => handleExportReport('pdf')}
-                  className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors"
+                  className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
                 >
                   <FileDown className="w-4 h-4" />
                   PDF
@@ -1295,161 +1296,11 @@ const Dashboard = () => {
               </div>
             </section>
 
-            {/* Cards de métricas principais */}
-            <div className={`grid grid-cols-1 md:grid-cols-4 gap-4 transition-all duration-500 delay-100 ${cardAnimation}`}>
-              <div className="bg-gradient-to-br from-teal-500 to-cyan-600 p-6 rounded-2xl text-white shadow-lg">
-                <div className="flex items-center justify-between mb-4">
-                  <Users className="w-8 h-8 opacity-80" />
-                  <span className="text-xs font-bold bg-white/20 px-3 py-1 rounded-full">
-                    Ativos
-                  </span>
-                </div>
-                <p className="text-3xl font-black">{pessoalData.funcionarios}</p>
-                <p className="text-white/70 text-sm mt-1">Colaboradores</p>
-              </div>
-
-              <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-6 rounded-2xl text-white shadow-lg">
-                <div className="flex items-center justify-between mb-4">
-                  <Banknote className="w-8 h-8 opacity-80" />
-                </div>
-                <p className="text-3xl font-black">{formatCurrency(pessoalData.folhaMensal)}</p>
-                <p className="text-white/70 text-sm mt-1">Folha Mensal</p>
-              </div>
-
-              <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-6 rounded-2xl text-white shadow-lg">
-                <div className="flex items-center justify-between mb-4">
-                  <Receipt className="w-8 h-8 opacity-80" />
-                </div>
-                <p className="text-3xl font-black">{formatCurrency(pessoalData.encargos)}</p>
-                <p className="text-white/70 text-sm mt-1">Encargos (33,3%)</p>
-              </div>
-
-              <div className="bg-gradient-to-br from-purple-500 to-pink-600 p-6 rounded-2xl text-white shadow-lg">
-                <div className="flex items-center justify-between mb-4">
-                  <Award className="w-8 h-8 opacity-80" />
-                </div>
-                <p className="text-3xl font-black">{formatCurrency(pessoalData.beneficios)}</p>
-                <p className="text-white/70 text-sm mt-1">Benefícios</p>
-              </div>
-            </div>
-
-            {/* Gráfico de Folha de Pagamento */}
-            <div className={`bg-white p-8 rounded-3xl border border-slate-100 shadow-sm transition-all duration-500 delay-200 ${cardAnimation}`}>
-              <div className="flex items-center justify-between mb-8">
-                <div>
-                  <h3 className="text-xl font-bold text-slate-800">Evolução da Folha de Pagamento</h3>
-                  <p className="text-sm text-slate-400">Salários + Encargos por mês</p>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span className="flex items-center gap-2 text-sm text-slate-500">
-                    <div className="w-3 h-3 rounded-full bg-[#0e4f6d]" /> Salários
-                  </span>
-                  <span className="flex items-center gap-2 text-sm text-slate-500">
-                    <div className="w-3 h-3 rounded-full bg-[#58a3a4]" /> Encargos
-                  </span>
-                </div>
-              </div>
-              <FolhaPagamentoChart
-                folhaPorMes={pessoalData.folhaPorMes}
-                encargosPorMes={pessoalData.encargosPorMes}
-              />
-            </div>
-
-            {/* Gráficos de Pizza */}
-            <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 transition-all duration-500 delay-300 ${cardAnimation}`}>
-              <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-800">Por Departamento</h3>
-                    <p className="text-sm text-slate-400">Distribuição de funcionários</p>
-                  </div>
-                  <div className="p-3 bg-teal-50 rounded-xl">
-                    <PieChart className="w-6 h-6 text-teal-600" />
-                  </div>
-                </div>
-                <DepartamentoPizzaChart porDepartamento={pessoalData.porDepartamento} />
-              </div>
-
-              <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-800">Por Tipo de Contrato</h3>
-                    <p className="text-sm text-slate-400">Regime de contratação</p>
-                  </div>
-                  <div className="p-3 bg-green-50 rounded-xl">
-                    <BadgeCheck className="w-6 h-6 text-green-600" />
-                  </div>
-                </div>
-                <ContratoPizzaChart porContrato={pessoalData.porContrato} />
-              </div>
-            </div>
-
-            {/* Tabela de Funcionários */}
-            <div className={`bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden transition-all duration-500 delay-400 ${cardAnimation}`}>
-              <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-bold text-slate-800">Lista de Colaboradores</h3>
-                  <p className="text-sm text-slate-400">Principais funcionários do CNPJ</p>
-                </div>
-                <span className="px-3 py-1 bg-teal-50 text-teal-700 rounded-full text-sm font-medium">
-                  {pessoalData.listaFuncionarios.length} registros
-                </span>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-slate-50">
-                    <tr>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Nome</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Cargo</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Departamento</th>
-                      <th className="px-6 py-4 text-right text-xs font-bold text-slate-400 uppercase">Salário</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Admissão</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {pessoalData.listaFuncionarios.map((func) => (
-                      <tr key={func.id} className="hover:bg-slate-50 transition-colors">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-400 to-cyan-500 flex items-center justify-center text-white font-bold text-sm">
-                              {func.nome.charAt(0)}
-                            </div>
-                            <span className="font-semibold text-slate-700">{func.nome}</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-slate-600">{func.cargo}</td>
-                        <td className="px-6 py-4">
-                          <span className="px-2 py-1 bg-slate-100 text-slate-600 rounded text-sm">
-                            {func.departamento}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-right font-semibold text-[#0e4f6d]">
-                          {formatCurrency(func.salario)}
-                        </td>
-                        <td className="px-6 py-4 text-slate-500">
-                          {new Date(func.admissao).toLocaleDateString('pt-BR')}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* ===== SEÇÃO: DADOS IMPORTADOS DO SETOR PESSOAL ===== */}
-            {temDadosPessoal && (
+            {/* ===== DADOS IMPORTADOS (PRINCIPAL) ===== */}
+            {temDadosPessoal ? (
               <>
-                {/* Separador */}
-                <div className={`flex items-center gap-4 transition-all duration-500 delay-500 ${cardAnimation}`}>
-                  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-teal-300 to-transparent"></div>
-                  <span className="px-4 py-2 bg-teal-50 text-teal-700 rounded-full text-sm font-bold uppercase tracking-wider dark:bg-teal-900/30 dark:text-teal-400">
-                    Dados Importados
-                  </span>
-                  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-teal-300 to-transparent"></div>
-                </div>
-
-                {/* Cards de métricas importadas */}
-                <div className={`transition-all duration-500 delay-600 ${cardAnimation}`}>
+                {/* Cards de metricas importadas */}
+                <div className={`transition-all duration-500 delay-100 ${cardAnimation}`}>
                   <CardsMetricasPessoal
                     dadosFGTS={dadosPessoalImportados?.fgts}
                     dadosINSS={dadosPessoalImportados?.inss}
@@ -1458,17 +1309,17 @@ const Dashboard = () => {
                   />
                 </div>
 
-                {/* Gráficos FGTS */}
+                {/* Graficos FGTS */}
                 {dadosPessoalImportados?.fgts && (
-                  <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 transition-all duration-500 delay-700 ${cardAnimation}`}>
+                  <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 transition-all duration-500 delay-200 ${cardAnimation}`}>
                     <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm`}>
                       <div className="flex items-center justify-between mb-6">
                         <div>
                           <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>FGTS por Tipo</h3>
                           <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Mensal, 13o, Rescisao</p>
                         </div>
-                        <div className="p-3 bg-blue-50 rounded-xl dark:bg-blue-900/30">
-                          <PieChart className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                        <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-blue-900/30' : 'bg-blue-50'}`}>
+                          <PieChart className={`w-6 h-6 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
                         </div>
                       </div>
                       <FGTSPorTipoChart dados={dadosPessoalImportados.fgts} />
@@ -1480,8 +1331,8 @@ const Dashboard = () => {
                           <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>FGTS Ultimos 3 Meses</h3>
                           <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Comparativo recente</p>
                         </div>
-                        <div className="p-3 bg-teal-50 rounded-xl dark:bg-teal-900/30">
-                          <BarChart2 className="w-6 h-6 text-teal-600 dark:text-teal-400" />
+                        <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-teal-900/30' : 'bg-teal-50'}`}>
+                          <BarChart2 className={`w-6 h-6 ${isDarkMode ? 'text-teal-400' : 'text-teal-600'}`} />
                         </div>
                       </div>
                       <FGTSUltimos3MesesChart dados={dadosPessoalImportados.fgts} />
@@ -1491,7 +1342,7 @@ const Dashboard = () => {
 
                 {/* FGTS Mensal + Por Ano */}
                 {dadosPessoalImportados?.fgts && (
-                  <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 transition-all duration-500 delay-800 ${cardAnimation}`}>
+                  <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 transition-all duration-500 delay-300 ${cardAnimation}`}>
                     <div className={`md:col-span-2 ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm`}>
                       <div className="flex items-center justify-between mb-6">
                         <div>
@@ -1514,17 +1365,17 @@ const Dashboard = () => {
                   </div>
                 )}
 
-                {/* Gráficos INSS */}
+                {/* Graficos INSS */}
                 {dadosPessoalImportados?.inss && (
-                  <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 transition-all duration-500 delay-900 ${cardAnimation}`}>
+                  <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 transition-all duration-500 delay-400 ${cardAnimation}`}>
                     <div className={`md:col-span-2 ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm`}>
                       <div className="flex items-center justify-between mb-6">
                         <div>
                           <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>INSS por Empresa</h3>
                           <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Distribuicao por empresa</p>
                         </div>
-                        <div className="p-3 bg-purple-50 rounded-xl dark:bg-purple-900/30">
-                          <BarChartHorizontal className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                        <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-purple-900/30' : 'bg-purple-50'}`}>
+                          <BarChartHorizontal className={`w-6 h-6 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`} />
                         </div>
                       </div>
                       <INSSPorEmpresaChart dados={dadosPessoalImportados.inss} />
@@ -1544,7 +1395,7 @@ const Dashboard = () => {
 
                 {/* INSS Mensal */}
                 {dadosPessoalImportados?.inss && (
-                  <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm transition-all duration-500 delay-1000 ${cardAnimation}`}>
+                  <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm transition-all duration-500 delay-500 ${cardAnimation}`}>
                     <div className="flex items-center justify-between mb-6">
                       <div>
                         <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>INSS Mes a Mes</h3>
@@ -1555,9 +1406,9 @@ const Dashboard = () => {
                   </div>
                 )}
 
-                {/* Gráficos de Empregados */}
+                {/* Graficos de Empregados */}
                 {(dadosPessoalImportados?.empregados || dadosPessoalImportados?.salarioBase) && (
-                  <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 transition-all duration-500 delay-1100 ${cardAnimation}`}>
+                  <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 transition-all duration-500 delay-600 ${cardAnimation}`}>
                     {dadosPessoalImportados?.empregados && (
                       <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm`}>
                         <div className="flex items-center justify-between mb-6">
@@ -1565,8 +1416,8 @@ const Dashboard = () => {
                             <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Admissoes e Demissoes</h3>
                             <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Movimentacao de pessoal</p>
                           </div>
-                          <div className="p-3 bg-green-50 rounded-xl dark:bg-green-900/30">
-                            <UserPlus className="w-6 h-6 text-green-600 dark:text-green-400" />
+                          <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-green-900/30' : 'bg-green-50'}`}>
+                            <UserPlus className={`w-6 h-6 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`} />
                           </div>
                         </div>
                         <AdmissoesDemissoesChart dados={dadosPessoalImportados.empregados} />
@@ -1580,8 +1431,8 @@ const Dashboard = () => {
                             <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Por Situacao</h3>
                             <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Ativos, Demitidos, Afastados</p>
                           </div>
-                          <div className="p-3 bg-amber-50 rounded-xl dark:bg-amber-900/30">
-                            <PieChart className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                          <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-amber-900/30' : 'bg-amber-50'}`}>
+                            <PieChart className={`w-6 h-6 ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`} />
                           </div>
                         </div>
                         <EmpregadosPorSituacaoChart dados={dadosPessoalImportados.empregados} />
@@ -1590,37 +1441,151 @@ const Dashboard = () => {
                   </div>
                 )}
 
-                {/* Salário por Cargo */}
+                {/* Salario por Cargo */}
                 {dadosPessoalImportados?.salarioBase && (
-                  <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm transition-all duration-500 delay-1200 ${cardAnimation}`}>
+                  <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm transition-all duration-500 delay-700 ${cardAnimation}`}>
                     <div className="flex items-center justify-between mb-6">
                       <div>
                         <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Salario Medio por Cargo</h3>
                         <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Top 10 cargos por salario</p>
                       </div>
-                      <div className="p-3 bg-emerald-50 rounded-xl dark:bg-emerald-900/30">
-                        <Banknote className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                      <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-emerald-900/30' : 'bg-emerald-50'}`}>
+                        <Banknote className={`w-6 h-6 ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
                       </div>
                     </div>
                     <SalarioPorCargoChart dados={dadosPessoalImportados.salarioBase} />
                   </div>
                 )}
 
-                {/* Tabela de Férias */}
+                {/* Tabela de Ferias */}
                 {dadosPessoalImportados?.ferias && (
-                  <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} rounded-3xl border shadow-sm overflow-hidden transition-all duration-500 delay-1300 ${cardAnimation}`}>
-                    <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
+                  <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} rounded-3xl border shadow-sm overflow-hidden transition-all duration-500 delay-800 ${cardAnimation}`}>
+                    <div className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'} flex items-center justify-between`}>
                       <div>
                         <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Programacao de Ferias</h3>
                         <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Proximas ferias programadas</p>
                       </div>
-                      <span className="px-3 py-1 bg-teal-50 text-teal-700 rounded-full text-sm font-medium dark:bg-teal-900/30 dark:text-teal-400">
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${isDarkMode ? 'bg-teal-900/30 text-teal-400' : 'bg-teal-50 text-teal-700'}`}>
                         {dadosPessoalImportados.ferias?.ferias?.length || 0} registros
                       </span>
                     </div>
                     <TabelaFerias dados={dadosPessoalImportados.ferias} />
                   </div>
                 )}
+              </>
+            ) : (
+              /* ===== SEM DADOS IMPORTADOS - Mostra aviso ===== */
+              <>
+                {/* Cards de metricas vazias */}
+                <div className={`grid grid-cols-1 md:grid-cols-4 gap-4 transition-all duration-500 delay-100 ${cardAnimation}`}>
+                  <div className="bg-gradient-to-br from-teal-500 to-cyan-600 p-6 rounded-2xl text-white shadow-lg">
+                    <div className="flex items-center justify-between mb-4">
+                      <Users className="w-8 h-8 opacity-80" />
+                      <span className="text-xs font-bold bg-white/20 px-3 py-1 rounded-full">
+                        Ativos
+                      </span>
+                    </div>
+                    <p className="text-3xl font-black">-</p>
+                    <p className="text-white/70 text-sm mt-1">Colaboradores</p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-6 rounded-2xl text-white shadow-lg">
+                    <div className="flex items-center justify-between mb-4">
+                      <Banknote className="w-8 h-8 opacity-80" />
+                    </div>
+                    <p className="text-3xl font-black">-</p>
+                    <p className="text-white/70 text-sm mt-1">Folha Salarial</p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-6 rounded-2xl text-white shadow-lg">
+                    <div className="flex items-center justify-between mb-4">
+                      <Receipt className="w-8 h-8 opacity-80" />
+                    </div>
+                    <p className="text-3xl font-black">-</p>
+                    <p className="text-white/70 text-sm mt-1">Total FGTS</p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-purple-500 to-pink-600 p-6 rounded-2xl text-white shadow-lg">
+                    <div className="flex items-center justify-between mb-4">
+                      <Award className="w-8 h-8 opacity-80" />
+                    </div>
+                    <p className="text-3xl font-black">-</p>
+                    <p className="text-white/70 text-sm mt-1">Total INSS</p>
+                  </div>
+                </div>
+
+                {/* Aviso para importar dados */}
+                <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-12 rounded-3xl border shadow-sm text-center transition-all duration-500 delay-200 ${cardAnimation}`}>
+                  <div className={`w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center ${isDarkMode ? 'bg-teal-900/30' : 'bg-teal-50'}`}>
+                    <Upload className={`w-10 h-10 ${isDarkMode ? 'text-teal-400' : 'text-teal-600'}`} />
+                  </div>
+                  <h3 className={`text-2xl font-bold mb-3 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                    Importe os Dados do Setor Pessoal
+                  </h3>
+                  <p className={`text-lg mb-6 max-w-xl mx-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                    Para visualizar os graficos de FGTS, INSS, Empregados, Salarios e Ferias,
+                    importe os arquivos CSV do Sistema Dominio.
+                  </p>
+                  <div className={`flex flex-wrap justify-center gap-3 mb-8`}>
+                    {['Demonstrativo FGTS', 'Folha de INSS', 'Relacao de Empregados', 'Salario Base', 'Programacao de Ferias'].map((item) => (
+                      <span key={item} className={`px-3 py-1 rounded-full text-sm font-medium ${isDarkMode ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                  <a
+                    href="/configuracoes"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-colors font-semibold"
+                  >
+                    <Upload className="w-5 h-5" />
+                    Ir para Importacao
+                  </a>
+                </div>
+
+                {/* Graficos placeholder */}
+                <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 transition-all duration-500 delay-300 ${cardAnimation}`}>
+                  <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm`}>
+                    <div className="flex items-center justify-between mb-6">
+                      <div>
+                        <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>FGTS por Tipo</h3>
+                        <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Mensal, 13o, Rescisao</p>
+                      </div>
+                    </div>
+                    <FGTSPorTipoChart dados={null} />
+                  </div>
+
+                  <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm`}>
+                    <div className="flex items-center justify-between mb-6">
+                      <div>
+                        <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>INSS por Empresa</h3>
+                        <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Distribuicao por empresa</p>
+                      </div>
+                    </div>
+                    <INSSPorEmpresaChart dados={null} />
+                  </div>
+                </div>
+
+                <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 transition-all duration-500 delay-400 ${cardAnimation}`}>
+                  <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm`}>
+                    <div className="flex items-center justify-between mb-6">
+                      <div>
+                        <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Admissoes e Demissoes</h3>
+                        <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Movimentacao de pessoal</p>
+                      </div>
+                    </div>
+                    <AdmissoesDemissoesChart dados={null} />
+                  </div>
+
+                  <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm`}>
+                    <div className="flex items-center justify-between mb-6">
+                      <div>
+                        <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Salario por Cargo</h3>
+                        <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Top cargos por salario</p>
+                      </div>
+                    </div>
+                    <SalarioPorCargoChart dados={null} />
+                  </div>
+                </div>
               </>
             )}
 
@@ -1631,12 +1596,20 @@ const Dashboard = () => {
                   <UserCheck className="w-8 h-8" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold mb-3">Resumo de Gestao de Pessoas</h3>
+                  <h3 className="text-xl font-bold mb-3">Setor Pessoal</h3>
                   <p className="text-white/80 leading-relaxed">
-                    O quadro atual conta com <strong>{pessoalData.funcionarios} colaboradores</strong>,
-                    com custo total mensal de <strong>{formatCurrency(pessoalData.folhaMensal + pessoalData.encargos + pessoalData.beneficios)}</strong>
-                    (folha + encargos + beneficios). A area de <strong>Producao</strong> representa
-                    a maior concentracao de funcionarios, alinhada com a operacao industrial da empresa.
+                    {temDadosPessoal ? (
+                      <>
+                        Dados importados do Sistema Dominio. Visualize FGTS, INSS, relacao de empregados,
+                        salarios por cargo e programacao de ferias. Para atualizar os dados, importe novos
+                        arquivos CSV na pagina de Configuracoes.
+                      </>
+                    ) : (
+                      <>
+                        Importe os relatorios do Sistema Dominio para visualizar dados de FGTS, INSS,
+                        empregados, salarios e ferias. Acesse Configuracoes &gt; Importacao &gt; Setor Pessoal.
+                      </>
+                    )}
                   </p>
                 </div>
               </div>
