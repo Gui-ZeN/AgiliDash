@@ -782,45 +782,96 @@ export const parseResumoImpostos = (csvContent) => {
   let empresaInfo = {};
   const impostosPorMes = {};
   let competenciaAtual = '';
+  let totalGeralRecolher = 0;
 
-  // Lista de impostos conhecidos
-  const impostosConhecidos = [
-    'ICMS', 'IPI', 'ISS', 'Substituição Tributária', 'ISS Retido',
-    'IRRF', 'PIS', 'COFINS', 'INSS Retido', 'Contribuições Retidas',
-    'PIS Não Cumulativo', 'COFINS Não Cumulativa'
+  // Lista de impostos conhecidos (sem acentos para matching mais robusto)
+  const impostosPatterns = [
+    { pattern: /^ICMS$/i, nome: 'ICMS' },
+    { pattern: /^IPI/i, nome: 'IPI' },
+    { pattern: /^ISS$/i, nome: 'ISS' },
+    { pattern: /SUBSTITUI/i, nome: 'Substituição Tributária' },
+    { pattern: /^ISS.+RETIDO/i, nome: 'ISS Retido' },
+    { pattern: /^IRRF/i, nome: 'IRRF' },
+    { pattern: /^PIS.+CUMULATIV/i, nome: 'PIS' },
+    { pattern: /^COFINS.+CUMULATIV/i, nome: 'COFINS' },
+    { pattern: /^INSS.+RETIDO/i, nome: 'INSS Retido' },
+    { pattern: /CONTRIBUI.*RETID/i, nome: 'Contribuições Retidas' }
   ];
+
+  // Função para extrair todos os valores numéricos de uma linha
+  const extrairValores = (cols) => {
+    const valores = [];
+    for (let i = 0; i < cols.length; i++) {
+      const val = cols[i].trim();
+      if (val && /^-?[\d.]+,\d{2}$/.test(val)) {
+        valores.push({ index: i, valor: parseValorBR(val) });
+      }
+    }
+    return valores;
+  };
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const cols = line.split(';').map(c => c.trim());
 
     // Extrair informações da empresa
-    if (line.includes('C.N.P.J.:') || line.includes('CNPJ:')) {
+    if (/C\.?N\.?P\.?J\.?:/i.test(line) || /CNPJ:/i.test(line)) {
       empresaInfo.cnpj = cols.find(c => c.match(/\d{8,}|\d{2}\.\d{3}\.\d{3}/)) || '';
     }
 
-    // Identificar competência (mês)
-    if (cols[0]?.includes('Competência:')) {
+    // Identificar competência (mês) - usando regex para evitar problemas com acento
+    if (/COMPET.NCIA:/i.test(line)) {
       const match = line.match(/(\d{2})\/(\d{4})/);
       if (match) {
         competenciaAtual = `${match[1]}/${match[2]}`;
         if (!impostosPorMes[competenciaAtual]) {
-          impostosPorMes[competenciaAtual] = [];
+          impostosPorMes[competenciaAtual] = {
+            impostos: [],
+            totalRecolher: 0,
+            totalDiferido: 0
+          };
         }
+      }
+    }
+
+    // Capturar total da competência
+    if (/Total.+compet/i.test(line) && competenciaAtual) {
+      const valores = extrairValores(cols);
+      if (valores.length >= 1) {
+        // Primeiro valor não-zero geralmente é o total a recolher
+        const totalRecolher = valores.find(v => v.valor > 0)?.valor || 0;
+        impostosPorMes[competenciaAtual].totalRecolher = totalRecolher;
+      }
+    }
+
+    // Capturar total geral
+    if (/Total.+geral/i.test(line)) {
+      const valores = extrairValores(cols);
+      if (valores.length >= 1) {
+        totalGeralRecolher += valores[0]?.valor || 0;
       }
     }
 
     // Identificar linhas de impostos
     const primeiraCol = cols[0] || '';
-    const impostoMatch = impostosConhecidos.find(imp => primeiraCol.includes(imp));
+    let impostoMatch = null;
+
+    for (const imp of impostosPatterns) {
+      if (imp.pattern.test(primeiraCol)) {
+        impostoMatch = imp;
+        break;
+      }
+    }
 
     if (impostoMatch && competenciaAtual) {
-      // Buscar valores na linha
-      const valores = cols.filter(c => c && parseValorBR(c) !== 0).map(c => parseValorBR(c));
+      const valores = extrairValores(cols);
 
-      // Estrutura típica: saldo credor anterior, saldo diferido, débitos, créditos, imposto a recolher, saldo credor
+      // Estrutura do CSV: muitos valores em posições diferentes
+      // O "Imposto a recolher" está próximo ao final (3o ou 4o do fim)
+      // O "Saldo credor" é o último valor
       let imposto = {
-        nome: primeiraCol.split('-')[0].trim(),
+        nome: impostoMatch.nome,
+        nomeOriginal: primeiraCol.split('-')[0].trim(),
         saldoCredorAnterior: 0,
         debitos: 0,
         creditos: 0,
@@ -828,40 +879,39 @@ export const parseResumoImpostos = (csvContent) => {
         saldoCredorFinal: 0
       };
 
-      // Tentar extrair valores baseado na posição
-      if (valores.length >= 2) {
-        // Procurar por padrões específicos nos valores
-        for (let j = 0; j < cols.length; j++) {
-          const val = parseValorBR(cols[j]);
-          if (val !== 0) {
-            // Valores aparecem em ordem: saldo credor ant, saldo dif ant, débitos, créditos, acréscimos, outras ded, imposto recolher, imposto dif, saldo credor
-            if (j < cols.length * 0.3) imposto.saldoCredorAnterior = val;
-            else if (j < cols.length * 0.5) imposto.debitos = val;
-            else if (j < cols.length * 0.6) imposto.creditos = val;
-            else if (j < cols.length * 0.8) imposto.impostoRecolher = val;
-            else imposto.saldoCredorFinal = val;
+      if (valores.length >= 1) {
+        // Primeiro valor: saldo credor anterior
+        imposto.saldoCredorAnterior = valores[0]?.valor || 0;
+
+        // Valores do meio: débitos e créditos
+        if (valores.length >= 3) {
+          imposto.debitos = valores[2]?.valor || 0;
+        }
+        if (valores.length >= 4) {
+          imposto.creditos = valores[3]?.valor || 0;
+        }
+
+        // Imposto a recolher: geralmente é o 3o ou 4o do final
+        if (valores.length >= 4) {
+          // Procurar valor de imposto a recolher (não zero, próximo ao fim)
+          const indexRecolher = valores.length - 3;
+          if (indexRecolher >= 0) {
+            imposto.impostoRecolher = valores[indexRecolher]?.valor || 0;
           }
         }
+
+        // Último valor: saldo credor final
+        imposto.saldoCredorFinal = valores[valores.length - 1]?.valor || 0;
       }
 
-      // Simplificar: pegar valores relevantes
-      const numericCols = cols.map(c => parseValorBR(c)).filter(v => v > 0);
-      if (numericCols.length >= 1) {
-        imposto.saldoCredorAnterior = numericCols[0] || 0;
-        imposto.debitos = numericCols[2] || 0;
-        imposto.creditos = numericCols[3] || 0;
-        imposto.impostoRecolher = numericCols[numericCols.length - 3] || 0;
-        imposto.saldoCredorFinal = numericCols[numericCols.length - 1] || 0;
-      }
-
-      impostosPorMes[competenciaAtual].push(imposto);
+      impostosPorMes[competenciaAtual].impostos.push(imposto);
     }
   }
 
   // Calcular totais por imposto
   const totaisPorImposto = {};
-  Object.values(impostosPorMes).forEach(impostos => {
-    impostos.forEach(imp => {
+  Object.entries(impostosPorMes).forEach(([mes, dados]) => {
+    dados.impostos.forEach(imp => {
       if (!totaisPorImposto[imp.nome]) {
         totaisPorImposto[imp.nome] = { recolher: 0, credito: 0 };
       }
@@ -870,11 +920,24 @@ export const parseResumoImpostos = (csvContent) => {
     });
   });
 
+  // Calcular total geral a recolher
+  let totalRecolher = 0;
+  Object.values(impostosPorMes).forEach(dados => {
+    totalRecolher += dados.totalRecolher;
+  });
+
+  // Se não capturou dos totais de competência, usar o total calculado
+  if (totalRecolher === 0) {
+    totalRecolher = totalGeralRecolher;
+  }
+
   return {
     empresaInfo,
     impostosPorMes,
     totaisPorImposto,
     competencias: Object.keys(impostosPorMes),
+    totalRecolher,
+    periodosImportados: Object.keys(impostosPorMes).length,
     tipo: 'resumoImpostos'
   };
 };
