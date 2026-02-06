@@ -129,7 +129,7 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
               onClick={() => setDropdownOpen(!dropdownOpen)}
               className="flex items-center gap-2 lg:gap-3 px-2 lg:px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 hover:border-[#0e4f6d] dark:hover:border-cyan-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all min-w-[140px] lg:min-w-[260px]"
             >
-              <div className="w-7 h-7 lg:w-9 lg:h-9 rounded-lg bg-gradient-to-br from-[#0e4f6d] to-[#58a3a4] flex items-center justify-center flex-shrink-0">
+              <div className="w-7 h-7 lg:w-9 lg:h-9 rounded-lg bg-[#0e4f6d] flex items-center justify-center flex-shrink-0">
                 {isConsolidado ? (
                   <Layers className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-white" />
                 ) : (
@@ -137,7 +137,7 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
                 )}
               </div>
               <div className="text-left flex-1 min-w-0">
-                <p className="text-[9px] lg:text-[10px] text-slate-400 dark:text-slate-500 font-medium uppercase tracking-wide truncate">
+                <p className="text-xs lg:text-xs text-slate-400 dark:text-slate-500 font-medium uppercase tracking-wide truncate">
                   {isConsolidado ? modoLabel : `${grupoAtual?.nome || ''}`}
                 </p>
                 <p className="text-xs lg:text-sm font-bold text-[#0e4f6d] dark:text-cyan-400 truncate">
@@ -159,7 +159,7 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
                   onClick={() => handleConsolidado('todos')}
                   className={`w-full px-4 py-2.5 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${modoVisualizacao === 'todos' ? 'bg-[#0e4f6d]/5 dark:bg-[#0e4f6d]/20' : ''}`}
                 >
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${modoVisualizacao === 'todos' ? 'bg-gradient-to-br from-[#0e4f6d] to-[#58a3a4]' : 'bg-slate-100 dark:bg-slate-700'}`}>
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${modoVisualizacao === 'todos' ? 'bg-[#0e4f6d]' : 'bg-slate-100 dark:bg-slate-700'}`}>
                     <Layers className={`w-4 h-4 ${modoVisualizacao === 'todos' ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`} />
                   </div>
                   <div className="flex-1 text-left">
@@ -173,7 +173,7 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
                   onClick={() => handleConsolidado('grupo')}
                   className={`w-full px-4 py-2.5 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${modoVisualizacao === 'grupo' ? 'bg-[#0e4f6d]/5 dark:bg-[#0e4f6d]/20' : ''}`}
                 >
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${modoVisualizacao === 'grupo' ? 'bg-gradient-to-br from-[#0e4f6d] to-[#58a3a4]' : 'bg-slate-100 dark:bg-slate-700'}`}>
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${modoVisualizacao === 'grupo' ? 'bg-[#0e4f6d]' : 'bg-slate-100 dark:bg-slate-700'}`}>
                     <FolderTree className={`w-4 h-4 ${modoVisualizacao === 'grupo' ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`} />
                   </div>
                   <div className="flex-1 text-left">
@@ -187,7 +187,7 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
                   onClick={() => handleConsolidado('empresa')}
                   className={`w-full px-4 py-2.5 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${modoVisualizacao === 'empresa' ? 'bg-[#0e4f6d]/5 dark:bg-[#0e4f6d]/20' : ''}`}
                 >
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${modoVisualizacao === 'empresa' ? 'bg-gradient-to-br from-[#0e4f6d] to-[#58a3a4]' : 'bg-slate-100 dark:bg-slate-700'}`}>
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${modoVisualizacao === 'empresa' ? 'bg-[#0e4f6d]' : 'bg-slate-100 dark:bg-slate-700'}`}>
                     <Building className={`w-4 h-4 ${modoVisualizacao === 'empresa' ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`} />
                   </div>
                   <div className="flex-1 text-left">
@@ -250,7 +250,7 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
                     onClick={() => handleSelectCnpj(cnpj.id)}
                     className={`w-full px-4 py-2.5 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${cnpjSelecionado === cnpj.id && !isConsolidado ? 'bg-[#0e4f6d]/5 dark:bg-[#0e4f6d]/20' : ''}`}
                   >
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${cnpjSelecionado === cnpj.id && !isConsolidado ? 'bg-gradient-to-br from-[#0e4f6d] to-[#58a3a4]' : 'bg-slate-100 dark:bg-slate-700'}`}>
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${cnpjSelecionado === cnpj.id && !isConsolidado ? 'bg-[#0e4f6d]' : 'bg-slate-100 dark:bg-slate-700'}`}>
                       <Building2 className={`w-4 h-4 ${cnpjSelecionado === cnpj.id && !isConsolidado ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`} />
                     </div>
                     <div className="flex-1 text-left min-w-0">
@@ -258,7 +258,7 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
                       <p className="text-xs text-slate-500 dark:text-slate-400">{cnpj.cnpj}</p>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${cnpj.tipo === 'Matriz' ? 'bg-[#0e4f6d]/10 dark:bg-[#0e4f6d]/30 text-[#0e4f6d] dark:text-cyan-400' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400'}`}>
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${cnpj.tipo === 'Matriz' ? 'bg-[#0e4f6d]/10 dark:bg-[#0e4f6d]/30 text-[#0e4f6d] dark:text-cyan-400' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400'}`}>
                         {cnpj.tipo}
                       </span>
                       {cnpjSelecionado === cnpj.id && !isConsolidado && <Check className="w-4 h-4 text-[#0e4f6d] dark:text-cyan-400" />}
@@ -287,19 +287,19 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
 
           {/* Exercício - Hidden on small screens */}
           <div className="hidden xl:block text-right border-l border-slate-100 dark:border-slate-700 pl-4">
-            <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">Exercicio</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">Exercicio</p>
             <p className="text-sm font-bold text-[#0e4f6d] dark:text-cyan-400">{cnpjInfo?.exercicio || '2025'}</p>
           </div>
 
           {/* User Info */}
           <div className="hidden lg:flex items-center gap-3 border-l border-slate-100 dark:border-slate-700 pl-4">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#0e4f6d] to-[#58a3a4] flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full bg-[#0e4f6d] flex items-center justify-center">
                 <User className="w-4 h-4 text-white" />
               </div>
               <div className="text-right">
                 <p className="text-xs font-semibold text-slate-700 dark:text-slate-200">{user?.nome}</p>
-                <p className={`text-[10px] font-medium ${isAdmin ? 'text-[#0e4f6d] dark:text-cyan-400' : 'text-slate-400 dark:text-slate-500'}`}>
+                <p className={`text-xs font-medium ${isAdmin ? 'text-[#0e4f6d] dark:text-cyan-400' : 'text-slate-400 dark:text-slate-500'}`}>
                   {user?.perfil}
                 </p>
               </div>
@@ -348,7 +348,7 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
               <button
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
-                className={`flex-1 min-w-[70px] px-3 py-2.5 text-[10px] font-bold tracking-wide transition-all whitespace-nowrap
+                className={`flex-1 min-w-[70px] px-3 py-2.5 text-xs font-bold tracking-wide transition-all whitespace-nowrap
                   ${activeTab === tab.id
                     ? 'text-[#0e4f6d] dark:text-cyan-400 border-b-2 border-[#0e4f6d] dark:border-cyan-400 bg-slate-50 dark:bg-slate-700/50'
                     : 'text-slate-500 dark:text-slate-400'
@@ -372,7 +372,7 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
               {/* User Info */}
               <div className="pb-4 border-b border-slate-100 dark:border-slate-700">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#0e4f6d] to-[#58a3a4] flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full bg-[#0e4f6d] flex items-center justify-center">
                     <User className="w-5 h-5 text-white" />
                   </div>
                   <div>

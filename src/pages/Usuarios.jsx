@@ -129,7 +129,7 @@ const Usuarios = () => {
   };
 
   return (
-    <div className={`min-h-screen ${isDarkMode ? 'dark bg-slate-900' : 'bg-gradient-to-br from-slate-50 via-slate-50 to-cyan-50/30'}`}>
+    <div className={`min-h-screen ${isDarkMode ? 'dark bg-slate-900' : 'bg-slate-100'}`}>
       {/* Header */}
       <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-40">
         <div className="w-full px-4 lg:px-6 h-16 flex items-center justify-between">
@@ -141,7 +141,7 @@ const Usuarios = () => {
               <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
             </Link>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#0e4f6d] to-[#58a3a4] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-[#0e4f6d] flex items-center justify-center">
                 <Users className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -245,7 +245,7 @@ const Usuarios = () => {
                   <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#0e4f6d] to-[#58a3a4] flex items-center justify-center text-white font-bold">
+                        <div className="w-10 h-10 rounded-full bg-[#0e4f6d] flex items-center justify-center text-white font-bold">
                           {user.nome.substring(0, 2).toUpperCase()}
                         </div>
                         <div>

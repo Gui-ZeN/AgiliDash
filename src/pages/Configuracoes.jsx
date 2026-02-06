@@ -598,13 +598,13 @@ const Configuracoes = () => {
                           ) : cnpjsDoGrupo.map(cnpj => (
                             <div key={cnpj.id} className="flex items-center justify-between p-4 pl-14 border-l-4 border-teal-200 dark:border-teal-800 ml-6 hover:bg-slate-100/50 dark:hover:bg-slate-700/30">
                               <div className="flex items-center gap-3 flex-1 min-w-0">
-                                <div className={`p-2 rounded-lg ${cnpj.tipo === 'Matriz' ? 'bg-gradient-to-br from-[#0e4f6d] to-[#58a3a4]' : 'bg-teal-100 dark:bg-teal-900/30'}`}>
+                                <div className={`p-2 rounded-lg ${cnpj.tipo === 'Matriz' ? 'bg-[#0e4f6d]' : 'bg-teal-100 dark:bg-teal-900/30'}`}>
                                   <Building2 className={`w-4 h-4 ${cnpj.tipo === 'Matriz' ? 'text-white' : 'text-teal-600'}`} />
                                 </div>
                                 <div className="min-w-0">
                                   <div className="flex items-center gap-2 flex-wrap">
                                     <h5 className="font-medium text-slate-800 dark:text-white truncate">{cnpj.nomeFantasia || cnpj.razaoSocial}</h5>
-                                    <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${cnpj.tipo === 'Matriz' ? 'bg-[#0e4f6d] text-white' : 'bg-slate-200 text-slate-600'}`}>{cnpj.tipo}</span>
+                                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${cnpj.tipo === 'Matriz' ? 'bg-[#0e4f6d] text-white' : 'bg-slate-200 text-slate-600'}`}>{cnpj.tipo}</span>
                                   </div>
                                   <p className="text-xs text-slate-500 font-mono">{cnpj.cnpj}</p>
                                 </div>
@@ -655,7 +655,7 @@ const Configuracoes = () => {
                         <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30">
                           <td className="px-4 py-4">
                             <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#0e4f6d] to-[#58a3a4] flex items-center justify-center text-white font-bold text-sm">{user.nome.substring(0, 2).toUpperCase()}</div>
+                              <div className="w-10 h-10 rounded-full bg-[#0e4f6d] flex items-center justify-center text-white font-bold text-sm">{user.nome.substring(0, 2).toUpperCase()}</div>
                               <div>
                                 <p className="font-semibold text-slate-800 dark:text-white">{user.nome}</p>
                                 <span className={`text-xs px-2 py-0.5 rounded-full ${user.status === 'Ativo' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>{user.status}</span>
@@ -915,28 +915,28 @@ const Configuracoes = () => {
                     <div className="space-y-6">
                       {/* Cards de Totais */}
                       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-4 rounded-xl text-white">
+                        <div className="bg-emerald-600 p-4 rounded-xl text-white">
                           <div className="flex items-center gap-2 mb-2">
                             <TrendingUp className="w-5 h-5 opacity-80" />
                             <span className="text-sm opacity-80">Total Receitas (positivos)</span>
                           </div>
                           <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totais?.totalReceitas || 0)}</p>
                         </div>
-                        <div className="bg-gradient-to-br from-red-500 to-rose-600 p-4 rounded-xl text-white">
+                        <div className="bg-red-600 p-4 rounded-xl text-white">
                           <div className="flex items-center gap-2 mb-2">
                             <TrendingDown className="w-5 h-5 opacity-80" />
                             <span className="text-sm opacity-80">Total Despesas (negativos)</span>
                           </div>
                           <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totais?.totalDespesas || 0)}</p>
                         </div>
-                        <div className={`bg-gradient-to-br ${(importPreview.dadosParsed.totais?.lucroLiquido || 0) >= 0 ? 'from-blue-500 to-indigo-600' : 'from-orange-500 to-red-600'} p-4 rounded-xl text-white`}>
+                        <div className={`${(importPreview.dadosParsed.totais?.lucroLiquido || 0) >= 0 ? 'bg-indigo-600' : 'bg-orange-600'} p-4 rounded-xl text-white`}>
                           <div className="flex items-center gap-2 mb-2">
                             <Calculator className="w-5 h-5 opacity-80" />
                             <span className="text-sm opacity-80">Resultado Líquido</span>
                           </div>
                           <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totais?.lucroLiquido || 0)}</p>
                         </div>
-                        <div className="bg-gradient-to-br from-purple-500 to-violet-600 p-4 rounded-xl text-white">
+                        <div className="bg-purple-600 p-4 rounded-xl text-white">
                           <div className="flex items-center gap-2 mb-2">
                             <Activity className="w-5 h-5 opacity-80" />
                             <span className="text-sm opacity-80">Competência</span>
@@ -1012,15 +1012,15 @@ const Configuracoes = () => {
                   {importPreview.isDominioFormat && importPreview.tipoRelatorio === 'balancete' && importPreview.dadosParsed && (
                     <div className="space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="bg-gradient-to-br from-blue-500 to-cyan-600 p-4 rounded-xl text-white">
+                        <div className="bg-cyan-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Bancos Conta Movimento</p>
                           <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.bancosMovimento?.saldoAtual || 0)}</p>
                         </div>
-                        <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-4 rounded-xl text-white">
+                        <div className="bg-emerald-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Aplicações Financeiras</p>
                           <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.aplicacoesFinanceiras?.saldoAtual || 0)}</p>
                         </div>
-                        <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-4 rounded-xl text-white">
+                        <div className="bg-amber-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Estoque</p>
                           <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.estoque?.saldoAtual || 0)}</p>
                         </div>
@@ -1113,15 +1113,15 @@ const Configuracoes = () => {
                         </p>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-4 rounded-xl text-white">
+                        <div className="bg-indigo-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Base de Calculo</p>
                           <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.dados?.baseCalculo || 0)}</p>
                         </div>
-                        <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-4 rounded-xl text-white">
+                        <div className="bg-amber-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">CSLL Devida (9%)</p>
                           <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.dados?.csllDevida || 0)}</p>
                         </div>
-                        <div className="bg-gradient-to-br from-red-500 to-rose-600 p-4 rounded-xl text-white">
+                        <div className="bg-red-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">CSLL a Recolher</p>
                           <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.dados?.csllRecolher || 0)}</p>
                         </div>
@@ -1150,19 +1150,19 @@ const Configuracoes = () => {
                         </p>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-4 rounded-xl text-white">
+                        <div className="bg-indigo-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Base de Calculo</p>
                           <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.dados?.baseCalculo || 0)}</p>
                         </div>
-                        <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-4 rounded-xl text-white">
+                        <div className="bg-amber-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">IRPJ (15%)</p>
                           <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.dados?.irpjDevido || 0)}</p>
                         </div>
-                        <div className="bg-gradient-to-br from-purple-500 to-violet-600 p-4 rounded-xl text-white">
+                        <div className="bg-purple-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Adicional (10%)</p>
                           <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.dados?.adicionalIR || 0)}</p>
                         </div>
-                        <div className="bg-gradient-to-br from-red-500 to-rose-600 p-4 rounded-xl text-white">
+                        <div className="bg-red-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">IRPJ a Recolher</p>
                           <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.dados?.irpjRecolher || 0)}</p>
                         </div>
@@ -1175,19 +1175,19 @@ const Configuracoes = () => {
                     <div className="space-y-6">
                       {/* Cards de Totais Gerais */}
                       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-4 rounded-xl text-white">
+                        <div className="bg-emerald-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Total Entradas</p>
                           <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totaisGerais?.entradas || 0)}</p>
                         </div>
-                        <div className="bg-gradient-to-br from-red-500 to-rose-600 p-4 rounded-xl text-white">
+                        <div className="bg-red-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Total Saidas</p>
                           <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totaisGerais?.saidas || 0)}</p>
                         </div>
-                        <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-4 rounded-xl text-white">
+                        <div className="bg-indigo-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Total Servicos</p>
                           <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totaisGerais?.servicos || 0)}</p>
                         </div>
-                        <div className="bg-gradient-to-br from-purple-500 to-violet-600 p-4 rounded-xl text-white">
+                        <div className="bg-purple-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Periodos</p>
                           <p className="text-2xl font-bold">{importPreview.dadosParsed.movimentacao?.length || 0} meses</p>
                           <p className="text-xs opacity-70">{importPreview.dadosParsed.anosUnicos?.join(', ')}</p>
@@ -1257,19 +1257,19 @@ const Configuracoes = () => {
                     <div className="space-y-6">
                       {/* Cards de Resumo */}
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="bg-gradient-to-br from-red-500 to-rose-600 p-4 rounded-xl text-white">
+                        <div className="bg-red-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Total Impostos a Recolher</p>
                           <p className="text-2xl font-bold">
                             {formatCurrency(Object.values(importPreview.dadosParsed.totaisPorImposto || {}).reduce((acc, i) => acc + (i.recolher || 0), 0))}
                           </p>
                         </div>
-                        <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-4 rounded-xl text-white">
+                        <div className="bg-emerald-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Total Saldo Credor</p>
                           <p className="text-2xl font-bold">
                             {formatCurrency(Object.values(importPreview.dadosParsed.totaisPorImposto || {}).reduce((acc, i) => acc + (i.credito || 0), 0))}
                           </p>
                         </div>
-                        <div className="bg-gradient-to-br from-purple-500 to-violet-600 p-4 rounded-xl text-white">
+                        <div className="bg-purple-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Periodos Importados</p>
                           <p className="text-2xl font-bold">{importPreview.dadosParsed.periodosImportados || Object.keys(importPreview.dadosParsed.impostosPorMes || {}).length} meses</p>
                         </div>
@@ -1359,19 +1359,19 @@ const Configuracoes = () => {
                   {importPreview.isDominioFormat && importPreview.tipoRelatorio === 'resumoAcumulador' && importPreview.dadosParsed && (
                     <div className="space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-4 rounded-xl text-white">
+                        <div className="bg-emerald-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Total Entradas</p>
                           <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totais?.entradas || 0)}</p>
                         </div>
-                        <div className="bg-gradient-to-br from-red-500 to-rose-600 p-4 rounded-xl text-white">
+                        <div className="bg-red-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Total Saidas</p>
                           <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totais?.saidas || 0)}</p>
                         </div>
-                        <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-4 rounded-xl text-white">
+                        <div className="bg-indigo-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Compra Comercializacao</p>
                           <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.categorias?.compraComercializacao || 0)}</p>
                         </div>
-                        <div className="bg-gradient-to-br from-purple-500 to-violet-600 p-4 rounded-xl text-white">
+                        <div className="bg-purple-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Venda Mercadoria</p>
                           <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.categorias?.vendaMercadoria || 0)}</p>
                         </div>
@@ -1406,19 +1406,19 @@ const Configuracoes = () => {
                   {importPreview.isDominioFormat && importPreview.tipoRelatorio === 'fgts' && importPreview.dadosParsed && (
                     <div className="space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-4 rounded-xl text-white">
+                        <div className="bg-indigo-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Total FGTS</p>
                           <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totalGeral?.valorFGTS || 0)}</p>
                         </div>
-                        <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-4 rounded-xl text-white">
+                        <div className="bg-emerald-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Base de Calculo</p>
                           <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totalGeral?.base || 0)}</p>
                         </div>
-                        <div className="bg-gradient-to-br from-purple-500 to-violet-600 p-4 rounded-xl text-white">
+                        <div className="bg-purple-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Competencias</p>
                           <p className="text-2xl font-bold">{importPreview.dadosParsed.competencias?.length || 0}</p>
                         </div>
-                        <div className="bg-gradient-to-br from-teal-500 to-cyan-600 p-4 rounded-xl text-white">
+                        <div className="bg-cyan-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Registros</p>
                           <p className="text-2xl font-bold">{importPreview.dadosParsed.registros?.length || 0}</p>
                         </div>
@@ -1443,19 +1443,19 @@ const Configuracoes = () => {
                   {importPreview.isDominioFormat && importPreview.tipoRelatorio === 'inss' && importPreview.dadosParsed && (
                     <div className="space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div className="bg-gradient-to-br from-purple-500 to-violet-600 p-4 rounded-xl text-white">
+                        <div className="bg-purple-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Total INSS</p>
                           <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totalGeral?.valorINSS || 0)}</p>
                         </div>
-                        <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-4 rounded-xl text-white">
+                        <div className="bg-emerald-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Base de Calculo</p>
                           <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totalGeral?.baseCalculo || 0)}</p>
                         </div>
-                        <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-4 rounded-xl text-white">
+                        <div className="bg-indigo-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Guias Originais</p>
                           <p className="text-2xl font-bold">{importPreview.dadosParsed.totaisPorTipo?.original || 0}</p>
                         </div>
-                        <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-4 rounded-xl text-white">
+                        <div className="bg-amber-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Retificadores</p>
                           <p className="text-2xl font-bold">{importPreview.dadosParsed.totaisPorTipo?.retificador || 0}</p>
                         </div>
@@ -1473,19 +1473,19 @@ const Configuracoes = () => {
                   {importPreview.isDominioFormat && importPreview.tipoRelatorio === 'empregados' && importPreview.dadosParsed && (
                     <div className="space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div className="bg-gradient-to-br from-teal-500 to-cyan-600 p-4 rounded-xl text-white">
+                        <div className="bg-cyan-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Total Empregados</p>
                           <p className="text-2xl font-bold">{importPreview.dadosParsed.estatisticas?.total || 0}</p>
                         </div>
-                        <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-4 rounded-xl text-white">
+                        <div className="bg-emerald-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Ativos</p>
                           <p className="text-2xl font-bold">{importPreview.dadosParsed.estatisticas?.ativos || 0}</p>
                         </div>
-                        <div className="bg-gradient-to-br from-red-500 to-rose-600 p-4 rounded-xl text-white">
+                        <div className="bg-red-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Demitidos</p>
                           <p className="text-2xl font-bold">{importPreview.dadosParsed.estatisticas?.demitidos || 0}</p>
                         </div>
-                        <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-4 rounded-xl text-white">
+                        <div className="bg-amber-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Afastados</p>
                           <p className="text-2xl font-bold">{importPreview.dadosParsed.estatisticas?.afastados || 0}</p>
                         </div>
@@ -1510,19 +1510,19 @@ const Configuracoes = () => {
                   {importPreview.isDominioFormat && importPreview.tipoRelatorio === 'salarioBase' && importPreview.dadosParsed && (
                     <div className="space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-4 rounded-xl text-white">
+                        <div className="bg-emerald-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Folha Total</p>
                           <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.estatisticas?.totalSalarios || 0)}</p>
                         </div>
-                        <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-4 rounded-xl text-white">
+                        <div className="bg-indigo-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Salario Medio</p>
                           <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.estatisticas?.salarioMedioGeral || 0)}</p>
                         </div>
-                        <div className="bg-gradient-to-br from-purple-500 to-violet-600 p-4 rounded-xl text-white">
+                        <div className="bg-purple-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Total Empregados</p>
                           <p className="text-2xl font-bold">{importPreview.dadosParsed.estatisticas?.totalEmpregados || 0}</p>
                         </div>
-                        <div className="bg-gradient-to-br from-teal-500 to-cyan-600 p-4 rounded-xl text-white">
+                        <div className="bg-cyan-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Cargos Diferentes</p>
                           <p className="text-2xl font-bold">{importPreview.dadosParsed.estatisticas?.quantidadeCargos || 0}</p>
                         </div>
@@ -1548,19 +1548,19 @@ const Configuracoes = () => {
                   {importPreview.isDominioFormat && importPreview.tipoRelatorio === 'ferias' && importPreview.dadosParsed && (
                     <div className="space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-4 rounded-xl text-white">
+                        <div className="bg-indigo-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Total Registros</p>
                           <p className="text-2xl font-bold">{importPreview.dadosParsed.estatisticas?.totalRegistros || 0}</p>
                         </div>
-                        <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-4 rounded-xl text-white">
+                        <div className="bg-emerald-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Dias Programados</p>
                           <p className="text-2xl font-bold">{importPreview.dadosParsed.estatisticas?.diasTotalProgramados || 0}</p>
                         </div>
-                        <div className="bg-gradient-to-br from-teal-500 to-cyan-600 p-4 rounded-xl text-white">
+                        <div className="bg-cyan-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Dias Gozados</p>
                           <p className="text-2xl font-bold">{importPreview.dadosParsed.estatisticas?.diasTotalGozados || 0}</p>
                         </div>
-                        <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-4 rounded-xl text-white">
+                        <div className="bg-amber-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Dias Restantes</p>
                           <p className="text-2xl font-bold">{importPreview.dadosParsed.estatisticas?.diasRestantes || 0}</p>
                         </div>

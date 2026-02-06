@@ -150,7 +150,7 @@ const Login = () => {
             </div>
 
             {/* Info de usuários de teste */}
-            <div className="mb-6 p-4 bg-gradient-to-r from-[#0e4f6d]/5 to-[#58a3a4]/5 rounded-xl border border-[#0e4f6d]/10">
+            <div className="mb-6 p-4 bg-[#0e4f6d]/5 rounded-xl border border-[#0e4f6d]/10">
               <p className="text-xs font-semibold text-[#0e4f6d] uppercase tracking-wide mb-3 flex items-center gap-2">
                 <Shield className="w-3.5 h-3.5" />
                 Credenciais de teste
@@ -248,13 +248,6 @@ const Login = () => {
                 )}
               </button>
             </form>
-
-            {/* Link esqueceu senha */}
-            <div className="mt-6 text-center">
-              <a href="#" className="text-sm text-slate-500 hover:text-[#0e4f6d] transition-colors">
-                Esqueceu a senha?
-              </a>
-            </div>
           </div>
 
           {/* Footer */}
@@ -264,7 +257,7 @@ const Login = () => {
               <span className="text-xs">Agili Complex</span>
               <div className="h-px w-12 bg-slate-200" />
             </div>
-            <p className="text-[10px] text-slate-400 mt-2">
+            <p className="text-xs text-slate-400 mt-2">
               Portal seguro de acesso ao dashboard
             </p>
           </div>

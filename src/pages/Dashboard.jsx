@@ -223,7 +223,7 @@ const Dashboard = () => {
   }));
 
   return (
-    <div className={`min-h-screen ${isDarkMode ? 'dark bg-slate-900' : 'bg-gradient-to-br from-slate-50 via-slate-50 to-cyan-50/30'} text-slate-800 dark:text-slate-200`}>
+    <div className={`min-h-screen ${isDarkMode ? 'dark bg-slate-900' : 'bg-slate-100'} text-slate-800 dark:text-slate-200`}>
       <Header activeTab={activeTab} onTabChange={setActiveTab} />
 
       <main className="w-full px-4 lg:px-6 xl:px-8 py-6 lg:py-8">
@@ -244,7 +244,7 @@ const Dashboard = () => {
 
         {/* Badge de modo consolidado */}
         {isConsolidado && (
-          <div className="mb-6 bg-gradient-to-r from-[#0e4f6d] to-[#1a6b8a] p-4 rounded-2xl text-white flex items-center gap-3">
+          <div className="mb-6 bg-[#0e4f6d] p-4 rounded-2xl text-white flex items-center gap-3">
             <Layers className="w-5 h-5" />
             <span className="font-medium">Visualizando dados consolidados de todos os CNPJs</span>
           </div>
@@ -329,7 +329,7 @@ const Dashboard = () => {
 
             {/* Card Principal de Dados Cadastrais - Redesenhado */}
             <div className={`bg-white rounded-3xl border border-slate-100 shadow-lg overflow-hidden transition-all duration-500 delay-200 ${cardAnimation}`}>
-              <div className="bg-gradient-to-r from-[#0e4f6d] to-[#1a6b8a] p-8 text-white">
+              <div className="bg-[#0e4f6d] p-8 text-white">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                   <div>
                     <div className="flex items-center gap-2 mb-3">
@@ -372,7 +372,7 @@ const Dashboard = () => {
 
               <div className="p-8">
                 <div className="flex items-center gap-6">
-                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#0e4f6d] to-[#58a3a4] flex items-center justify-center shadow-lg">
+                  <div className="w-20 h-20 rounded-2xl bg-[#0e4f6d] flex items-center justify-center shadow-lg">
                     <User className="w-10 h-10 text-white" />
                   </div>
                   <div>
@@ -413,19 +413,19 @@ const Dashboard = () => {
                 {equipeTecnica.map((membro, index) => {
                   const Icon = iconMap[membro.icon];
                   const colors = [
-                    { bg: 'from-cyan-500 to-blue-600', light: 'bg-cyan-50' },
-                    { bg: 'from-blue-500 to-indigo-600', light: 'bg-blue-50' },
-                    { bg: 'from-teal-500 to-cyan-600', light: 'bg-teal-50' }
+                    { bg: 'bg-cyan-600', light: 'bg-cyan-50' },
+                    { bg: 'bg-indigo-600', light: 'bg-blue-50' },
+                    { bg: 'bg-teal-600', light: 'bg-teal-50' }
                   ];
                   const color = colors[index % colors.length];
 
                   return (
                     <div
                       key={membro.id}
-                      className="group bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                      className="group bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
                     >
                       <div className="flex items-start justify-between mb-4">
-                        <div className={`p-4 rounded-2xl bg-gradient-to-br ${color.bg} shadow-lg`}>
+                        <div className={`p-4 rounded-2xl ${color.bg} shadow-lg`}>
                           <Icon className="w-6 h-6 text-white" />
                         </div>
                         <div className="w-2 h-2 bg-green-400 rounded-full" />
@@ -445,7 +445,7 @@ const Dashboard = () => {
             </section>
 
             {/* Card de contato */}
-            <div className={`bg-gradient-to-r from-[#0e4f6d] to-[#1a6b8a] p-8 rounded-3xl text-white transition-all duration-500 delay-400 ${cardAnimation}`}>
+            <div className={`bg-[#0e4f6d] p-8 rounded-3xl text-white transition-all duration-500 delay-400 ${cardAnimation}`}>
               <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                 <div className="flex items-center gap-6">
                   <div className="p-4 bg-white/10 rounded-2xl backdrop-blur-sm">
@@ -520,7 +520,7 @@ const Dashboard = () => {
               </div>
             ) : (
               <div className={`grid grid-cols-1 md:grid-cols-4 gap-4 transition-all duration-500 delay-100 ${cardAnimation}`}>
-                <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-6 rounded-2xl text-white shadow-lg">
+                <div className="bg-emerald-600 p-6 rounded-2xl text-white shadow-lg">
                   <div className="flex items-center justify-between mb-4">
                     <TrendingUp className="w-8 h-8 opacity-80" />
                     <span className="text-xs font-bold bg-white/20 px-3 py-1 rounded-full">
@@ -531,7 +531,7 @@ const Dashboard = () => {
                   <p className="text-white/70 text-sm mt-1">Receita Total {selectedYear}</p>
                 </div>
 
-                <div className="bg-gradient-to-br from-red-500 to-rose-600 p-6 rounded-2xl text-white shadow-lg">
+                <div className="bg-red-600 p-6 rounded-2xl text-white shadow-lg">
                   <div className="flex items-center justify-between mb-4">
                     <TrendingDown className="w-8 h-8 opacity-80" />
                   </div>
@@ -539,7 +539,7 @@ const Dashboard = () => {
                   <p className="text-white/70 text-sm mt-1">Despesas Total {selectedYear}</p>
                 </div>
 
-                <div className="bg-gradient-to-br from-[#0e4f6d] to-[#1a6b8a] p-6 rounded-2xl text-white shadow-lg">
+                <div className="bg-[#0e4f6d] p-6 rounded-2xl text-white shadow-lg">
                   <div className="flex items-center justify-between mb-4">
                     <Coins className="w-8 h-8 opacity-80" />
                   </div>
@@ -547,7 +547,7 @@ const Dashboard = () => {
                   <p className="text-white/70 text-sm mt-1">Lucro Liquido</p>
                 </div>
 
-                <div className="bg-gradient-to-br from-purple-500 to-indigo-600 p-6 rounded-2xl text-white shadow-lg">
+                <div className="bg-purple-600 p-6 rounded-2xl text-white shadow-lg">
                   <div className="flex items-center justify-between mb-4">
                     <Activity className="w-8 h-8 opacity-80" />
                   </div>
@@ -784,7 +784,7 @@ const Dashboard = () => {
             </div>
 
             {/* Card de análise */}
-            <div className={`bg-gradient-to-r from-[#0e4f6d] to-[#1a6b8a] p-8 rounded-3xl text-white shadow-xl transition-all duration-500 delay-700 ${cardAnimation}`}>
+            <div className={`bg-[#0e4f6d] p-8 rounded-3xl text-white shadow-xl transition-all duration-500 delay-700 ${cardAnimation}`}>
               <div className="flex items-start gap-6">
                 <div className="p-4 bg-white/10 rounded-2xl backdrop-blur-sm">
                   <Award className="w-8 h-8" />
@@ -901,7 +901,7 @@ const Dashboard = () => {
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-[#0e4f6d] to-[#1a6b8a] p-6 rounded-2xl text-white shadow-lg">
+                <div className="bg-[#0e4f6d] p-6 rounded-2xl text-white shadow-lg">
                   <div className="flex items-center gap-4 mb-4">
                     <div className="p-3 bg-white/10 rounded-xl">
                       <Wallet className="w-6 h-6" />
@@ -1228,7 +1228,7 @@ const Dashboard = () => {
             )}
 
             {/* Card de análise */}
-            <div className={`bg-gradient-to-r from-indigo-600 to-purple-600 p-8 rounded-3xl text-white shadow-xl transition-all duration-500 delay-600 ${cardAnimation}`}>
+            <div className={`bg-indigo-600 p-8 rounded-3xl text-white shadow-xl transition-all duration-500 delay-600 ${cardAnimation}`}>
               <div className="flex items-start gap-6">
                 <div className="p-4 bg-white/10 rounded-2xl backdrop-blur-sm">
                   <Award className="w-8 h-8" />
@@ -1478,7 +1478,7 @@ const Dashboard = () => {
               <>
                 {/* Cards de metricas vazias */}
                 <div className={`grid grid-cols-1 md:grid-cols-4 gap-4 transition-all duration-500 delay-100 ${cardAnimation}`}>
-                  <div className="bg-gradient-to-br from-teal-500 to-cyan-600 p-6 rounded-2xl text-white shadow-lg">
+                  <div className="bg-cyan-600 p-6 rounded-2xl text-white shadow-lg">
                     <div className="flex items-center justify-between mb-4">
                       <Users className="w-8 h-8 opacity-80" />
                       <span className="text-xs font-bold bg-white/20 px-3 py-1 rounded-full">
@@ -1489,7 +1489,7 @@ const Dashboard = () => {
                     <p className="text-white/70 text-sm mt-1">Colaboradores</p>
                   </div>
 
-                  <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-6 rounded-2xl text-white shadow-lg">
+                  <div className="bg-emerald-600 p-6 rounded-2xl text-white shadow-lg">
                     <div className="flex items-center justify-between mb-4">
                       <Banknote className="w-8 h-8 opacity-80" />
                     </div>
@@ -1497,7 +1497,7 @@ const Dashboard = () => {
                     <p className="text-white/70 text-sm mt-1">Folha Salarial</p>
                   </div>
 
-                  <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-6 rounded-2xl text-white shadow-lg">
+                  <div className="bg-indigo-600 p-6 rounded-2xl text-white shadow-lg">
                     <div className="flex items-center justify-between mb-4">
                       <Receipt className="w-8 h-8 opacity-80" />
                     </div>
@@ -1505,7 +1505,7 @@ const Dashboard = () => {
                     <p className="text-white/70 text-sm mt-1">Total FGTS</p>
                   </div>
 
-                  <div className="bg-gradient-to-br from-purple-500 to-pink-600 p-6 rounded-2xl text-white shadow-lg">
+                  <div className="bg-purple-600 p-6 rounded-2xl text-white shadow-lg">
                     <div className="flex items-center justify-between mb-4">
                       <Award className="w-8 h-8 opacity-80" />
                     </div>
@@ -1590,7 +1590,7 @@ const Dashboard = () => {
             )}
 
             {/* Card de resumo */}
-            <div className={`bg-gradient-to-r from-teal-600 to-cyan-600 p-8 rounded-3xl text-white shadow-xl transition-all duration-500 delay-500 ${cardAnimation}`}>
+            <div className={`bg-cyan-600 p-8 rounded-3xl text-white shadow-xl transition-all duration-500 delay-500 ${cardAnimation}`}>
               <div className="flex items-start gap-6">
                 <div className="p-4 bg-white/10 rounded-2xl backdrop-blur-sm">
                   <UserCheck className="w-8 h-8" />
@@ -1658,7 +1658,7 @@ const Dashboard = () => {
 
             {/* Cards de métricas principais */}
             <div className={`grid grid-cols-1 md:grid-cols-4 gap-4 transition-all duration-500 delay-100 ${cardAnimation}`}>
-              <div className="bg-gradient-to-br from-amber-500 to-orange-500 p-6 rounded-2xl text-white shadow-lg">
+              <div className="bg-amber-600 p-6 rounded-2xl text-white shadow-lg">
                 <div className="flex items-center justify-between mb-4">
                   <ScrollText className="w-8 h-8 opacity-80" />
                   <span className="text-xs font-bold bg-white/20 px-3 py-1 rounded-full">
@@ -1669,7 +1669,7 @@ const Dashboard = () => {
                 <p className="text-white/70 text-sm mt-1">Contratos Ativos</p>
               </div>
 
-              <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-6 rounded-2xl text-white shadow-lg">
+              <div className="bg-indigo-600 p-6 rounded-2xl text-white shadow-lg">
                 <div className="flex items-center justify-between mb-4">
                   <Wallet className="w-8 h-8 opacity-80" />
                 </div>
@@ -1677,7 +1677,7 @@ const Dashboard = () => {
                 <p className="text-white/70 text-sm mt-1">Custo Operacional/Mês</p>
               </div>
 
-              <div className="bg-gradient-to-br from-emerald-500 to-green-600 p-6 rounded-2xl text-white shadow-lg">
+              <div className="bg-emerald-600 p-6 rounded-2xl text-white shadow-lg">
                 <div className="flex items-center justify-between mb-4">
                   <FileCheck className="w-8 h-8 opacity-80" />
                 </div>
@@ -1685,7 +1685,7 @@ const Dashboard = () => {
                 <p className="text-white/70 text-sm mt-1">Certidões Válidas</p>
               </div>
 
-              <div className="bg-gradient-to-br from-red-500 to-rose-600 p-6 rounded-2xl text-white shadow-lg">
+              <div className="bg-red-600 p-6 rounded-2xl text-white shadow-lg">
                 <div className="flex items-center justify-between mb-4">
                   <AlertTriangle className="w-8 h-8 opacity-80" />
                 </div>
@@ -1902,7 +1902,7 @@ const Dashboard = () => {
             </div>
 
             {/* Card de informação */}
-            <div className={`bg-gradient-to-r from-amber-500 to-orange-500 p-8 rounded-3xl text-white shadow-xl transition-all duration-500 delay-600 ${cardAnimation}`}>
+            <div className={`bg-amber-600 p-8 rounded-3xl text-white shadow-xl transition-all duration-500 delay-600 ${cardAnimation}`}>
               <div className="flex items-start gap-6">
                 <div className="p-4 bg-white/10 rounded-2xl backdrop-blur-sm">
                   <Briefcase className="w-8 h-8" />

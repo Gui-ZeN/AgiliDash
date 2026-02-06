@@ -451,7 +451,7 @@ const AdminPanel = () => {
                         <tr key={usuario.id} className="hover:bg-slate-50 transition-colors">
                           <td className="py-4 px-4">
                             <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#0e4f6d] to-[#58a3a4] flex items-center justify-center text-white font-bold text-sm">
+                              <div className="w-8 h-8 rounded-full bg-[#0e4f6d] flex items-center justify-center text-white font-bold text-sm">
                                 {usuario.nome.charAt(0)}
                               </div>
                               <div>
@@ -657,7 +657,7 @@ const AdminPanel = () => {
                         <p className="text-sm font-medium text-slate-700">{cnpj.nomeFantasia}</p>
                         <p className="text-xs text-slate-500">{cnpj.cnpj}</p>
                       </div>
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${cnpj.tipo === 'Matriz' ? 'bg-[#0e4f6d]/10 text-[#0e4f6d]' : 'bg-slate-100 text-slate-600'}`}>
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${cnpj.tipo === 'Matriz' ? 'bg-[#0e4f6d]/10 text-[#0e4f6d]' : 'bg-slate-100 text-slate-600'}`}>
                         {cnpj.tipo}
                       </span>
                     </label>

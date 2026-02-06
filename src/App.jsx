@@ -3,6 +3,7 @@ import { EmpresaProvider } from './context/EmpresaContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { DataProvider } from './context/DataContext';
 import { AuthProvider } from './context/AuthContext';
+import { ToastProvider } from './context/ToastContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -21,8 +22,9 @@ function App() {
   return (
     <AuthProvider>
       <ThemeProvider>
-        <DataProvider>
-          <EmpresaProvider>
+        <ToastProvider>
+          <DataProvider>
+            <EmpresaProvider>
             <Routes>
               {/* Login - Público */}
               <Route path="/" element={<Login />} />
@@ -62,8 +64,9 @@ function App() {
               <Route path="/usuarios" element={<Navigate to="/configuracoes" replace />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
-          </EmpresaProvider>
-        </DataProvider>
+            </EmpresaProvider>
+          </DataProvider>
+        </ToastProvider>
       </ThemeProvider>
     </AuthProvider>
   );
