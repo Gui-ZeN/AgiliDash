@@ -75,6 +75,7 @@ import {
   TabelaAcumuladores,
   ImpostosPorPeriodoChart,
   ImpostosPorTipoChart,
+  ImpostosConsolidadosChart,
   CompraVendaChart,
   Detalhamento380Chart,
   Situacao380Chart,
@@ -1046,16 +1047,20 @@ const Dashboard = () => {
                   )}
                 </div>
 
-                {/* Gráfico de Barras Horizontais - Por Tipo de Imposto */}
+                {/* Gráfico de Barras Horizontais - Por Tipo de Imposto (Consolidado) */}
                 <div className={`p-6 rounded-3xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
                   <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
                     Por Tipo de Imposto
                   </h3>
                   <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                    Distribuicao por tributo
+                    Consolidado: Resumo Impostos + CSLL + IRPJ
                   </p>
-                  {temDadosFiscais && dadosFiscaisImportados?.resumoImpostos ? (
-                    <ImpostosPorTipoChart dados={dadosFiscaisImportados.resumoImpostos} />
+                  {temDadosFiscais && (dadosFiscaisImportados?.resumoImpostos || dadosFiscaisImportados?.csll?.length > 0 || dadosFiscaisImportados?.irpj?.length > 0) ? (
+                    <ImpostosConsolidadosChart
+                      dadosResumo={dadosFiscaisImportados.resumoImpostos}
+                      dadosCsll={dadosFiscaisImportados.csll}
+                      dadosIrpj={dadosFiscaisImportados.irpj}
+                    />
                   ) : (
                     <CSLLChart />
                   )}

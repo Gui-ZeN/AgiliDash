@@ -590,6 +590,171 @@ export const ImpostosPorTipoChart = ({ dados }) => {
   );
 };
 
+/**
+ * 5.5. Gráfico de Barras Horizontais - Impostos Consolidados
+ * Consolida dados de 3 fontes: Resumo Impostos + CSLL + IRPJ
+ */
+export const ImpostosConsolidadosChart = ({ dadosResumo, dadosCsll, dadosIrpj }) => {
+  const chartRef = useRef(null);
+  const chartInstance = useRef(null);
+  const { isDarkMode } = useTheme();
+
+  const dadosGrafico = useMemo(() => {
+    const impostos = [];
+
+    // 1. Dados do Resumo de Impostos (mensal)
+    if (dadosResumo?.totaisPorImposto) {
+      Object.entries(dadosResumo.totaisPorImposto).forEach(([nome, val]) => {
+        if (val.recolher > 0) {
+          impostos.push({
+            nome,
+            valor: val.recolher,
+            fonte: 'Resumo Impostos'
+          });
+        }
+      });
+    }
+
+    // 2. Dados de CSLL (trimestral - somar todos os trimestres)
+    if (dadosCsll && Array.isArray(dadosCsll) && dadosCsll.length > 0) {
+      const totalCsll = dadosCsll.reduce((acc, trim) => acc + (trim.dados?.csllRecolher || 0), 0);
+      if (totalCsll > 0) {
+        // Verificar se já existe CSLL no resumo
+        const existeCsll = impostos.findIndex(i => i.nome.toUpperCase().includes('CSLL') || i.nome.toUpperCase().includes('CONTRIBUIÇÃO SOCIAL'));
+        if (existeCsll >= 0) {
+          impostos[existeCsll].valor += totalCsll;
+        } else {
+          impostos.push({
+            nome: 'CSLL',
+            valor: totalCsll,
+            fonte: 'CSLL Trimestral'
+          });
+        }
+      }
+    }
+
+    // 3. Dados de IRPJ (trimestral - somar todos os trimestres)
+    if (dadosIrpj && Array.isArray(dadosIrpj) && dadosIrpj.length > 0) {
+      const totalIrpj = dadosIrpj.reduce((acc, trim) => acc + (trim.dados?.irpjRecolher || 0), 0);
+      if (totalIrpj > 0) {
+        // Verificar se já existe IRPJ no resumo
+        const existeIrpj = impostos.findIndex(i => i.nome.toUpperCase().includes('IRPJ') || i.nome.toUpperCase().includes('IMPOSTO DE RENDA'));
+        if (existeIrpj >= 0) {
+          impostos[existeIrpj].valor += totalIrpj;
+        } else {
+          impostos.push({
+            nome: 'IRPJ',
+            valor: totalIrpj,
+            fonte: 'IRPJ Trimestral'
+          });
+        }
+      }
+    }
+
+    // Ordenar por valor decrescente
+    impostos.sort((a, b) => b.valor - a.valor);
+
+    // Calcular total para percentuais
+    const total = impostos.reduce((acc, i) => acc + i.valor, 0);
+
+    return {
+      labels: impostos.map(i => i.nome),
+      valores: impostos.map(i => i.valor),
+      percentuais: impostos.map(i => total > 0 ? ((i.valor / total) * 100).toFixed(1) : 0),
+      total
+    };
+  }, [dadosResumo, dadosCsll, dadosIrpj]);
+
+  useEffect(() => {
+    if (!chartRef.current) return;
+
+    if (chartInstance.current) {
+      chartInstance.current.destroy();
+    }
+
+    const ctx = chartRef.current.getContext('2d');
+
+    chartInstance.current = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: dadosGrafico.labels,
+        datasets: [{
+          label: 'Valor',
+          data: dadosGrafico.valores,
+          backgroundColor: CHART_COLORS.slice(0, dadosGrafico.valores.length).map(c => c + 'CC'),
+          borderColor: CHART_COLORS.slice(0, dadosGrafico.valores.length),
+          borderWidth: 2,
+          borderRadius: 6
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: isDarkMode ? '#1e293b' : 'white',
+            titleColor: isDarkMode ? '#f1f5f9' : '#1e293b',
+            bodyColor: isDarkMode ? '#cbd5e1' : '#475569',
+            borderColor: isDarkMode ? '#334155' : '#e2e8f0',
+            borderWidth: 1,
+            padding: 16,
+            cornerRadius: 12,
+            callbacks: {
+              label: (context) => {
+                const percentage = dadosGrafico.percentuais[context.dataIndex];
+                return `${formatCurrency(context.raw)} (${percentage}%)`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: {
+              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)'
+            },
+            ticks: {
+              color: isDarkMode ? '#94a3b8' : '#64748b',
+              callback: (value) => formatCurrency(value)
+            }
+          },
+          y: {
+            grid: { display: false },
+            ticks: {
+              color: isDarkMode ? '#94a3b8' : '#64748b',
+              font: { weight: '600', size: 11 }
+            }
+          }
+        }
+      }
+    });
+
+    return () => {
+      if (chartInstance.current) {
+        chartInstance.current.destroy();
+      }
+    };
+  }, [dadosGrafico, isDarkMode]);
+
+  // Se não há dados, mostrar mensagem
+  if (dadosGrafico.valores.length === 0) {
+    return (
+      <div className="h-[400px] flex items-center justify-center">
+        <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+          Importe Resumo dos Impostos, CSLL ou IRPJ
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-[400px]">
+      <canvas ref={chartRef} />
+    </div>
+  );
+};
+
 // ============================================
 // GRÁFICOS COMPARATIVO 380
 // ============================================
@@ -1105,6 +1270,7 @@ export default {
   TabelaAcumuladores,
   ImpostosPorPeriodoChart,
   ImpostosPorTipoChart,
+  ImpostosConsolidadosChart,
   CompraVendaChart,
   Detalhamento380Chart,
   Situacao380Chart,
