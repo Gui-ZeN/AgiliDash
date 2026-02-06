@@ -405,8 +405,10 @@ export const ImpostosPorPeriodoChart = ({ dados, mesesSelecionados = null, trime
     });
 
     const valores = competenciasFiltradas.map(c => {
-      const impostos = dados.impostosPorMes[c];
-      return impostos.reduce((acc, imp) => acc + imp.impostoRecolher, 0);
+      const mesData = dados.impostosPorMes[c];
+      // Suporta estrutura antiga (array) e nova (objeto com .impostos)
+      const impostos = Array.isArray(mesData) ? mesData : (mesData?.impostos || []);
+      return impostos.reduce((acc, imp) => acc + (imp.impostoRecolher || 0), 0);
     });
 
     return { labels, valores };
