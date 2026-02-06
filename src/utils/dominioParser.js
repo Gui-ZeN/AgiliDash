@@ -958,13 +958,14 @@ export const parseResumoPorAcumulador = (csvContent) => {
     return desc.startsWith('VENDA') && !desc.includes('ATIVO') && !desc.includes('IMOBILIZADO');
   });
 
-  // Categorizar vendas para detalhamento
-  const itensVendaMercadoria = itensVendas.filter(s =>
-    s.descricao.toUpperCase().includes('MERCADORIA') ||
-    s.descricao.toUpperCase().includes('SORVETE')
-  );
-  const vendaMercadoria = itensVendaMercadoria.reduce((acc, s) => acc + s.vlrContabil, 0);
+  // Total de vendas para 380 = TODAS as vendas (exceto ativo imobilizado)
+  const totalVendas380 = itensVendas.reduce((acc, s) => acc + s.vlrContabil, 0);
 
+  // Para o 380, vendaMercadoria = total de todas as vendas
+  // (inclui VENDA DE SORVETES, VENDA DE PRODUTOS, VENDA DE MERCADORIA, etc)
+  const vendaMercadoria = totalVendas380;
+
+  // Detalhamento por categoria (para gráfico de barras horizontais)
   const itensVendaProduto = itensVendas.filter(s =>
     s.descricao.toUpperCase().includes('PRODUTO') ||
     s.descricao.toUpperCase().includes('PRODUÇÃO')
@@ -976,8 +977,12 @@ export const parseResumoPorAcumulador = (csvContent) => {
   );
   const vendaExterior = itensVendaExterior.reduce((acc, s) => acc + s.vlrContabil, 0);
 
-  // Total de vendas para 380 = TODAS as vendas (exceto ativo imobilizado)
-  const totalVendas380 = itensVendas.reduce((acc, s) => acc + s.vlrContabil, 0);
+  // Vendas de mercadoria específicas (para detalhamento)
+  const itensVendaMercadoriaEspecifica = itensVendas.filter(s =>
+    s.descricao.toUpperCase().includes('MERCADORIA') ||
+    s.descricao.toUpperCase().includes('SORVETE')
+  );
+  const vendaMercadoriaEspecifica = itensVendaMercadoriaEspecifica.reduce((acc, s) => acc + s.vlrContabil, 0);
 
   return {
     empresaInfo,
