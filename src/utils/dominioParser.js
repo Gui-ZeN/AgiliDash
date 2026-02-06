@@ -832,14 +832,21 @@ export const parseResumoPorAcumulador = (csvContent) => {
   const saidas = [];
   let secaoAtual = null; // 'ENTRADAS' ou 'SAIDAS'
 
-  // Função para normalizar texto (remover acentos para comparação)
-  const normalizar = (texto) => {
-    if (!texto) return '';
-    return texto
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toUpperCase()
-      .trim();
+  // Função para verificar se é seção SAIDAS (com ou sem acento, qualquer encoding)
+  const isSaidas = (texto) => {
+    if (!texto) return false;
+    const t = texto.toUpperCase().trim();
+    // Verificar múltiplas formas: SAÍDAS, SAIDAS, SA[qualquer char]DAS
+    return t === 'SAIDAS' ||
+           t === 'SAÍDAS' ||
+           (t.startsWith('SA') && t.endsWith('DAS') && t.length <= 7);
+  };
+
+  // Função para verificar se é seção ENTRADAS
+  const isEntradas = (texto) => {
+    if (!texto) return false;
+    const t = texto.toUpperCase().trim();
+    return t === 'ENTRADAS';
   };
 
   for (let i = 0; i < lines.length; i++) {
@@ -850,18 +857,16 @@ export const parseResumoPorAcumulador = (csvContent) => {
     if (line.includes('CNPJ:')) {
       empresaInfo.cnpj = cols.find(c => c.match(/\d{8,}/)) || '';
     }
-    if (line.includes('Período:') || line.includes('Periodo:')) {
+    if (line.toUpperCase().includes('PER') && line.includes(':')) {
       periodo = cols.find(c => c.match(/\d{2}\/\d{2}\/\d{4}/)) || '';
     }
 
-    // Identificar seção - usar normalização para ignorar acentos
-    const primeiraColNorm = normalizar(cols[0]);
-
-    if (primeiraColNorm === 'ENTRADAS') {
+    // Identificar seção
+    if (isEntradas(cols[0])) {
       secaoAtual = 'ENTRADAS';
       continue;
     }
-    if (primeiraColNorm === 'SAIDAS') {
+    if (isSaidas(cols[0])) {
       secaoAtual = 'SAIDAS';
       continue;
     }
