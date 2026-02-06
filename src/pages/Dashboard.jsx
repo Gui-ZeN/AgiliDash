@@ -124,7 +124,11 @@ import {
  * Contém as 5 tabs: Info. Gerais, Contábil, Fiscal, Pessoal, Administrativo
  */
 const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState('gerais');
+  // Recupera a aba ativa do localStorage ou usa 'gerais' como padrão
+  const [activeTab, setActiveTab] = useState(() => {
+    const savedTab = localStorage.getItem('dashboard_activeTab');
+    return savedTab || 'gerais';
+  });
   const [selectedYear, setSelectedYear] = useState(2025);
   const [fiscalData, setFiscalData] = useState(null);
   const [animateCards, setAnimateCards] = useState(false);
@@ -166,6 +170,11 @@ const Dashboard = () => {
     const timer = setTimeout(() => setAnimateCards(true), 50);
     return () => clearTimeout(timer);
   }, [activeTab, cnpjInfo.id]);
+
+  // Persistir aba ativa no localStorage
+  useEffect(() => {
+    localStorage.setItem('dashboard_activeTab', activeTab);
+  }, [activeTab]);
 
   // Calcular totais do DRE
   // Prioriza dados importados (Análise Horizontal) se disponíveis
