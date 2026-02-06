@@ -951,26 +951,33 @@ export const parseResumoPorAcumulador = (csvContent) => {
   );
   const compraComercializacao = itensCompraComercializacao.reduce((acc, e) => acc + e.vlrContabil, 0);
 
-  // Vendas por categoria
-  const itensVendaMercadoria = saidas.filter(s =>
-    s.descricao.toUpperCase().includes('VENDA') &&
-    s.descricao.toUpperCase().includes('MERCADORIA')
+  // Vendas - pegar todas que começam com "VENDA" (exceto ativo imobilizado)
+  const itensVendas = saidas.filter(s => {
+    const desc = s.descricao.toUpperCase();
+    // Começa com VENDA mas não é venda de ativo imobilizado
+    return desc.startsWith('VENDA') && !desc.includes('ATIVO') && !desc.includes('IMOBILIZADO');
+  });
+
+  // Categorizar vendas para detalhamento
+  const itensVendaMercadoria = itensVendas.filter(s =>
+    s.descricao.toUpperCase().includes('MERCADORIA') ||
+    s.descricao.toUpperCase().includes('SORVETE')
   );
   const vendaMercadoria = itensVendaMercadoria.reduce((acc, s) => acc + s.vlrContabil, 0);
 
-  const itensVendaProduto = saidas.filter(s =>
-    s.descricao.toUpperCase().includes('VENDA') &&
-    (s.descricao.toUpperCase().includes('PRODUTO') || s.descricao.toUpperCase().includes('PRODUÇÃO'))
+  const itensVendaProduto = itensVendas.filter(s =>
+    s.descricao.toUpperCase().includes('PRODUTO') ||
+    s.descricao.toUpperCase().includes('PRODUÇÃO')
   );
   const vendaProduto = itensVendaProduto.reduce((acc, s) => acc + s.vlrContabil, 0);
 
-  const itensVendaExterior = saidas.filter(s =>
+  const itensVendaExterior = itensVendas.filter(s =>
     s.descricao.toUpperCase().includes('EXTERIOR')
   );
   const vendaExterior = itensVendaExterior.reduce((acc, s) => acc + s.vlrContabil, 0);
 
-  // Total de vendas para 380 (MERCADORIA + PRODUTO + EXTERIOR)
-  const totalVendas380 = vendaMercadoria + vendaProduto + vendaExterior;
+  // Total de vendas para 380 = TODAS as vendas (exceto ativo imobilizado)
+  const totalVendas380 = itensVendas.reduce((acc, s) => acc + s.vlrContabil, 0);
 
   return {
     empresaInfo,
