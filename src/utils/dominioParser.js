@@ -450,6 +450,23 @@ export const parseContribuicaoSocial = (csvContent) => {
   let trimestre = '';
   let dados = {};
 
+  // Função auxiliar para encontrar o último valor numérico em uma linha
+  const findLastValue = (cols) => {
+    // Procura de trás pra frente o primeiro valor que parece número brasileiro
+    for (let i = cols.length - 1; i >= 0; i--) {
+      const val = cols[i].trim();
+      // Valor brasileiro: pode ter pontos, vírgula decimal, números
+      if (val && /^-?[\d.]+,\d{2}$/.test(val)) {
+        return parseValorBR(val);
+      }
+      // Também aceitar número inteiro (como 0)
+      if (val && /^-?\d+$/.test(val)) {
+        return parseValorBR(val);
+      }
+    }
+    return 0;
+  };
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const cols = line.split(';').map(c => c.trim());
@@ -462,27 +479,30 @@ export const parseContribuicaoSocial = (csvContent) => {
       trimestre = cols.find(c => c.match(/\w{3}\/\d{2}/)) || cols[2];
     }
 
-    // Extrair valores
+    // Extrair valores - busca o último valor numérico da linha
     if (cols[0]?.includes('Lucro líquido antes da CSLL')) {
-      dados.lucroLiquido = parseValorBR(cols[cols.length - 2]);
+      dados.lucroLiquido = findLastValue(cols);
     }
-    if (cols[0] === '(=) Base de cálculo antes da compensação') {
-      dados.baseCalculoAntes = parseValorBR(cols[cols.length - 2]);
+    if (cols[0]?.includes('Base de cálculo antes da compensação') || cols[0]?.includes('Base de calculo antes da compensacao')) {
+      dados.baseCalculoAntes = findLastValue(cols);
     }
-    if (cols[0] === '(-) Compensação') {
-      dados.compensacao = parseValorBR(cols[cols.length - 2]);
+    if (cols[0]?.includes('Compensação') || cols[0]?.includes('Compensacao')) {
+      dados.compensacao = findLastValue(cols);
     }
-    if (cols[0] === '(=) Base de cálculo') {
-      dados.baseCalculo = parseValorBR(cols[cols.length - 2]);
+    if (cols[0] === '(=) Base de cálculo' || cols[0] === '(=) Base de calculo') {
+      dados.baseCalculo = findLastValue(cols);
     }
     if (cols[0]?.includes('CSLL devida')) {
-      dados.csllDevida = parseValorBR(cols[cols.length - 2]);
+      dados.csllDevida = findLastValue(cols);
     }
-    if (cols[0] === '(=) CSLL a recolher') {
-      dados.csllRecolher = parseValorBR(cols[cols.length - 2]);
+    if (cols[0]?.includes('CSLL a recolher')) {
+      dados.csllRecolher = findLastValue(cols);
     }
-    if (cols[0]?.includes('Valor a compensar para o período seguinte')) {
-      dados.valorCompensarProximo = parseValorBR(cols[cols.length - 2]);
+    if (cols[0]?.includes('Valor a compensar para o período seguinte') || cols[0]?.includes('Valor a compensar para o periodo seguinte')) {
+      dados.valorCompensarProximo = findLastValue(cols);
+    }
+    if (cols[0]?.includes('Valor a deduzir para o período seguinte') || cols[0]?.includes('Valor a deduzir para o periodo seguinte')) {
+      dados.valorDeduzirProximo = findLastValue(cols);
     }
   }
 
@@ -504,6 +524,20 @@ export const parseImpostoRenda = (csvContent) => {
   let trimestre = '';
   let dados = {};
 
+  // Função auxiliar para encontrar o último valor numérico em uma linha
+  const findLastValue = (cols) => {
+    for (let i = cols.length - 1; i >= 0; i--) {
+      const val = cols[i].trim();
+      if (val && /^-?[\d.]+,\d{2}$/.test(val)) {
+        return parseValorBR(val);
+      }
+      if (val && /^-?\d+$/.test(val)) {
+        return parseValorBR(val);
+      }
+    }
+    return 0;
+  };
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const cols = line.split(';').map(c => c.trim());
@@ -516,33 +550,36 @@ export const parseImpostoRenda = (csvContent) => {
       trimestre = cols.find(c => c.match(/\w{3}\/\d{2}/)) || cols[2];
     }
 
-    // Extrair valores
-    if (cols[0]?.includes('Lucro líquido antes do IRPJ')) {
-      dados.lucroLiquido = parseValorBR(cols[cols.length - 2]);
+    // Extrair valores - busca o último valor numérico da linha
+    if (cols[0]?.includes('Lucro líquido antes do IRPJ') || cols[0]?.includes('Lucro liquido antes do IRPJ')) {
+      dados.lucroLiquido = findLastValue(cols);
     }
-    if (cols[0] === '(+) Adições') {
-      dados.adicoes = parseValorBR(cols[cols.length - 2]);
+    if (cols[0]?.includes('Adições') || cols[0]?.includes('Adicoes')) {
+      dados.adicoes = findLastValue(cols);
     }
-    if (cols[0] === '(=) Lucro Real antes da compensação') {
-      dados.lucroRealAntes = parseValorBR(cols[cols.length - 2]);
+    if (cols[0]?.includes('Lucro Real antes da compensação') || cols[0]?.includes('Lucro Real antes da compensacao')) {
+      dados.lucroRealAntes = findLastValue(cols);
     }
-    if (cols[0] === '(-) Compensação') {
-      dados.compensacao = parseValorBR(cols[cols.length - 2]);
+    if (cols[0]?.includes('Compensação') || cols[0]?.includes('Compensacao')) {
+      if (!dados.compensacao) dados.compensacao = findLastValue(cols);
     }
     if (cols[0] === '(=) Lucro Real') {
-      dados.lucroReal = parseValorBR(cols[cols.length - 2]);
+      dados.lucroReal = findLastValue(cols);
     }
     if (cols[0]?.includes('IRPJ devido')) {
-      dados.irpjDevido = parseValorBR(cols[cols.length - 2]);
+      dados.irpjDevido = findLastValue(cols);
     }
-    if (cols[0] === '(+) Adicional de IRPJ') {
-      dados.adicionalIrpj = parseValorBR(cols[cols.length - 2]);
+    if (cols[0]?.includes('Adicional de IRPJ')) {
+      dados.adicionalIrpj = findLastValue(cols);
     }
-    if (cols[0] === '(=) IRPJ a recolher') {
-      dados.irpjRecolher = parseValorBR(cols[cols.length - 2]);
+    if (cols[0]?.includes('IRPJ a recolher')) {
+      dados.irpjRecolher = findLastValue(cols);
     }
-    if (cols[0]?.includes('Valor a compensar para o período seguinte')) {
-      dados.valorCompensarProximo = parseValorBR(cols[cols.length - 2]);
+    if (cols[0]?.includes('Valor a compensar para o período seguinte') || cols[0]?.includes('Valor a compensar para o periodo seguinte')) {
+      dados.valorCompensarProximo = findLastValue(cols);
+    }
+    if (cols[0]?.includes('Valor a deduzir para o período seguinte') || cols[0]?.includes('Valor a deduzir para o periodo seguinte')) {
+      dados.valorDeduzirProximo = findLastValue(cols);
     }
   }
 
