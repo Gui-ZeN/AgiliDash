@@ -830,7 +830,17 @@ export const parseResumoPorAcumulador = (csvContent) => {
   let periodo = '';
   const entradas = [];
   const saidas = [];
-  let secaoAtual = null; // 'ENTRADAS' ou 'SAÍDAS'
+  let secaoAtual = null; // 'ENTRADAS' ou 'SAIDAS'
+
+  // Função para normalizar texto (remover acentos para comparação)
+  const normalizar = (texto) => {
+    if (!texto) return '';
+    return texto
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toUpperCase()
+      .trim();
+  };
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -840,17 +850,19 @@ export const parseResumoPorAcumulador = (csvContent) => {
     if (line.includes('CNPJ:')) {
       empresaInfo.cnpj = cols.find(c => c.match(/\d{8,}/)) || '';
     }
-    if (line.includes('Período:')) {
+    if (line.includes('Período:') || line.includes('Periodo:')) {
       periodo = cols.find(c => c.match(/\d{2}\/\d{2}\/\d{4}/)) || '';
     }
 
-    // Identificar seção
-    if (cols[0] === 'ENTRADAS') {
+    // Identificar seção - usar normalização para ignorar acentos
+    const primeiraColNorm = normalizar(cols[0]);
+
+    if (primeiraColNorm === 'ENTRADAS') {
       secaoAtual = 'ENTRADAS';
       continue;
     }
-    if (cols[0] === 'SAÍDAS') {
-      secaoAtual = 'SAÍDAS';
+    if (primeiraColNorm === 'SAIDAS') {
+      secaoAtual = 'SAIDAS';
       continue;
     }
     if (cols[0]?.includes('Total:')) {
@@ -912,7 +924,7 @@ export const parseResumoPorAcumulador = (csvContent) => {
 
       if (secaoAtual === 'ENTRADAS') {
         entradas.push(item);
-      } else if (secaoAtual === 'SAÍDAS') {
+      } else if (secaoAtual === 'SAIDAS') {
         saidas.push(item);
       }
     }
