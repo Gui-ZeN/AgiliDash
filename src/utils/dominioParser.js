@@ -784,18 +784,20 @@ export const parseResumoImpostos = (csvContent) => {
   let competenciaAtual = '';
   let totalGeralRecolher = 0;
 
-  // Lista de impostos conhecidos (sem acentos para matching mais robusto)
+  // Lista de impostos conhecidos (padrões flexíveis, mais específicos primeiro)
   const impostosPatterns = [
-    { pattern: /^ICMS$/i, nome: 'ICMS' },
-    { pattern: /^IPI/i, nome: 'IPI' },
-    { pattern: /^ISS$/i, nome: 'ISS' },
+    // Mais específicos primeiro para evitar falsos positivos
     { pattern: /SUBSTITUI/i, nome: 'Substituição Tributária' },
-    { pattern: /^ISS.+RETIDO/i, nome: 'ISS Retido' },
-    { pattern: /^IRRF/i, nome: 'IRRF' },
-    { pattern: /^PIS.+CUMULATIV/i, nome: 'PIS' },
-    { pattern: /^COFINS.+CUMULATIV/i, nome: 'COFINS' },
-    { pattern: /^INSS.+RETIDO/i, nome: 'INSS Retido' },
-    { pattern: /CONTRIBUI.*RETID/i, nome: 'Contribuições Retidas' }
+    { pattern: /ISS.*RETIDO/i, nome: 'ISS Retido' },
+    { pattern: /INSS.*RETIDO/i, nome: 'INSS Retido' },
+    { pattern: /CONTRIBUI.*RETID/i, nome: 'Contribuições Retidas' },
+    { pattern: /PIS.*N.O.*CUMULATIV/i, nome: 'PIS' },
+    { pattern: /COFINS.*N.O.*CUMULATIV/i, nome: 'COFINS' },
+    // Menos específicos por último
+    { pattern: /^ICMS/i, nome: 'ICMS' },
+    { pattern: /^IPI/i, nome: 'IPI' },
+    { pattern: /^ISS\b/i, nome: 'ISS' },
+    { pattern: /^IRRF/i, nome: 'IRRF' }
   ];
 
   // Função para extrair todos os valores numéricos de uma linha
@@ -819,8 +821,9 @@ export const parseResumoImpostos = (csvContent) => {
       empresaInfo.cnpj = cols.find(c => c.match(/\d{8,}|\d{2}\.\d{3}\.\d{3}/)) || '';
     }
 
-    // Identificar competência (mês) - usando regex para evitar problemas com acento
-    if (/COMPET.NCIA:/i.test(line)) {
+    // Identificar competência (mês) - usando múltiplas formas de detecção
+    const col0Lower = (cols[0] || '').toLowerCase();
+    if (col0Lower.startsWith('compet') || /COMPET/i.test(line)) {
       const match = line.match(/(\d{2})\/(\d{4})/);
       if (match) {
         competenciaAtual = `${match[1]}/${match[2]}`;
