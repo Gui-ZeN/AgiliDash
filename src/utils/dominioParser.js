@@ -1005,7 +1005,7 @@ export const parseResumoPorAcumulador = (csvContent) => {
     // Detalhes para gráfico de barras horizontais
     detalhes380: {
       compras: itensCompraComercializacao,
-      vendasMercadoria: itensVendaMercadoria,
+      vendasMercadoria: itensVendas,
       vendasProduto: itensVendaProduto,
       vendasExterior: itensVendaExterior
     },
