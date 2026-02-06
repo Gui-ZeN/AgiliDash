@@ -1752,10 +1752,19 @@ export const parseRelacaoEmpregados = (csvContent) => {
       if (cnpjMatch) empresaInfo.cnpj = cnpjMatch[0];
     }
 
-    // Verificar se é linha de empregado (começa com código numérico)
-    if (cols[0] && /^\d+$/.test(cols[0]) && cols.length >= 4) {
-      const codigo = parseInt(cols[0]);
+    // Verificar se é linha de empregado (buscar código numérico nas primeiras colunas)
+    // Domínio pode ter colunas vazias antes do código
+    let codigo = null;
+    let codigoIndex = -1;
+    for (let j = 0; j < Math.min(10, cols.length); j++) {
+      if (cols[j] && /^\d{1,6}$/.test(cols[j])) {
+        codigo = parseInt(cols[j]);
+        codigoIndex = j;
+        break;
+      }
+    }
 
+    if (codigo !== null && cols.length >= 4) {
       // Procurar dados nas colunas
       let nome = '';
       let cargo = '';
@@ -1764,8 +1773,8 @@ export const parseRelacaoEmpregados = (csvContent) => {
       let dataSituacao = null;
       let salario = 0;
 
-      // Procurar nome (texto longo sem data)
-      for (let j = 1; j < cols.length; j++) {
+      // Procurar nome (texto longo sem data, após o código)
+      for (let j = codigoIndex + 1; j < cols.length; j++) {
         const val = cols[j];
         if (val && val.length > 5 && !/^\d{2}\/\d{2}\/\d{4}$/.test(val) &&
             !/^[\d.,]+$/.test(val) && !nome) {
@@ -1926,25 +1935,34 @@ export const parseSalarioBase = (csvContent) => {
       if (cnpjMatch) empresaInfo.cnpj = cnpjMatch[0];
     }
 
-    // Verificar se é linha de empregado
-    if (cols[0] && /^\d+$/.test(cols[0]) && cols.length >= 3) {
-      const codigo = parseInt(cols[0]);
+    // Verificar se é linha de empregado (buscar código nas primeiras colunas)
+    let codigo = null;
+    let codigoIndex = -1;
+    for (let j = 0; j < Math.min(10, cols.length); j++) {
+      if (cols[j] && /^\d{1,6}$/.test(cols[j])) {
+        codigo = parseInt(cols[j]);
+        codigoIndex = j;
+        break;
+      }
+    }
+
+    if (codigo !== null && cols.length >= 3) {
       let nome = '';
       let cargo = '';
       let salario = 0;
 
-      // Procurar nome
-      for (let j = 1; j < cols.length; j++) {
+      // Procurar nome (após o código)
+      for (let j = codigoIndex + 1; j < cols.length; j++) {
         const val = cols[j];
-        if (val && val.length > 5 && !/^[\d.,]+$/.test(val)) {
+        if (val && val.length > 5 && !/^[\d.,]+$/.test(val) && !/^\d{2}\/\d{2}\/\d{4}$/.test(val)) {
           nome = val;
           break;
         }
       }
 
-      // Procurar cargo (segundo texto)
+      // Procurar cargo (segundo texto, após o nome)
       let foundNome = false;
-      for (let j = 1; j < cols.length; j++) {
+      for (let j = codigoIndex + 1; j < cols.length; j++) {
         const val = cols[j];
         if (val && val.length > 2 && !/^[\d.,]+$/.test(val)) {
           if (!foundNome) {
@@ -2041,9 +2059,18 @@ export const parseProgramacaoFerias = (csvContent) => {
       if (cnpjMatch) empresaInfo.cnpj = cnpjMatch[0];
     }
 
-    // Verificar se é linha de férias (começa com código)
-    if (cols[0] && /^\d+$/.test(cols[0]) && cols.length >= 4) {
-      const codigo = parseInt(cols[0]);
+    // Verificar se é linha de férias (buscar código nas primeiras colunas)
+    let codigo = null;
+    let codigoIndex = -1;
+    for (let j = 0; j < Math.min(10, cols.length); j++) {
+      if (cols[j] && /^\d{1,6}$/.test(cols[j])) {
+        codigo = parseInt(cols[j]);
+        codigoIndex = j;
+        break;
+      }
+    }
+
+    if (codigo !== null && cols.length >= 4) {
       let nome = '';
       let dataInicio = null;
       let dataFim = null;
@@ -2051,8 +2078,8 @@ export const parseProgramacaoFerias = (csvContent) => {
       let diasGozados = 0;
       let diasRestantes = 0;
 
-      // Procurar nome
-      for (let j = 1; j < cols.length; j++) {
+      // Procurar nome (após o código)
+      for (let j = codigoIndex + 1; j < cols.length; j++) {
         const val = cols[j];
         if (val && val.length > 5 && !/^\d{2}\/\d{2}\/\d{4}$/.test(val) &&
             !/^[\d.,]+$/.test(val)) {
