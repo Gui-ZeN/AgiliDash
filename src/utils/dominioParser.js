@@ -1722,8 +1722,13 @@ export const parseFolhaINSS = (csvContent) => {
 };
 
 /**
- * Parser para Relação de Empregados
- * Extrai lista de empregados com dados de admissão, demissão e situação
+ * Parser para Relação de Empregados - Formato Domínio
+ *
+ * Formato CSV:
+ * - Seções: "Trabalhando", "Demitido", etc. indicam situação
+ * - Linha empregado: Código;;;;NOME;;;;;;;;;;CodCargo;;CARGO;;;;;Vin;;Cat;;Fpg;;H.mes;;;Admissão;;ST;;DataST
+ * - ST (Situação): 1=Trabalhando, 8=Demitido, 2-7/9-24=Afastados
+ * - Linhas com "Total" devem ser ignoradas
  */
 export const parseRelacaoEmpregados = (csvContent) => {
   const lines = csvContent.split('\n');
@@ -1739,148 +1744,203 @@ export const parseRelacaoEmpregados = (csvContent) => {
   const empregadosPorCargo = {};
   const empregadosPorSituacao = {};
 
+  // Situação atual baseada na seção do CSV
+  let secaoAtual = 'Trabalhando';
+
+  // Mapeamento de códigos ST para situação
+  // 1=Trabalhando, 8=Demitido, outros=Afastado
+  const mapearSituacaoST = (st) => {
+    const codigo = parseInt(st);
+    if (codigo === 1) return 'Ativo';
+    if (codigo === 8) return 'Demitido';
+    // 2-7, 9-24 são tipos de afastamento
+    return 'Afastado';
+  };
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const cols = line.split(';').map(c => c.trim());
+    const lineUpper = line.toUpperCase();
 
-    // Extrair informações da empresa
-    if (line.includes('Empresa:') || line.includes('EMPRESA:')) {
-      empresaInfo.razaoSocial = cols.find(c => c && !c.includes('Empresa') && !c.includes('EMPRESA') && c.length > 3) || '';
-    }
-    if (/C\.?N\.?P\.?J\.?:/i.test(line) || /CNPJ:/i.test(line)) {
-      const cnpjMatch = line.match(/\d{14}|\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}/);
-      if (cnpjMatch) empresaInfo.cnpj = cnpjMatch[0];
+    // Ignorar linhas de total
+    if (lineUpper.includes('TOTAL') || lineUpper.includes('PÁGINA') ||
+        lineUpper.includes('EMISSÃO') || lineUpper.includes('RELAÇÃO DE EMPREGADOS')) {
+      continue;
     }
 
-    // Verificar se é linha de empregado (buscar código numérico nas primeiras colunas)
-    // Domínio pode ter colunas vazias antes do código
+    // Extrair informações da empresa (primeira coluna não vazia com texto longo)
+    if (cols[0] && cols[0].length > 10 && !cols[0].includes('Código') &&
+        /[A-Z]/.test(cols[0]) && !empresaInfo.razaoSocial) {
+      empresaInfo.razaoSocial = cols[0];
+    }
+
+    // Detectar seção atual
+    if (cols[0] === 'Trabalhando' || lineUpper.startsWith('TRABALHANDO')) {
+      secaoAtual = 'Trabalhando';
+      continue;
+    }
+    if (cols[0] === 'Demitido' || lineUpper.startsWith('DEMITIDO')) {
+      secaoAtual = 'Demitido';
+      continue;
+    }
+    if (cols[0] === 'Afastado' || lineUpper.includes('AFASTADO')) {
+      secaoAtual = 'Afastado';
+      continue;
+    }
+
+    // Ignorar cabeçalhos de coluna
+    if (lineUpper.includes('CÓDIGO') && lineUpper.includes('NOME') && lineUpper.includes('CARGO')) {
+      continue;
+    }
+
+    // Verificar se é linha de empregado
+    // Formato: Código;;;;NOME;;;;;;;;;;CodCargo;;CARGO;;;;;Vin;;Cat;;Fpg;;H.mes;;;Admissão;;ST;;DataST
     let codigo = null;
     let codigoIndex = -1;
-    for (let j = 0; j < Math.min(10, cols.length); j++) {
-      if (cols[j] && /^\d{1,6}$/.test(cols[j])) {
+
+    // Procurar código nas primeiras colunas
+    for (let j = 0; j < Math.min(5, cols.length); j++) {
+      if (cols[j] && /^\d{1,4}$/.test(cols[j])) {
         codigo = parseInt(cols[j]);
         codigoIndex = j;
         break;
       }
     }
 
-    if (codigo !== null && cols.length >= 4) {
-      // Procurar dados nas colunas
-      let nome = '';
-      let cargo = '';
-      let dataAdmissao = null;
-      let situacao = '';
-      let dataSituacao = null;
-      let salario = 0;
+    if (codigo === null || cols.length < 10) continue;
 
-      // Procurar nome (texto longo sem data, após o código)
-      for (let j = codigoIndex + 1; j < cols.length; j++) {
-        const val = cols[j];
-        if (val && val.length > 5 && !/^\d{2}\/\d{2}\/\d{4}$/.test(val) &&
-            !/^[\d.,]+$/.test(val) && !nome) {
-          nome = val;
-        }
+    // Procurar nome (texto longo com espaços, após o código)
+    let nome = '';
+    let nomeIndex = -1;
+    for (let j = codigoIndex + 1; j < Math.min(codigoIndex + 15, cols.length); j++) {
+      const val = cols[j];
+      if (val && val.length > 5 && /[A-Za-z]/.test(val) && val.includes(' ') &&
+          !/^\d{2}\/\d{2}\/\d{4}$/.test(val) && !/^[\d.,]+$/.test(val)) {
+        nome = val;
+        nomeIndex = j;
+        break;
       }
+    }
 
-      // Procurar cargo (segundo texto longo)
-      for (let j = 1; j < cols.length; j++) {
-        const val = cols[j];
-        if (val && val.length >= 3 && val !== nome &&
-            !/^\d{2}\/\d{2}\/\d{4}$/.test(val) && !/^[\d.,]+$/.test(val)) {
-          cargo = val;
+    if (!nome) continue; // Se não encontrou nome, não é linha de empregado
+
+    // Procurar cargo (texto após o código do cargo, que vem depois do nome)
+    let cargo = '';
+    for (let j = nomeIndex + 1; j < cols.length; j++) {
+      const val = cols[j];
+      // Cargo é texto que não é data nem número, com pelo menos 3 caracteres
+      if (val && val.length >= 3 && /[A-Za-z]/.test(val) &&
+          !/^\d{2}\/\d{2}\/\d{4}$/.test(val) && !/^[\d.,]+$/.test(val) &&
+          !/^[A-Z]$/.test(val) && val !== 'D' && val !== 'M') { // Excluir letras soltas como Fpg=D
+        cargo = val;
+        break;
+      }
+    }
+
+    // Procurar datas (formato DD/MM/AAAA)
+    const datas = [];
+    for (let j = 1; j < cols.length; j++) {
+      const val = cols[j];
+      if (val && /^\d{2}\/\d{2}\/\d{4}$/.test(val)) {
+        datas.push({ index: j, valor: val });
+      }
+    }
+
+    let dataAdmissao = datas.length >= 1 ? datas[0].valor : null;
+    let dataSituacao = datas.length >= 2 ? datas[1].valor : null;
+
+    // Procurar ST (situação) - número de 1-2 dígitos que vem após a data de admissão
+    let stValue = null;
+    if (datas.length >= 1) {
+      // ST vem logo após a primeira data
+      for (let j = datas[0].index + 1; j < Math.min(datas[0].index + 5, cols.length); j++) {
+        if (cols[j] && /^[1-9]$|^1[0-9]$|^2[0-4]$/.test(cols[j])) {
+          stValue = cols[j];
           break;
         }
       }
+    }
 
-      // Procurar datas (formato DD/MM/AAAA)
-      const datas = [];
-      for (let j = 1; j < cols.length; j++) {
-        const val = cols[j];
-        if (val && /^\d{2}\/\d{2}\/\d{4}$/.test(val)) {
-          datas.push(val);
-        }
-      }
-
-      if (datas.length >= 1) dataAdmissao = datas[0];
-      if (datas.length >= 2) dataSituacao = datas[1];
-
-      // Procurar situação (geralmente após a data de admissão)
-      for (let j = 1; j < cols.length; j++) {
-        const val = cols[j].toUpperCase();
-        if (val === 'ATIVO' || val === 'DEMITIDO' || val === 'AFASTADO' ||
-            val === 'LICENÇA' || val === 'FÉRIAS' || val.includes('FERIAS') ||
-            val === 'ST' || val === 'LICENCA') {
-          situacao = cols[j];
-          break;
-        }
-      }
-
-      // Procurar salário (valor monetário)
-      for (let j = 1; j < cols.length; j++) {
-        const val = cols[j];
-        if (val && /^[\d.]+,\d{2}$/.test(val)) {
-          salario = parseValorBR(val);
-          break;
-        }
-      }
-
-      // Normalizar situação
-      const situacaoUpper = situacao.toUpperCase();
-      let situacaoNormalizada = 'Ativo';
-      if (situacaoUpper.includes('DEMIT') || situacaoUpper === 'D') {
+    // Determinar situação: usar ST se disponível, senão usar seção atual
+    let situacaoNormalizada;
+    if (stValue) {
+      situacaoNormalizada = mapearSituacaoST(stValue);
+    } else {
+      // Usar seção atual do CSV
+      if (secaoAtual === 'Demitido') {
         situacaoNormalizada = 'Demitido';
-        totalDemitidos++;
-      } else if (situacaoUpper.includes('AFAST') || situacaoUpper.includes('LICEN') ||
-                 situacaoUpper.includes('LICENÇA')) {
+      } else if (secaoAtual === 'Afastado') {
         situacaoNormalizada = 'Afastado';
-        totalAfastados++;
       } else {
-        totalAtivos++;
+        situacaoNormalizada = 'Ativo';
       }
+    }
 
-      const empregado = {
-        codigo,
-        nome: nome || `Empregado ${codigo}`,
-        cargo: cargo || 'Não informado',
-        dataAdmissao,
-        situacao: situacaoNormalizada,
-        dataSituacao,
-        salario
-      };
-
-      empregados.push(empregado);
-
-      // Contabilizar por cargo
-      if (!empregadosPorCargo[empregado.cargo]) {
-        empregadosPorCargo[empregado.cargo] = { total: 0, ativos: 0, salarioTotal: 0 };
+    // Procurar salário/horas (valor monetário como 220,00)
+    let salario = 0;
+    for (let j = 1; j < cols.length; j++) {
+      const val = cols[j];
+      if (val && /^[\d.]+,\d{2}$/.test(val)) {
+        const valor = parseValorBR(val);
+        // Ignorar valores muito baixos que são horas (220,00 = horas)
+        if (valor > 500) {
+          salario = valor;
+          break;
+        }
       }
-      empregadosPorCargo[empregado.cargo].total++;
-      if (situacaoNormalizada === 'Ativo') {
-        empregadosPorCargo[empregado.cargo].ativos++;
-        empregadosPorCargo[empregado.cargo].salarioTotal += salario;
-      }
+    }
 
-      // Contabilizar por situação
-      if (!empregadosPorSituacao[situacaoNormalizada]) {
-        empregadosPorSituacao[situacaoNormalizada] = 0;
-      }
-      empregadosPorSituacao[situacaoNormalizada]++;
+    // Contabilizar por situação
+    if (situacaoNormalizada === 'Demitido') {
+      totalDemitidos++;
+    } else if (situacaoNormalizada === 'Afastado') {
+      totalAfastados++;
+    } else {
+      totalAtivos++;
+    }
 
-      // Contabilizar admissões por mês
-      if (dataAdmissao) {
-        const [dia, mes, ano] = dataAdmissao.split('/');
-        const competencia = `${mes}/${ano}`;
-        if (!admissoesPorMes[competencia]) admissoesPorMes[competencia] = 0;
-        admissoesPorMes[competencia]++;
-      }
+    const empregado = {
+      codigo,
+      nome,
+      cargo: cargo || 'Não informado',
+      dataAdmissao,
+      situacao: situacaoNormalizada,
+      dataSituacao,
+      salario
+    };
 
-      // Contabilizar demissões por mês
-      if (situacaoNormalizada === 'Demitido' && dataSituacao) {
-        const [dia, mes, ano] = dataSituacao.split('/');
-        const competencia = `${mes}/${ano}`;
-        if (!demissoesPorMes[competencia]) demissoesPorMes[competencia] = 0;
-        demissoesPorMes[competencia]++;
-      }
+    empregados.push(empregado);
+
+    // Contabilizar por cargo
+    if (!empregadosPorCargo[empregado.cargo]) {
+      empregadosPorCargo[empregado.cargo] = { total: 0, ativos: 0, salarioTotal: 0 };
+    }
+    empregadosPorCargo[empregado.cargo].total++;
+    if (situacaoNormalizada === 'Ativo') {
+      empregadosPorCargo[empregado.cargo].ativos++;
+      empregadosPorCargo[empregado.cargo].salarioTotal += salario;
+    }
+
+    // Contabilizar por situação
+    if (!empregadosPorSituacao[situacaoNormalizada]) {
+      empregadosPorSituacao[situacaoNormalizada] = 0;
+    }
+    empregadosPorSituacao[situacaoNormalizada]++;
+
+    // Contabilizar admissões por mês
+    if (dataAdmissao) {
+      const [dia, mes, ano] = dataAdmissao.split('/');
+      const competencia = `${mes}/${ano}`;
+      if (!admissoesPorMes[competencia]) admissoesPorMes[competencia] = 0;
+      admissoesPorMes[competencia]++;
+    }
+
+    // Contabilizar demissões por mês (usar dataSituacao para demitidos)
+    if (situacaoNormalizada === 'Demitido' && dataSituacao) {
+      const [dia, mes, ano] = dataSituacao.split('/');
+      const competencia = `${mes}/${ano}`;
+      if (!demissoesPorMes[competencia]) demissoesPorMes[competencia] = 0;
+      demissoesPorMes[competencia]++;
     }
   }
 
