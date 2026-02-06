@@ -721,6 +721,7 @@ export const parseDemonstrativoMensal = (csvContent) => {
       const anoIndex = cols.findIndex(c => c.match(/^\d{4}$/));
       if (anoIndex > 0) {
         const ano = parseInt(cols[anoIndex]);
+        const mesIndex = meses.indexOf(cols[0]) + 1;
         // Buscar valores de entradas e saídas
         let entradas = 0, saidas = 0, servicos = 0;
         let valorCount = 0;
@@ -737,34 +738,54 @@ export const parseDemonstrativoMensal = (csvContent) => {
 
         movimentacao.push({
           mes: cols[0],
+          mesIndex,
           ano,
           entradas,
           saidas,
-          servicos
+          servicos,
+          competencia: `${String(mesIndex).padStart(2, '0')}/${ano}`
         });
       }
     }
   }
 
-  // Separar por ano
-  const movimentacao2024 = movimentacao.filter(m => m.ano === 2024);
-  const movimentacao2025 = movimentacao.filter(m => m.ano === 2025);
+  // Identificar anos únicos
+  const anosUnicos = [...new Set(movimentacao.map(m => m.ano))].sort();
 
-  // Calcular totais por ano
-  const totais2024 = {
-    entradas: movimentacao2024.reduce((acc, m) => acc + m.entradas, 0),
-    saidas: movimentacao2024.reduce((acc, m) => acc + m.saidas, 0),
-    servicos: movimentacao2024.reduce((acc, m) => acc + m.servicos, 0)
+  // Separar por ano dinamicamente
+  const movimentacaoPorAno = {};
+  const totaisPorAno = {};
+
+  anosUnicos.forEach(ano => {
+    movimentacaoPorAno[ano] = movimentacao.filter(m => m.ano === ano);
+    totaisPorAno[ano] = {
+      entradas: movimentacaoPorAno[ano].reduce((acc, m) => acc + m.entradas, 0),
+      saidas: movimentacaoPorAno[ano].reduce((acc, m) => acc + m.saidas, 0),
+      servicos: movimentacaoPorAno[ano].reduce((acc, m) => acc + m.servicos, 0)
+    };
+  });
+
+  // Totais gerais (todos os anos)
+  const totaisGerais = {
+    entradas: movimentacao.reduce((acc, m) => acc + m.entradas, 0),
+    saidas: movimentacao.reduce((acc, m) => acc + m.saidas, 0),
+    servicos: movimentacao.reduce((acc, m) => acc + m.servicos, 0)
   };
-  const totais2025 = {
-    entradas: movimentacao2025.reduce((acc, m) => acc + m.entradas, 0),
-    saidas: movimentacao2025.reduce((acc, m) => acc + m.saidas, 0),
-    servicos: movimentacao2025.reduce((acc, m) => acc + m.servicos, 0)
-  };
+
+  // Manter compatibilidade com estrutura antiga
+  const movimentacao2024 = movimentacaoPorAno[2024] || [];
+  const movimentacao2025 = movimentacaoPorAno[2025] || [];
+  const totais2024 = totaisPorAno[2024] || { entradas: 0, saidas: 0, servicos: 0 };
+  const totais2025 = totaisPorAno[2025] || { entradas: 0, saidas: 0, servicos: 0 };
 
   return {
     empresaInfo,
     movimentacao,
+    movimentacaoPorAno,
+    totaisPorAno,
+    totaisGerais,
+    anosUnicos,
+    // Compatibilidade
     movimentacao2024,
     movimentacao2025,
     totais2024,

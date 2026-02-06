@@ -1145,39 +1145,76 @@ const Configuracoes = () => {
                   {/* Preview Demonstrativo Mensal */}
                   {importPreview.isDominioFormat && importPreview.tipoRelatorio === 'demonstrativoMensal' && importPreview.dadosParsed && (
                     <div className="space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* Cards de Totais Gerais */}
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Total Entradas</p>
-                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totais2025?.entradas || 0)}</p>
+                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totaisGerais?.entradas || 0)}</p>
                         </div>
                         <div className="bg-gradient-to-br from-red-500 to-rose-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Total Saidas</p>
-                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totais2025?.saidas || 0)}</p>
+                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totaisGerais?.saidas || 0)}</p>
                         </div>
                         <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Total Servicos</p>
-                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totais2025?.servicos || 0)}</p>
+                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totaisGerais?.servicos || 0)}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-purple-500 to-violet-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Periodos</p>
+                          <p className="text-2xl font-bold">{importPreview.dadosParsed.movimentacao?.length || 0} meses</p>
+                          <p className="text-xs opacity-70">{importPreview.dadosParsed.anosUnicos?.join(', ')}</p>
                         </div>
                       </div>
+
+                      {/* Totais por Ano */}
+                      {importPreview.dadosParsed.anosUnicos?.length > 1 && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {importPreview.dadosParsed.anosUnicos?.map(ano => (
+                            <div key={ano} className="border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+                              <h4 className="font-semibold text-slate-800 dark:text-white mb-2">{ano}</h4>
+                              <div className="grid grid-cols-3 gap-2 text-sm">
+                                <div>
+                                  <p className="text-slate-500">Entradas</p>
+                                  <p className="font-semibold text-green-600">{formatCurrency(importPreview.dadosParsed.totaisPorAno?.[ano]?.entradas || 0)}</p>
+                                </div>
+                                <div>
+                                  <p className="text-slate-500">Saidas</p>
+                                  <p className="font-semibold text-red-600">{formatCurrency(importPreview.dadosParsed.totaisPorAno?.[ano]?.saidas || 0)}</p>
+                                </div>
+                                <div>
+                                  <p className="text-slate-500">Servicos</p>
+                                  <p className="font-semibold text-blue-600">{formatCurrency(importPreview.dadosParsed.totaisPorAno?.[ano]?.servicos || 0)}</p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Tabela de Movimentacao */}
                       <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
                         <div className="p-4 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
-                          <h3 className="font-semibold text-slate-800 dark:text-white">Movimentacao Mensal</h3>
+                          <h3 className="font-semibold text-slate-800 dark:text-white">Movimentacao Mensal Completa</h3>
                         </div>
-                        <div className="overflow-x-auto max-h-60">
+                        <div className="overflow-x-auto max-h-72">
                           <table className="w-full text-sm">
                             <thead className="bg-slate-100 dark:bg-slate-800 sticky top-0">
                               <tr>
                                 <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500">Mes</th>
+                                <th className="px-3 py-2 text-center text-xs font-semibold text-slate-500">Ano</th>
                                 <th className="px-3 py-2 text-right text-xs font-semibold text-slate-500">Entradas</th>
                                 <th className="px-3 py-2 text-right text-xs font-semibold text-slate-500">Saidas</th>
+                                <th className="px-3 py-2 text-right text-xs font-semibold text-slate-500">Servicos</th>
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                              {importPreview.dadosParsed.movimentacao2025?.slice(0, 12).map((m, i) => (
-                                <tr key={i}>
+                              {importPreview.dadosParsed.movimentacao?.map((m, i) => (
+                                <tr key={i} className={m.ano !== importPreview.dadosParsed.movimentacao[i-1]?.ano ? 'border-t-2 border-slate-300 dark:border-slate-600' : ''}>
                                   <td className="px-3 py-2 font-medium text-slate-700 dark:text-slate-300">{m.mes}</td>
+                                  <td className="px-3 py-2 text-center text-slate-500">{m.ano}</td>
                                   <td className="px-3 py-2 text-right text-green-600">{formatCurrency(m.entradas)}</td>
                                   <td className="px-3 py-2 text-right text-red-600">{formatCurrency(m.saidas)}</td>
+                                  <td className="px-3 py-2 text-right text-blue-600">{formatCurrency(m.servicos)}</td>
                                 </tr>
                               ))}
                             </tbody>
