@@ -467,9 +467,16 @@ export const parseContribuicaoSocial = (csvContent) => {
     return 0;
   };
 
+  // Função para normalizar texto (remove acentos)
+  const normalizar = (texto) => {
+    if (!texto) return '';
+    return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+  };
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const cols = line.split(';').map(c => c.trim());
+    const col0Norm = normalizar(cols[0]);
 
     // Extrair informações da empresa
     if (line.includes('C.N.P.J.:')) {
@@ -480,28 +487,29 @@ export const parseContribuicaoSocial = (csvContent) => {
     }
 
     // Extrair valores - busca o último valor numérico da linha
-    if (cols[0]?.includes('Lucro líquido antes da CSLL')) {
+    // Comparações normalizadas (sem acento)
+    if (col0Norm.includes('LUCRO LIQUIDO ANTES DA CSLL')) {
       dados.lucroLiquido = findLastValue(cols);
     }
-    if (cols[0]?.includes('Base de cálculo antes da compensação') || cols[0]?.includes('Base de calculo antes da compensacao')) {
+    if (col0Norm.includes('BASE DE CALCULO ANTES DA COMPENSACAO')) {
       dados.baseCalculoAntes = findLastValue(cols);
     }
-    if (cols[0]?.includes('Compensação') || cols[0]?.includes('Compensacao')) {
+    if (col0Norm.includes('COMPENSACAO') && col0Norm.startsWith('(-)')) {
       dados.compensacao = findLastValue(cols);
     }
-    if (cols[0] === '(=) Base de cálculo' || cols[0] === '(=) Base de calculo') {
+    if (col0Norm === '(=) BASE DE CALCULO') {
       dados.baseCalculo = findLastValue(cols);
     }
-    if (cols[0]?.includes('CSLL devida')) {
+    if (col0Norm.includes('CSLL DEVIDA')) {
       dados.csllDevida = findLastValue(cols);
     }
-    if (cols[0]?.includes('CSLL a recolher')) {
+    if (col0Norm.includes('CSLL A RECOLHER')) {
       dados.csllRecolher = findLastValue(cols);
     }
-    if (cols[0]?.includes('Valor a compensar para o período seguinte') || cols[0]?.includes('Valor a compensar para o periodo seguinte')) {
+    if (col0Norm.includes('VALOR A COMPENSAR PARA O PERIODO SEGUINTE')) {
       dados.valorCompensarProximo = findLastValue(cols);
     }
-    if (cols[0]?.includes('Valor a deduzir para o período seguinte') || cols[0]?.includes('Valor a deduzir para o periodo seguinte')) {
+    if (col0Norm.includes('VALOR A DEDUZIR PARA O PERIODO SEGUINTE')) {
       dados.valorDeduzirProximo = findLastValue(cols);
     }
   }
@@ -538,9 +546,16 @@ export const parseImpostoRenda = (csvContent) => {
     return 0;
   };
 
+  // Função para normalizar texto (remove acentos)
+  const normalizar = (texto) => {
+    if (!texto) return '';
+    return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+  };
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const cols = line.split(';').map(c => c.trim());
+    const col0Norm = normalizar(cols[0]);
 
     // Extrair informações da empresa
     if (line.includes('C.N.P.J.:')) {
@@ -550,35 +565,35 @@ export const parseImpostoRenda = (csvContent) => {
       trimestre = cols.find(c => c.match(/\w{3}\/\d{2}/)) || cols[2];
     }
 
-    // Extrair valores - busca o último valor numérico da linha
-    if (cols[0]?.includes('Lucro líquido antes do IRPJ') || cols[0]?.includes('Lucro liquido antes do IRPJ')) {
+    // Extrair valores - comparações normalizadas (sem acento)
+    if (col0Norm.includes('LUCRO LIQUIDO ANTES DO IRPJ')) {
       dados.lucroLiquido = findLastValue(cols);
     }
-    if (cols[0]?.includes('Adições') || cols[0]?.includes('Adicoes')) {
+    if (col0Norm.includes('ADICOES') && col0Norm.startsWith('(+)')) {
       dados.adicoes = findLastValue(cols);
     }
-    if (cols[0]?.includes('Lucro Real antes da compensação') || cols[0]?.includes('Lucro Real antes da compensacao')) {
+    if (col0Norm.includes('LUCRO REAL ANTES DA COMPENSACAO')) {
       dados.lucroRealAntes = findLastValue(cols);
     }
-    if (cols[0]?.includes('Compensação') || cols[0]?.includes('Compensacao')) {
+    if (col0Norm.includes('COMPENSACAO') && col0Norm.startsWith('(-)')) {
       if (!dados.compensacao) dados.compensacao = findLastValue(cols);
     }
-    if (cols[0] === '(=) Lucro Real') {
+    if (col0Norm === '(=) LUCRO REAL') {
       dados.lucroReal = findLastValue(cols);
     }
-    if (cols[0]?.includes('IRPJ devido')) {
+    if (col0Norm.includes('IRPJ DEVIDO')) {
       dados.irpjDevido = findLastValue(cols);
     }
-    if (cols[0]?.includes('Adicional de IRPJ')) {
+    if (col0Norm.includes('ADICIONAL DE IRPJ')) {
       dados.adicionalIrpj = findLastValue(cols);
     }
-    if (cols[0]?.includes('IRPJ a recolher')) {
+    if (col0Norm.includes('IRPJ A RECOLHER')) {
       dados.irpjRecolher = findLastValue(cols);
     }
-    if (cols[0]?.includes('Valor a compensar para o período seguinte') || cols[0]?.includes('Valor a compensar para o periodo seguinte')) {
+    if (col0Norm.includes('VALOR A COMPENSAR PARA O PERIODO SEGUINTE')) {
       dados.valorCompensarProximo = findLastValue(cols);
     }
-    if (cols[0]?.includes('Valor a deduzir para o período seguinte') || cols[0]?.includes('Valor a deduzir para o periodo seguinte')) {
+    if (col0Norm.includes('VALOR A DEDUZIR PARA O PERIODO SEGUINTE')) {
       dados.valorDeduzirProximo = findLastValue(cols);
     }
   }
