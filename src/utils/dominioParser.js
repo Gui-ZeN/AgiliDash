@@ -722,19 +722,22 @@ export const parseDemonstrativoMensal = (csvContent) => {
       if (anoIndex > 0) {
         const ano = parseInt(cols[anoIndex]);
         const mesIndex = meses.indexOf(cols[0]) + 1;
-        // Buscar valores de entradas e saídas
+        // Buscar valores de entradas, saídas e serviços
+        // Pegar os 3 primeiros valores numéricos (incluindo 0)
         let entradas = 0, saidas = 0, servicos = 0;
-        let valorCount = 0;
+        const valoresEncontrados = [];
 
-        for (let j = anoIndex + 1; j < cols.length; j++) {
-          const val = parseValorBR(cols[j]);
-          if (val > 0) {
-            valorCount++;
-            if (valorCount === 1) entradas = val;
-            else if (valorCount === 2) saidas = val;
-            else if (valorCount === 3) servicos = val;
+        for (let j = anoIndex + 1; j < cols.length && valoresEncontrados.length < 3; j++) {
+          const colVal = cols[j];
+          // Verificar se é um valor numérico (formato brasileiro ou inteiro)
+          if (colVal && (/^[\d.]+,\d{2}$/.test(colVal) || /^\d+$/.test(colVal))) {
+            valoresEncontrados.push(parseValorBR(colVal));
           }
         }
+
+        if (valoresEncontrados.length >= 1) entradas = valoresEncontrados[0];
+        if (valoresEncontrados.length >= 2) saidas = valoresEncontrados[1];
+        if (valoresEncontrados.length >= 3) servicos = valoresEncontrados[2];
 
         movimentacao.push({
           mes: cols[0],
