@@ -577,9 +577,10 @@ export const parseImpostoRenda = (csvContent) => {
     if (/^\s*\(-\)/.test(line) && /COMPENSA/i.test(line)) {
       if (!dados.compensacao) dados.compensacao = findLastValue(cols);
     }
-    // (=) Lucro Real (sem "antes")
+    // (=) Lucro Real (sem "antes") - é a Base de Cálculo do IRPJ
     if (/^\s*\(=\)/.test(line) && /LUCRO.+REAL/i.test(line) && !/ANTES/i.test(line)) {
       dados.lucroReal = findLastValue(cols);
+      dados.baseCalculo = dados.lucroReal; // UI espera baseCalculo
     }
     // IRPJ devido
     if (/IRPJ.+DEVIDO/i.test(line)) {
@@ -588,6 +589,7 @@ export const parseImpostoRenda = (csvContent) => {
     // Adicional de IRPJ
     if (/ADICIONAL.+IRPJ/i.test(line)) {
       dados.adicionalIrpj = findLastValue(cols);
+      dados.adicionalIR = dados.adicionalIrpj; // UI espera adicionalIR
     }
     // IRPJ a recolher
     if (/IRPJ.+RECOLHER/i.test(line)) {
