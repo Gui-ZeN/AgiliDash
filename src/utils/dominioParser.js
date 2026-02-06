@@ -2209,8 +2209,9 @@ export const parseProgramacaoFerias = (csvContent) => {
         inicioGozo = possivelInicioGozo;
       }
 
-      // Extrair dias - padrão do CSV: ...;DIAS_DIR;;DIAS_GOZ;;DIAS_REST;DATA_LIMITE;...
-      // O valor de Dias Restantes está ANTES da data de Limite p/ Gozo
+      // Extrair dias - padrão do CSV: ...;DIAS_PROP;;DIAS_GOZ;;DIAS_REST;DATA_LIMITE;...
+      // Onde: DIAS_PROP = dias proporcionais (decimal), DIAS_GOZ = gozados, DIAS_REST = restantes
+      // DIAS_DIREITO = DIAS_REST + DIAS_GOZ (o direito total de férias)
       let diasDireito = 0;
       let diasGozados = 0;
       let diasRestantes = 0;
@@ -2225,38 +2226,31 @@ export const parseProgramacaoFerias = (csvContent) => {
       }
 
       if (indiceLimiteGozo > 0) {
-        // Procurar os 3 números ANTES do Limite p/ Gozo
-        // Padrão: ...;NUM1;;NUM2;;NUM3;DATA;...
-        const numerosAntes = [];
+        // Procurar os números inteiros ANTES do Limite p/ Gozo
+        // O padrão é: ...;DIAS_REST;DATA;... onde DIAS_REST é inteiro (30, 24, etc)
+        // DIAS_GOZ geralmente é 0 e fica antes do DIAS_REST
+        const numerosInteiros = [];
         for (let j = indiceLimiteGozo - 1; j >= Math.max(0, indiceLimiteGozo - 10); j--) {
           const val = cols[j];
+          // Só pegar números INTEIROS (ignorar decimais como 2,5 que são dias proporcionais)
           if (val && /^\d+$/.test(val)) {
-            numerosAntes.unshift({ idx: j, val: parseInt(val) });
-          } else if (val && /^\d+[,\.]\d+$/.test(val)) {
-            numerosAntes.unshift({ idx: j, val: parseFloat(val.replace(',', '.')) });
+            numerosInteiros.unshift({ idx: j, val: parseInt(val) });
           }
-          if (numerosAntes.length >= 3) break;
+          if (numerosInteiros.length >= 2) break;
         }
 
-        // Atribuir valores baseado no padrão do Domínio
-        // O ÚLTIMO número antes da data é diasRestantes
-        // O número antes dele é diasGozados
-        // O primeiro é diasDireito (pode ser decimal como 2,5)
-        if (numerosAntes.length >= 1) {
-          diasRestantes = Math.round(numerosAntes[numerosAntes.length - 1].val);
+        // O ÚLTIMO inteiro antes da data é diasRestantes
+        // O inteiro antes dele é diasGozados
+        if (numerosInteiros.length >= 1) {
+          diasRestantes = numerosInteiros[numerosInteiros.length - 1].val;
         }
-        if (numerosAntes.length >= 2) {
-          diasGozados = Math.round(numerosAntes[numerosAntes.length - 2].val);
-        }
-        if (numerosAntes.length >= 3) {
-          diasDireito = Math.round(numerosAntes[0].val);
+        if (numerosInteiros.length >= 2) {
+          diasGozados = numerosInteiros[numerosInteiros.length - 2].val;
         }
       }
 
-      // Se diasDireito não foi encontrado, usar diasRestantes como fallback
-      if (diasDireito === 0 && diasRestantes > 0) {
-        diasDireito = diasRestantes;
-      }
+      // Dias Direito = Dias Restantes + Dias Gozados (fórmula correta)
+      diasDireito = diasRestantes + diasGozados;
 
       // Determinar status baseado nos dados
       let status = 'Pendente';
