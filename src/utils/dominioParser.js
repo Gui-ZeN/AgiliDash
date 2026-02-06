@@ -1493,7 +1493,7 @@ export const parseFolhaINSS = (csvContent) => {
   let empresaInfo = {};
   const registros = [];
   let competenciaAtual = '';
-  let empresaAtual = '';
+  let categoriaAtual = 'Empregados'; // Empregados ou Contribuintes
 
   // Totais por empresa
   const totaisPorEmpresa = {};
@@ -1502,119 +1502,198 @@ export const parseFolhaINSS = (csvContent) => {
   // Contagem por tipo (Original/Retificador)
   const totaisPorTipo = { original: 0, retificador: 0 };
 
+  // Totais extraídos do resumo geral
+  let totalBaseCalculo = 0;
+  let totalValorINSS = 0;
+  let totalEmpregados = 0;
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const cols = line.split(';').map(c => c.trim());
 
-    // Extrair informações da empresa principal
-    if (/C\.?N\.?P\.?J\.?:/i.test(line) || /CNPJ:/i.test(line)) {
+    // Extrair informações da empresa (formato: Empresa:;;;;;;NOME)
+    if (/^Empresa:/i.test(line)) {
+      for (const col of cols) {
+        if (col && !col.includes('Empresa') && col.length > 5 && !/^\d+$/.test(col) && !col.includes('Página')) {
+          empresaInfo.razaoSocial = col.replace(/^\d+\s*-\s*/, '');
+          break;
+        }
+      }
+    }
+
+    // Extrair CNPJ
+    if (/^CNPJ:/i.test(line)) {
       const cnpjMatch = line.match(/\d{14}|\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}/);
       if (cnpjMatch) empresaInfo.cnpj = cnpjMatch[0];
     }
 
-    // Identificar competência
-    const compMatch = line.match(/compet[êe]ncia[:\s]+(\d{2})\/(\d{4})/i);
-    if (compMatch) {
-      competenciaAtual = `${compMatch[1]}/${compMatch[2]}`;
+    // Identificar competência (formato: Competência:;;;;;;01/12/2025 ou similar)
+    if (/^Compet/i.test(line)) {
+      // Tentar formato DD/MM/AAAA primeiro
+      let compMatch = line.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+      if (compMatch) {
+        // Formato DD/MM/AAAA - usar mês e ano
+        competenciaAtual = `${compMatch[2]}/${compMatch[3]}`;
+      } else {
+        // Tentar formato MM/AAAA
+        compMatch = line.match(/(\d{2})\/(\d{4})/);
+        if (compMatch) {
+          competenciaAtual = `${compMatch[1]}/${compMatch[2]}`;
+        }
+      }
       continue;
     }
 
-    // Verificar se linha tem dados de INSS
-    // Formato: Competência;Empregados;Base Cálculo;Taxa;Valor INSS;Tipo
-    if (cols[0] && /^\d{2}\/\d{4}$/.test(cols[0])) {
-      competenciaAtual = cols[0];
-      const competenciaParts = cols[0].split('/');
-      const ano = parseInt(competenciaParts[1]);
-      const mes = parseInt(competenciaParts[0]);
+    // Identificar categoria (EMPREGADOS ou CONTRIBUINTES)
+    if (/^EMPREGADOS/i.test(line)) {
+      categoriaAtual = 'Empregados';
+      continue;
+    }
+    if (/^CONTRIBUINTES/i.test(line)) {
+      categoriaAtual = 'Contribuintes';
+      continue;
+    }
 
-      let empregados = 0;
-      let baseCalculo = 0;
-      let taxa = 0;
-      let valorINSS = 0;
-      let tipoGuia = 'Original';
+    // Capturar totais do resumo geral
+    if (/^Total/i.test(cols[0]) && cols.length > 5) {
+      const valoresMonetarios = [];
+      for (const col of cols) {
+        if (col && /^[\d.]+,\d{2}$/.test(col)) {
+          valoresMonetarios.push(parseValorBR(col));
+        }
+      }
+      // No resumo geral, primeiro valor é base, depois segurados (INSS empregado), etc
+      if (valoresMonetarios.length >= 2) {
+        totalBaseCalculo = valoresMonetarios[0];
+        // Procurar o valor total de INSS (geralmente é o último ou um dos últimos)
+        if (valoresMonetarios.length >= 3) {
+          totalValorINSS = valoresMonetarios[2]; // Segurados geralmente é o 3º valor
+        }
+      }
+      continue;
+    }
 
-      // Procurar número de empregados
-      for (let j = 1; j < cols.length; j++) {
-        const val = cols[j];
-        if (val && /^\d+$/.test(val) && parseInt(val) >= 1 && parseInt(val) <= 9999) {
-          empregados = parseInt(val);
+    // Capturar linha de total de empregados/contribuintes
+    if (/Empregados:/i.test(line) || /Contribuintes:/i.test(line)) {
+      // Extrair contagem
+      for (const col of cols) {
+        if (col && /^\d+$/.test(col)) {
+          totalEmpregados += parseInt(col);
           break;
         }
       }
+      continue;
+    }
 
-      // Procurar valores monetários
-      const valoresMonetarios = [];
-      for (let j = 1; j < cols.length; j++) {
-        const val = cols[j];
-        if (val && /^[\d.]+,\d{2}$/.test(val)) {
-          valoresMonetarios.push(parseValorBR(val));
-        }
+    // Identificar linhas de dados de funcionários
+    // Formato: código;;;nome;;;;...;;;;base;;;;...;;;;taxa;;;;valor;;
+    let codigo = null;
+    let nome = null;
+    let baseCalculo = 0;
+    let taxa = 0;
+    let valorINSS = 0;
+
+    // Procurar código numérico no início
+    for (let j = 0; j < Math.min(5, cols.length); j++) {
+      if (cols[j] && /^\d{1,4}$/.test(cols[j])) {
+        codigo = parseInt(cols[j]);
+        break;
       }
+    }
 
+    // Se não tem código, não é linha de dados de funcionário
+    if (codigo === null) continue;
+
+    // Procurar nome (texto longo com espaços)
+    for (let j = 0; j < cols.length; j++) {
+      const col = cols[j];
+      if (col && col.length > 10 && /[A-Za-z]/.test(col) && col.includes(' ') &&
+          !/sistema|total|base|valor|página|emissão|folha|inss|empregados|contribuintes/i.test(col)) {
+        nome = col;
+        break;
+      }
+    }
+
+    // Se não tem nome, não é linha de dados
+    if (!nome) continue;
+
+    // Procurar valores monetários
+    const valoresMonetarios = [];
+    for (let j = 0; j < cols.length; j++) {
+      const col = cols[j];
+      if (col && /^[\d.]+,\d{2}$/.test(col)) {
+        valoresMonetarios.push(parseValorBR(col));
+      }
+    }
+
+    // Estrutura: Base cálculo, Excedente, Ded.sal.mat.13, Deduções, Taxa, Valor
+    // O primeiro valor não-zero é base, o último é valor INSS, penúltimo é taxa
+    if (valoresMonetarios.length >= 2) {
+      baseCalculo = valoresMonetarios[0]; // Primeiro valor é base de cálculo
+      valorINSS = valoresMonetarios[valoresMonetarios.length - 1]; // Último é valor INSS
       if (valoresMonetarios.length >= 3) {
-        baseCalculo = valoresMonetarios[0];
-        taxa = valoresMonetarios[1];
-        valorINSS = valoresMonetarios[2];
-      } else if (valoresMonetarios.length === 2) {
-        baseCalculo = valoresMonetarios[0];
-        valorINSS = valoresMonetarios[1];
-      } else if (valoresMonetarios.length === 1) {
-        valorINSS = valoresMonetarios[0];
+        taxa = valoresMonetarios[valoresMonetarios.length - 2]; // Penúltimo é taxa
       }
+    } else if (valoresMonetarios.length === 1) {
+      valorINSS = valoresMonetarios[0];
+    }
 
-      // Verificar tipo de guia
-      if (/retif/i.test(line)) {
-        tipoGuia = 'Retificador';
-        totaisPorTipo.retificador++;
-      } else {
-        totaisPorTipo.original++;
+    // Extrair ano e mês da competência
+    let ano = new Date().getFullYear();
+    let mes = new Date().getMonth() + 1;
+    if (competenciaAtual) {
+      const parts = competenciaAtual.split('/');
+      if (parts.length === 2) {
+        mes = parseInt(parts[0]);
+        ano = parseInt(parts[1]);
       }
+    }
 
-      const registro = {
-        competencia: competenciaAtual,
-        mes,
-        ano,
-        empresa: empresaAtual || empresaInfo.razaoSocial || 'Empresa Principal',
-        empregados,
-        baseCalculo,
-        taxa,
-        valorINSS,
-        tipoGuia
-      };
+    const tipoGuia = 'Original'; // Padrão
+    totaisPorTipo.original++;
 
-      registros.push(registro);
+    const registro = {
+      codigo,
+      nome,
+      competencia: competenciaAtual,
+      mes,
+      ano,
+      categoria: categoriaAtual,
+      baseCalculo,
+      taxa,
+      valorINSS,
+      tipoGuia
+    };
 
-      // Acumular por empresa
-      const nomeEmpresa = registro.empresa;
-      if (!totaisPorEmpresa[nomeEmpresa]) {
-        totaisPorEmpresa[nomeEmpresa] = { empregados: 0, baseCalculo: 0, valorINSS: 0 };
-      }
-      totaisPorEmpresa[nomeEmpresa].empregados = Math.max(
-        totaisPorEmpresa[nomeEmpresa].empregados,
-        empregados
-      );
-      totaisPorEmpresa[nomeEmpresa].baseCalculo += baseCalculo;
-      totaisPorEmpresa[nomeEmpresa].valorINSS += valorINSS;
+    registros.push(registro);
 
-      // Acumular por competência
+    // Acumular por categoria/empresa
+    const nomeCategoria = categoriaAtual;
+    if (!totaisPorEmpresa[nomeCategoria]) {
+      totaisPorEmpresa[nomeCategoria] = { empregados: 0, baseCalculo: 0, valorINSS: 0 };
+    }
+    totaisPorEmpresa[nomeCategoria].empregados++;
+    totaisPorEmpresa[nomeCategoria].baseCalculo += baseCalculo;
+    totaisPorEmpresa[nomeCategoria].valorINSS += valorINSS;
+
+    // Acumular por competência
+    if (competenciaAtual) {
       if (!totaisPorCompetencia[competenciaAtual]) {
         totaisPorCompetencia[competenciaAtual] = { empregados: 0, baseCalculo: 0, valorINSS: 0 };
       }
-      totaisPorCompetencia[competenciaAtual].empregados = Math.max(
-        totaisPorCompetencia[competenciaAtual].empregados,
-        empregados
-      );
+      totaisPorCompetencia[competenciaAtual].empregados++;
       totaisPorCompetencia[competenciaAtual].baseCalculo += baseCalculo;
       totaisPorCompetencia[competenciaAtual].valorINSS += valorINSS;
     }
+  }
 
-    // Verificar se é nome de empresa (linha que não tem dados numéricos)
-    if (cols[0] && cols[0].length > 10 && !/^\d/.test(cols[0]) && !/:/.test(cols[0])) {
-      const potencialEmpresa = cols[0].trim();
-      if (potencialEmpresa && !/total|compet|cnpj|empresa|inss/i.test(potencialEmpresa)) {
-        empresaAtual = potencialEmpresa;
-      }
-    }
+  // Se não encontrou registros mas tem competência, criar entrada com totais
+  if (Object.keys(totaisPorCompetencia).length === 0 && competenciaAtual) {
+    totaisPorCompetencia[competenciaAtual] = {
+      empregados: totalEmpregados || registros.length,
+      baseCalculo: totalBaseCalculo || registros.reduce((acc, r) => acc + r.baseCalculo, 0),
+      valorINSS: totalValorINSS || registros.reduce((acc, r) => acc + r.valorINSS, 0)
+    };
   }
 
   // Ordenar competências
@@ -1624,10 +1703,10 @@ export const parseFolhaINSS = (csvContent) => {
     return anoA !== anoB ? anoA - anoB : mesA - mesB;
   });
 
-  // Total geral
+  // Total geral (usar totais do resumo se disponíveis)
   const totalGeral = {
-    baseCalculo: registros.reduce((acc, r) => acc + r.baseCalculo, 0),
-    valorINSS: registros.reduce((acc, r) => acc + r.valorINSS, 0)
+    baseCalculo: totalBaseCalculo > 0 ? totalBaseCalculo : registros.reduce((acc, r) => acc + r.baseCalculo, 0),
+    valorINSS: totalValorINSS > 0 ? totalValorINSS : registros.reduce((acc, r) => acc + r.valorINSS, 0)
   };
 
   return {
