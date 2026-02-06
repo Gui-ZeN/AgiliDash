@@ -1164,6 +1164,7 @@ export const SalarioPorCargoChart = ({ dados }) => {
 
 /**
  * 11. Tabela de Programação de Férias
+ * Mostra: Colaborador, Período Aquisitivo, Limite p/ Gozo, Dias Restantes, Status
  */
 export const TabelaFerias = ({ dados }) => {
   const { isDarkMode } = useTheme();
@@ -1178,6 +1179,22 @@ export const TabelaFerias = ({ dados }) => {
     );
   }
 
+  // Função para obter cor do status
+  const getStatusStyle = (status) => {
+    switch (status) {
+      case 'Gozadas':
+        return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
+      case 'Programada':
+        return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
+      case 'Vencida':
+        return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+      case 'Parcial':
+        return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
+      default: // Pendente
+        return 'bg-slate-100 text-slate-700 dark:bg-slate-700/50 dark:text-slate-400';
+    }
+  };
+
   return (
     <div className="overflow-x-auto max-h-[400px]">
       <table className="w-full">
@@ -1187,13 +1204,13 @@ export const TabelaFerias = ({ dados }) => {
               Colaborador
             </th>
             <th className={`px-4 py-3 text-center text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-              Início
+              Per. Aquisitivo
             </th>
             <th className={`px-4 py-3 text-center text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-              Fim
+              Limite p/ Gozo
             </th>
             <th className={`px-4 py-3 text-center text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-              Dias
+              Dias Rest.
             </th>
             <th className={`px-4 py-3 text-center text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
               Status
@@ -1204,25 +1221,31 @@ export const TabelaFerias = ({ dados }) => {
           {dados.ferias.slice(0, 20).map((item, i) => (
             <tr key={i} className={`transition-colors ${isDarkMode ? 'hover:bg-slate-700/30' : 'hover:bg-slate-50'}`}>
               <td className={`px-4 py-3 ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
-                {item.nome.length > 30 ? item.nome.slice(0, 30) + '...' : item.nome}
+                <div className="font-medium">
+                  {item.nome.length > 25 ? item.nome.slice(0, 25) + '...' : item.nome}
+                </div>
+                {item.inicioGozo && (
+                  <div className={`text-xs ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}>
+                    Início: {item.inicioGozo}
+                  </div>
+                )}
               </td>
-              <td className={`px-4 py-3 text-center font-mono text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                {item.dataInicio || '-'}
+              <td className={`px-4 py-3 text-center font-mono text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                <div>{item.inicioAquisitivo || '-'}</div>
+                <div>{item.fimAquisitivo || '-'}</div>
               </td>
-              <td className={`px-4 py-3 text-center font-mono text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                {item.dataFim || '-'}
+              <td className={`px-4 py-3 text-center font-mono text-sm font-semibold ${
+                item.status === 'Vencida'
+                  ? (isDarkMode ? 'text-red-400' : 'text-red-600')
+                  : (isDarkMode ? 'text-slate-300' : 'text-slate-700')
+              }`}>
+                {item.limiteGozo || '-'}
               </td>
               <td className={`px-4 py-3 text-center font-semibold ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
-                {item.diasDireito}
+                {item.diasRestantes}/{item.diasDireito}
               </td>
               <td className="px-4 py-3 text-center">
-                <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                  item.status === 'Gozadas'
-                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                    : item.status === 'Parcial'
-                      ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                      : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                }`}>
+                <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusStyle(item.status)}`}>
                   {item.status}
                 </span>
               </td>

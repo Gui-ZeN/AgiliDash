@@ -2135,113 +2135,169 @@ export const parseSalarioBase = (csvContent) => {
 
 /**
  * Parser para Programação de Férias
- * Extrai dados de férias programadas
+ * Extrai dados de férias programadas do Sistema Domínio
+ *
+ * Estrutura do CSV (índices das colunas):
+ * - [0] = Código
+ * - [2] = Nome do Empregado
+ * - [9] = Data Admissão
+ * - [10] = Vencto. Férias
+ * - [16] = Início Período Aquisitivo
+ * - [17] = Fim Período Aquisitivo
+ * - [23] = Início Gozo Férias (pode estar vazio: ..../..../......)
+ * - [28] = Dias Direito
+ * - [30] = Dias Gozados
+ * - [32] = Dias Restantes
+ * - [33] = Limite p/ Gozo
  */
 export const parseProgramacaoFerias = (csvContent) => {
   const lines = csvContent.split('\n');
   let empresaInfo = {};
   const ferias = [];
   const feriasPorMes = {};
-  const feriasPorStatus = { programadas: 0, gozadas: 0, pendentes: 0 };
+  const feriasPorStatus = { programadas: 0, gozadas: 0, pendentes: 0, vencidas: 0 };
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const cols = line.split(';').map(c => c.trim());
 
-    // Extrair informações da empresa
-    if (line.includes('Empresa:') || line.includes('EMPRESA:')) {
-      empresaInfo.razaoSocial = cols.find(c => c && !c.includes('Empresa') && !c.includes('EMPRESA') && c.length > 3) || '';
+    // Extrair informações da empresa (primeira linha geralmente tem razão social)
+    if (i === 0 && cols[0] && cols[0].length > 10 && !cols[0].includes('Código')) {
+      empresaInfo.razaoSocial = cols[0];
     }
     if (/C\.?N\.?P\.?J\.?:/i.test(line) || /CNPJ:/i.test(line)) {
-      const cnpjMatch = line.match(/\d{14}|\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}/);
-      if (cnpjMatch) empresaInfo.cnpj = cnpjMatch[0];
-    }
-
-    // Verificar se é linha de férias (buscar código nas primeiras colunas)
-    let codigo = null;
-    let codigoIndex = -1;
-    for (let j = 0; j < Math.min(10, cols.length); j++) {
-      if (cols[j] && /^\d{1,6}$/.test(cols[j])) {
-        codigo = parseInt(cols[j]);
-        codigoIndex = j;
-        break;
+      const cnpjMatch = line.match(/\d{14}|\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}|\d[,\.]\d+E\+\d+/);
+      if (cnpjMatch) {
+        // Converter notação científica se necessário (3,05338E+13)
+        let cnpj = cnpjMatch[0];
+        if (cnpj.includes('E+')) {
+          cnpj = parseFloat(cnpj.replace(',', '.')).toFixed(0).padStart(14, '0');
+        }
+        empresaInfo.cnpj = cnpj;
       }
     }
 
-    if (codigo !== null && cols.length >= 4) {
-      let nome = '';
-      let dataInicio = null;
-      let dataFim = null;
+    // Verificar se é linha de dados de férias (código na primeira coluna)
+    const codigo = cols[0] && /^\d{1,6}$/.test(cols[0]) ? parseInt(cols[0]) : null;
+
+    if (codigo !== null && cols.length >= 30) {
+      // Extrair nome do empregado (coluna 2)
+      const nome = cols[2] || `Empregado ${codigo}`;
+
+      // Coletar TODAS as datas válidas na linha e suas posições
+      const datasEncontradas = [];
+      for (let j = 0; j < cols.length; j++) {
+        const val = cols[j];
+        if (val && /^\d{2}\/\d{2}\/\d{4}$/.test(val)) {
+          datasEncontradas.push({ idx: j, data: val });
+        }
+      }
+
+      // Mapear as datas por posição conhecida
+      // Ordem típica: admissão(~9), vencto(~10), inicioAq(~16), fimAq(~17), limiteGozo(última)
+      const dataAdmissao = datasEncontradas.find(d => d.idx >= 8 && d.idx <= 11)?.data || null;
+      const inicioAquisitivo = datasEncontradas.find(d => d.idx >= 14 && d.idx <= 18)?.data || null;
+      const fimAquisitivo = datasEncontradas.find(d => d.idx >= 15 && d.idx <= 19 && d.idx !== datasEncontradas.find(x => x.data === inicioAquisitivo)?.idx)?.data || null;
+
+      // Limite p/ Gozo é geralmente a última data válida (posição ~33)
+      const limiteGozo = datasEncontradas.length > 0 ? datasEncontradas[datasEncontradas.length - 1].data : null;
+
+      // Início Gozo Férias - procurar na posição ~23, verificar se não é ..../..../......
+      let inicioGozo = null;
+      const possivelInicioGozo = cols[23];
+      if (possivelInicioGozo && /^\d{2}\/\d{2}\/\d{4}$/.test(possivelInicioGozo)) {
+        inicioGozo = possivelInicioGozo;
+      }
+
+      // Extrair dias - procurar números entre 1-60 nas posições esperadas
+      // Dias direito (~28), gozados (~30), restantes (~32)
       let diasDireito = 0;
       let diasGozados = 0;
       let diasRestantes = 0;
 
-      // Procurar nome (após o código)
-      for (let j = codigoIndex + 1; j < cols.length; j++) {
-        const val = cols[j];
-        if (val && val.length > 5 && !/^\d{2}\/\d{2}\/\d{4}$/.test(val) &&
-            !/^[\d.,]+$/.test(val)) {
-          nome = val;
-          break;
-        }
-      }
-
-      // Procurar datas
-      const datas = [];
-      for (let j = 1; j < cols.length; j++) {
-        const val = cols[j];
-        if (val && /^\d{2}\/\d{2}\/\d{4}$/.test(val)) {
-          datas.push(val);
-        }
-      }
-
-      if (datas.length >= 1) dataInicio = datas[0];
-      if (datas.length >= 2) dataFim = datas[1];
-
-      // Procurar dias (números inteiros de 1 a 60)
-      const dias = [];
-      for (let j = 1; j < cols.length; j++) {
+      // Procurar em posições específicas primeiro
+      for (let j = 25; j < Math.min(35, cols.length); j++) {
         const val = cols[j];
         if (val && /^\d+$/.test(val)) {
           const num = parseInt(val);
-          if (num >= 1 && num <= 60) {
-            dias.push(num);
+          if (num >= 0 && num <= 60) {
+            if (diasDireito === 0 && num > 0) diasDireito = num;
+            else if (diasGozados === 0 && diasDireito > 0) diasGozados = num;
+            else if (diasRestantes === 0 && diasGozados >= 0) {
+              diasRestantes = num;
+              break;
+            }
           }
         }
       }
 
-      if (dias.length >= 1) diasDireito = dias[0];
-      if (dias.length >= 2) diasGozados = dias[1];
-      diasRestantes = diasDireito - diasGozados;
+      // Se não encontrou diasRestantes, calcular
+      if (diasRestantes === 0 && diasDireito > 0) {
+        diasRestantes = diasDireito - diasGozados;
+      }
 
-      // Determinar status
-      let status = 'Programada';
-      if (diasGozados >= diasDireito) {
+      // Também aceitar valores decimais como "2,5" ou "22,5"
+      if (diasDireito === 0) {
+        for (let j = 25; j < Math.min(35, cols.length); j++) {
+          const val = cols[j];
+          if (val && /^\d+[,\.]\d+$/.test(val)) {
+            const num = parseFloat(val.replace(',', '.'));
+            if (num > 0 && num <= 60) {
+              diasDireito = Math.ceil(num);
+              break;
+            }
+          }
+        }
+      }
+
+      // Determinar status baseado nos dados
+      let status = 'Pendente';
+      const hoje = new Date();
+
+      if (diasGozados >= diasDireito && diasDireito > 0) {
         status = 'Gozadas';
         feriasPorStatus.gozadas++;
-      } else if (diasGozados > 0) {
-        status = 'Parcial';
-        feriasPorStatus.pendentes++;
-      } else {
+      } else if (inicioGozo) {
+        status = 'Programada';
         feriasPorStatus.programadas++;
+      } else if (limiteGozo) {
+        // Verificar se o limite já passou
+        const [diaLim, mesLim, anoLim] = limiteGozo.split('/').map(Number);
+        const dataLimite = new Date(anoLim, mesLim - 1, diaLim);
+        if (dataLimite < hoje) {
+          status = 'Vencida';
+          feriasPorStatus.vencidas++;
+        } else {
+          status = 'Pendente';
+          feriasPorStatus.pendentes++;
+        }
+      } else {
+        feriasPorStatus.pendentes++;
       }
 
       const registro = {
         codigo,
-        nome: nome || `Empregado ${codigo}`,
-        dataInicio,
-        dataFim,
+        nome,
+        dataAdmissao,
+        inicioAquisitivo,
+        fimAquisitivo,
+        inicioGozo,
+        limiteGozo,
         diasDireito,
         diasGozados,
         diasRestantes,
-        status
+        status,
+        // Para compatibilidade com gráficos existentes
+        dataInicio: inicioGozo || inicioAquisitivo,
+        dataFim: limiteGozo
       };
 
       ferias.push(registro);
 
-      // Agrupar por mês de início
-      if (dataInicio) {
-        const [dia, mes, ano] = dataInicio.split('/');
+      // Agrupar por mês do limite de gozo (mais relevante para planejamento)
+      const dataAgrupamento = limiteGozo || inicioAquisitivo;
+      if (dataAgrupamento) {
+        const [dia, mes, ano] = dataAgrupamento.split('/');
         const competencia = `${mes}/${ano}`;
         if (!feriasPorMes[competencia]) {
           feriasPorMes[competencia] = { quantidade: 0, diasTotal: 0, empregados: [] };
@@ -2253,12 +2309,14 @@ export const parseProgramacaoFerias = (csvContent) => {
     }
   }
 
-  // Ordenar por data de início
+  // Ordenar por limite de gozo (quem precisa tirar férias primeiro)
   ferias.sort((a, b) => {
-    if (!a.dataInicio) return 1;
-    if (!b.dataInicio) return -1;
-    const [diaA, mesA, anoA] = a.dataInicio.split('/').map(Number);
-    const [diaB, mesB, anoB] = b.dataInicio.split('/').map(Number);
+    const dataA = a.limiteGozo || a.inicioAquisitivo;
+    const dataB = b.limiteGozo || b.inicioAquisitivo;
+    if (!dataA) return 1;
+    if (!dataB) return -1;
+    const [diaA, mesA, anoA] = dataA.split('/').map(Number);
+    const [diaB, mesB, anoB] = dataB.split('/').map(Number);
     if (anoA !== anoB) return anoA - anoB;
     if (mesA !== mesB) return mesA - mesB;
     return diaA - diaB;
