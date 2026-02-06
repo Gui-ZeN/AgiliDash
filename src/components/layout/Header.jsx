@@ -96,10 +96,10 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
               <button
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
-                className={`px-4 xl:px-6 h-full flex items-center font-bold text-xs xl:text-sm tracking-wide transition-all
+                className={`px-4 xl:px-5 h-full flex items-center font-medium text-xs xl:text-sm tracking-wide transition-all duration-200
                   ${activeTab === tab.id
-                    ? 'text-[#0e4f6d] dark:text-cyan-400 border-b-[3px] border-[#0e4f6d] dark:border-cyan-400'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-cyan-700 dark:hover:text-cyan-300'
+                    ? 'text-slate-900 dark:text-white border-b-2 border-slate-900 dark:border-white'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
                   }`}
               >
                 {tab.label}
@@ -127,9 +127,9 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="flex items-center gap-2 lg:gap-3 px-2 lg:px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 hover:border-[#0e4f6d] dark:hover:border-cyan-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all min-w-[140px] lg:min-w-[260px]"
+              className="flex items-center gap-2 lg:gap-3 px-2 lg:px-3.5 py-2 rounded-md border border-slate-200 dark:border-slate-600 hover:border-slate-300 dark:hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all duration-200 min-w-[140px] lg:min-w-[260px]"
             >
-              <div className="w-7 h-7 lg:w-9 lg:h-9 rounded-lg bg-[#0e4f6d] flex items-center justify-center flex-shrink-0">
+              <div className="w-7 h-7 lg:w-8 lg:h-8 rounded-md bg-slate-800 flex items-center justify-center flex-shrink-0">
                 {isConsolidado ? (
                   <Layers className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-white" />
                 ) : (
@@ -137,19 +137,19 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
                 )}
               </div>
               <div className="text-left flex-1 min-w-0">
-                <p className="text-xs lg:text-xs text-slate-400 dark:text-slate-500 font-medium uppercase tracking-wide truncate">
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider truncate">
                   {isConsolidado ? modoLabel : `${grupoAtual?.nome || ''}`}
                 </p>
-                <p className="text-xs lg:text-sm font-bold text-[#0e4f6d] dark:text-cyan-400 truncate">
+                <p className="text-xs lg:text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
                   {isConsolidado ? 'Consolidado' : cnpjInfo?.nomeFantasia}
                 </p>
               </div>
-              <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform flex-shrink-0 ${dropdownOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 flex-shrink-0 ${dropdownOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {/* Dropdown Menu */}
             {dropdownOpen && (
-              <div className="absolute right-0 mt-2 w-[340px] lg:w-[400px] bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 py-2 z-50 max-h-[80vh] overflow-y-auto">
+              <div className="absolute right-0 mt-2 w-[340px] lg:w-[400px] bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200/80 dark:border-slate-700/80 py-2 z-50 max-h-[80vh] overflow-y-auto">
                 {/* Opções de Consolidação */}
                 <p className="px-4 py-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wide">
                   Visualizacao Consolidada
@@ -166,7 +166,7 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
                     <p className="font-semibold text-slate-800 dark:text-white text-sm">Todos os Grupos</p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">Visao completa do sistema</p>
                   </div>
-                  {modoVisualizacao === 'todos' && <Check className="w-5 h-5 text-[#0e4f6d] dark:text-cyan-400" />}
+                  {modoVisualizacao === 'todos' && <Check className="w-5 h-5 text-[#0e4f6d] dark:text-teal-500" />}
                 </button>
 
                 <button
@@ -180,7 +180,7 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
                     <p className="font-semibold text-slate-800 dark:text-white text-sm">Grupo: {grupoAtual?.nome}</p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">Todas as empresas do grupo</p>
                   </div>
-                  {modoVisualizacao === 'grupo' && <Check className="w-5 h-5 text-[#0e4f6d] dark:text-cyan-400" />}
+                  {modoVisualizacao === 'grupo' && <Check className="w-5 h-5 text-[#0e4f6d] dark:text-teal-500" />}
                 </button>
 
                 <button
@@ -194,7 +194,7 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
                     <p className="font-semibold text-slate-800 dark:text-white text-sm">Empresa: {empresaAtual?.nomeFantasia}</p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">Todos os CNPJs da empresa</p>
                   </div>
-                  {modoVisualizacao === 'empresa' && <Check className="w-5 h-5 text-[#0e4f6d] dark:text-cyan-400" />}
+                  {modoVisualizacao === 'empresa' && <Check className="w-5 h-5 text-[#0e4f6d] dark:text-teal-500" />}
                 </button>
 
                 <div className="h-px bg-slate-100 dark:bg-slate-700 my-2" />
@@ -258,10 +258,10 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
                       <p className="text-xs text-slate-500 dark:text-slate-400">{cnpj.cnpj}</p>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${cnpj.tipo === 'Matriz' ? 'bg-[#0e4f6d]/10 dark:bg-[#0e4f6d]/30 text-[#0e4f6d] dark:text-cyan-400' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400'}`}>
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${cnpj.tipo === 'Matriz' ? 'bg-[#0e4f6d]/10 dark:bg-[#0e4f6d]/30 text-[#0e4f6d] dark:text-teal-500' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400'}`}>
                         {cnpj.tipo}
                       </span>
-                      {cnpjSelecionado === cnpj.id && !isConsolidado && <Check className="w-4 h-4 text-[#0e4f6d] dark:text-cyan-400" />}
+                      {cnpjSelecionado === cnpj.id && !isConsolidado && <Check className="w-4 h-4 text-[#0e4f6d] dark:text-teal-500" />}
                     </div>
                   </button>
                 ))}
@@ -274,7 +274,7 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
                     <Link
                       to="/configuracoes"
                       onClick={() => setDropdownOpen(false)}
-                      className="w-full px-4 py-2.5 flex items-center gap-2 text-sm text-[#0e4f6d] dark:text-cyan-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                      className="w-full px-4 py-2.5 flex items-center gap-2 text-sm text-[#0e4f6d] dark:text-teal-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                     >
                       <Settings className="w-4 h-4" />
                       <span>Gerenciar Grupos, Empresas e CNPJs</span>
@@ -286,20 +286,20 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
           </div>
 
           {/* Exercício - Hidden on small screens */}
-          <div className="hidden xl:block text-right border-l border-slate-100 dark:border-slate-700 pl-4">
-            <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">Exercicio</p>
-            <p className="text-sm font-bold text-[#0e4f6d] dark:text-cyan-400">{cnpjInfo?.exercicio || '2025'}</p>
+          <div className="hidden xl:block text-right border-l border-slate-200/80 dark:border-slate-700/80 pl-4">
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Exercício</p>
+            <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{cnpjInfo?.exercicio || '2025'}</p>
           </div>
 
           {/* User Info */}
-          <div className="hidden lg:flex items-center gap-3 border-l border-slate-100 dark:border-slate-700 pl-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-[#0e4f6d] flex items-center justify-center">
-                <User className="w-4 h-4 text-white" />
+          <div className="hidden lg:flex items-center gap-3 border-l border-slate-200/80 dark:border-slate-700/80 pl-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-md bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                <User className="w-4 h-4 text-slate-600 dark:text-slate-300" />
               </div>
               <div className="text-right">
-                <p className="text-xs font-semibold text-slate-700 dark:text-slate-200">{user?.nome}</p>
-                <p className={`text-xs font-medium ${isAdmin ? 'text-[#0e4f6d] dark:text-cyan-400' : 'text-slate-400 dark:text-slate-500'}`}>
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{user?.nome}</p>
+                <p className={`text-xs ${isAdmin ? 'text-slate-600 dark:text-slate-400' : 'text-slate-400 dark:text-slate-500'}`}>
                   {user?.perfil}
                 </p>
               </div>
@@ -307,11 +307,11 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
           </div>
 
           {/* Action Buttons */}
-          <div className="hidden lg:flex items-center gap-1 border-l border-slate-100 dark:border-slate-700 pl-4">
+          <div className="hidden lg:flex items-center gap-1 border-l border-slate-200/80 dark:border-slate-700/80 pl-4">
             {isAdmin && (
               <Link
                 to="/configuracoes"
-                className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                className="p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-200"
                 title="Painel Administrativo"
               >
                 <Settings className="w-5 h-5 text-slate-500 dark:text-slate-400" />
@@ -319,10 +319,10 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
             )}
             <button
               onClick={handleLogout}
-              className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+              className="p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-200"
               title="Sair"
             >
-              <LogOut className="w-5 h-5 text-slate-500 dark:text-slate-400 hover:text-red-500" />
+              <LogOut className="w-5 h-5 text-slate-500 dark:text-slate-400" />
             </button>
           </div>
 
@@ -342,15 +342,15 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
 
       {/* Mobile Navigation Tabs */}
       {showTabs && (
-        <div className="lg:hidden border-t border-slate-100 dark:border-slate-700 overflow-x-auto scrollbar-hide">
+        <div className="lg:hidden border-t border-slate-200/80 dark:border-slate-700/80 overflow-x-auto scrollbar-hide">
           <div className="flex min-w-max">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
-                className={`flex-1 min-w-[70px] px-3 py-2.5 text-xs font-bold tracking-wide transition-all whitespace-nowrap
+                className={`flex-1 min-w-[70px] px-3 py-2.5 text-xs font-medium tracking-wide transition-all duration-200 whitespace-nowrap
                   ${activeTab === tab.id
-                    ? 'text-[#0e4f6d] dark:text-cyan-400 border-b-2 border-[#0e4f6d] dark:border-cyan-400 bg-slate-50 dark:bg-slate-700/50'
+                    ? 'text-slate-900 dark:text-white border-b-2 border-slate-900 dark:border-white bg-slate-50 dark:bg-slate-700/50'
                     : 'text-slate-500 dark:text-slate-400'
                   }`}
               >
@@ -365,7 +365,7 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
       {mobileMenuOpen && (
         <div className="lg:hidden fixed inset-0 top-16 bg-black/50 z-40" onClick={() => setMobileMenuOpen(false)}>
           <div
-            className="absolute right-0 top-0 w-64 h-full bg-white dark:bg-slate-800 shadow-xl p-4"
+            className="absolute right-0 top-0 w-64 h-full bg-white dark:bg-slate-800 shadow-md p-4"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="space-y-4">
@@ -377,7 +377,7 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
                   </div>
                   <div>
                     <p className="font-semibold text-slate-700 dark:text-slate-200">{user?.nome}</p>
-                    <p className={`text-xs font-medium ${isAdmin ? 'text-[#0e4f6d] dark:text-cyan-400' : 'text-slate-400 dark:text-slate-500'}`}>
+                    <p className={`text-xs font-medium ${isAdmin ? 'text-[#0e4f6d] dark:text-teal-500' : 'text-slate-400 dark:text-slate-500'}`}>
                       {user?.perfil}
                     </p>
                   </div>
@@ -386,7 +386,7 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
 
               <div className="pb-4 border-b border-slate-100 dark:border-slate-700">
                 <p className="text-xs text-slate-400 dark:text-slate-500 font-medium mb-1">Exercicio</p>
-                <p className="text-lg font-bold text-[#0e4f6d] dark:text-cyan-400">{cnpjInfo?.exercicio || '2025'}</p>
+                <p className="text-lg font-bold text-[#0e4f6d] dark:text-teal-500">{cnpjInfo?.exercicio || '2025'}</p>
               </div>
 
               <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-700">

@@ -163,7 +163,7 @@ const Usuarios = () => {
 
       {/* Mensagem de sucesso */}
       {successMessage && (
-        <div className="fixed top-20 right-4 z-50 bg-emerald-500 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2 animate-pulse">
+        <div className="fixed top-20 right-4 z-50 bg-emerald-700 text-white px-6 py-3 rounded-xl shadow-md flex items-center gap-2 animate-pulse">
           <Check className="w-5 h-5" />
           {successMessage}
         </div>
@@ -173,11 +173,11 @@ const Usuarios = () => {
         {/* Stats Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-100 dark:border-slate-700">
-            <p className="text-2xl font-bold text-[#0e4f6d] dark:text-cyan-400">{usuarios.length}</p>
+            <p className="text-2xl font-bold text-[#0e4f6d] dark:text-teal-500">{usuarios.length}</p>
             <p className="text-sm text-slate-500 dark:text-slate-400">Total Usuarios</p>
           </div>
           <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-100 dark:border-slate-700">
-            <p className="text-2xl font-bold text-emerald-500">{usuarios.filter(u => u.status === 'Ativo').length}</p>
+            <p className="text-2xl font-bold text-emerald-700">{usuarios.filter(u => u.status === 'Ativo').length}</p>
             <p className="text-sm text-slate-500 dark:text-slate-400">Ativos</p>
           </div>
           <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-100 dark:border-slate-700">
@@ -307,7 +307,7 @@ const Usuarios = () => {
                     <td className="px-4 py-4">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
                         user.status === 'Ativo'
-                          ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
+                          ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-700'
                           : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
                       }`}>
                         {user.status}
@@ -349,7 +349,7 @@ const Usuarios = () => {
       {/* Modal Create/Edit */}
       {modalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-slate-800 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-slate-100 dark:border-slate-700">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-slate-800 dark:text-white">
@@ -445,7 +445,7 @@ const Usuarios = () => {
                         ) : (
                           <Eye className={`w-5 h-5 ${formData.perfil === perfil.value ? 'text-[#0e4f6d]' : 'text-slate-400'}`} />
                         )}
-                        <span className={`font-semibold ${formData.perfil === perfil.value ? 'text-[#0e4f6d] dark:text-cyan-400' : 'text-slate-700 dark:text-slate-300'}`}>
+                        <span className={`font-semibold ${formData.perfil === perfil.value ? 'text-[#0e4f6d] dark:text-teal-500' : 'text-slate-700 dark:text-slate-300'}`}>
                           {perfil.label}
                         </span>
                       </div>
@@ -501,7 +501,7 @@ const Usuarios = () => {
       {/* Modal Delete Confirm */}
       {deleteConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl w-full max-w-md p-6">
             <div className="text-center">
               <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 mx-auto mb-4 flex items-center justify-center">
                 <Trash2 className="w-8 h-8 text-red-500" />

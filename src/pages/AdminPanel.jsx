@@ -213,7 +213,7 @@ const AdminPanel = () => {
       <main className="max-w-7xl mx-auto px-4 py-10">
         {/* Header da página */}
         <div className="mb-10">
-          <h1 className="text-4xl font-extrabold text-[#1e293b] mb-2">
+          <h1 className="text-4xl font-semibold text-[#1e293b] mb-2">
             Painel Administrativo
           </h1>
           <p className="text-lg text-slate-400 font-medium">
@@ -536,7 +536,7 @@ const AdminPanel = () => {
         {/* Card de informações */}
         <Card className="mt-8">
           <div className="flex items-start gap-6">
-            <div className="p-4 bg-amber-50 rounded-2xl">
+            <div className="p-4 bg-amber-50 rounded-xl">
               <FileSpreadsheet className="w-8 h-8 text-amber-600" />
             </div>
             <div>
@@ -570,7 +570,7 @@ const AdminPanel = () => {
       {/* Modal Adicionar/Editar Usuário */}
       {modalUsuario.open && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-slate-200">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-slate-800">
@@ -689,7 +689,7 @@ const AdminPanel = () => {
       {/* Modal Confirmar Exclusão */}
       {modalDelete.open && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md">
+          <div className="bg-white rounded-xl w-full max-w-md">
             <div className="p-6">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">

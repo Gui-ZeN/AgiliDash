@@ -244,7 +244,7 @@ const Dashboard = () => {
 
         {/* Badge de modo consolidado */}
         {isConsolidado && (
-          <div className="mb-6 bg-[#0e4f6d] p-4 rounded-2xl text-white flex items-center gap-3">
+          <div className="mb-6 bg-[#0e4f6d] p-4 rounded-xl text-white flex items-center gap-3">
             <Layers className="w-5 h-5" />
             <span className="font-medium">Visualizando dados consolidados de todos os CNPJs</span>
           </div>
@@ -263,7 +263,7 @@ const Dashboard = () => {
                   Visão Geral
                 </span>
               </div>
-              <h1 className="text-4xl font-extrabold text-[#1e293b] mb-1">
+              <h1 className="text-4xl font-semibold text-[#1e293b] mb-1">
                 Informações Gerais
               </h1>
               <p className="text-lg text-slate-400 font-medium">
@@ -273,7 +273,7 @@ const Dashboard = () => {
 
             {/* Cards de estatísticas rápidas com Sparklines */}
             <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 transition-all duration-500 delay-100 ${cardAnimation}`}>
-              <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between mb-3">
                   <div className="p-2 bg-green-50 dark:bg-green-900/30 rounded-lg">
                     <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
@@ -284,14 +284,14 @@ const Dashboard = () => {
                 </div>
                 <div className="flex items-end justify-between">
                   <div>
-                    <p className="text-2xl font-black text-slate-800 dark:text-white">{formatCurrency(totalReceita)}</p>
+                    <p className="text-2xl font-bold text-slate-800 dark:text-white">{formatCurrency(totalReceita)}</p>
                     <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Receita {selectedYear}</p>
                   </div>
                   <Sparkline data={receitaSparkline} color="#10b981" height={32} width={60} />
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between mb-3">
                   <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
                     <DollarSign className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -299,36 +299,36 @@ const Dashboard = () => {
                 </div>
                 <div className="flex items-end justify-between">
                   <div>
-                    <p className="text-2xl font-black text-slate-800 dark:text-white">{formatCurrency(totalLucro)}</p>
+                    <p className="text-2xl font-bold text-slate-800 dark:text-white">{formatCurrency(totalLucro)}</p>
                     <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Lucro Liquido</p>
                   </div>
                   <Sparkline data={lucroSparkline} color="#3b82f6" height={32} width={60} />
                 </div>
               </div>
 
-              <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 bg-purple-50 rounded-lg">
-                    <Percent className="w-5 h-5 text-purple-600" />
+                  <div className="p-2 bg-slate-50 rounded-lg">
+                    <Percent className="w-5 h-5 text-slate-700" />
                   </div>
                 </div>
-                <p className="text-2xl font-black text-slate-800">{margemLucro}%</p>
+                <p className="text-2xl font-bold text-slate-800">{margemLucro}%</p>
                 <p className="text-xs text-slate-400 mt-1">Margem de Lucro</p>
               </div>
 
-              <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between mb-3">
                   <div className="p-2 bg-amber-50 rounded-lg">
                     <Calendar className="w-5 h-5 text-amber-600" />
                   </div>
                 </div>
-                <p className="text-2xl font-black text-slate-800">12</p>
+                <p className="text-2xl font-bold text-slate-800">12</p>
                 <p className="text-xs text-slate-400 mt-1">Meses Analisados</p>
               </div>
             </div>
 
             {/* Card Principal de Dados Cadastrais - Redesenhado */}
-            <div className={`bg-white rounded-3xl border border-slate-100 shadow-lg overflow-hidden transition-all duration-500 delay-200 ${cardAnimation}`}>
+            <div className={`bg-white rounded-xl border border-slate-100 shadow-md overflow-hidden transition-all duration-500 delay-200 ${cardAnimation}`}>
               <div className="bg-[#0e4f6d] p-8 text-white">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                   <div>
@@ -357,7 +357,7 @@ const Dashboard = () => {
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-2">
-                    <div className="bg-white/20 backdrop-blur-sm px-6 py-3 rounded-2xl">
+                    <div className="bg-white/20 backdrop-blur-sm px-6 py-3 rounded-xl">
                       <p className="text-xs font-medium text-white/70 uppercase tracking-wider mb-1">
                         Regime Tributário
                       </p>
@@ -372,7 +372,7 @@ const Dashboard = () => {
 
               <div className="p-8">
                 <div className="flex items-center gap-6">
-                  <div className="w-20 h-20 rounded-2xl bg-[#0e4f6d] flex items-center justify-center shadow-lg">
+                  <div className="w-20 h-20 rounded-xl bg-[#0e4f6d] flex items-center justify-center shadow-md">
                     <User className="w-10 h-10 text-white" />
                   </div>
                   <div>
@@ -413,8 +413,8 @@ const Dashboard = () => {
                 {equipeTecnica.map((membro, index) => {
                   const Icon = iconMap[membro.icon];
                   const colors = [
-                    { bg: 'bg-cyan-600', light: 'bg-cyan-50' },
-                    { bg: 'bg-indigo-600', light: 'bg-blue-50' },
+                    { bg: 'bg-teal-700', light: 'bg-slate-50' },
+                    { bg: 'bg-slate-700', light: 'bg-blue-50' },
                     { bg: 'bg-teal-600', light: 'bg-teal-50' }
                   ];
                   const color = colors[index % colors.length];
@@ -422,10 +422,10 @@ const Dashboard = () => {
                   return (
                     <div
                       key={membro.id}
-                      className="group bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                      className="group bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1"
                     >
                       <div className="flex items-start justify-between mb-4">
-                        <div className={`p-4 rounded-2xl ${color.bg} shadow-lg`}>
+                        <div className={`p-4 rounded-xl ${color.bg} shadow-md`}>
                           <Icon className="w-6 h-6 text-white" />
                         </div>
                         <div className="w-2 h-2 bg-green-400 rounded-full" />
@@ -445,10 +445,10 @@ const Dashboard = () => {
             </section>
 
             {/* Card de contato */}
-            <div className={`bg-[#0e4f6d] p-8 rounded-3xl text-white transition-all duration-500 delay-400 ${cardAnimation}`}>
+            <div className={`bg-[#0e4f6d] p-8 rounded-xl text-white transition-all duration-500 delay-400 ${cardAnimation}`}>
               <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                 <div className="flex items-center gap-6">
-                  <div className="p-4 bg-white/10 rounded-2xl backdrop-blur-sm">
+                  <div className="p-4 bg-white/10 rounded-xl backdrop-blur-sm">
                     <Phone className="w-8 h-8" />
                   </div>
                   <div>
@@ -456,7 +456,7 @@ const Dashboard = () => {
                     <p className="text-white/70">Nossa equipe está disponível para ajudá-lo.</p>
                   </div>
                 </div>
-                <button className="bg-white text-[#0e4f6d] px-8 py-4 rounded-xl font-bold hover:bg-white/90 transition-colors shadow-lg">
+                <button className="bg-white text-[#0e4f6d] px-8 py-4 rounded-xl font-bold hover:bg-white/90 transition-colors shadow-md">
                   Entrar em Contato
                 </button>
               </div>
@@ -471,14 +471,14 @@ const Dashboard = () => {
             <section className={`flex flex-col lg:flex-row items-start justify-between gap-4 transition-all duration-500 ${cardAnimation}`}>
               <div>
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-emerald-600 rounded-lg">
+                  <div className="p-2 bg-emerald-700 rounded-lg">
                     <Calculator className="w-5 h-5 text-white" />
                   </div>
-                  <span className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                  <span className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-emerald-700' : 'text-emerald-700'}`}>
                     Departamento Contabil
                   </span>
                 </div>
-                <h1 className={`text-4xl font-extrabold mb-1 ${isDarkMode ? 'text-white' : 'text-[#1e293b]'}`}>
+                <h1 className={`text-4xl font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-[#1e293b]'}`}>
                   Analise Financeira
                 </h1>
                 <p className={`text-lg font-medium ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
@@ -495,7 +495,7 @@ const Dashboard = () => {
                 </button>
                 <button
                   onClick={() => handleExportReport('excel')}
-                  className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-emerald-700 text-white rounded-lg hover:bg-emerald-700 transition-colors"
                 >
                   <Download className="w-4 h-4" />
                   Excel
@@ -505,7 +505,7 @@ const Dashboard = () => {
 
             {/* Banner de status de dados importados */}
             {!temDadosContabeis && (
-              <div className={`p-4 rounded-2xl flex items-center gap-3 ${isDarkMode ? 'bg-amber-900/30 border border-amber-700/50' : 'bg-amber-50 border border-amber-200'}`}>
+              <div className={`p-4 rounded-xl flex items-center gap-3 ${isDarkMode ? 'bg-amber-900/30 border border-amber-700/50' : 'bg-amber-50 border border-amber-200'}`}>
                 <AlertCircle className={`w-5 h-5 ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`} />
                 <span className={isDarkMode ? 'text-amber-300' : 'text-amber-800'}>
                   Nenhum relatorio importado. Acesse <strong>Configuracoes</strong> para importar dados do Dominio.
@@ -520,38 +520,38 @@ const Dashboard = () => {
               </div>
             ) : (
               <div className={`grid grid-cols-1 md:grid-cols-4 gap-4 transition-all duration-500 delay-100 ${cardAnimation}`}>
-                <div className="bg-emerald-600 p-6 rounded-2xl text-white shadow-lg">
+                <div className="bg-emerald-700 p-6 rounded-xl text-white shadow-md">
                   <div className="flex items-center justify-between mb-4">
                     <TrendingUp className="w-8 h-8 opacity-80" />
                     <span className="text-xs font-bold bg-white/20 px-3 py-1 rounded-full">
                       +{variacaoReceita}%
                     </span>
                   </div>
-                  <p className="text-3xl font-black">{formatCurrency(totalReceita)}</p>
+                  <p className="text-3xl font-bold">{formatCurrency(totalReceita)}</p>
                   <p className="text-white/70 text-sm mt-1">Receita Total {selectedYear}</p>
                 </div>
 
-                <div className="bg-red-600 p-6 rounded-2xl text-white shadow-lg">
+                <div className="bg-red-600 p-6 rounded-xl text-white shadow-md">
                   <div className="flex items-center justify-between mb-4">
                     <TrendingDown className="w-8 h-8 opacity-80" />
                   </div>
-                  <p className="text-3xl font-black">{formatCurrency(totalDespesa)}</p>
+                  <p className="text-3xl font-bold">{formatCurrency(totalDespesa)}</p>
                   <p className="text-white/70 text-sm mt-1">Despesas Total {selectedYear}</p>
                 </div>
 
-                <div className="bg-[#0e4f6d] p-6 rounded-2xl text-white shadow-lg">
+                <div className="bg-[#0e4f6d] p-6 rounded-xl text-white shadow-md">
                   <div className="flex items-center justify-between mb-4">
                     <Coins className="w-8 h-8 opacity-80" />
                   </div>
-                  <p className="text-3xl font-black">{formatCurrency(totalLucro)}</p>
+                  <p className="text-3xl font-bold">{formatCurrency(totalLucro)}</p>
                   <p className="text-white/70 text-sm mt-1">Lucro Liquido</p>
                 </div>
 
-                <div className="bg-purple-600 p-6 rounded-2xl text-white shadow-lg">
+                <div className="bg-slate-700 p-6 rounded-xl text-white shadow-md">
                   <div className="flex items-center justify-between mb-4">
                     <Activity className="w-8 h-8 opacity-80" />
                   </div>
-                  <p className="text-3xl font-black">{margemLucro}%</p>
+                  <p className="text-3xl font-bold">{margemLucro}%</p>
                   <p className="text-white/70 text-sm mt-1">Margem de Lucro</p>
                 </div>
               </div>
@@ -561,7 +561,7 @@ const Dashboard = () => {
             <section className={`transition-all duration-500 delay-200 ${cardAnimation}`}>
               <div className="flex items-center gap-3 mb-6">
                 <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
-                  <BarChart2 className={`w-5 h-5 ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
+                  <BarChart2 className={`w-5 h-5 ${isDarkMode ? 'text-emerald-700' : 'text-emerald-700'}`} />
                 </div>
                 <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
                   Comparativo de Lucro
@@ -571,7 +571,7 @@ const Dashboard = () => {
               {/* Grid: Gráfico de Barras + Cards Resumo */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Gráfico de Barras - Receita x Despesa */}
-                <div className={`lg:col-span-2 p-6 rounded-3xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                <div className={`lg:col-span-2 p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
                   <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
                     <div>
                       <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
@@ -598,38 +598,38 @@ const Dashboard = () => {
                 </div>
 
                 {/* Card Lateral de Resumo */}
-                <div className={`p-6 rounded-3xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                <div className={`p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
                   <h3 className={`text-lg font-bold mb-6 pb-4 border-b ${isDarkMode ? 'text-white border-slate-700' : 'text-slate-800 border-slate-100'}`}>
                     Resumo do Exercicio
                   </h3>
 
                   <div className="space-y-4">
-                    <div className={`p-4 rounded-2xl ${isDarkMode ? 'bg-green-900/30' : 'bg-green-50'}`}>
+                    <div className={`p-4 rounded-xl ${isDarkMode ? 'bg-green-900/30' : 'bg-green-50'}`}>
                       <div className="flex items-center gap-2 mb-2">
                         <ArrowUpRight className={`w-5 h-5 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`} />
                         <p className={`text-sm font-medium ${isDarkMode ? 'text-green-400' : 'text-green-700'}`}>Receita Anual</p>
                       </div>
-                      <p className={`text-2xl font-black ${isDarkMode ? 'text-green-300' : 'text-green-700'}`}>
+                      <p className={`text-2xl font-bold ${isDarkMode ? 'text-green-300' : 'text-green-700'}`}>
                         {formatCurrency(totalReceita)}
                       </p>
                     </div>
 
-                    <div className={`p-4 rounded-2xl ${isDarkMode ? 'bg-red-900/30' : 'bg-red-50'}`}>
+                    <div className={`p-4 rounded-xl ${isDarkMode ? 'bg-red-900/30' : 'bg-red-50'}`}>
                       <div className="flex items-center gap-2 mb-2">
                         <ArrowDownRight className={`w-5 h-5 ${isDarkMode ? 'text-red-400' : 'text-red-600'}`} />
                         <p className={`text-sm font-medium ${isDarkMode ? 'text-red-400' : 'text-red-700'}`}>Despesa Anual</p>
                       </div>
-                      <p className={`text-2xl font-black ${isDarkMode ? 'text-red-300' : 'text-red-600'}`}>
+                      <p className={`text-2xl font-bold ${isDarkMode ? 'text-red-300' : 'text-red-600'}`}>
                         {formatCurrency(totalDespesa)}
                       </p>
                     </div>
 
-                    <div className={`p-4 rounded-2xl ${isDarkMode ? 'bg-[#0e4f6d]/40' : 'bg-[#0e4f6d]/10'}`}>
+                    <div className={`p-4 rounded-xl ${isDarkMode ? 'bg-[#0e4f6d]/40' : 'bg-[#0e4f6d]/10'}`}>
                       <div className="flex items-center gap-2 mb-2">
-                        <Coins className={`w-5 h-5 ${isDarkMode ? 'text-cyan-400' : 'text-[#0e4f6d]'}`} />
-                        <p className={`text-sm font-medium ${isDarkMode ? 'text-cyan-400' : 'text-[#0e4f6d]'}`}>Lucro Liquido</p>
+                        <Coins className={`w-5 h-5 ${isDarkMode ? 'text-teal-500' : 'text-[#0e4f6d]'}`} />
+                        <p className={`text-sm font-medium ${isDarkMode ? 'text-teal-500' : 'text-[#0e4f6d]'}`}>Lucro Liquido</p>
                       </div>
-                      <p className={`text-2xl font-black ${isDarkMode ? 'text-cyan-300' : 'text-[#0e4f6d]'}`}>
+                      <p className={`text-2xl font-bold ${isDarkMode ? 'text-slate-300' : 'text-[#0e4f6d]'}`}>
                         {formatCurrency(totalLucro)}
                       </p>
                       <p className={`text-xs mt-2 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
@@ -642,7 +642,7 @@ const Dashboard = () => {
             </section>
 
             {/* Tabela Comparativo Mensal */}
-            <div className={`rounded-3xl shadow-sm overflow-hidden transition-all duration-500 delay-300 ${cardAnimation} ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+            <div className={`rounded-xl shadow-sm overflow-hidden transition-all duration-500 delay-300 ${cardAnimation} ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
               <div className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
                 <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Detalhamento Mensal</h3>
                 <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Mes Referencia | Entradas | Saidas | Lucro Liquido</p>
@@ -666,7 +666,7 @@ const Dashboard = () => {
                           <td className={`px-6 py-4 font-semibold ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{mes}/2025</td>
                           <td className={`px-6 py-4 text-right ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}>{formatCurrency(entradasData[i])}</td>
                           <td className={`px-6 py-4 text-right ${isDarkMode ? 'text-red-400' : 'text-red-500'}`}>{formatCurrency(saidasData[i])}</td>
-                          <td className={`px-6 py-4 text-right font-bold ${isDarkMode ? 'text-cyan-400' : 'text-[#0e4f6d]'}`}>
+                          <td className={`px-6 py-4 text-right font-bold ${isDarkMode ? 'text-teal-500' : 'text-[#0e4f6d]'}`}>
                             {formatCurrency(entradasData[i] - saidasData[i])}
                           </td>
                         </tr>
@@ -678,7 +678,7 @@ const Dashboard = () => {
             </div>
 
             {/* Gráfico de Variação Anual do Lucro */}
-            <div className={`p-6 rounded-3xl shadow-sm transition-all duration-500 delay-400 ${cardAnimation} ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+            <div className={`p-6 rounded-xl shadow-sm transition-all duration-500 delay-400 ${cardAnimation} ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Variacao Anual do Lucro</h3>
@@ -716,7 +716,7 @@ const Dashboard = () => {
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Gráfico de Receita x Custo x Estoque */}
-                <div className={`p-6 rounded-3xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                <div className={`p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Receita x Custo x Estoque</h3>
@@ -724,7 +724,7 @@ const Dashboard = () => {
                     </div>
                     <div className="flex items-center gap-3">
                       <span className={`flex items-center gap-1 text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                        <div className="w-2 h-2 rounded-full bg-emerald-500" /> Receita
+                        <div className="w-2 h-2 rounded-full bg-emerald-700" /> Receita
                       </span>
                       <span className={`flex items-center gap-1 text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                         <div className="w-2 h-2 rounded-full bg-red-500" /> Custo
@@ -742,14 +742,14 @@ const Dashboard = () => {
                 </div>
 
                 {/* Gráfico de Movimentação Bancária */}
-                <div className={`p-6 rounded-3xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                <div className={`p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Movimentacao Bancaria</h3>
                       <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Saldo em Bancos Conta Movimento</p>
                     </div>
                     <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-[#0e4f6d]/30' : 'bg-[#0e4f6d]/10'}`}>
-                      <Banknote className={`w-5 h-5 ${isDarkMode ? 'text-cyan-400' : 'text-[#0e4f6d]'}`} />
+                      <Banknote className={`w-5 h-5 ${isDarkMode ? 'text-teal-500' : 'text-[#0e4f6d]'}`} />
                     </div>
                   </div>
                   {temDadosContabeis ? (
@@ -764,7 +764,7 @@ const Dashboard = () => {
             </section>
 
             {/* Gráfico de Aplicações Financeiras */}
-            <div className={`p-6 rounded-3xl shadow-sm transition-all duration-500 delay-600 ${cardAnimation} ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+            <div className={`p-6 rounded-xl shadow-sm transition-all duration-500 delay-600 ${cardAnimation} ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Aplicacoes Financeiras</h3>
@@ -784,9 +784,9 @@ const Dashboard = () => {
             </div>
 
             {/* Card de análise */}
-            <div className={`bg-[#0e4f6d] p-8 rounded-3xl text-white shadow-xl transition-all duration-500 delay-700 ${cardAnimation}`}>
+            <div className={`bg-[#0e4f6d] p-8 rounded-xl text-white shadow-md transition-all duration-500 delay-700 ${cardAnimation}`}>
               <div className="flex items-start gap-6">
-                <div className="p-4 bg-white/10 rounded-2xl backdrop-blur-sm">
+                <div className="p-4 bg-white/10 rounded-xl backdrop-blur-sm">
                   <Award className="w-8 h-8" />
                 </div>
                 <div>
@@ -819,14 +819,14 @@ const Dashboard = () => {
             <section className={`flex flex-col lg:flex-row items-start justify-between gap-4 transition-all duration-500 ${cardAnimation}`}>
               <div>
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-indigo-600 rounded-lg">
+                  <div className="p-2 bg-slate-700 rounded-lg">
                     <FileSpreadsheet className="w-5 h-5 text-white" />
                   </div>
-                  <span className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'}`}>
+                  <span className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-700'}`}>
                     Departamento Fiscal
                   </span>
                 </div>
-                <h1 className={`text-4xl font-extrabold mb-1 ${isDarkMode ? 'text-white' : 'text-[#1e293b]'}`}>
+                <h1 className={`text-4xl font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-[#1e293b]'}`}>
                   Analise Tributaria
                 </h1>
                 <p className={`text-lg font-medium ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
@@ -843,7 +843,7 @@ const Dashboard = () => {
                 </button>
                 <button
                   onClick={() => handleExportReport('excel')}
-                  className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors"
                 >
                   <Download className="w-4 h-4" />
                   Excel
@@ -853,7 +853,7 @@ const Dashboard = () => {
 
             {/* Banner de status de dados importados */}
             {!temDadosFiscais && (
-              <div className={`p-4 rounded-2xl flex items-center gap-3 ${isDarkMode ? 'bg-amber-900/30 border border-amber-700/50' : 'bg-amber-50 border border-amber-200'}`}>
+              <div className={`p-4 rounded-xl flex items-center gap-3 ${isDarkMode ? 'bg-amber-900/30 border border-amber-700/50' : 'bg-amber-50 border border-amber-200'}`}>
                 <AlertCircle className={`w-5 h-5 ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`} />
                 <span className={isDarkMode ? 'text-amber-300' : 'text-amber-800'}>
                   Nenhum relatorio fiscal importado. Acesse <strong>Configuracoes</strong> para importar dados do Dominio (Resumo por Acumulador, Demonstrativo Mensal, Resumo dos Impostos).
@@ -871,14 +871,14 @@ const Dashboard = () => {
               </div>
             ) : (
               <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 transition-all duration-500 delay-100 ${cardAnimation}`}>
-                <div className={`p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                <div className={`p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
                   <div className="flex items-center gap-4 mb-4">
                     <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-red-900/30' : 'bg-red-50'}`}>
                       <Receipt className={`w-6 h-6 ${isDarkMode ? 'text-red-400' : 'text-red-600'}`} />
                     </div>
                     <div>
                       <p className={`text-xs font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Total IRPJ</p>
-                      <p className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{formatCurrency(totaisFiscais.irpj)}</p>
+                      <p className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{formatCurrency(totaisFiscais.irpj)}</p>
                     </div>
                   </div>
                   <div className={`h-1 rounded-full overflow-hidden ${isDarkMode ? 'bg-slate-700' : 'bg-slate-100'}`}>
@@ -886,29 +886,29 @@ const Dashboard = () => {
                   </div>
                 </div>
 
-                <div className={`p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                <div className={`p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
                   <div className="flex items-center gap-4 mb-4">
-                    <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-cyan-900/30' : 'bg-cyan-50'}`}>
-                      <CircleDollarSign className={`w-6 h-6 ${isDarkMode ? 'text-cyan-400' : 'text-cyan-600'}`} />
+                    <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-slate-900/30' : 'bg-slate-50'}`}>
+                      <CircleDollarSign className={`w-6 h-6 ${isDarkMode ? 'text-teal-500' : 'text-teal-700'}`} />
                     </div>
                     <div>
                       <p className={`text-xs font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Total CSLL</p>
-                      <p className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{formatCurrency(totaisFiscais.csll)}</p>
+                      <p className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{formatCurrency(totaisFiscais.csll)}</p>
                     </div>
                   </div>
                   <div className={`h-1 rounded-full overflow-hidden ${isDarkMode ? 'bg-slate-700' : 'bg-slate-100'}`}>
-                    <div className="h-full bg-cyan-500 rounded-full" style={{ width: '30%' }} />
+                    <div className="h-full bg-slate-500 rounded-full" style={{ width: '30%' }} />
                   </div>
                 </div>
 
-                <div className="bg-[#0e4f6d] p-6 rounded-2xl text-white shadow-lg">
+                <div className="bg-[#0e4f6d] p-6 rounded-xl text-white shadow-md">
                   <div className="flex items-center gap-4 mb-4">
                     <div className="p-3 bg-white/10 rounded-xl">
                       <Wallet className="w-6 h-6" />
                     </div>
                     <div>
                       <p className="text-xs font-bold text-white/60 uppercase">Carga Total</p>
-                      <p className="text-2xl font-black">{formatCurrency(totaisFiscais.cargaTributariaTotal)}</p>
+                      <p className="text-2xl font-bold">{formatCurrency(totaisFiscais.cargaTributariaTotal)}</p>
                     </div>
                   </div>
                   <p className="text-sm text-white/70">Carga tributaria do exercicio</p>
@@ -929,7 +929,7 @@ const Dashboard = () => {
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Gráfico de Rosca - Faturamento por Categoria */}
-                <div className={`p-6 rounded-3xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                <div className={`p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
                   <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
                     Por Categoria
                   </h3>
@@ -946,7 +946,7 @@ const Dashboard = () => {
                 </div>
 
                 {/* Gráfico de Barras - Faturamento por Trimestre */}
-                <div className={`lg:col-span-2 p-6 rounded-3xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                <div className={`lg:col-span-2 p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
@@ -995,7 +995,7 @@ const Dashboard = () => {
 
               {/* Tabela de Acumuladores */}
               {temDadosFiscais && dadosFiscaisImportados?.resumoAcumulador && (
-                <div className={`mt-6 rounded-3xl shadow-sm overflow-hidden ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                <div className={`mt-6 rounded-xl shadow-sm overflow-hidden ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
                   <div className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
                     <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
                       Principais Acumuladores - Entradas
@@ -1012,8 +1012,8 @@ const Dashboard = () => {
             {/* ===== SEÇÃO SITUAÇÃO FISCAL ===== */}
             <section className={`transition-all duration-500 delay-300 ${cardAnimation}`}>
               <div className="flex items-center gap-3 mb-6">
-                <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-indigo-900/50' : 'bg-indigo-100'}`}>
-                  <Receipt className={`w-5 h-5 ${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'}`} />
+                <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-slate-900/50' : 'bg-slate-100'}`}>
+                  <Receipt className={`w-5 h-5 ${isDarkMode ? 'text-slate-500' : 'text-slate-700'}`} />
                 </div>
                 <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
                   Situacao Fiscal
@@ -1022,7 +1022,7 @@ const Dashboard = () => {
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Gráfico de Barras Verticais - Impostos por Período */}
-                <div className={`p-6 rounded-3xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                <div className={`p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
@@ -1067,7 +1067,7 @@ const Dashboard = () => {
                 </div>
 
                 {/* Gráfico de Barras Horizontais - Por Tipo de Imposto (Consolidado) */}
-                <div className={`p-6 rounded-3xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                <div className={`p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
                   <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
                     Por Tipo de Imposto
                   </h3>
@@ -1090,8 +1090,8 @@ const Dashboard = () => {
             {/* ===== SEÇÃO COMPARATIVO 380 ===== */}
             <section className={`transition-all duration-500 delay-400 ${cardAnimation}`}>
               <div className="flex items-center gap-3 mb-6">
-                <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-purple-900/50' : 'bg-purple-100'}`}>
-                  <Scale className={`w-5 h-5 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`} />
+                <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-slate-900/50' : 'bg-slate-100'}`}>
+                  <Scale className={`w-5 h-5 ${isDarkMode ? 'text-slate-500' : 'text-slate-700'}`} />
                 </div>
                 <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
                   Comparativo 380
@@ -1100,7 +1100,7 @@ const Dashboard = () => {
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Gráfico de Rosca - Compra vs Venda */}
-                <div className={`p-6 rounded-3xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                <div className={`p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
                   <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
                     Compra vs Venda
                   </h3>
@@ -1117,7 +1117,7 @@ const Dashboard = () => {
                 </div>
 
                 {/* Gráfico de Barras Horizontais - Detalhamento */}
-                <div className={`p-6 rounded-3xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                <div className={`p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
                   <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
                     Por Categoria
                   </h3>
@@ -1136,7 +1136,7 @@ const Dashboard = () => {
 
               {/* Tabela 380 */}
               {temDadosFiscais && dadosFiscaisImportados?.resumoAcumulador && (
-                <div className={`mt-6 rounded-3xl shadow-sm overflow-hidden ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                <div className={`mt-6 rounded-xl shadow-sm overflow-hidden ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
                   <div className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
                     <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
                       Calculo 380
@@ -1153,7 +1153,7 @@ const Dashboard = () => {
               )}
 
               {/* Gráfico de Rosca - Situação 380 */}
-              <div className={`mt-6 p-6 rounded-3xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+              <div className={`mt-6 p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
                 <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
                   Situacao 380
                 </h3>
@@ -1171,7 +1171,7 @@ const Dashboard = () => {
                     )}
                   </div>
                   {temDadosFiscais && dadosFiscaisImportados?.resumoAcumulador && (
-                    <div className={`p-6 rounded-2xl ${isDarkMode ? 'bg-slate-700/50' : 'bg-slate-50'}`}>
+                    <div className={`p-6 rounded-xl ${isDarkMode ? 'bg-slate-700/50' : 'bg-slate-50'}`}>
                       <h4 className={`text-sm font-bold mb-4 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>Resumo da Situacao</h4>
                       <div className="space-y-3">
                         <div className="flex justify-between items-center">
@@ -1213,7 +1213,7 @@ const Dashboard = () => {
 
             {/* Fluxo Fiscal - mantido para compatibilidade */}
             {!temDadosFiscais && (
-              <div className={`p-8 rounded-3xl shadow-sm transition-all duration-500 delay-500 ${cardAnimation} ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+              <div className={`p-8 rounded-xl shadow-sm transition-all duration-500 delay-500 ${cardAnimation} ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
                 <div className="flex items-center justify-between mb-8">
                   <div>
                     <h3 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Operacoes Mensais</h3>
@@ -1228,9 +1228,9 @@ const Dashboard = () => {
             )}
 
             {/* Card de análise */}
-            <div className={`bg-indigo-600 p-8 rounded-3xl text-white shadow-xl transition-all duration-500 delay-600 ${cardAnimation}`}>
+            <div className={`bg-slate-700 p-8 rounded-xl text-white shadow-md transition-all duration-500 delay-600 ${cardAnimation}`}>
               <div className="flex items-start gap-6">
-                <div className="p-4 bg-white/10 rounded-2xl backdrop-blur-sm">
+                <div className="p-4 bg-white/10 rounded-xl backdrop-blur-sm">
                   <Award className="w-8 h-8" />
                 </div>
                 <div>
@@ -1271,7 +1271,7 @@ const Dashboard = () => {
                     Departamento Pessoal
                   </span>
                 </div>
-                <h1 className={`text-4xl font-extrabold mb-1 ${isDarkMode ? 'text-white' : 'text-[#1e293b]'}`}>
+                <h1 className={`text-4xl font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-[#1e293b]'}`}>
                   Gestao de Pessoas
                 </h1>
                 <p className={`text-lg font-medium ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>
@@ -1312,7 +1312,7 @@ const Dashboard = () => {
                 {/* Graficos FGTS */}
                 {dadosPessoalImportados?.fgts && (
                   <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 transition-all duration-500 delay-200 ${cardAnimation}`}>
-                    <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm`}>
+                    <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}>
                       <div className="flex items-center justify-between mb-6">
                         <div>
                           <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>FGTS por Tipo</h3>
@@ -1325,7 +1325,7 @@ const Dashboard = () => {
                       <FGTSPorTipoChart dados={dadosPessoalImportados.fgts} />
                     </div>
 
-                    <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm`}>
+                    <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}>
                       <div className="flex items-center justify-between mb-6">
                         <div>
                           <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>FGTS Ultimos 3 Meses</h3>
@@ -1343,7 +1343,7 @@ const Dashboard = () => {
                 {/* FGTS Mensal + Por Ano */}
                 {dadosPessoalImportados?.fgts && (
                   <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 transition-all duration-500 delay-300 ${cardAnimation}`}>
-                    <div className={`md:col-span-2 ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm`}>
+                    <div className={`md:col-span-2 ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}>
                       <div className="flex items-center justify-between mb-6">
                         <div>
                           <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>FGTS Mes a Mes</h3>
@@ -1353,7 +1353,7 @@ const Dashboard = () => {
                       <FGTSMensalChart dados={dadosPessoalImportados.fgts} />
                     </div>
 
-                    <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm`}>
+                    <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}>
                       <div className="flex items-center justify-between mb-6">
                         <div>
                           <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>FGTS por Ano</h3>
@@ -1368,20 +1368,20 @@ const Dashboard = () => {
                 {/* Graficos INSS */}
                 {dadosPessoalImportados?.inss && (
                   <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 transition-all duration-500 delay-400 ${cardAnimation}`}>
-                    <div className={`md:col-span-2 ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm`}>
+                    <div className={`md:col-span-2 ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}>
                       <div className="flex items-center justify-between mb-6">
                         <div>
                           <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>INSS por Empresa</h3>
                           <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Distribuicao por empresa</p>
                         </div>
-                        <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-purple-900/30' : 'bg-purple-50'}`}>
-                          <BarChartHorizontal className={`w-6 h-6 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`} />
+                        <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-slate-900/30' : 'bg-slate-50'}`}>
+                          <BarChartHorizontal className={`w-6 h-6 ${isDarkMode ? 'text-slate-500' : 'text-slate-700'}`} />
                         </div>
                       </div>
                       <INSSPorEmpresaChart dados={dadosPessoalImportados.inss} />
                     </div>
 
-                    <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm`}>
+                    <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}>
                       <div className="flex items-center justify-between mb-6">
                         <div>
                           <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Tipo de Guia</h3>
@@ -1395,7 +1395,7 @@ const Dashboard = () => {
 
                 {/* INSS Mensal */}
                 {dadosPessoalImportados?.inss && (
-                  <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm transition-all duration-500 delay-500 ${cardAnimation}`}>
+                  <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm transition-all duration-500 delay-500 ${cardAnimation}`}>
                     <div className="flex items-center justify-between mb-6">
                       <div>
                         <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>INSS Mes a Mes</h3>
@@ -1410,7 +1410,7 @@ const Dashboard = () => {
                 {(dadosPessoalImportados?.empregados || dadosPessoalImportados?.salarioBase) && (
                   <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 transition-all duration-500 delay-600 ${cardAnimation}`}>
                     {dadosPessoalImportados?.empregados && (
-                      <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm`}>
+                      <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}>
                         <div className="flex items-center justify-between mb-6">
                           <div>
                             <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Admissoes e Demissoes</h3>
@@ -1425,7 +1425,7 @@ const Dashboard = () => {
                     )}
 
                     {dadosPessoalImportados?.empregados && (
-                      <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm`}>
+                      <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}>
                         <div className="flex items-center justify-between mb-6">
                           <div>
                             <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Por Situacao</h3>
@@ -1443,14 +1443,14 @@ const Dashboard = () => {
 
                 {/* Salario por Cargo */}
                 {dadosPessoalImportados?.salarioBase && (
-                  <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm transition-all duration-500 delay-700 ${cardAnimation}`}>
+                  <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm transition-all duration-500 delay-700 ${cardAnimation}`}>
                     <div className="flex items-center justify-between mb-6">
                       <div>
                         <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Salario Medio por Cargo</h3>
                         <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Top 10 cargos por salario</p>
                       </div>
                       <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-emerald-900/30' : 'bg-emerald-50'}`}>
-                        <Banknote className={`w-6 h-6 ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
+                        <Banknote className={`w-6 h-6 ${isDarkMode ? 'text-emerald-700' : 'text-emerald-700'}`} />
                       </div>
                     </div>
                     <SalarioPorCargoChart dados={dadosPessoalImportados.salarioBase} />
@@ -1459,7 +1459,7 @@ const Dashboard = () => {
 
                 {/* Tabela de Ferias */}
                 {dadosPessoalImportados?.ferias && (
-                  <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} rounded-3xl border shadow-sm overflow-hidden transition-all duration-500 delay-800 ${cardAnimation}`}>
+                  <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} rounded-xl border shadow-sm overflow-hidden transition-all duration-500 delay-800 ${cardAnimation}`}>
                     <div className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'} flex items-center justify-between`}>
                       <div>
                         <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Programacao de Ferias</h3>
@@ -1478,44 +1478,44 @@ const Dashboard = () => {
               <>
                 {/* Cards de metricas vazias */}
                 <div className={`grid grid-cols-1 md:grid-cols-4 gap-4 transition-all duration-500 delay-100 ${cardAnimation}`}>
-                  <div className="bg-cyan-600 p-6 rounded-2xl text-white shadow-lg">
+                  <div className="bg-teal-700 p-6 rounded-xl text-white shadow-md">
                     <div className="flex items-center justify-between mb-4">
                       <Users className="w-8 h-8 opacity-80" />
                       <span className="text-xs font-bold bg-white/20 px-3 py-1 rounded-full">
                         Ativos
                       </span>
                     </div>
-                    <p className="text-3xl font-black">-</p>
+                    <p className="text-3xl font-bold">-</p>
                     <p className="text-white/70 text-sm mt-1">Colaboradores</p>
                   </div>
 
-                  <div className="bg-emerald-600 p-6 rounded-2xl text-white shadow-lg">
+                  <div className="bg-emerald-700 p-6 rounded-xl text-white shadow-md">
                     <div className="flex items-center justify-between mb-4">
                       <Banknote className="w-8 h-8 opacity-80" />
                     </div>
-                    <p className="text-3xl font-black">-</p>
+                    <p className="text-3xl font-bold">-</p>
                     <p className="text-white/70 text-sm mt-1">Folha Salarial</p>
                   </div>
 
-                  <div className="bg-indigo-600 p-6 rounded-2xl text-white shadow-lg">
+                  <div className="bg-slate-700 p-6 rounded-xl text-white shadow-md">
                     <div className="flex items-center justify-between mb-4">
                       <Receipt className="w-8 h-8 opacity-80" />
                     </div>
-                    <p className="text-3xl font-black">-</p>
+                    <p className="text-3xl font-bold">-</p>
                     <p className="text-white/70 text-sm mt-1">Total FGTS</p>
                   </div>
 
-                  <div className="bg-purple-600 p-6 rounded-2xl text-white shadow-lg">
+                  <div className="bg-slate-700 p-6 rounded-xl text-white shadow-md">
                     <div className="flex items-center justify-between mb-4">
                       <Award className="w-8 h-8 opacity-80" />
                     </div>
-                    <p className="text-3xl font-black">-</p>
+                    <p className="text-3xl font-bold">-</p>
                     <p className="text-white/70 text-sm mt-1">Total INSS</p>
                   </div>
                 </div>
 
                 {/* Aviso para importar dados */}
-                <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-12 rounded-3xl border shadow-sm text-center transition-all duration-500 delay-200 ${cardAnimation}`}>
+                <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-12 rounded-xl border shadow-sm text-center transition-all duration-500 delay-200 ${cardAnimation}`}>
                   <div className={`w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center ${isDarkMode ? 'bg-teal-900/30' : 'bg-teal-50'}`}>
                     <Upload className={`w-10 h-10 ${isDarkMode ? 'text-teal-400' : 'text-teal-600'}`} />
                   </div>
@@ -1544,7 +1544,7 @@ const Dashboard = () => {
 
                 {/* Graficos placeholder */}
                 <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 transition-all duration-500 delay-300 ${cardAnimation}`}>
-                  <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm`}>
+                  <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}>
                     <div className="flex items-center justify-between mb-6">
                       <div>
                         <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>FGTS por Tipo</h3>
@@ -1554,7 +1554,7 @@ const Dashboard = () => {
                     <FGTSPorTipoChart dados={null} />
                   </div>
 
-                  <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm`}>
+                  <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}>
                     <div className="flex items-center justify-between mb-6">
                       <div>
                         <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>INSS por Empresa</h3>
@@ -1566,7 +1566,7 @@ const Dashboard = () => {
                 </div>
 
                 <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 transition-all duration-500 delay-400 ${cardAnimation}`}>
-                  <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm`}>
+                  <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}>
                     <div className="flex items-center justify-between mb-6">
                       <div>
                         <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Admissoes e Demissoes</h3>
@@ -1576,7 +1576,7 @@ const Dashboard = () => {
                     <AdmissoesDemissoesChart dados={null} />
                   </div>
 
-                  <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-3xl border shadow-sm`}>
+                  <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}>
                     <div className="flex items-center justify-between mb-6">
                       <div>
                         <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Salario por Cargo</h3>
@@ -1590,9 +1590,9 @@ const Dashboard = () => {
             )}
 
             {/* Card de resumo */}
-            <div className={`bg-cyan-600 p-8 rounded-3xl text-white shadow-xl transition-all duration-500 delay-500 ${cardAnimation}`}>
+            <div className={`bg-teal-700 p-8 rounded-xl text-white shadow-md transition-all duration-500 delay-500 ${cardAnimation}`}>
               <div className="flex items-start gap-6">
-                <div className="p-4 bg-white/10 rounded-2xl backdrop-blur-sm">
+                <div className="p-4 bg-white/10 rounded-xl backdrop-blur-sm">
                   <UserCheck className="w-8 h-8" />
                 </div>
                 <div>
@@ -1631,7 +1631,7 @@ const Dashboard = () => {
                     Setor Administrativo
                   </span>
                 </div>
-                <h1 className="text-4xl font-extrabold text-[#1e293b] mb-1">
+                <h1 className="text-4xl font-semibold text-[#1e293b] mb-1">
                   Gestão Administrativa
                 </h1>
                 <p className="text-lg text-slate-400 font-medium">
@@ -1658,44 +1658,44 @@ const Dashboard = () => {
 
             {/* Cards de métricas principais */}
             <div className={`grid grid-cols-1 md:grid-cols-4 gap-4 transition-all duration-500 delay-100 ${cardAnimation}`}>
-              <div className="bg-amber-600 p-6 rounded-2xl text-white shadow-lg">
+              <div className="bg-amber-600 p-6 rounded-xl text-white shadow-md">
                 <div className="flex items-center justify-between mb-4">
                   <ScrollText className="w-8 h-8 opacity-80" />
                   <span className="text-xs font-bold bg-white/20 px-3 py-1 rounded-full">
                     Vigentes
                   </span>
                 </div>
-                <p className="text-3xl font-black">{administrativoData.contratos.vigentes}</p>
+                <p className="text-3xl font-bold">{administrativoData.contratos.vigentes}</p>
                 <p className="text-white/70 text-sm mt-1">Contratos Ativos</p>
               </div>
 
-              <div className="bg-indigo-600 p-6 rounded-2xl text-white shadow-lg">
+              <div className="bg-slate-700 p-6 rounded-xl text-white shadow-md">
                 <div className="flex items-center justify-between mb-4">
                   <Wallet className="w-8 h-8 opacity-80" />
                 </div>
-                <p className="text-3xl font-black">{formatCurrency(administrativoData.indicadores.custoOperacional)}</p>
+                <p className="text-3xl font-bold">{formatCurrency(administrativoData.indicadores.custoOperacional)}</p>
                 <p className="text-white/70 text-sm mt-1">Custo Operacional/Mês</p>
               </div>
 
-              <div className="bg-emerald-600 p-6 rounded-2xl text-white shadow-lg">
+              <div className="bg-emerald-700 p-6 rounded-xl text-white shadow-md">
                 <div className="flex items-center justify-between mb-4">
                   <FileCheck className="w-8 h-8 opacity-80" />
                 </div>
-                <p className="text-3xl font-black">{administrativoData.certidoes.filter(c => c.status === 'Válida').length}</p>
+                <p className="text-3xl font-bold">{administrativoData.certidoes.filter(c => c.status === 'Válida').length}</p>
                 <p className="text-white/70 text-sm mt-1">Certidões Válidas</p>
               </div>
 
-              <div className="bg-red-600 p-6 rounded-2xl text-white shadow-lg">
+              <div className="bg-red-600 p-6 rounded-xl text-white shadow-md">
                 <div className="flex items-center justify-between mb-4">
                   <AlertTriangle className="w-8 h-8 opacity-80" />
                 </div>
-                <p className="text-3xl font-black">{administrativoData.contratos.vencendo30dias}</p>
+                <p className="text-3xl font-bold">{administrativoData.contratos.vencendo30dias}</p>
                 <p className="text-white/70 text-sm mt-1">Vencendo em 30 dias</p>
               </div>
             </div>
 
             {/* Gráfico de Despesas Mensais */}
-            <div className={`bg-white p-8 rounded-3xl border border-slate-100 shadow-sm transition-all duration-500 delay-200 ${cardAnimation}`}>
+            <div className={`bg-white p-8 rounded-xl border border-slate-100 shadow-sm transition-all duration-500 delay-200 ${cardAnimation}`}>
               <div className="flex items-center justify-between mb-8">
                 <div>
                   <h3 className="text-xl font-bold text-slate-800">Despesas Administrativas</h3>
@@ -1711,7 +1711,7 @@ const Dashboard = () => {
             {/* Grid: Despesas por Categoria e Indicadores */}
             <div className={`grid grid-cols-1 lg:grid-cols-2 gap-6 transition-all duration-500 delay-300 ${cardAnimation}`}>
               {/* Despesas por Categoria */}
-              <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
+              <div className="bg-white p-8 rounded-xl border border-slate-100 shadow-sm">
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h3 className="text-lg font-bold text-slate-800">Despesas por Categoria</h3>
@@ -1725,7 +1725,7 @@ const Dashboard = () => {
               </div>
 
               {/* Indicadores */}
-              <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
+              <div className="bg-white p-8 rounded-xl border border-slate-100 shadow-sm">
                 <h3 className="text-lg font-bold text-slate-800 mb-6 pb-4 border-b border-slate-100">
                   Indicadores Operacionais
                 </h3>
@@ -1782,7 +1782,7 @@ const Dashboard = () => {
             </div>
 
             {/* Tabela de Certidões */}
-            <div className={`bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden transition-all duration-500 delay-400 ${cardAnimation}`}>
+            <div className={`bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden transition-all duration-500 delay-400 ${cardAnimation}`}>
               <div className="p-6 border-b border-slate-100 flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-bold text-slate-800">Certidões e Documentos</h3>
@@ -1835,7 +1835,7 @@ const Dashboard = () => {
             </div>
 
             {/* Tabela de Contratos */}
-            <div className={`bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden transition-all duration-500 delay-500 ${cardAnimation}`}>
+            <div className={`bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden transition-all duration-500 delay-500 ${cardAnimation}`}>
               <div className="p-6 border-b border-slate-100 flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-bold text-slate-800">Contratos Ativos</h3>
@@ -1902,9 +1902,9 @@ const Dashboard = () => {
             </div>
 
             {/* Card de informação */}
-            <div className={`bg-amber-600 p-8 rounded-3xl text-white shadow-xl transition-all duration-500 delay-600 ${cardAnimation}`}>
+            <div className={`bg-amber-600 p-8 rounded-xl text-white shadow-md transition-all duration-500 delay-600 ${cardAnimation}`}>
               <div className="flex items-start gap-6">
-                <div className="p-4 bg-white/10 rounded-2xl backdrop-blur-sm">
+                <div className="p-4 bg-white/10 rounded-xl backdrop-blur-sm">
                   <Briefcase className="w-8 h-8" />
                 </div>
                 <div>

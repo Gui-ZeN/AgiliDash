@@ -149,7 +149,7 @@ const ExportButton = ({
       label: 'Exportar Excel',
       icon: FileSpreadsheet,
       onClick: exportToExcel,
-      color: 'text-emerald-500'
+      color: 'text-emerald-700'
     },
     {
       id: 'csv',
@@ -177,7 +177,7 @@ const ExportButton = ({
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden">
+        <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-md z-50 overflow-hidden">
           {options.map((option) => (
             <button
               key={option.id}

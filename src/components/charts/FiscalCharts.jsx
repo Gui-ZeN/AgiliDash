@@ -1172,7 +1172,7 @@ export const Tabela380 = ({ dados, dadosMensais }) => {
               <td className={`px-4 py-3 text-right ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`}>
                 {formatCurrency(resumo.esperado)}
               </td>
-              <td className={`px-4 py-3 text-right ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`}>
+              <td className={`px-4 py-3 text-right ${isDarkMode ? 'text-slate-500' : 'text-slate-700'}`}>
                 {formatCurrency(resumo.receitaComplementar)}
               </td>
               <td className="px-4 py-3 text-center">
@@ -1223,43 +1223,43 @@ export const CardsMetricasFiscais = ({ dados, dadosImpostos }) => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <div className="bg-emerald-600 p-6 rounded-2xl text-white shadow-lg">
+      <div className="bg-emerald-700 p-6 rounded-xl text-white shadow-md">
         <div className="flex items-center justify-between mb-4">
           <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
           </svg>
         </div>
-        <p className="text-3xl font-black">{formatCurrency(metricas.totalEntradas)}</p>
+        <p className="text-3xl font-bold">{formatCurrency(metricas.totalEntradas)}</p>
         <p className="text-white/70 text-sm mt-1">Total Entradas</p>
       </div>
 
-      <div className="bg-red-600 p-6 rounded-2xl text-white shadow-lg">
+      <div className="bg-red-600 p-6 rounded-xl text-white shadow-md">
         <div className="flex items-center justify-between mb-4">
           <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16V4m0 0l4 4m-4-4l-4 4M7 8v12m0 0l-4-4m4 4l4-4" />
           </svg>
         </div>
-        <p className="text-3xl font-black">{formatCurrency(metricas.totalSaidas)}</p>
+        <p className="text-3xl font-bold">{formatCurrency(metricas.totalSaidas)}</p>
         <p className="text-white/70 text-sm mt-1">Total Saídas</p>
       </div>
 
-      <div className="bg-[#0e4f6d] p-6 rounded-2xl text-white shadow-lg">
+      <div className="bg-[#0e4f6d] p-6 rounded-xl text-white shadow-md">
         <div className="flex items-center justify-between mb-4">
           <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
           </svg>
         </div>
-        <p className="text-3xl font-black">{formatCurrency(metricas.totalImpostos)}</p>
+        <p className="text-3xl font-bold">{formatCurrency(metricas.totalImpostos)}</p>
         <p className="text-white/70 text-sm mt-1">Impostos a Recolher</p>
       </div>
 
-      <div className={`${metricas.saldo >= 0 ? 'bg-purple-600' : 'bg-orange-600'} p-6 rounded-2xl text-white shadow-lg`}>
+      <div className={`${metricas.saldo >= 0 ? 'bg-slate-700' : 'bg-orange-600'} p-6 rounded-xl text-white shadow-md`}>
         <div className="flex items-center justify-between mb-4">
           <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <p className="text-3xl font-black">{formatCurrency(metricas.saldo)}</p>
+        <p className="text-3xl font-bold">{formatCurrency(metricas.saldo)}</p>
         <p className="text-white/70 text-sm mt-1">Saldo (Ent. - Saí.)</p>
       </div>
     </div>

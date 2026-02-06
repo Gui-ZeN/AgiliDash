@@ -11,7 +11,7 @@ const TOAST_TYPES = {
     icon: CheckCircle,
     bgClass: 'bg-emerald-50 dark:bg-emerald-900/30',
     borderClass: 'border-emerald-200 dark:border-emerald-800',
-    iconClass: 'text-emerald-600 dark:text-emerald-400',
+    iconClass: 'text-emerald-700 dark:text-emerald-700',
     titleClass: 'text-emerald-800 dark:text-emerald-300'
   },
   error: {
@@ -46,7 +46,7 @@ const Toast = ({ id, type = 'info', title, message, onClose }) => {
 
   return (
     <div
-      className={`${config.bgClass} ${config.borderClass} border rounded-xl p-4 shadow-lg flex items-start gap-3 min-w-[320px] max-w-md animate-slide-in`}
+      className={`${config.bgClass} ${config.borderClass} border rounded-xl p-4 shadow-md flex items-start gap-3 min-w-[320px] max-w-md animate-slide-in`}
       role="alert"
       aria-live="polite"
     >

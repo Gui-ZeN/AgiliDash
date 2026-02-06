@@ -69,14 +69,14 @@ const Logs = () => {
 
   const getTypeColor = (type) => {
     const colors = {
-      [ActivityTypes.LOGIN]: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400',
+      [ActivityTypes.LOGIN]: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-700',
       [ActivityTypes.LOGOUT]: 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400',
       [ActivityTypes.VIEW]: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
       [ActivityTypes.CREATE]: 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
       [ActivityTypes.UPDATE]: 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400',
       [ActivityTypes.DELETE]: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400',
-      [ActivityTypes.EXPORT]: 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400',
-      [ActivityTypes.CONFIG_CHANGE]: 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400',
+      [ActivityTypes.EXPORT]: 'bg-slate-100 dark:bg-slate-900/30 text-slate-700 dark:text-slate-500',
+      [ActivityTypes.CONFIG_CHANGE]: 'bg-slate-100 dark:bg-slate-900/30 text-teal-700 dark:text-teal-500',
       [ActivityTypes.PERMISSION_CHANGE]: 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'
     };
     return colors[type] || 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400';
@@ -149,11 +149,11 @@ const Logs = () => {
         {stats && (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-100 dark:border-slate-700">
-              <p className="text-2xl font-bold text-[#0e4f6d] dark:text-cyan-400">{stats.total}</p>
+              <p className="text-2xl font-bold text-[#0e4f6d] dark:text-teal-500">{stats.total}</p>
               <p className="text-sm text-slate-500 dark:text-slate-400">Total de Logs</p>
             </div>
             <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-100 dark:border-slate-700">
-              <p className="text-2xl font-bold text-emerald-500">{stats.last24h}</p>
+              <p className="text-2xl font-bold text-emerald-700">{stats.last24h}</p>
               <p className="text-sm text-slate-500 dark:text-slate-400">Ultimas 24h</p>
             </div>
             <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-100 dark:border-slate-700">
@@ -257,7 +257,7 @@ const Logs = () => {
       {/* Modal Clear Confirm */}
       {clearConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl w-full max-w-md p-6">
             <div className="text-center">
               <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 mx-auto mb-4 flex items-center justify-center">
                 <Trash2 className="w-8 h-8 text-red-500" />

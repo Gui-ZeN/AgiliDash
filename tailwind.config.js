@@ -10,32 +10,98 @@ export default {
       colors: {
         primary: {
           DEFAULT: '#0e4f6d',
-          light: '#1e5466',
-          dark: '#0a3a4f',
+          50: '#f0f7fa',
+          100: '#daeef4',
+          200: '#b8dde9',
+          300: '#86c5d9',
+          400: '#4da5c1',
+          500: '#3189a6',
+          600: '#0e4f6d',
+          700: '#0a3d54',
+          800: '#0c3244',
+          900: '#0e2b39',
         },
         secondary: {
           DEFAULT: '#58a3a4',
-          light: '#6bb3b4',
-          dark: '#42878e',
+          50: '#f3f9f9',
+          100: '#e0f0f0',
+          200: '#c4e2e3',
+          300: '#9acccd',
+          400: '#68afb0',
+          500: '#58a3a4',
+          600: '#3d7f80',
+          700: '#346769',
+          800: '#2f5456',
+          900: '#2a474a',
         },
-        accent: {
-          cyan: '#06b6d4',
-          teal: '#2c6d7a',
+        // Cores neutras premium
+        neutral: {
+          50: '#fafafa',
+          100: '#f5f5f5',
+          200: '#e5e5e5',
+          300: '#d4d4d4',
+          400: '#a3a3a3',
+          500: '#737373',
+          600: '#525252',
+          700: '#404040',
+          800: '#262626',
+          900: '#171717',
         }
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+      },
+      fontSize: {
+        'xs': ['0.75rem', { lineHeight: '1rem', letterSpacing: '0.01em' }],
+        'sm': ['0.875rem', { lineHeight: '1.25rem', letterSpacing: '0.01em' }],
+        'base': ['1rem', { lineHeight: '1.5rem', letterSpacing: '-0.01em' }],
+        'lg': ['1.125rem', { lineHeight: '1.75rem', letterSpacing: '-0.01em' }],
+        'xl': ['1.25rem', { lineHeight: '1.75rem', letterSpacing: '-0.02em' }],
+        '2xl': ['1.5rem', { lineHeight: '2rem', letterSpacing: '-0.02em' }],
+        '3xl': ['1.875rem', { lineHeight: '2.25rem', letterSpacing: '-0.02em' }],
+        '4xl': ['2.25rem', { lineHeight: '2.5rem', letterSpacing: '-0.02em' }],
       },
       borderRadius: {
-        'card': '1rem',      // Cards padrão
-        'card-lg': '1.5rem', // Cards grandes
-        'card-xl': '2rem',   // Cards destaque
+        'sm': '0.25rem',
+        'DEFAULT': '0.375rem',
+        'md': '0.5rem',
+        'lg': '0.625rem',
+        'xl': '0.75rem',
+        '2xl': '1rem',
+        '3xl': '1.25rem',
       },
       boxShadow: {
-        'card': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)',
-        'card-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
-        'card-dark': '0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px -1px rgba(0, 0, 0, 0.3)',
-      }
+        'xs': '0 1px 2px 0 rgba(0, 0, 0, 0.03)',
+        'sm': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+        'DEFAULT': '0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.06)',
+        'md': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05)',
+        'lg': '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05)',
+        'xl': '0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05)',
+        'inner': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.03)',
+        'none': 'none',
+      },
+      spacing: {
+        '18': '4.5rem',
+        '88': '22rem',
+        '128': '32rem',
+      },
+      transitionDuration: {
+        '250': '250ms',
+      },
+      animation: {
+        'fade-in': 'fadeIn 0.2s ease-out',
+        'slide-up': 'slideUp 0.3s ease-out',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        slideUp: {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+      },
     },
   },
   plugins: [],

@@ -41,9 +41,9 @@ const AlertBanner = ({
       icon: CheckCircle,
       bg: 'bg-emerald-50 dark:bg-emerald-900/20',
       border: 'border-emerald-200 dark:border-emerald-800',
-      iconColor: 'text-emerald-500',
+      iconColor: 'text-emerald-700',
       titleColor: 'text-emerald-800 dark:text-emerald-300',
-      textColor: 'text-emerald-700 dark:text-emerald-400',
+      textColor: 'text-emerald-700 dark:text-emerald-700',
       buttonBg: 'bg-emerald-100 dark:bg-emerald-900/40 hover:bg-emerald-200 dark:hover:bg-emerald-800/60 text-emerald-800 dark:text-emerald-300'
     },
     info: {

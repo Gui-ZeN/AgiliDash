@@ -64,7 +64,7 @@ const PeriodFilter = ({
     <div className={`relative ${className}`} ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-[#0e4f6d] dark:hover:border-cyan-500 transition-colors"
+        className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-[#0e4f6d] dark:hover:border-slate-500 transition-colors"
       >
         <Calendar className="w-4 h-4 text-slate-400" />
         <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -74,7 +74,7 @@ const PeriodFilter = ({
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-80 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden">
+        <div className="absolute top-full left-0 mt-2 w-80 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-md z-50 overflow-hidden">
           {/* Tabs */}
           <div className="flex border-b border-slate-100 dark:border-slate-700">
             {['month', 'quarter', 'year'].map((type) => (
@@ -83,7 +83,7 @@ const PeriodFilter = ({
                 onClick={() => onChange?.({ ...value, type })}
                 className={`flex-1 py-2 text-xs font-semibold uppercase tracking-wide transition-colors ${
                   value.type === type
-                    ? 'text-[#0e4f6d] dark:text-cyan-400 border-b-2 border-[#0e4f6d] dark:border-cyan-400'
+                    ? 'text-[#0e4f6d] dark:text-teal-500 border-b-2 border-[#0e4f6d] dark:border-teal-500'
                     : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
                 }`}
               >
