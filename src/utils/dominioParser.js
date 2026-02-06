@@ -2209,45 +2209,53 @@ export const parseProgramacaoFerias = (csvContent) => {
         inicioGozo = possivelInicioGozo;
       }
 
-      // Extrair dias - procurar números entre 1-60 nas posições esperadas
-      // Dias direito (~28), gozados (~30), restantes (~32)
+      // Extrair dias - padrão do CSV: ...;DIAS_DIR;;DIAS_GOZ;;DIAS_REST;DATA_LIMITE;...
+      // O valor de Dias Restantes está ANTES da data de Limite p/ Gozo
       let diasDireito = 0;
       let diasGozados = 0;
       let diasRestantes = 0;
 
-      // Procurar em posições específicas primeiro
-      for (let j = 25; j < Math.min(35, cols.length); j++) {
-        const val = cols[j];
-        if (val && /^\d+$/.test(val)) {
-          const num = parseInt(val);
-          if (num >= 0 && num <= 60) {
-            if (diasDireito === 0 && num > 0) diasDireito = num;
-            else if (diasGozados === 0 && diasDireito > 0) diasGozados = num;
-            else if (diasRestantes === 0 && diasGozados >= 0) {
-              diasRestantes = num;
-              break;
-            }
-          }
+      // Encontrar índice do Limite p/ Gozo (última data válida)
+      let indiceLimiteGozo = -1;
+      for (let j = cols.length - 1; j >= 20; j--) {
+        if (cols[j] && /^\d{2}\/\d{2}\/\d{4}$/.test(cols[j])) {
+          indiceLimiteGozo = j;
+          break;
         }
       }
 
-      // Se não encontrou diasRestantes, calcular
-      if (diasRestantes === 0 && diasDireito > 0) {
-        diasRestantes = diasDireito - diasGozados;
-      }
-
-      // Também aceitar valores decimais como "2,5" ou "22,5"
-      if (diasDireito === 0) {
-        for (let j = 25; j < Math.min(35, cols.length); j++) {
+      if (indiceLimiteGozo > 0) {
+        // Procurar os 3 números ANTES do Limite p/ Gozo
+        // Padrão: ...;NUM1;;NUM2;;NUM3;DATA;...
+        const numerosAntes = [];
+        for (let j = indiceLimiteGozo - 1; j >= Math.max(0, indiceLimiteGozo - 10); j--) {
           const val = cols[j];
-          if (val && /^\d+[,\.]\d+$/.test(val)) {
-            const num = parseFloat(val.replace(',', '.'));
-            if (num > 0 && num <= 60) {
-              diasDireito = Math.ceil(num);
-              break;
-            }
+          if (val && /^\d+$/.test(val)) {
+            numerosAntes.unshift({ idx: j, val: parseInt(val) });
+          } else if (val && /^\d+[,\.]\d+$/.test(val)) {
+            numerosAntes.unshift({ idx: j, val: parseFloat(val.replace(',', '.')) });
           }
+          if (numerosAntes.length >= 3) break;
         }
+
+        // Atribuir valores baseado no padrão do Domínio
+        // O ÚLTIMO número antes da data é diasRestantes
+        // O número antes dele é diasGozados
+        // O primeiro é diasDireito (pode ser decimal como 2,5)
+        if (numerosAntes.length >= 1) {
+          diasRestantes = Math.round(numerosAntes[numerosAntes.length - 1].val);
+        }
+        if (numerosAntes.length >= 2) {
+          diasGozados = Math.round(numerosAntes[numerosAntes.length - 2].val);
+        }
+        if (numerosAntes.length >= 3) {
+          diasDireito = Math.round(numerosAntes[0].val);
+        }
+      }
+
+      // Se diasDireito não foi encontrado, usar diasRestantes como fallback
+      if (diasDireito === 0 && diasRestantes > 0) {
+        diasDireito = diasRestantes;
       }
 
       // Determinar status baseado nos dados

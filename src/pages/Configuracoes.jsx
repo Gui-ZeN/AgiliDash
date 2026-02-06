@@ -1618,7 +1618,7 @@ const Configuracoes = () => {
                       </div>
                       <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl">
                         <p className="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-2">Status das Ferias</p>
-                        <div className="grid grid-cols-3 gap-4 text-sm">
+                        <div className="grid grid-cols-4 gap-4 text-sm">
                           <div>
                             <p className="text-blue-600 dark:text-blue-400">Programadas</p>
                             <p className="font-bold text-blue-800 dark:text-blue-200">{importPreview.dadosParsed.feriasPorStatus?.programadas || 0}</p>
@@ -1630,6 +1630,10 @@ const Configuracoes = () => {
                           <div>
                             <p className="text-amber-600 dark:text-amber-400">Pendentes</p>
                             <p className="font-bold text-amber-800 dark:text-amber-200">{importPreview.dadosParsed.feriasPorStatus?.pendentes || 0}</p>
+                          </div>
+                          <div>
+                            <p className="text-red-600 dark:text-red-400">Vencidas</p>
+                            <p className="font-bold text-red-800 dark:text-red-200">{importPreview.dadosParsed.feriasPorStatus?.vencidas || 0}</p>
                           </div>
                         </div>
                       </div>
