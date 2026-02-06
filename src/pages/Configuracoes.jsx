@@ -555,16 +555,50 @@ const Configuracoes = () => {
           {/* Tab: Grupos */}
           {activeTab === 'grupos' && (
             <div>
+              {/* Guia Rápido - aparece quando há poucos grupos ou CNPJs */}
+              {grupos.length <= 1 && (
+                <div className="m-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-blue-100 dark:bg-blue-800 rounded-lg">
+                      <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">Como organizar seus dados</h3>
+                      <p className="text-sm text-blue-700 dark:text-blue-300 mb-3">Siga estes passos para configurar corretamente:</p>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex items-center gap-2">
+                          <span className="w-6 h-6 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-bold">1</span>
+                          <span className="text-blue-800 dark:text-blue-200"><strong>Crie um Grupo</strong> - agrupe empresas relacionadas (ex: "Holding XYZ")</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="w-6 h-6 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-bold">2</span>
+                          <span className="text-blue-800 dark:text-blue-200"><strong>Adicione CNPJs ao Grupo</strong> - clique no botão verde dentro do grupo</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="w-6 h-6 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-bold">3</span>
+                          <span className="text-blue-800 dark:text-blue-200"><strong>Importe Relatórios</strong> - vá na aba "Importar Dados" para enviar CSVs</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-                <div><h2 className="text-lg font-bold text-slate-800 dark:text-white">Grupos e CNPJs</h2><p className="text-sm text-slate-500">Crie grupos e vincule CNPJs</p></div>
-                <button onClick={handleAddGrupo} className="flex items-center gap-2 px-4 py-2 bg-[#0e4f6d] text-white rounded-lg hover:bg-[#0d4560]"><Plus className="w-4 h-4" />Novo Grupo</button>
+                <div><h2 className="text-lg font-bold text-slate-800 dark:text-white">Grupos e CNPJs</h2><p className="text-sm text-slate-500">Organize suas empresas em grupos para melhor gestão</p></div>
+                <button onClick={handleAddGrupo} className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition-colors"><Plus className="w-4 h-4" />Criar Novo Grupo</button>
               </div>
               <div className="divide-y divide-slate-100 dark:divide-slate-700">
                 {grupos.length === 0 ? (
                   <div className="p-12 text-center">
-                    <FolderTree className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                    <p className="text-slate-500 mb-4">Nenhum grupo cadastrado</p>
-                    <button onClick={handleAddGrupo} className="px-4 py-2 bg-[#0e4f6d] text-white rounded-lg">Criar Primeiro Grupo</button>
+                    <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <FolderTree className="w-8 h-8 text-slate-400" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-2">Comece criando um Grupo</h3>
+                    <p className="text-slate-500 mb-6 max-w-md mx-auto">Grupos servem para organizar empresas relacionadas. Por exemplo: "Grupo ABC" pode conter a matriz e todas as filiais.</p>
+                    <button onClick={handleAddGrupo} className="px-6 py-3 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition-colors font-medium">
+                      <Plus className="w-4 h-4 inline mr-2" />Criar Primeiro Grupo
+                    </button>
                   </div>
                 ) : grupos.map(grupo => {
                   const cnpjsDoGrupo = getCnpjsByGrupo(grupo.id);
@@ -582,18 +616,35 @@ const Configuracoes = () => {
                             <p className="text-xs text-slate-500">{cnpjsDoGrupo.length} CNPJ(s) | {grupo.descricao || 'Sem descricao'}</p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <button onClick={() => handleAddCnpj(grupo.id)} className="p-2 rounded-lg hover:bg-teal-50 dark:hover:bg-teal-900/30" title="Adicionar CNPJ"><Plus className="w-4 h-4 text-teal-600" /></button>
-                          <button onClick={() => handleEditGrupo(grupo)} className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"><Edit2 className="w-4 h-4 text-slate-500" /></button>
-                          <button onClick={() => handleDelete('Grupo', grupo)} className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30"><Trash2 className="w-4 h-4 text-red-500" /></button>
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => handleAddCnpj(grupo.id)} className="flex items-center gap-1.5 px-3 py-1.5 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 rounded-lg hover:bg-teal-100 dark:hover:bg-teal-900/50 transition-colors text-sm font-medium">
+                            <Plus className="w-4 h-4" />
+                            <span className="hidden sm:inline">Adicionar CNPJ</span>
+                          </button>
+                          <button onClick={() => handleEditGrupo(grupo)} className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" title="Editar grupo"><Edit2 className="w-4 h-4 text-slate-500" /></button>
+                          <button onClick={() => handleDelete('Grupo', grupo)} className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30" title="Excluir grupo"><Trash2 className="w-4 h-4 text-red-500" /></button>
                         </div>
                       </div>
                       {isExpanded && (
                         <div className="bg-slate-50/50 dark:bg-slate-900/50">
                           {cnpjsDoGrupo.length === 0 ? (
-                            <div className="p-4 pl-14 text-center">
-                              <p className="text-sm text-slate-500 mb-2">Nenhum CNPJ neste grupo</p>
-                              <button onClick={() => handleAddCnpj(grupo.id)} className="text-sm text-[#0e4f6d] hover:underline">+ Adicionar CNPJ</button>
+                            <div className="p-6 ml-6 border-l-4 border-dashed border-slate-200 dark:border-slate-700">
+                              <div className="flex items-start gap-4">
+                                <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
+                                  <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                                </div>
+                                <div>
+                                  <p className="font-medium text-slate-700 dark:text-slate-200 mb-1">Este grupo ainda não tem CNPJs</p>
+                                  <p className="text-sm text-slate-500 mb-3">Adicione os CNPJs das empresas que pertencem a este grupo.</p>
+                                  <button
+                                    onClick={() => handleAddCnpj(grupo.id)}
+                                    className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors text-sm font-medium"
+                                  >
+                                    <Building2 className="w-4 h-4" />
+                                    Cadastrar Primeiro CNPJ
+                                  </button>
+                                </div>
+                              </div>
                             </div>
                           ) : cnpjsDoGrupo.map(cnpj => (
                             <div key={cnpj.id} className="flex items-center justify-between p-4 pl-14 border-l-4 border-teal-200 dark:border-teal-800 ml-6 hover:bg-slate-100/50 dark:hover:bg-slate-700/30">
@@ -1660,23 +1711,33 @@ const Configuracoes = () => {
       {modalGrupo.open && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-slate-800 rounded-xl w-full max-w-md">
-            <div className="p-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-slate-800 dark:text-white">{modalGrupo.mode === 'add' ? 'Novo Grupo' : 'Editar Grupo'}</h2>
-              <button onClick={() => setModalGrupo({ open: false, mode: 'add', data: null })} className="p-2 rounded-lg hover:bg-slate-100"><X className="w-5 h-5 text-slate-500" /></button>
+            <div className="p-6 border-b border-slate-200 dark:border-slate-700">
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-xl font-bold text-slate-800 dark:text-white">{modalGrupo.mode === 'add' ? 'Criar Novo Grupo' : 'Editar Grupo'}</h2>
+                <button onClick={() => setModalGrupo({ open: false, mode: 'add', data: null })} className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"><X className="w-5 h-5 text-slate-500" /></button>
+              </div>
+              {modalGrupo.mode === 'add' && (
+                <p className="text-sm text-slate-500">Um grupo serve para organizar empresas relacionadas. Exemplo: "Holding ABC" agrupa a matriz e suas filiais.</p>
+              )}
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nome *</label>
-                <input type="text" value={formGrupo.nome} onChange={(e) => setFormGrupo({ ...formGrupo, nome: e.target.value })} placeholder="Nome do grupo" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-[#0e4f6d]" />
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nome do Grupo *</label>
+                <input type="text" value={formGrupo.nome} onChange={(e) => setFormGrupo({ ...formGrupo, nome: e.target.value })} placeholder="Ex: Grupo Empresarial XYZ" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-slate-400" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Descricao</label>
-                <textarea value={formGrupo.descricao} onChange={(e) => setFormGrupo({ ...formGrupo, descricao: e.target.value })} placeholder="Descricao..." rows={3} className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white outline-none resize-none" />
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Descrição (opcional)</label>
+                <textarea value={formGrupo.descricao} onChange={(e) => setFormGrupo({ ...formGrupo, descricao: e.target.value })} placeholder="Uma breve descrição do grupo..." rows={3} className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white outline-none resize-none" />
               </div>
             </div>
-            <div className="p-6 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3">
-              <button onClick={() => setModalGrupo({ open: false, mode: 'add', data: null })} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg">Cancelar</button>
-              <button onClick={handleSaveGrupo} disabled={!formGrupo.nome.trim()} className="flex items-center gap-2 px-4 py-2 bg-[#0e4f6d] text-white rounded-lg hover:bg-[#0d4560] disabled:opacity-50"><Save className="w-4 h-4" />Salvar</button>
+            <div className="p-6 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 rounded-b-xl">
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-slate-500">Após criar o grupo, você poderá adicionar CNPJs a ele.</p>
+                <div className="flex gap-3">
+                  <button onClick={() => setModalGrupo({ open: false, mode: 'add', data: null })} className="px-4 py-2 text-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">Cancelar</button>
+                  <button onClick={handleSaveGrupo} disabled={!formGrupo.nome.trim()} className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700 disabled:opacity-50 transition-colors"><Save className="w-4 h-4" />{modalGrupo.mode === 'add' ? 'Criar Grupo' : 'Salvar'}</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1686,9 +1747,14 @@ const Configuracoes = () => {
       {modalCnpj.open && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-slate-800 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-slate-800 dark:text-white">{modalCnpj.mode === 'add' ? 'Novo CNPJ' : 'Editar CNPJ'}</h2>
-              <button onClick={() => setModalCnpj({ open: false, mode: 'add', data: null, grupoId: null })} className="p-2 rounded-lg hover:bg-slate-100"><X className="w-5 h-5 text-slate-500" /></button>
+            <div className="p-6 border-b border-slate-200 dark:border-slate-700">
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-xl font-bold text-slate-800 dark:text-white">{modalCnpj.mode === 'add' ? 'Cadastrar CNPJ' : 'Editar CNPJ'}</h2>
+                <button onClick={() => setModalCnpj({ open: false, mode: 'add', data: null, grupoId: null })} className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"><X className="w-5 h-5 text-slate-500" /></button>
+              </div>
+              {modalCnpj.mode === 'add' && (
+                <p className="text-sm text-slate-500">Adicione os dados da empresa que será vinculada ao grupo <strong className="text-slate-700 dark:text-slate-300">{grupos.find(g => g.id === modalCnpj.grupoId)?.nome}</strong></p>
+              )}
             </div>
             <div className="p-6 grid grid-cols-2 gap-4">
               <div className="col-span-2"><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">CNPJ *</label><input type="text" value={formCnpj.cnpj} onChange={(e) => setFormCnpj({ ...formCnpj, cnpj: e.target.value })} placeholder="00.000.000/0000-00" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white outline-none" /></div>
