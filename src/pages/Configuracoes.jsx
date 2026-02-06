@@ -1071,6 +1071,198 @@ const Configuracoes = () => {
                     </div>
                   )}
 
+                  {/* ===== PREVIEWS FISCAIS ===== */}
+
+                  {/* Preview CSLL */}
+                  {importPreview.isDominioFormat && importPreview.tipoRelatorio === 'csll' && importPreview.dadosParsed && (
+                    <div className="space-y-6">
+                      <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl">
+                        <p className="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-1">
+                          Trimestre Selecionado: {selectedTrimestre}o Trimestre
+                        </p>
+                        <p className="text-xs text-blue-600 dark:text-blue-400">
+                          Arquivo indica: {importPreview.dadosParsed.trimestre || 'Nao identificado'}
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Base de Calculo</p>
+                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.dados?.baseCalculo || 0)}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">CSLL Devida (9%)</p>
+                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.dados?.csllDevida || 0)}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-red-500 to-rose-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">CSLL a Recolher</p>
+                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.dados?.csllRecolher || 0)}</p>
+                        </div>
+                      </div>
+                      <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+                        <table className="w-full text-sm">
+                          <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                            <tr><td className="px-4 py-2 text-slate-600 dark:text-slate-400">Lucro Liquido antes da CSLL</td><td className="px-4 py-2 text-right font-medium text-slate-800 dark:text-white">{formatCurrency(importPreview.dadosParsed.dados?.lucroLiquido || 0)}</td></tr>
+                            <tr><td className="px-4 py-2 text-slate-600 dark:text-slate-400">(-) Compensacao</td><td className="px-4 py-2 text-right font-medium text-red-600">{formatCurrency(importPreview.dadosParsed.dados?.compensacao || 0)}</td></tr>
+                            <tr><td className="px-4 py-2 text-slate-600 dark:text-slate-400">Valor a compensar proximo periodo</td><td className="px-4 py-2 text-right font-medium text-slate-800 dark:text-white">{formatCurrency(importPreview.dadosParsed.dados?.valorCompensarProximo || 0)}</td></tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Preview IRPJ */}
+                  {importPreview.isDominioFormat && importPreview.tipoRelatorio === 'irpj' && importPreview.dadosParsed && (
+                    <div className="space-y-6">
+                      <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl">
+                        <p className="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-1">
+                          Trimestre Selecionado: {selectedTrimestre}o Trimestre
+                        </p>
+                        <p className="text-xs text-blue-600 dark:text-blue-400">
+                          Arquivo indica: {importPreview.dadosParsed.trimestre || 'Nao identificado'}
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Base de Calculo</p>
+                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.dados?.baseCalculo || 0)}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">IRPJ (15%)</p>
+                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.dados?.irpjDevido || 0)}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-purple-500 to-violet-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Adicional (10%)</p>
+                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.dados?.adicionalIR || 0)}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-red-500 to-rose-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">IRPJ a Recolher</p>
+                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.dados?.irpjRecolher || 0)}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Preview Demonstrativo Mensal */}
+                  {importPreview.isDominioFormat && importPreview.tipoRelatorio === 'demonstrativoMensal' && importPreview.dadosParsed && (
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Total Entradas</p>
+                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totais2025?.entradas || 0)}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-red-500 to-rose-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Total Saidas</p>
+                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totais2025?.saidas || 0)}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Total Servicos</p>
+                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totais2025?.servicos || 0)}</p>
+                        </div>
+                      </div>
+                      <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+                        <div className="p-4 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
+                          <h3 className="font-semibold text-slate-800 dark:text-white">Movimentacao Mensal</h3>
+                        </div>
+                        <div className="overflow-x-auto max-h-60">
+                          <table className="w-full text-sm">
+                            <thead className="bg-slate-100 dark:bg-slate-800 sticky top-0">
+                              <tr>
+                                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500">Mes</th>
+                                <th className="px-3 py-2 text-right text-xs font-semibold text-slate-500">Entradas</th>
+                                <th className="px-3 py-2 text-right text-xs font-semibold text-slate-500">Saidas</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                              {importPreview.dadosParsed.movimentacao2025?.slice(0, 12).map((m, i) => (
+                                <tr key={i}>
+                                  <td className="px-3 py-2 font-medium text-slate-700 dark:text-slate-300">{m.mes}</td>
+                                  <td className="px-3 py-2 text-right text-green-600">{formatCurrency(m.entradas)}</td>
+                                  <td className="px-3 py-2 text-right text-red-600">{formatCurrency(m.saidas)}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Preview Resumo dos Impostos */}
+                  {importPreview.isDominioFormat && importPreview.tipoRelatorio === 'resumoImpostos' && importPreview.dadosParsed && (
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="bg-gradient-to-br from-[#0e4f6d] to-[#1a6b8a] p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Total Impostos a Recolher</p>
+                          <p className="text-2xl font-bold">
+                            {formatCurrency(Object.values(importPreview.dadosParsed.totaisPorImposto || {}).reduce((acc, i) => acc + (i.recolher || 0), 0))}
+                          </p>
+                        </div>
+                        <div className="bg-gradient-to-br from-purple-500 to-violet-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Periodos Importados</p>
+                          <p className="text-2xl font-bold">{Object.keys(importPreview.dadosParsed.impostosPorMes || {}).length} meses</p>
+                        </div>
+                      </div>
+                      <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+                        <div className="p-4 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
+                          <h3 className="font-semibold text-slate-800 dark:text-white">Totais por Tipo de Imposto</h3>
+                        </div>
+                        <table className="w-full text-sm">
+                          <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                            {Object.entries(importPreview.dadosParsed.totaisPorImposto || {}).map(([nome, valores]) => (
+                              <tr key={nome}>
+                                <td className="px-4 py-2 font-medium text-slate-700 dark:text-slate-300">{nome}</td>
+                                <td className="px-4 py-2 text-right text-red-600">{formatCurrency(valores.recolher || 0)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Preview Resumo por Acumulador */}
+                  {importPreview.isDominioFormat && importPreview.tipoRelatorio === 'resumoAcumulador' && importPreview.dadosParsed && (
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Total Entradas</p>
+                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totais?.entradas || 0)}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-red-500 to-rose-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Total Saidas</p>
+                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totais?.saidas || 0)}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Compra Comercializacao</p>
+                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.categorias?.compraComercializacao || 0)}</p>
+                        </div>
+                        <div className="bg-gradient-to-br from-purple-500 to-violet-600 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Venda Mercadoria</p>
+                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.categorias?.vendaMercadoria || 0)}</p>
+                        </div>
+                      </div>
+                      <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl">
+                        <p className="text-sm font-semibold text-amber-800 dark:text-amber-300 mb-2">Calculo 380</p>
+                        <div className="grid grid-cols-3 gap-4 text-sm">
+                          <div>
+                            <p className="text-amber-600 dark:text-amber-400">Esperado (Compra x 1.25)</p>
+                            <p className="font-bold text-amber-800 dark:text-amber-200">{formatCurrency(importPreview.dadosParsed.categorias?.esperado380 || 0)}</p>
+                          </div>
+                          <div>
+                            <p className="text-amber-600 dark:text-amber-400">Vendido</p>
+                            <p className="font-bold text-amber-800 dark:text-amber-200">{formatCurrency(importPreview.dadosParsed.categorias?.vendaMercadoria || 0)}</p>
+                          </div>
+                          <div>
+                            <p className="text-amber-600 dark:text-amber-400">Situacao</p>
+                            <p className={`font-bold ${(importPreview.dadosParsed.categorias?.vendaMercadoria || 0) >= (importPreview.dadosParsed.categorias?.esperado380 || 0) ? 'text-green-600' : 'text-red-600'}`}>
+                              {(importPreview.dadosParsed.categorias?.vendaMercadoria || 0) >= (importPreview.dadosParsed.categorias?.esperado380 || 0) ? 'OK' : 'Pendente'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Preview padrão para CSV normal */}
                   {!importPreview.isDominioFormat && importPreview.headers && (
                     <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden mb-6">
