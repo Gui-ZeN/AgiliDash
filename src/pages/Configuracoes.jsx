@@ -110,6 +110,137 @@ const Configuracoes = () => {
   const [importMapping, setImportMapping] = useState({});
   const [selectedCnpjImport, setSelectedCnpjImport] = useState('');
   const [selectedTrimestre, setSelectedTrimestre] = useState('1'); // Para CSLL/IRPJ
+  const [importBatchFiles, setImportBatchFiles] = useState([]); // Para importação em lote
+  const [importBatchProgress, setImportBatchProgress] = useState({ current: 0, total: 0, processing: false });
+
+  // Configuração de visibilidade de dashboards
+  const [selectedCnpjVisibilidade, setSelectedCnpjVisibilidade] = useState('');
+
+  // Estrutura de dashboards disponíveis
+  const DASHBOARD_SECTIONS = {
+    gerais: {
+      nome: 'Informações Gerais',
+      descricao: 'Dados cadastrais e equipe técnica',
+      itens: [
+        { id: 'header_empresa', nome: 'Header da Empresa', descricao: 'Informações básicas da empresa' },
+        { id: 'cards_resumo', nome: 'Cards de Resumo', descricao: 'Receita, Lucro, Margem, Meses Analisados' },
+        { id: 'responsavel', nome: 'Responsável', descricao: 'Card do responsável com WhatsApp' },
+        { id: 'equipe_tecnica', nome: 'Equipe Técnica', descricao: 'Cards da equipe contábil, fiscal, etc.' }
+      ]
+    },
+    contabil: {
+      nome: 'Setor Contábil',
+      descricao: 'Gráficos e indicadores contábeis',
+      itens: [
+        { id: 'grafico_dre', nome: 'Gráfico DRE', descricao: 'Receitas x Despesas x Lucro' },
+        { id: 'grafico_evolucao', nome: 'Evolução Receita/Despesa', descricao: 'Gráfico de linha temporal' },
+        { id: 'indicadores_balancete', nome: 'Indicadores do Balancete', descricao: 'Saldos de contas importantes' },
+        { id: 'tabela_dre', nome: 'Tabela DRE Detalhada', descricao: 'Detalhamento mensal do DRE' }
+      ]
+    },
+    fiscal: {
+      nome: 'Setor Fiscal',
+      descricao: 'Tributos e obrigações fiscais',
+      itens: [
+        { id: 'irpj_csll', nome: 'IRPJ e CSLL', descricao: 'Gráficos de Imposto de Renda e Contribuição Social' },
+        { id: 'faturamento', nome: 'Faturamento', descricao: 'Evolução do faturamento mensal' },
+        { id: 'distribuicao_impostos', nome: 'Distribuição de Impostos', descricao: 'Gráfico de distribuição tributária' },
+        { id: 'fluxo_fiscal', nome: 'Fluxo Fiscal', descricao: 'Entradas e saídas fiscais' }
+      ]
+    },
+    pessoal: {
+      nome: 'Setor Pessoal',
+      descricao: 'RH e folha de pagamento',
+      itens: [
+        { id: 'funcionarios', nome: 'Funcionários', descricao: 'Quantidade e distribuição de funcionários' },
+        { id: 'folha_pagamento', nome: 'Folha de Pagamento', descricao: 'Valores da folha mensal' },
+        { id: 'encargos', nome: 'Encargos Trabalhistas', descricao: 'FGTS, INSS, etc.' },
+        { id: 'ferias', nome: 'Programação de Férias', descricao: 'Calendário de férias' }
+      ]
+    },
+    administrativo: {
+      nome: 'Setor Administrativo',
+      descricao: 'Indicadores administrativos',
+      itens: [
+        { id: 'indicadores_admin', nome: 'Indicadores Gerais', descricao: 'KPIs administrativos' },
+        { id: 'graficos_admin', nome: 'Gráficos Administrativos', descricao: 'Análises administrativas' }
+      ]
+    }
+  };
+
+  // Carregar configurações de visibilidade do localStorage
+  const getVisibilidadeConfig = (cnpjId) => {
+    const saved = localStorage.getItem(`agili_visibilidade_${cnpjId}`);
+    if (saved) {
+      return JSON.parse(saved);
+    }
+    // Retorna tudo visível por padrão
+    const defaultConfig = {};
+    Object.keys(DASHBOARD_SECTIONS).forEach(secao => {
+      defaultConfig[secao] = { visivel: true, itens: {} };
+      DASHBOARD_SECTIONS[secao].itens.forEach(item => {
+        defaultConfig[secao].itens[item.id] = true;
+      });
+    });
+    return defaultConfig;
+  };
+
+  const [visibilidadeConfig, setVisibilidadeConfig] = useState(() => {
+    if (cnpjs.length > 0) {
+      return getVisibilidadeConfig(cnpjs[0].id);
+    }
+    return {};
+  });
+
+  // Atualizar configuração quando trocar de CNPJ
+  const handleCnpjVisibilidadeChange = (cnpjId) => {
+    setSelectedCnpjVisibilidade(cnpjId);
+    setVisibilidadeConfig(getVisibilidadeConfig(cnpjId));
+  };
+
+  // Salvar configuração de visibilidade
+  const saveVisibilidadeConfig = () => {
+    if (!selectedCnpjVisibilidade) return;
+    localStorage.setItem(`agili_visibilidade_${selectedCnpjVisibilidade}`, JSON.stringify(visibilidadeConfig));
+    showSuccess('Configuração de visibilidade salva com sucesso!');
+  };
+
+  // Toggle seção inteira
+  const toggleSecaoVisibilidade = (secao) => {
+    setVisibilidadeConfig(prev => {
+      const novoEstado = !prev[secao]?.visivel;
+      const novaConfig = { ...prev };
+      novaConfig[secao] = {
+        ...novaConfig[secao],
+        visivel: novoEstado,
+        itens: {}
+      };
+      // Se a seção foi habilitada, habilita todos os itens
+      DASHBOARD_SECTIONS[secao].itens.forEach(item => {
+        novaConfig[secao].itens[item.id] = novoEstado;
+      });
+      return novaConfig;
+    });
+  };
+
+  // Toggle item específico
+  const toggleItemVisibilidade = (secao, itemId) => {
+    setVisibilidadeConfig(prev => {
+      const novaConfig = { ...prev };
+      novaConfig[secao] = {
+        ...novaConfig[secao],
+        itens: {
+          ...novaConfig[secao]?.itens,
+          [itemId]: !novaConfig[secao]?.itens?.[itemId]
+        }
+      };
+      // Verificar se todos os itens estão desmarcados para desmarcar a seção
+      const todosItens = DASHBOARD_SECTIONS[secao].itens;
+      const algumVisivel = todosItens.some(item => novaConfig[secao].itens[item.id]);
+      novaConfig[secao].visivel = algumVisivel;
+      return novaConfig;
+    });
+  };
 
   // Helpers
   const toggleGrupo = (grupoId) => {
@@ -226,126 +357,110 @@ const Configuracoes = () => {
   // Verificar se relatorio eh trimestral (CSLL ou IRPJ)
   const isRelatorioTrimestral = importRelatorio === 'csll' || importRelatorio === 'irpj';
 
-  const handleFileSelect = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  // Função auxiliar para processar um único arquivo
+  const processarArquivo = (file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const text = event.target.result;
+        const isDominioFormat = importCategory === 'setores' && (importSetor === 'contabil' || importSetor === 'fiscal' || importSetor === 'pessoal');
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const text = event.target.result;
+        if (isDominioFormat) {
+          let dadosParsed = null;
+          let parseError = null;
 
-      // Verificar se e formato Dominio (setor contabil, fiscal ou pessoal) ou CSV normal
-      const isDominioFormat = importCategory === 'setores' && (importSetor === 'contabil' || importSetor === 'fiscal' || importSetor === 'pessoal');
-
-      if (isDominioFormat) {
-        // Para relatórios do Domínio, parsear os dados imediatamente para preview inteligente
-        let dadosParsed = null;
-        let parseError = null;
-
-        try {
-          // Parsers do setor Contábil
-          if (importSetor === 'contabil') {
-            switch (importRelatorio) {
-              case 'analiseHorizontal':
-                dadosParsed = parseAnaliseHorizontal(text);
-                break;
-              case 'balancete':
-                dadosParsed = parseBalancete(text);
-                break;
-              case 'dreComparativa':
-                dadosParsed = parseDREComparativa(text);
-                break;
-              case 'dreMensal':
-                dadosParsed = parseDREMensal(text);
-                break;
-              default:
-                parseError = 'Tipo de relatorio contabil nao reconhecido';
+          try {
+            if (importSetor === 'contabil') {
+              switch (importRelatorio) {
+                case 'analiseHorizontal': dadosParsed = parseAnaliseHorizontal(text); break;
+                case 'balancete': dadosParsed = parseBalancete(text); break;
+                case 'dreComparativa': dadosParsed = parseDREComparativa(text); break;
+                case 'dreMensal': dadosParsed = parseDREMensal(text); break;
+                default: parseError = 'Tipo de relatorio contabil nao reconhecido';
+              }
+            } else if (importSetor === 'fiscal') {
+              switch (importRelatorio) {
+                case 'csll': dadosParsed = parseContribuicaoSocial(text); break;
+                case 'irpj': dadosParsed = parseImpostoRenda(text); break;
+                case 'faturamento': dadosParsed = parseDemonstrativoFinanceiro(text); break;
+                case 'demonstrativoMensal': dadosParsed = parseDemonstrativoMensal(text); break;
+                case 'resumoImpostos': dadosParsed = parseResumoImpostos(text); break;
+                case 'resumoAcumulador': dadosParsed = parseResumoPorAcumulador(text); break;
+                default: parseError = 'Tipo de relatorio fiscal nao reconhecido';
+              }
+            } else if (importSetor === 'pessoal') {
+              switch (importRelatorio) {
+                case 'fgts': dadosParsed = parseDemonstrativoFGTS(text); break;
+                case 'inss': dadosParsed = parseFolhaINSS(text); break;
+                case 'empregados': dadosParsed = parseRelacaoEmpregados(text); break;
+                case 'salarioBase': dadosParsed = parseSalarioBase(text); break;
+                case 'ferias': dadosParsed = parseProgramacaoFerias(text); break;
+                default: parseError = 'Tipo de relatorio pessoal nao reconhecido';
+              }
             }
+          } catch (err) {
+            parseError = err.message;
+            console.error('Erro ao parsear arquivo:', err);
           }
-          // Parsers do setor Fiscal
-          else if (importSetor === 'fiscal') {
-            switch (importRelatorio) {
-              case 'csll':
-                dadosParsed = parseContribuicaoSocial(text);
-                break;
-              case 'irpj':
-                dadosParsed = parseImpostoRenda(text);
-                break;
-              case 'faturamento':
-                dadosParsed = parseDemonstrativoFinanceiro(text);
-                break;
-              case 'demonstrativoMensal':
-                dadosParsed = parseDemonstrativoMensal(text);
-                break;
-              case 'resumoImpostos':
-                dadosParsed = parseResumoImpostos(text);
-                break;
-              case 'resumoAcumulador':
-                dadosParsed = parseResumoPorAcumulador(text);
-                break;
-              default:
-                parseError = 'Tipo de relatorio fiscal nao reconhecido';
-            }
-          }
-          // Parsers do setor Pessoal
-          else if (importSetor === 'pessoal') {
-            switch (importRelatorio) {
-              case 'fgts':
-                dadosParsed = parseDemonstrativoFGTS(text);
-                break;
-              case 'inss':
-                dadosParsed = parseFolhaINSS(text);
-                break;
-              case 'empregados':
-                dadosParsed = parseRelacaoEmpregados(text);
-                break;
-              case 'salarioBase':
-                dadosParsed = parseSalarioBase(text);
-                break;
-              case 'ferias':
-                dadosParsed = parseProgramacaoFerias(text);
-                break;
-              default:
-                parseError = 'Tipo de relatorio pessoal nao reconhecido';
-            }
-          }
-        } catch (err) {
-          parseError = err.message;
-          console.error('Erro ao parsear arquivo:', err);
+
+          const lines = text.split('\n').filter(line => line.trim());
+          resolve({
+            file: file.name,
+            totalRows: lines.length,
+            rawContent: text,
+            isDominioFormat: true,
+            tipoRelatorio: importRelatorio,
+            setorRelatorio: importSetor,
+            dadosParsed,
+            parseError,
+            trimestreSelecionado: (importRelatorio === 'csll' || importRelatorio === 'irpj') ? selectedTrimestre : null
+          });
+        } else {
+          const lines = text.split('\n').filter(line => line.trim());
+          const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+          const data = lines.slice(1).map(line => {
+            const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
+            const obj = {};
+            headers.forEach((h, i) => obj[h] = values[i] || '');
+            return obj;
+          });
+
+          resolve({ headers, data, file: file.name, totalRows: data.length, isDominioFormat: false });
         }
+      };
+      reader.readAsText(file);
+    });
+  };
 
-        const lines = text.split('\n').filter(line => line.trim());
+  const handleFileSelect = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
 
-        setImportPreview({
-          file: file.name,
-          totalRows: lines.length,
-          rawContent: text,
-          isDominioFormat: true,
-          tipoRelatorio: importRelatorio,
-          setorRelatorio: importSetor,
-          dadosParsed,
-          parseError,
-          trimestreSelecionado: (importRelatorio === 'csll' || importRelatorio === 'irpj') ? selectedTrimestre : null
-        });
-        setImportStep(3);
-      } else {
-        // Formato CSV padrao (virgula)
-        const lines = text.split('\n').filter(line => line.trim());
-        const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-        const data = lines.slice(1).map(line => {
-          const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
-          const obj = {};
-          headers.forEach((h, i) => obj[h] = values[i] || '');
-          return obj;
-        });
+    // Importação em lote (múltiplos arquivos)
+    if (files.length > 1) {
+      setImportBatchProgress({ current: 0, total: files.length, processing: true });
+      const previews = [];
 
-        // Auto-mapping
+      for (let i = 0; i < files.length; i++) {
+        setImportBatchProgress({ current: i + 1, total: files.length, processing: true });
+        const preview = await processarArquivo(files[i]);
+        previews.push(preview);
+      }
+
+      setImportBatchFiles(previews);
+      setImportBatchProgress({ current: files.length, total: files.length, processing: false });
+      setImportStep(3);
+    } else {
+      // Arquivo único (comportamento original)
+      const preview = await processarArquivo(files[0]);
+
+      if (!preview.isDominioFormat) {
         const mapping = {};
         const expectedCampos = importCategory === 'setores' && importRelatorio
           ? SETORES_CONFIG[importSetor]?.relatorios.find(r => r.id === importRelatorio)?.campos || []
           : [];
 
-        headers.forEach(h => {
+        preview.headers?.forEach(h => {
           const lowerH = h.toLowerCase();
           expectedCampos.forEach(campo => {
             if (lowerH.includes(campo.toLowerCase()) || campo.toLowerCase().includes(lowerH)) {
@@ -353,13 +468,13 @@ const Configuracoes = () => {
             }
           });
         });
-
-        setImportPreview({ headers, data, file: file.name, totalRows: data.length });
         setImportMapping(mapping);
-        setImportStep(3);
       }
-    };
-    reader.readAsText(file);
+
+      setImportPreview(preview);
+      setImportBatchFiles([]); // Limpa batch ao importar arquivo único
+      setImportStep(3);
+    }
   };
 
   const handleImportConfirm = () => {
@@ -432,6 +547,54 @@ const Configuracoes = () => {
     }
   };
 
+  // Importação em lote (múltiplos arquivos)
+  const handleBatchImportConfirm = () => {
+    if (!importBatchFiles.length) return;
+
+    let successCount = 0;
+    let errorCount = 0;
+    const validFiles = importBatchFiles.filter(f => !f.parseError);
+
+    validFiles.forEach(preview => {
+      let result;
+
+      if (preview.isDominioFormat) {
+        if (importSetor === 'contabil') {
+          result = importarRelatorioContabil(selectedCnpjImport, importRelatorio, preview.rawContent);
+        } else if (importSetor === 'fiscal') {
+          const opcoes = (importRelatorio === 'csll' || importRelatorio === 'irpj')
+            ? { trimestre: preview.trimestreSelecionado || selectedTrimestre }
+            : {};
+          result = importarRelatorioFiscal(selectedCnpjImport, importRelatorio, preview.rawContent, opcoes);
+        } else if (importSetor === 'pessoal') {
+          result = importarRelatorioPessoal(selectedCnpjImport, importRelatorio, preview.rawContent);
+        }
+
+        if (result?.success) {
+          successCount++;
+        } else {
+          errorCount++;
+        }
+      } else {
+        // CSV padrão
+        const storageKey = `agili_import_${importSetor}_${importRelatorio}_${selectedCnpjImport}`;
+        const existingData = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        const newData = [...existingData, ...(preview.data || [])];
+        localStorage.setItem(storageKey, JSON.stringify(newData));
+        successCount++;
+      }
+    });
+
+    if (successCount > 0) {
+      const relatorioNome = SETORES_CONFIG[importSetor]?.relatorios.find(r => r.id === importRelatorio)?.nome || importRelatorio;
+      showSuccess(`${successCount} arquivo(s) de ${relatorioNome} importado(s) com sucesso!${errorCount > 0 ? ` (${errorCount} com erro)` : ''}`);
+      setImportStep(4);
+      setImportBatchFiles([]);
+    } else {
+      showSuccess('Erro: Nenhum arquivo foi importado');
+    }
+  };
+
   const downloadTemplate = () => {
     let content = '';
     let filename = '';
@@ -479,6 +642,7 @@ const Configuracoes = () => {
     { id: 'grupos', label: 'Grupos e CNPJs', icon: FolderTree },
     { id: 'usuarios', label: 'Usuarios', icon: Users },
     { id: 'importacao', label: 'Importacao', icon: Upload },
+    { id: 'visibilidade', label: 'Visibilidade', icon: Eye },
     { id: 'logs', label: 'Logs', icon: Activity, isLink: true }
   ];
 
@@ -922,7 +1086,7 @@ const Configuracoes = () => {
                     <FileSpreadsheet className="w-16 h-16 text-slate-400 mx-auto mb-4" />
                     <p className="text-lg font-medium text-slate-700 dark:text-slate-300 mb-2">Clique para selecionar o arquivo CSV</p>
                     <p className="text-sm text-slate-500">ou arraste e solte aqui</p>
-                    <input ref={fileInputRef} type="file" accept=".csv" onChange={handleFileSelect} className="hidden" />
+                    <input ref={fileInputRef} type="file" accept=".csv" multiple onChange={handleFileSelect} className="hidden" />
                   </div>
 
                   <div className="flex justify-between mt-6">
@@ -933,8 +1097,75 @@ const Configuracoes = () => {
                 </div>
               )}
 
-              {/* Step 3: Preview */}
-              {importStep === 3 && importPreview && (
+              {/* Step 3: Preview - Múltiplos Arquivos (Batch) */}
+              {importStep === 3 && importBatchFiles.length > 0 && (
+                <div className="max-w-6xl mx-auto">
+                  {/* Info dos arquivos em lote */}
+                  <div className="mb-6 p-4 bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 rounded-xl">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 rounded-full bg-teal-600 flex items-center justify-center">
+                        <FileText className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-teal-800 dark:text-teal-300">{importBatchFiles.length} arquivos selecionados</p>
+                        <p className="text-sm text-teal-600 dark:text-teal-400">Importação em lote</p>
+                      </div>
+                    </div>
+
+                    {/* Lista de arquivos */}
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {importBatchFiles.map((preview, idx) => (
+                        <div key={idx} className={`flex items-center justify-between p-3 rounded-lg ${preview.parseError ? 'bg-red-50 dark:bg-red-900/20' : 'bg-white dark:bg-slate-800'}`}>
+                          <div className="flex items-center gap-3">
+                            {preview.parseError ? (
+                              <AlertTriangle className="w-5 h-5 text-red-500" />
+                            ) : (
+                              <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                            )}
+                            <div>
+                              <p className={`font-medium ${preview.parseError ? 'text-red-700 dark:text-red-400' : 'text-slate-700 dark:text-slate-300'}`}>{preview.file}</p>
+                              <p className="text-xs text-slate-500">{preview.totalRows} linhas</p>
+                            </div>
+                          </div>
+                          {preview.parseError && (
+                            <span className="text-xs text-red-500 max-w-xs truncate">{preview.parseError}</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Resumo */}
+                    <div className="mt-4 pt-4 border-t border-teal-200 dark:border-teal-700 flex justify-between text-sm">
+                      <span className="text-teal-600 dark:text-teal-400">
+                        ✓ {importBatchFiles.filter(f => !f.parseError).length} arquivos prontos
+                      </span>
+                      {importBatchFiles.some(f => f.parseError) && (
+                        <span className="text-red-500">
+                          ✗ {importBatchFiles.filter(f => f.parseError).length} com erro
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Botões de ação para batch */}
+                  <div className="flex justify-between mt-6">
+                    <button onClick={() => { setImportStep(2); setImportBatchFiles([]); }} className="flex items-center gap-2 px-4 py-2 text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg">
+                      <ChevronLeft className="w-4 h-4" />Voltar
+                    </button>
+                    <button
+                      onClick={handleBatchImportConfirm}
+                      disabled={!importBatchFiles.some(f => !f.parseError)}
+                      className="flex items-center gap-2 px-6 py-2 bg-teal-600 hover:bg-teal-700 disabled:bg-slate-400 text-white font-medium rounded-lg transition-colors"
+                    >
+                      <Upload className="w-4 h-4" />
+                      Importar {importBatchFiles.filter(f => !f.parseError).length} Arquivo(s)
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 3: Preview - Arquivo Único */}
+              {importStep === 3 && importPreview && importBatchFiles.length === 0 && (
                 <div className="max-w-6xl mx-auto">
                   {/* Info do arquivo */}
                   <div className="mb-6 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl flex items-center gap-4">
@@ -1703,6 +1934,158 @@ const Configuracoes = () => {
                   <button onClick={resetImport} className="px-6 py-3 bg-[#0e4f6d] text-white rounded-lg hover:bg-[#0d4560]">
                     Nova Importacao
                   </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Tab: Visibilidade */}
+          {activeTab === 'visibilidade' && (
+            <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                  <Eye className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-slate-800 dark:text-white">Configuração de Visibilidade</h2>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Defina quais dashboards serão visíveis para cada cliente</p>
+                </div>
+              </div>
+
+              {/* Seleção de CNPJ */}
+              <div className="mb-6 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Selecione o CNPJ para configurar:
+                </label>
+                <select
+                  value={selectedCnpjVisibilidade}
+                  onChange={(e) => handleCnpjVisibilidadeChange(e.target.value)}
+                  className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-white outline-none focus:border-[#0e4f6d]"
+                >
+                  <option value="">Selecione um CNPJ...</option>
+                  {cnpjs.map(cnpj => (
+                    <option key={cnpj.id} value={cnpj.id}>
+                      {cnpj.nomeFantasia || cnpj.razaoSocial} - {cnpj.cnpj}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {selectedCnpjVisibilidade && (
+                <>
+                  {/* Info do CNPJ selecionado */}
+                  <div className="mb-6 p-4 bg-[#0e4f6d]/10 dark:bg-[#0e4f6d]/20 rounded-xl border border-[#0e4f6d]/30">
+                    <div className="flex items-center gap-3">
+                      <Building2 className="w-5 h-5 text-[#0e4f6d] dark:text-teal-400" />
+                      <div>
+                        <p className="font-medium text-[#0e4f6d] dark:text-teal-400">
+                          {cnpjs.find(c => c.id === selectedCnpjVisibilidade)?.nomeFantasia}
+                        </p>
+                        <p className="text-sm text-slate-600 dark:text-slate-400">
+                          Regime: {cnpjs.find(c => c.id === selectedCnpjVisibilidade)?.regimeTributario}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Seções de Dashboard */}
+                  <div className="space-y-4">
+                    {Object.entries(DASHBOARD_SECTIONS).map(([secaoId, secao]) => (
+                      <div key={secaoId} className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+                        {/* Header da seção */}
+                        <div
+                          className={`p-4 flex items-center justify-between cursor-pointer transition-colors ${
+                            visibilidadeConfig[secaoId]?.visivel
+                              ? 'bg-emerald-50 dark:bg-emerald-900/20'
+                              : 'bg-slate-50 dark:bg-slate-900/50'
+                          }`}
+                          onClick={() => toggleSecaoVisibilidade(secaoId)}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                              visibilidadeConfig[secaoId]?.visivel
+                                ? 'bg-emerald-200 dark:bg-emerald-800'
+                                : 'bg-slate-200 dark:bg-slate-700'
+                            }`}>
+                              {visibilidadeConfig[secaoId]?.visivel
+                                ? <Check className="w-4 h-4 text-emerald-700 dark:text-emerald-300" />
+                                : <X className="w-4 h-4 text-slate-500" />
+                              }
+                            </div>
+                            <div>
+                              <p className={`font-semibold ${
+                                visibilidadeConfig[secaoId]?.visivel
+                                  ? 'text-emerald-800 dark:text-emerald-300'
+                                  : 'text-slate-600 dark:text-slate-400'
+                              }`}>{secao.nome}</p>
+                              <p className="text-xs text-slate-500 dark:text-slate-500">{secao.descricao}</p>
+                            </div>
+                          </div>
+                          <ChevronRight className={`w-5 h-5 text-slate-400 transition-transform ${
+                            visibilidadeConfig[secaoId]?.visivel ? 'rotate-90' : ''
+                          }`} />
+                        </div>
+
+                        {/* Itens da seção (expandido quando visível) */}
+                        {visibilidadeConfig[secaoId]?.visivel && (
+                          <div className="p-4 border-t border-slate-200 dark:border-slate-700 space-y-2">
+                            {secao.itens.map(item => (
+                              <label
+                                key={item.id}
+                                className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
+                                  visibilidadeConfig[secaoId]?.itens?.[item.id]
+                                    ? 'bg-emerald-50 dark:bg-emerald-900/10 hover:bg-emerald-100 dark:hover:bg-emerald-900/20'
+                                    : 'bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700'
+                                }`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={visibilidadeConfig[secaoId]?.itens?.[item.id] || false}
+                                  onChange={() => toggleItemVisibilidade(secaoId, item.id)}
+                                  className="w-5 h-5 rounded border-slate-300 text-[#0e4f6d] focus:ring-[#0e4f6d] dark:bg-slate-700 dark:border-slate-600"
+                                />
+                                <div className="flex-1">
+                                  <p className={`font-medium ${
+                                    visibilidadeConfig[secaoId]?.itens?.[item.id]
+                                      ? 'text-slate-800 dark:text-white'
+                                      : 'text-slate-500 dark:text-slate-400'
+                                  }`}>{item.nome}</p>
+                                  <p className="text-xs text-slate-500">{item.descricao}</p>
+                                </div>
+                              </label>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Botão Salvar */}
+                  <div className="mt-6 flex justify-end gap-3">
+                    <button
+                      onClick={() => {
+                        setVisibilidadeConfig(getVisibilidadeConfig(selectedCnpjVisibilidade));
+                        showSuccess('Alterações descartadas');
+                      }}
+                      className="px-4 py-2 text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                    >
+                      Descartar
+                    </button>
+                    <button
+                      onClick={saveVisibilidadeConfig}
+                      className="flex items-center gap-2 px-6 py-2 bg-[#0e4f6d] text-white rounded-lg hover:bg-[#0d4560] transition-colors"
+                    >
+                      <Save className="w-4 h-4" />
+                      Salvar Configuração
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {!selectedCnpjVisibilidade && (
+                <div className="text-center py-12 text-slate-400">
+                  <Eye className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p>Selecione um CNPJ para configurar a visibilidade dos dashboards</p>
                 </div>
               )}
             </div>

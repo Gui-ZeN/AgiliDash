@@ -139,9 +139,9 @@ const Dashboard = () => {
   const [mesesSelecionados, setMesesSelecionados] = useState([]); // Para seleção de meses específicos
 
   // Usar contexto da empresa e tema
-  const { cnpjInfo, cnpjDados, isConsolidado, totaisConsolidados } = useEmpresa();
+  const { cnpjInfo, cnpjDados, isConsolidado, totaisConsolidados, modoVisualizacao, grupoAtual, empresaAtual, modoLabel } = useEmpresa();
   const { isDarkMode } = useTheme();
-  const { getDadosContabeis, getDadosFiscais, getDadosPessoal } = useData();
+  const { getDadosContabeis, getDadosFiscais, getDadosPessoal, isSecaoVisivel, isItemVisivel } = useData();
 
   // Obter dados contábeis importados para o CNPJ selecionado
   const dadosContabeisImportados = getDadosContabeis(cnpjInfo?.id);
@@ -177,18 +177,35 @@ const Dashboard = () => {
   }, [activeTab]);
 
   // Calcular totais do DRE
-  // Prioriza dados importados (Análise Horizontal) se disponíveis
+  // Se em modo consolidado, usa totaisConsolidados; senão, prioriza dados importados (Análise Horizontal)
   const analiseHorizontal = dadosContabeisImportados?.analiseHorizontal;
-  const totalReceita = analiseHorizontal?.totais?.totalReceitas
-    || (analiseHorizontal?.receitasMensais ? analiseHorizontal.receitasMensais.reduce((a, b) => a + b, 0) : sumArray(dreData.receita));
-  const totalDespesa = analiseHorizontal?.totais?.totalDespesas
-    || (analiseHorizontal?.despesasMensais ? analiseHorizontal.despesasMensais.reduce((a, b) => a + b, 0) : sumArray(dreData.despesa));
-  const totalLucro = totalReceita - totalDespesa;
+
+  const totalReceita = isConsolidado && totaisConsolidados
+    ? totaisConsolidados.receita
+    : (analiseHorizontal?.totais?.totalReceitas
+      || (analiseHorizontal?.receitasMensais ? analiseHorizontal.receitasMensais.reduce((a, b) => a + b, 0) : sumArray(dreData.receita)));
+
+  const totalDespesa = isConsolidado && totaisConsolidados
+    ? totaisConsolidados.despesa
+    : (analiseHorizontal?.totais?.totalDespesas
+      || (analiseHorizontal?.despesasMensais ? analiseHorizontal.despesasMensais.reduce((a, b) => a + b, 0) : sumArray(dreData.despesa)));
+
+  const totalLucro = isConsolidado && totaisConsolidados
+    ? totaisConsolidados.lucro
+    : totalReceita - totalDespesa;
+
   const margemLucro = totalReceita > 0 ? ((totalLucro / totalReceita) * 100).toFixed(1) : '0.0';
+
+  // Dados consolidados extras (funcionários, folha, tributos)
+  const totalFuncionarios = isConsolidado && totaisConsolidados ? totaisConsolidados.funcionarios : (pessoalData?.totalFuncionarios || 0);
+  const totalFolhaMensal = isConsolidado && totaisConsolidados ? totaisConsolidados.folhaMensal : (pessoalData?.folhaPagamento || 0);
+  const totalIRPJ = isConsolidado && totaisConsolidados ? totaisConsolidados.irpj : (totaisFiscais?.irpj || 0);
+  const totalCSLL = isConsolidado && totaisConsolidados ? totaisConsolidados.csll : (totaisFiscais?.csll || 0);
+  const qtdCnpjsConsolidado = isConsolidado && totaisConsolidados ? totaisConsolidados.qtdCnpjs : 1;
 
   // Comparação com ano anterior
   const totalReceita2024 = sumArray(dreData2024.receita);
-  const variacaoReceita = (((totalReceita - totalReceita2024) / totalReceita2024) * 100).toFixed(1);
+  const variacaoReceita = isConsolidado ? 0 : (((totalReceita - totalReceita2024) / totalReceita2024) * 100).toFixed(1);
 
   // Callback para receber dados do gráfico de distribuição
   const handleFiscalDataCalculated = (data) => {
@@ -253,9 +270,30 @@ const Dashboard = () => {
 
         {/* Badge de modo consolidado */}
         {isConsolidado && (
-          <div className="mb-6 bg-[#0e4f6d] p-4 rounded-xl text-white flex items-center gap-3">
-            <Layers className="w-5 h-5" />
-            <span className="font-medium">Visualizando dados consolidados de todos os CNPJs</span>
+          <div className="mb-6 bg-[#0e4f6d] p-4 rounded-xl text-white flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Layers className="w-5 h-5" />
+              <div>
+                <span className="font-medium block">
+                  {modoVisualizacao === 'todos' && 'Visão Consolidada Total'}
+                  {modoVisualizacao === 'grupo' && `Consolidado: ${grupoAtual?.nome}`}
+                  {modoVisualizacao === 'empresa' && `Consolidado: ${empresaAtual?.nomeFantasia}`}
+                </span>
+                <span className="text-sm text-white/70">
+                  {qtdCnpjsConsolidado} CNPJ(s) • Receita: {formatCurrency(totalReceita)} • Lucro: {formatCurrency(totalLucro)}
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 text-sm">
+              <div className="text-center">
+                <p className="text-2xl font-bold">{qtdCnpjsConsolidado}</p>
+                <p className="text-xs text-white/70">CNPJs</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold">{totalFuncionarios}</p>
+                <p className="text-xs text-white/70">Funcionários</p>
+              </div>
+            </div>
           </div>
         )}
 

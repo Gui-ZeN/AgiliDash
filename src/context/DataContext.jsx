@@ -536,7 +536,31 @@ export const DataProvider = ({ children }) => {
 
     // Utils
     getStats,
-    setoresDisponiveis
+    setoresDisponiveis,
+
+    // Visibilidade de Dashboards
+    getVisibilidadeConfig: (cnpjId) => {
+      const saved = localStorage.getItem(`agili_visibilidade_${cnpjId}`);
+      if (saved) {
+        return JSON.parse(saved);
+      }
+      // Retorna tudo visível por padrão
+      return null;
+    },
+
+    isSecaoVisivel: (cnpjId, secaoId) => {
+      const saved = localStorage.getItem(`agili_visibilidade_${cnpjId}`);
+      if (!saved) return true; // Por padrão tudo visível
+      const config = JSON.parse(saved);
+      return config[secaoId]?.visivel !== false;
+    },
+
+    isItemVisivel: (cnpjId, secaoId, itemId) => {
+      const saved = localStorage.getItem(`agili_visibilidade_${cnpjId}`);
+      if (!saved) return true; // Por padrão tudo visível
+      const config = JSON.parse(saved);
+      return config[secaoId]?.itens?.[itemId] !== false;
+    }
   };
 
   return (
