@@ -125,7 +125,8 @@ export const cnpjsEmpresa = [
     status: 'Ativo',
     responsavel: {
       nome: 'Sr. Emerson Clay Batista Montenegro Filho',
-      cargo: 'Sócio-Administrador'
+      cargo: 'Sócio-Administrador',
+      whatsapp: '(85) 99999-0001'
     },
     endereco: {
       cidade: 'Fortaleza',
@@ -145,7 +146,8 @@ export const cnpjsEmpresa = [
     status: 'Ativo',
     responsavel: {
       nome: 'Sra. Maria Helena Santos',
-      cargo: 'Gerente'
+      cargo: 'Gerente',
+      whatsapp: '(85) 99999-0002'
     },
     endereco: {
       cidade: 'Maracanaú',
@@ -165,7 +167,8 @@ export const cnpjsEmpresa = [
     status: 'Ativo',
     responsavel: {
       nome: 'Sr. João Pedro Lima',
-      cargo: 'Gerente'
+      cargo: 'Gerente',
+      whatsapp: '(85) 99999-0003'
     },
     endereco: {
       cidade: 'Caucaia',
@@ -185,7 +188,8 @@ export const cnpjsEmpresa = [
     status: 'Ativo',
     responsavel: {
       nome: 'Sr. Carlos Eduardo Santos',
-      cargo: 'Diretor'
+      cargo: 'Diretor',
+      whatsapp: '(85) 99999-0004'
     },
     endereco: {
       cidade: 'Fortaleza',
@@ -205,7 +209,8 @@ export const cnpjsEmpresa = [
     status: 'Ativo',
     responsavel: {
       nome: 'Sr. Roberto Almeida',
-      cargo: 'Proprietário'
+      cargo: 'Proprietário',
+      whatsapp: '(85) 99999-0005'
     },
     endereco: {
       cidade: 'Maracanaú',

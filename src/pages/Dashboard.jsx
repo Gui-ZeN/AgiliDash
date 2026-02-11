@@ -268,11 +268,11 @@ const Dashboard = () => {
                 <div className="p-2 bg-[#0e4f6d] rounded-lg">
                   <Building2 className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-xs font-bold text-[#0e4f6d] uppercase tracking-widest">
+                <span className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-teal-400' : 'text-[#0e4f6d]'}`}>
                   Visão Geral
                 </span>
               </div>
-              <h1 className="text-4xl font-semibold text-[#1e293b] mb-1">
+              <h1 className={`text-4xl font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-[#1e293b]'}`}>
                 Informações Gerais
               </h1>
               <p className="text-lg text-slate-400 font-medium">
@@ -315,29 +315,29 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 bg-slate-50 rounded-lg">
-                    <Percent className="w-5 h-5 text-slate-700" />
+                  <div className="p-2 bg-slate-50 dark:bg-slate-700 rounded-lg">
+                    <Percent className="w-5 h-5 text-slate-700 dark:text-slate-300" />
                   </div>
                 </div>
-                <p className="text-2xl font-bold text-slate-800">{margemLucro}%</p>
-                <p className="text-xs text-slate-400 mt-1">Margem de Lucro</p>
+                <p className="text-2xl font-bold text-slate-800 dark:text-white">{margemLucro}%</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Margem de Lucro</p>
               </div>
 
-              <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 bg-amber-50 rounded-lg">
-                    <Calendar className="w-5 h-5 text-amber-600" />
+                  <div className="p-2 bg-amber-50 dark:bg-amber-900/30 rounded-lg">
+                    <Calendar className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                   </div>
                 </div>
-                <p className="text-2xl font-bold text-slate-800">12</p>
-                <p className="text-xs text-slate-400 mt-1">Meses Analisados</p>
+                <p className="text-2xl font-bold text-slate-800 dark:text-white">12</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Meses Analisados</p>
               </div>
             </div>
 
             {/* Card Principal de Dados Cadastrais - Redesenhado */}
-            <div className={`bg-white rounded-xl border border-slate-100 shadow-md overflow-hidden transition-all duration-500 delay-200 ${cardAnimation}`}>
+            <div className={`bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-md overflow-hidden transition-all duration-500 delay-200 ${cardAnimation}`}>
               <div className="bg-[#0e4f6d] p-8 text-white">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                   <div>
@@ -379,23 +379,40 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              <div className="p-8">
+              <div className="p-8 dark:bg-slate-800">
                 <div className="flex items-center gap-6">
-                  <div className="w-20 h-20 rounded-xl bg-[#0e4f6d] flex items-center justify-center shadow-md">
-                    <User className="w-10 h-10 text-white" />
-                  </div>
+                  <a
+                    href={cnpjInfo.responsavel.whatsapp ? `https://wa.me/55${cnpjInfo.responsavel.whatsapp.replace(/\D/g, '')}` : '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-20 h-20 rounded-xl bg-[#0e4f6d] hover:bg-[#0c4058] flex items-center justify-center shadow-md transition-colors cursor-pointer group"
+                    title={cnpjInfo.responsavel.whatsapp ? 'Abrir WhatsApp' : 'WhatsApp não cadastrado'}
+                  >
+                    <User className="w-10 h-10 text-white group-hover:scale-110 transition-transform" />
+                  </a>
                   <div>
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
                       Responsável Legal
                     </p>
-                    <h3 className="text-2xl font-bold text-[#0e4f6d] mb-1">
+                    <h3 className={`text-2xl font-bold mb-1 ${isDarkMode ? 'text-teal-400' : 'text-[#0e4f6d]'}`}>
                       {cnpjInfo.responsavel.nome}
                     </h3>
                     <div className="flex items-center gap-4">
-                      <span className="text-sm text-slate-500 flex items-center gap-1">
+                      <span className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-1">
                         <Briefcase className="w-4 h-4" />
                         {cnpjInfo.responsavel.cargo}
                       </span>
+                      {cnpjInfo.responsavel.whatsapp && (
+                        <a
+                          href={`https://wa.me/55${cnpjInfo.responsavel.whatsapp.replace(/\D/g, '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 flex items-center gap-1 transition-colors"
+                        >
+                          <Phone className="w-4 h-4" />
+                          {cnpjInfo.responsavel.whatsapp}
+                        </a>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -406,10 +423,10 @@ const Dashboard = () => {
             <section className={`pt-4 transition-all duration-500 delay-300 ${cardAnimation}`}>
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[#0e4f6d]/10 rounded-lg">
-                    <ShieldCheck className="w-5 h-5 text-[#0e4f6d]" />
+                  <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-teal-900/30' : 'bg-[#0e4f6d]/10'}`}>
+                    <ShieldCheck className={`w-5 h-5 ${isDarkMode ? 'text-teal-400' : 'text-[#0e4f6d]'}`} />
                   </div>
-                  <h2 className="text-xl font-bold text-[#1e293b] uppercase tracking-wide">
+                  <h2 className={`text-xl font-bold uppercase tracking-wide ${isDarkMode ? 'text-white' : 'text-[#1e293b]'}`}>
                     Equipe Técnica
                   </h2>
                 </div>
@@ -442,7 +459,7 @@ const Dashboard = () => {
                       <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
                         {membro.setor}
                       </p>
-                      <h4 className="text-xl font-bold text-slate-800 mb-3">{membro.nome}</h4>
+                      <h4 className="text-xl font-bold text-slate-800 dark:text-white mb-3">{membro.nome}</h4>
                       <div className="flex items-center gap-2 text-sm text-slate-400">
                         <Mail className="w-4 h-4" />
                         <span className="truncate">{membro.nome.toLowerCase().split(' ')[0]}@agili.com.br</span>
@@ -1636,11 +1653,11 @@ const Dashboard = () => {
                   <div className="p-2 bg-amber-500 rounded-lg">
                     <Briefcase className="w-5 h-5 text-white" />
                   </div>
-                  <span className="text-xs font-bold text-amber-600 uppercase tracking-widest">
+                  <span className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest">
                     Setor Administrativo
                   </span>
                 </div>
-                <h1 className="text-4xl font-semibold text-[#1e293b] mb-1">
+                <h1 className={`text-4xl font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-[#1e293b]'}`}>
                   Gestão Administrativa
                 </h1>
                 <p className="text-lg text-slate-400 font-medium">
@@ -1650,7 +1667,7 @@ const Dashboard = () => {
               <div className="flex gap-2">
                 <button
                   onClick={() => handleExportReport('pdf')}
-                  className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors"
                 >
                   <FileDown className="w-4 h-4" />
                   PDF
@@ -1704,14 +1721,14 @@ const Dashboard = () => {
             </div>
 
             {/* Gráfico de Despesas Mensais */}
-            <div className={`bg-white p-8 rounded-xl border border-slate-100 shadow-sm transition-all duration-500 delay-200 ${cardAnimation}`}>
+            <div className={`bg-white dark:bg-slate-800 p-8 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm transition-all duration-500 delay-200 ${cardAnimation}`}>
               <div className="flex items-center justify-between mb-8">
                 <div>
-                  <h3 className="text-xl font-bold text-slate-800">Despesas Administrativas</h3>
+                  <h3 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Despesas Administrativas</h3>
                   <p className="text-sm text-slate-400">Evolução mensal das despesas</p>
                 </div>
-                <div className="p-3 bg-amber-50 rounded-xl">
-                  <BarChartBig className="w-6 h-6 text-amber-600" />
+                <div className="p-3 bg-amber-50 dark:bg-amber-900/30 rounded-xl">
+                  <BarChartBig className="w-6 h-6 text-amber-600 dark:text-amber-400" />
                 </div>
               </div>
               <DespesasMensaisChart despesasMensais={administrativoData.despesasMensais} />
@@ -1720,69 +1737,69 @@ const Dashboard = () => {
             {/* Grid: Despesas por Categoria e Indicadores */}
             <div className={`grid grid-cols-1 lg:grid-cols-2 gap-6 transition-all duration-500 delay-300 ${cardAnimation}`}>
               {/* Despesas por Categoria */}
-              <div className="bg-white p-8 rounded-xl border border-slate-100 shadow-sm">
+              <div className="bg-white dark:bg-slate-800 p-8 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h3 className="text-lg font-bold text-slate-800">Despesas por Categoria</h3>
+                    <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Despesas por Categoria</h3>
                     <p className="text-sm text-slate-400">Distribuição dos custos</p>
                   </div>
-                  <div className="p-3 bg-amber-50 rounded-xl">
-                    <PieChart className="w-6 h-6 text-amber-600" />
+                  <div className="p-3 bg-amber-50 dark:bg-amber-900/30 rounded-xl">
+                    <PieChart className="w-6 h-6 text-amber-600 dark:text-amber-400" />
                   </div>
                 </div>
                 <DespesasCategoriaChart despesasPorCategoria={administrativoData.despesasPorCategoria} />
               </div>
 
               {/* Indicadores */}
-              <div className="bg-white p-8 rounded-xl border border-slate-100 shadow-sm">
-                <h3 className="text-lg font-bold text-slate-800 mb-6 pb-4 border-b border-slate-100">
+              <div className="bg-white dark:bg-slate-800 p-8 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
+                <h3 className={`text-lg font-bold mb-6 pb-4 border-b ${isDarkMode ? 'text-white border-slate-700' : 'text-slate-800 border-slate-100'}`}>
                   Indicadores Operacionais
                 </h3>
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                  <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-blue-100 rounded-lg">
-                        <DollarSign className="w-5 h-5 text-blue-600" />
+                      <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                        <DollarSign className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                       </div>
-                      <span className="font-medium text-slate-700">Ticket Médio de Venda</span>
+                      <span className="font-medium text-slate-700 dark:text-slate-300">Ticket Médio de Venda</span>
                     </div>
-                    <span className="text-xl font-bold text-blue-600">
+                    <span className="text-xl font-bold text-blue-600 dark:text-blue-400">
                       {formatCurrency(administrativoData.indicadores.ticketMedioVenda)}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                  <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-green-100 rounded-lg">
-                        <Percent className="w-5 h-5 text-green-600" />
+                      <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                        <Percent className="w-5 h-5 text-green-600 dark:text-green-400" />
                       </div>
-                      <span className="font-medium text-slate-700">Margem Operacional</span>
+                      <span className="font-medium text-slate-700 dark:text-slate-300">Margem Operacional</span>
                     </div>
-                    <span className="text-xl font-bold text-green-600">
+                    <span className="text-xl font-bold text-green-600 dark:text-green-400">
                       {administrativoData.indicadores.margemOperacional}%
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                  <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-red-100 rounded-lg">
-                        <AlertCircle className="w-5 h-5 text-red-600" />
+                      <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                        <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
                       </div>
-                      <span className="font-medium text-slate-700">Taxa de Inadimplência</span>
+                      <span className="font-medium text-slate-700 dark:text-slate-300">Taxa de Inadimplência</span>
                     </div>
-                    <span className="text-xl font-bold text-red-600">
+                    <span className="text-xl font-bold text-red-600 dark:text-red-400">
                       {administrativoData.indicadores.inadimplencia}%
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+                  <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-amber-100 rounded-lg">
-                        <Wallet className="w-5 h-5 text-amber-600" />
+                      <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
+                        <Wallet className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                       </div>
-                      <span className="font-medium text-slate-700">Custo Operacional Mensal</span>
+                      <span className="font-medium text-slate-700 dark:text-slate-300">Custo Operacional Mensal</span>
                     </div>
-                    <span className="text-xl font-bold text-amber-600">
+                    <span className="text-xl font-bold text-amber-600 dark:text-amber-400">
                       {formatCurrency(administrativoData.indicadores.custoOperacional)}
                     </span>
                   </div>
@@ -1791,19 +1808,19 @@ const Dashboard = () => {
             </div>
 
             {/* Tabela de Certidões */}
-            <div className={`bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden transition-all duration-500 delay-400 ${cardAnimation}`}>
-              <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+            <div className={`bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden transition-all duration-500 delay-400 ${cardAnimation}`}>
+              <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-bold text-slate-800">Certidões e Documentos</h3>
+                  <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Certidões e Documentos</h3>
                   <p className="text-sm text-slate-400">Status das certidões da empresa</p>
                 </div>
-                <span className="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm font-medium">
+                <span className="px-3 py-1 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full text-sm font-medium">
                   {administrativoData.certidoes.length} documentos
                 </span>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-slate-50">
+                  <thead className="bg-slate-50 dark:bg-slate-700/50">
                     <tr>
                       <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Documento</th>
                       <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Tipo</th>
@@ -1811,27 +1828,27 @@ const Dashboard = () => {
                       <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                     {administrativoData.certidoes.map((cert) => (
-                      <tr key={cert.id} className="hover:bg-slate-50 transition-colors">
+                      <tr key={cert.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className={`p-2 rounded-lg ${cert.status === 'Válida' ? 'bg-green-100' : 'bg-amber-100'}`}>
-                              <FileCheck className={`w-4 h-4 ${cert.status === 'Válida' ? 'text-green-600' : 'text-amber-600'}`} />
+                            <div className={`p-2 rounded-lg ${cert.status === 'Válida' ? 'bg-green-100 dark:bg-green-900/30' : 'bg-amber-100 dark:bg-amber-900/30'}`}>
+                              <FileCheck className={`w-4 h-4 ${cert.status === 'Válida' ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'}`} />
                             </div>
-                            <span className="font-semibold text-slate-700">{cert.nome}</span>
+                            <span className="font-semibold text-slate-700 dark:text-slate-300">{cert.nome}</span>
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="px-2 py-1 bg-slate-100 text-slate-600 rounded text-sm">
+                          <span className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 rounded text-sm">
                             {cert.tipo}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-slate-600">
+                        <td className="px-6 py-4 text-slate-600 dark:text-slate-400">
                           {new Date(cert.validade).toLocaleDateString('pt-BR')}
                         </td>
                         <td className="px-6 py-4">
-                          <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${cert.status === 'Válida' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                          <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${cert.status === 'Válida' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'}`}>
                             {cert.status === 'Válida' ? <CheckCircle className="w-3 h-3" /> : <AlertTriangle className="w-3 h-3" />}
                             {cert.status}
                           </span>
@@ -1844,19 +1861,19 @@ const Dashboard = () => {
             </div>
 
             {/* Tabela de Contratos */}
-            <div className={`bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden transition-all duration-500 delay-500 ${cardAnimation}`}>
-              <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+            <div className={`bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden transition-all duration-500 delay-500 ${cardAnimation}`}>
+              <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-bold text-slate-800">Contratos Ativos</h3>
+                  <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Contratos Ativos</h3>
                   <p className="text-sm text-slate-400">Contratos vigentes com fornecedores</p>
                 </div>
-                <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">
+                <span className="px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full text-sm font-medium">
                   {administrativoData.listaContratos.length} contratos
                 </span>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-slate-50">
+                  <thead className="bg-slate-50 dark:bg-slate-700/50">
                     <tr>
                       <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Fornecedor</th>
                       <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Tipo</th>
@@ -1865,7 +1882,7 @@ const Dashboard = () => {
                       <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                     {administrativoData.listaContratos.map((contrato) => {
                       const iconMap = {
                         'Aluguel': Home,
@@ -1876,28 +1893,28 @@ const Dashboard = () => {
                       const Icon = iconMap[contrato.tipo] || Package;
 
                       return (
-                        <tr key={contrato.id} className="hover:bg-slate-50 transition-colors">
+                        <tr key={contrato.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
-                              <div className="p-2 rounded-lg bg-slate-100">
-                                <Icon className="w-4 h-4 text-slate-600" />
+                              <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700">
+                                <Icon className="w-4 h-4 text-slate-600 dark:text-slate-400" />
                               </div>
-                              <span className="font-semibold text-slate-700">{contrato.fornecedor}</span>
+                              <span className="font-semibold text-slate-700 dark:text-slate-300">{contrato.fornecedor}</span>
                             </div>
                           </td>
                           <td className="px-6 py-4">
-                            <span className="px-2 py-1 bg-slate-100 text-slate-600 rounded text-sm">
+                            <span className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 rounded text-sm">
                               {contrato.tipo}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-right font-semibold text-[#0e4f6d]">
+                          <td className={`px-6 py-4 text-right font-semibold ${isDarkMode ? 'text-teal-400' : 'text-[#0e4f6d]'}`}>
                             {formatCurrency(contrato.valor)}
                           </td>
-                          <td className="px-6 py-4 text-slate-600">
+                          <td className="px-6 py-4 text-slate-600 dark:text-slate-400">
                             {new Date(contrato.vencimento).toLocaleDateString('pt-BR')}
                           </td>
                           <td className="px-6 py-4">
-                            <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${contrato.status === 'Ativo' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                            <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${contrato.status === 'Ativo' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'}`}>
                               {contrato.status === 'Ativo' ? <CheckCircle className="w-3 h-3" /> : <AlertTriangle className="w-3 h-3" />}
                               {contrato.status}
                             </span>
