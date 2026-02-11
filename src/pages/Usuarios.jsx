@@ -8,8 +8,8 @@ import { useTheme } from '../context/ThemeContext';
 import { useData } from '../context/DataContext';
 
 /**
- * Pagina de Gestao de Usuarios
- * Permite cadastrar, editar e gerenciar permissoes de usuarios
+ * Página de Gestão de Usuários
+ * Permite cadastrar, editar e gerenciar permissões de usuários
  */
 const Usuarios = () => {
   const { isDarkMode } = useTheme();
@@ -44,10 +44,10 @@ const Usuarios = () => {
     setoresAcesso: []
   });
 
-  // Perfis disponiveis
+  // Perfis disponíveis
   const perfisUsuario = [
     { value: 'Admin', label: 'Administrador', descricao: 'Acesso total ao sistema' },
-    { value: 'Visualizador', label: 'Visualizador', descricao: 'Apenas visualizacao de dados' }
+    { value: 'Visualizador', label: 'Visualizador', descricao: 'Apenas visualização de dados' }
   ];
 
   // Mostrar mensagem de sucesso
@@ -100,10 +100,10 @@ const Usuarios = () => {
 
     if (modalMode === 'create') {
       addUsuario(formData);
-      showSuccess('Usuario criado com sucesso!');
+      showSuccess('Usuário criado com sucesso!');
     } else {
       updateUsuario(selectedUser.id, formData);
-      showSuccess('Usuario atualizado com sucesso!');
+      showSuccess('Usuário atualizado com sucesso!');
     }
     setModalOpen(false);
   };
@@ -111,7 +111,7 @@ const Usuarios = () => {
   const handleDelete = (userId) => {
     deleteUsuario(userId);
     setDeleteConfirm(null);
-    showSuccess('Usuario removido com sucesso!');
+    showSuccess('Usuário removido com sucesso!');
   };
 
   const toggleSetor = (setorId) => {
@@ -145,8 +145,8 @@ const Usuarios = () => {
                 <Users className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-slate-800 dark:text-white">Gestao de Usuarios</h1>
-                <p className="text-xs text-slate-500 dark:text-slate-400">{usuarios.length} usuarios cadastrados</p>
+                <h1 className="text-lg font-bold text-slate-800 dark:text-white">Gestão de Usuários</h1>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{usuarios.length} usuários cadastrados</p>
               </div>
             </div>
           </div>
@@ -156,7 +156,7 @@ const Usuarios = () => {
             className="flex items-center gap-2 px-4 py-2 bg-[#0e4f6d] hover:bg-[#0a3d54] text-white rounded-xl transition-colors"
           >
             <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">Novo Usuario</span>
+            <span className="hidden sm:inline">Novo Usuário</span>
           </button>
         </div>
       </header>
@@ -174,7 +174,7 @@ const Usuarios = () => {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-100 dark:border-slate-700">
             <p className="text-2xl font-bold text-[#0e4f6d] dark:text-teal-500">{usuarios.length}</p>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Total Usuarios</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Total Usuários</p>
           </div>
           <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-100 dark:border-slate-700">
             <p className="text-2xl font-bold text-emerald-700">{usuarios.filter(u => u.status === 'Ativo').length}</p>
@@ -231,13 +231,13 @@ const Usuarios = () => {
             <table className="w-full">
               <thead className="bg-slate-50 dark:bg-slate-700/50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Usuario</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Usuário</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Contato</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Grupo</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Perfil</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Setores</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Status</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Acoes</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
@@ -340,7 +340,7 @@ const Usuarios = () => {
           {filteredUsers.length === 0 && (
             <div className="p-12 text-center">
               <Users className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
-              <p className="text-slate-500 dark:text-slate-400">Nenhum usuario encontrado</p>
+              <p className="text-slate-500 dark:text-slate-400">Nenhum usuário encontrado</p>
             </div>
           )}
         </div>
@@ -353,7 +353,7 @@ const Usuarios = () => {
             <div className="p-6 border-b border-slate-100 dark:border-slate-700">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-slate-800 dark:text-white">
-                  {modalMode === 'create' ? 'Novo Usuario' : 'Editar Usuario'}
+                  {modalMode === 'create' ? 'Novo Usuário' : 'Editar Usuário'}
                 </h2>
                 <button
                   onClick={() => setModalOpen(false)}
@@ -365,7 +365,7 @@ const Usuarios = () => {
             </div>
 
             <div className="p-6 space-y-6">
-              {/* Dados basicos */}
+              {/* Dados básicos */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nome *</label>
@@ -474,7 +474,7 @@ const Usuarios = () => {
                   ))}
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-                  Selecione quais setores este usuario podera visualizar
+                  Selecione quais setores este usuário poderá visualizar
                 </p>
               </div>
             </div>
@@ -491,7 +491,7 @@ const Usuarios = () => {
                 disabled={!formData.nome || !formData.email}
                 className="px-4 py-2 rounded-lg bg-[#0e4f6d] text-white hover:bg-[#0a3d54] transition-colors disabled:opacity-50"
               >
-                {modalMode === 'create' ? 'Criar Usuario' : 'Salvar Alteracoes'}
+                {modalMode === 'create' ? 'Criar Usuário' : 'Salvar Alterações'}
               </button>
             </div>
           </div>
@@ -506,9 +506,9 @@ const Usuarios = () => {
               <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 mx-auto mb-4 flex items-center justify-center">
                 <Trash2 className="w-8 h-8 text-red-500" />
               </div>
-              <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">Excluir Usuario</h3>
+              <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">Excluir Usuário</h3>
               <p className="text-slate-500 dark:text-slate-400 mb-6">
-                Tem certeza que deseja excluir este usuario? Esta acao nao pode ser desfeita.
+                Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.
               </p>
               <div className="flex gap-3">
                 <button

@@ -85,21 +85,21 @@ const Logs = () => {
   const typeLabels = {
     [ActivityTypes.LOGIN]: 'Login',
     [ActivityTypes.LOGOUT]: 'Logout',
-    [ActivityTypes.VIEW]: 'Visualizacao',
-    [ActivityTypes.CREATE]: 'Criacao',
-    [ActivityTypes.UPDATE]: 'Atualizacao',
-    [ActivityTypes.DELETE]: 'Exclusao',
-    [ActivityTypes.EXPORT]: 'Exportacao',
-    [ActivityTypes.CONFIG_CHANGE]: 'Configuracao',
-    [ActivityTypes.PERMISSION_CHANGE]: 'Permissao'
+    [ActivityTypes.VIEW]: 'Visualização',
+    [ActivityTypes.CREATE]: 'Criação',
+    [ActivityTypes.UPDATE]: 'Atualização',
+    [ActivityTypes.DELETE]: 'Exclusão',
+    [ActivityTypes.EXPORT]: 'Exportação',
+    [ActivityTypes.CONFIG_CHANGE]: 'Configuração',
+    [ActivityTypes.PERMISSION_CHANGE]: 'Permissão'
   };
 
   const categoryLabels = {
-    [ActivityCategories.AUTH]: 'Autenticacao',
-    [ActivityCategories.NAVIGATION]: 'Navegacao',
+    [ActivityCategories.AUTH]: 'Autenticação',
+    [ActivityCategories.NAVIGATION]: 'Navegação',
     [ActivityCategories.DATA]: 'Dados',
-    [ActivityCategories.CONFIG]: 'Configuracao',
-    [ActivityCategories.EXPORT]: 'Exportacao'
+    [ActivityCategories.CONFIG]: 'Configuração',
+    [ActivityCategories.EXPORT]: 'Exportação'
   };
 
   return (
@@ -154,15 +154,15 @@ const Logs = () => {
             </div>
             <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-100 dark:border-slate-700">
               <p className="text-2xl font-bold text-emerald-700">{stats.last24h}</p>
-              <p className="text-sm text-slate-500 dark:text-slate-400">Ultimas 24h</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Últimas 24h</p>
             </div>
             <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-100 dark:border-slate-700">
               <p className="text-2xl font-bold text-blue-500">{stats.lastWeek}</p>
-              <p className="text-sm text-slate-500 dark:text-slate-400">Ultima Semana</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Última Semana</p>
             </div>
             <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-100 dark:border-slate-700">
               <p className="text-2xl font-bold text-amber-500">{Object.keys(stats.byType).length}</p>
-              <p className="text-sm text-slate-500 dark:text-slate-400">Tipos de Acao</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Tipos de Ação</p>
             </div>
           </div>
         )}
@@ -264,7 +264,7 @@ const Logs = () => {
               </div>
               <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">Limpar Logs</h3>
               <p className="text-slate-500 dark:text-slate-400 mb-6">
-                Tem certeza que deseja limpar todos os logs? Esta acao nao pode ser desfeita.
+                Tem certeza que deseja limpar todos os logs? Esta ação não pode ser desfeita.
               </p>
               <div className="flex gap-3">
                 <button

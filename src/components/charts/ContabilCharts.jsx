@@ -75,7 +75,7 @@ export const ComparativoReceitaDespesaChart = ({ dados }) => {
             borderSkipped: false
           },
           {
-            label: 'Despesa',
+            label: 'Despesas/Custos',
             data: despesas,
             backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.8)' : 'rgba(239, 68, 68, 0.7)',
             borderColor: COLORS.danger,
@@ -174,8 +174,9 @@ export const VariacaoLucroChart = ({ dadosAtual, dadosAnterior }) => {
   }, [dadosAtual?.anoExercicio]);
 
   const anoAnterior = useMemo(() => {
+    if (!dadosAnterior) return null;
     return dadosAnterior?.anoExercicio || (anoAtual - 1);
-  }, [dadosAnterior?.anoExercicio, anoAtual]);
+  }, [dadosAnterior, dadosAnterior?.anoExercicio, anoAtual]);
 
   // Função para agregar dados mensais em trimestrais
   const agregarTrimestral = (dadosMensais) => {
@@ -204,6 +205,8 @@ export const VariacaoLucroChart = ({ dadosAtual, dadosAnterior }) => {
   }, [dadosAtual]);
 
   const lucroAnteriorTrimestral = useMemo(() => {
+    if (!dadosAnterior) return null;
+
     // Prioriza lucroAntesIR se disponível
     if (dadosAnterior?.dados?.lucroAntesIR) {
       return agregarTrimestral(dadosAnterior.dados.lucroAntesIR);
@@ -213,7 +216,6 @@ export const VariacaoLucroChart = ({ dadosAtual, dadosAnterior }) => {
       const lucroMensal = dadosAnterior.receitasMensais.map((rec, i) => rec - dadosAnterior.despesasMensais[i]);
       return agregarTrimestral(lucroMensal);
     }
-    // Mock data para ano anterior
     return [0, 0, 0, 0];
   }, [dadosAnterior]);
 
@@ -226,33 +228,38 @@ export const VariacaoLucroChart = ({ dadosAtual, dadosAnterior }) => {
 
     const ctx = chartRef.current.getContext('2d');
 
+    const datasets = [
+      {
+        label: String(anoAtual),
+        data: lucroAtualTrimestral,
+        backgroundColor: isDarkMode ? 'rgba(14, 79, 109, 0.8)' : 'rgba(14, 79, 109, 0.7)',
+        borderColor: COLORS.primary,
+        borderWidth: 2,
+        borderRadius: 8,
+        barPercentage: 0.7,
+        categoryPercentage: 0.8
+      }
+    ];
+
+    if (anoAnterior !== null && lucroAnteriorTrimestral) {
+      datasets.push({
+        label: String(anoAnterior),
+        data: lucroAnteriorTrimestral,
+        backgroundColor: isDarkMode ? 'rgba(88, 163, 164, 0.6)' : 'rgba(88, 163, 164, 0.5)',
+        borderColor: COLORS.secondary,
+        borderWidth: 2,
+        borderRadius: 8,
+        borderDash: [4, 4],
+        barPercentage: 0.7,
+        categoryPercentage: 0.8
+      });
+    }
+
     chartInstance.current = new Chart(ctx, {
       type: 'bar',
       data: {
         labels: trimestres,
-        datasets: [
-          {
-            label: String(anoAtual),
-            data: lucroAtualTrimestral,
-            backgroundColor: isDarkMode ? 'rgba(14, 79, 109, 0.8)' : 'rgba(14, 79, 109, 0.7)',
-            borderColor: COLORS.primary,
-            borderWidth: 2,
-            borderRadius: 8,
-            barPercentage: 0.7,
-            categoryPercentage: 0.8
-          },
-          {
-            label: String(anoAnterior),
-            data: lucroAnteriorTrimestral,
-            backgroundColor: isDarkMode ? 'rgba(88, 163, 164, 0.6)' : 'rgba(88, 163, 164, 0.5)',
-            borderColor: COLORS.secondary,
-            borderWidth: 2,
-            borderRadius: 8,
-            borderDash: [4, 4],
-            barPercentage: 0.7,
-            categoryPercentage: 0.8
-          }
-        ]
+        datasets
       },
       options: {
         responsive: true,
@@ -721,7 +728,7 @@ export const TabelaComparativoMensal = ({ dados }) => {
               Entradas (R$)
             </th>
             <th className={`px-4 py-3 text-right text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-              Saídas (R$)
+              Saídas/Custos (R$)
             </th>
             <th className={`px-4 py-3 text-right text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
               Lucro Líquido

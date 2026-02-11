@@ -234,6 +234,66 @@ const Dashboard = () => {
     };
   }, [dadosContabeisImportados, analiseHorizontal]);
 
+  // Dados para comparação trimestral de lucro (ano atual x ano anterior)
+  const dadosComparativoLucro = useMemo(() => {
+    const competencias = analiseHorizontal?.dadosPorCompetencia;
+
+    if (!competencias) {
+      const anoBase = analiseHorizontal?.anoExercicio || selectedYear;
+      return {
+        anoAtual: anoBase,
+        anoAnterior: anoBase - 1,
+        dadosAtual: analiseHorizontal || null,
+        dadosAnterior: null
+      };
+    }
+
+    const anosDisponiveis = [...new Set(
+      Object.values(competencias)
+        .map((item) => Number(item.ano))
+        .filter((ano) => Number.isFinite(ano))
+    )].sort((a, b) => b - a);
+
+    const anoAtual = anosDisponiveis[0] || analiseHorizontal?.anoExercicio || selectedYear;
+    const temAnoAnterior = anosDisponiveis.length > 1;
+    const anoAnterior = temAnoAnterior ? anosDisponiveis[1] : (anoAtual - 1);
+
+    const montarSerieAno = (ano) => {
+      if (!ano) return null;
+
+      const lucroAntesIR = new Array(12).fill(0);
+
+      Object.values(competencias).forEach((competencia) => {
+        if (Number(competencia.ano) !== ano) return;
+
+        const mesIndex = Number(competencia.mes) - 1;
+        if (mesIndex < 0 || mesIndex > 11) return;
+
+        const lucroAntesIrValor = typeof competencia.lucroAntesIR === 'number'
+          ? competencia.lucroAntesIR
+          : (
+            Number(competencia.resultadoLiquidoOriginal || competencia.lucroLiquido || 0) +
+            Math.abs(Number(competencia.provisaoCSLL || 0)) +
+            Math.abs(Number(competencia.provisaoIRPJ || 0))
+          );
+
+        lucroAntesIR[mesIndex] = lucroAntesIrValor;
+      });
+
+      return {
+        anoExercicio: ano,
+        dados: { lucroAntesIR }
+      };
+    };
+
+    return {
+      anoAtual,
+      anoAnterior,
+      dadosAtual: montarSerieAno(anoAtual) || analiseHorizontal || null,
+      dadosAnterior: temAnoAnterior ? montarSerieAno(anoAnterior) : null
+    };
+  }, [analiseHorizontal, selectedYear]);
+
   // Callback para receber dados do gráfico de distribuição
   const handleFiscalDataCalculated = (data) => {
     setFiscalData(data);
@@ -263,7 +323,7 @@ const Dashboard = () => {
 
   // Dados para exportação
   const exportColumns = [
-    { key: 'mes', label: 'Mes' },
+    { key: 'mes', label: 'Mês' },
     { key: 'receita', label: 'Receita' },
     { key: 'despesa', label: 'Despesa' },
     { key: 'lucro', label: 'Lucro' }
@@ -290,7 +350,7 @@ const Dashboard = () => {
               data={exportData}
               columns={exportColumns}
               filename={`relatorio-${cnpjInfo?.nomeFantasia || 'empresa'}`}
-              title={`Relatorio ${cnpjInfo?.nomeFantasia || 'Empresa'}`}
+              title={`Relatório ${cnpjInfo?.nomeFantasia || 'Empresa'}`}
             />
           </div>
         </div>
@@ -374,7 +434,7 @@ const Dashboard = () => {
                 <div className="flex items-end justify-between">
                   <div>
                     <p className="text-2xl font-bold text-slate-800 dark:text-white">{formatCurrency(totalLucro)}</p>
-                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Lucro Liquido</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Lucro Líquido</p>
                   </div>
                   <Sparkline data={lucroSparkline} color="#3b82f6" height={32} width={60} />
                 </div>
@@ -566,11 +626,11 @@ const Dashboard = () => {
                     <Calculator className="w-5 h-5 text-white" />
                   </div>
                   <span className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-emerald-700' : 'text-emerald-700'}`}>
-                    Departamento Contabil
+                    Departamento Contábil
                   </span>
                 </div>
                 <h1 className={`text-4xl font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-[#1e293b]'}`}>
-                  Analise Financeira
+                  Análise Financeira
                 </h1>
                 <p className={`text-lg font-medium ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                   Demonstrativo de receitas, despesas, estoque e saldos
@@ -599,7 +659,7 @@ const Dashboard = () => {
               <div className={`p-4 rounded-xl flex items-center gap-3 ${isDarkMode ? 'bg-amber-900/30 border border-amber-700/50' : 'bg-amber-50 border border-amber-200'}`}>
                 <AlertCircle className={`w-5 h-5 ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`} />
                 <span className={isDarkMode ? 'text-amber-300' : 'text-amber-800'}>
-                  Nenhum relatorio importado. Acesse <strong>Configuracoes</strong> para importar dados do Dominio.
+                  Nenhum relatório importado. Acesse <strong>Configurações</strong> para importar dados do Domínio.
                 </span>
               </div>
             )}
@@ -635,7 +695,7 @@ const Dashboard = () => {
                     <Coins className="w-8 h-8 opacity-80" />
                   </div>
                   <p className="text-3xl font-bold">{formatCurrency(totalLucro)}</p>
-                  <p className="text-white/70 text-sm mt-1">Lucro Liquido</p>
+                  <p className="text-white/70 text-sm mt-1">Lucro Líquido</p>
                 </div>
 
                 <div className="bg-slate-700 p-6 rounded-xl text-white shadow-md">
@@ -691,7 +751,7 @@ const Dashboard = () => {
                 {/* Card Lateral de Resumo */}
                 <div className={`p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
                   <h3 className={`text-lg font-bold mb-6 pb-4 border-b ${isDarkMode ? 'text-white border-slate-700' : 'text-slate-800 border-slate-100'}`}>
-                    Resumo do Exercicio
+                    Resumo do Exercício
                   </h3>
 
                   <div className="space-y-4">
@@ -718,7 +778,7 @@ const Dashboard = () => {
                     <div className={`p-4 rounded-xl ${isDarkMode ? 'bg-[#0e4f6d]/40' : 'bg-[#0e4f6d]/10'}`}>
                       <div className="flex items-center gap-2 mb-2">
                         <Coins className={`w-5 h-5 ${isDarkMode ? 'text-teal-500' : 'text-[#0e4f6d]'}`} />
-                        <p className={`text-sm font-medium ${isDarkMode ? 'text-teal-500' : 'text-[#0e4f6d]'}`}>Lucro Liquido</p>
+                        <p className={`text-sm font-medium ${isDarkMode ? 'text-teal-500' : 'text-[#0e4f6d]'}`}>Lucro Líquido</p>
                       </div>
                       <p className={`text-2xl font-bold ${isDarkMode ? 'text-slate-300' : 'text-[#0e4f6d]'}`}>
                         {formatCurrency(totalLucro)}
@@ -736,7 +796,7 @@ const Dashboard = () => {
             <div className={`rounded-xl shadow-sm overflow-hidden transition-all duration-500 delay-300 ${cardAnimation} ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
               <div className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
                 <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Detalhamento Mensal</h3>
-                <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Mes Referencia | Entradas | Saídas/Custos | Lucro Liquido</p>
+                <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Mês Referência | Entradas | Saídas/Custos | Lucro Líquido</p>
               </div>
               {temDadosContabeis ? (
                 <TabelaComparativoMensal dados={dadosContabeisImportados?.analiseHorizontal} />
@@ -745,7 +805,7 @@ const Dashboard = () => {
                   <table className="w-full">
                     <thead className={isDarkMode ? 'bg-slate-700/50' : 'bg-slate-50'}>
                       <tr>
-                        <th className={`px-6 py-4 text-left text-xs font-bold uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Mes</th>
+                        <th className={`px-6 py-4 text-left text-xs font-bold uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Mês</th>
                         <th className={`px-6 py-4 text-right text-xs font-bold uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Entradas</th>
                         <th className={`px-6 py-4 text-right text-xs font-bold uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Saídas/Custos</th>
                         <th className={`px-6 py-4 text-right text-xs font-bold uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Saldo</th>
@@ -777,17 +837,19 @@ const Dashboard = () => {
                 </div>
                 <div className="flex items-center gap-4">
                   <span className={`flex items-center gap-2 text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                    <div className="w-3 h-3 rounded-full bg-[#0e4f6d]" /> 2025
+                    <div className="w-3 h-3 rounded-full bg-[#0e4f6d]" /> {dadosComparativoLucro.anoAtual}
                   </span>
-                  <span className={`flex items-center gap-2 text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                    <div className="w-3 h-3 rounded-full bg-[#58a3a4] border-2 border-dashed border-[#58a3a4]" /> 2024
-                  </span>
+                  {dadosComparativoLucro.dadosAnterior && (
+                    <span className={`flex items-center gap-2 text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                      <div className="w-3 h-3 rounded-full bg-[#58a3a4] border-2 border-dashed border-[#58a3a4]" /> {dadosComparativoLucro.anoAnterior}
+                    </span>
+                  )}
                 </div>
               </div>
               {temDadosContabeis ? (
                 <VariacaoLucroChart
-                  dadosAtual={dadosContabeisImportados?.analiseHorizontal}
-                  dadosAnterior={null}
+                  dadosAtual={dadosComparativoLucro.dadosAtual}
+                  dadosAnterior={dadosComparativoLucro.dadosAnterior}
                 />
               ) : (
                 <LucroComparativoChart />
@@ -811,7 +873,7 @@ const Dashboard = () => {
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Receita x Custo x Estoque</h3>
-                      <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Ultimos 12 meses</p>
+                      <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Últimos 12 meses</p>
                     </div>
                     <div className="flex items-center gap-3">
                       <span className={`flex items-center gap-1 text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
@@ -836,7 +898,7 @@ const Dashboard = () => {
                 <div className={`p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Movimentacao Bancaria</h3>
+                      <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Movimentação Bancária</h3>
                       <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Saldo em Bancos Conta Movimento</p>
                     </div>
                     <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-[#0e4f6d]/30' : 'bg-[#0e4f6d]/10'}`}>
@@ -858,8 +920,8 @@ const Dashboard = () => {
             <div className={`p-6 rounded-xl shadow-sm transition-all duration-500 delay-600 ${cardAnimation} ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Aplicacoes Financeiras</h3>
-                  <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Aplicacoes Financeiras de Liquidez Imediata</p>
+                  <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Aplicações Financeiras</h3>
+                  <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Aplicações Financeiras de Liquidez Imediata</p>
                 </div>
                 <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-[#58a3a4]/30' : 'bg-[#58a3a4]/10'}`}>
                   <TrendingUp className={`w-5 h-5 ${isDarkMode ? 'text-teal-400' : 'text-[#58a3a4]'}`} />
@@ -881,19 +943,19 @@ const Dashboard = () => {
                   <Award className="w-8 h-8" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold mb-3">Analise de Performance 2025</h3>
+                  <h3 className="text-xl font-bold mb-3">Análise de Performance 2025</h3>
                   <p className="text-white/80 leading-relaxed">
                     {temDadosContabeis ? (
                       <>
-                        Dados importados do Sistema Dominio. Os relatorios mostram a evolucao financeira
-                        da empresa ao longo do exercicio, permitindo acompanhar receitas, despesas,
-                        movimentacao bancaria e aplicacoes financeiras mes a mes.
+                        Dados importados do Sistema Domínio. Os relatórios mostram a evolução financeira
+                        da empresa ao longo do exercício, permitindo acompanhar receitas, despesas,
+                        movimentação bancária e aplicações financeiras mês a mês.
                       </>
                     ) : (
                       <>
-                        O exercicio de 2025 demonstra crescimento de receita com estabilidade
-                        nos primeiros trimestres. Para visualizar dados reais, importe os relatorios
-                        do Sistema Dominio (Balancete, Analise Horizontal, DRE) na area de Configuracoes.
+                        O exercício de 2025 demonstra crescimento de receita com estabilidade
+                        nos primeiros trimestres. Para visualizar dados reais, importe os relatórios
+                        do Sistema Domínio (Balancete, Análise Horizontal, DRE) na área de Configurações.
                       </>
                     )}
                   </p>
@@ -918,10 +980,10 @@ const Dashboard = () => {
                   </span>
                 </div>
                 <h1 className={`text-4xl font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-[#1e293b]'}`}>
-                  Analise Tributaria
+                  Análise Tributária
                 </h1>
                 <p className={`text-lg font-medium ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                  Apuracao trimestral sobre Lucro Real - Dados importados do Sistema Dominio.
+                  Apuração trimestral sobre Lucro Real - Dados importados do Sistema Domínio.
                 </p>
               </div>
               <div className="flex gap-2">
@@ -947,7 +1009,7 @@ const Dashboard = () => {
               <div className={`p-4 rounded-xl flex items-center gap-3 ${isDarkMode ? 'bg-amber-900/30 border border-amber-700/50' : 'bg-amber-50 border border-amber-200'}`}>
                 <AlertCircle className={`w-5 h-5 ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`} />
                 <span className={isDarkMode ? 'text-amber-300' : 'text-amber-800'}>
-                  Nenhum relatorio fiscal importado. Acesse <strong>Configuracoes</strong> para importar dados do Dominio (Resumo por Acumulador, Demonstrativo Mensal, Resumo dos Impostos).
+                  Nenhum relatório fiscal importado. Acesse <strong>Configurações</strong> para importar dados do Domínio (Resumo por Acumulador, Demonstrativo Mensal, Resumo dos Impostos).
                 </span>
               </div>
             )}
@@ -1002,7 +1064,7 @@ const Dashboard = () => {
                       <p className="text-2xl font-bold">{formatCurrency(totaisFiscais.cargaTributariaTotal)}</p>
                     </div>
                   </div>
-                  <p className="text-sm text-white/70">Carga tributaria do exercicio</p>
+                  <p className="text-sm text-white/70">Carga tributária do exercício</p>
                 </div>
               </div>
             )}
@@ -1025,7 +1087,7 @@ const Dashboard = () => {
                     Por Categoria
                   </h3>
                   <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                    Entradas, Servicos e Saidas
+                    Entradas, Serviços e Saídas
                   </p>
                   {temDadosFiscais ? (
                     <FaturamentoPorCategoriaChart dados={dadosFiscaisImportados?.demonstrativoMensal || dadosFiscaisImportados?.resumoAcumulador} />
@@ -1041,10 +1103,10 @@ const Dashboard = () => {
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                        Evolucao Mensal
+                        Evolução Mensal
                       </h3>
                       <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                        Entradas vs Saidas por mes
+                        Entradas vs Saídas por mês
                       </p>
                     </div>
                     {/* Seletor de Período */}
@@ -1107,7 +1169,7 @@ const Dashboard = () => {
                   <Receipt className={`w-5 h-5 ${isDarkMode ? 'text-slate-500' : 'text-slate-700'}`} />
                 </div>
                 <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                  Situacao Fiscal
+                  Situação Fiscal
                 </h2>
               </div>
 
@@ -1213,7 +1275,7 @@ const Dashboard = () => {
                     Por Categoria
                   </h3>
                   <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                    Compra Comercializacao vs Vendas (Mercadoria, Produto, Exterior)
+                    Compra Comercialização vs Vendas (Mercadoria, Produto, Exterior)
                   </p>
                   {temDadosFiscais && dadosFiscaisImportados?.resumoAcumulador ? (
                     <Detalhamento380Chart dados={dadosFiscaisImportados.resumoAcumulador} />
@@ -1230,10 +1292,10 @@ const Dashboard = () => {
                 <div className={`mt-6 rounded-xl shadow-sm overflow-hidden ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
                   <div className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
                     <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                      Calculo 380
+                      Cálculo 380
                     </h3>
                     <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                      Periodo | Compra | Venda | Esperado | Receita Complementar | Situacao
+                      Período | Compra | Venda | Esperado | Receita Complementar | Situação
                     </p>
                   </div>
                   <Tabela380
@@ -1246,7 +1308,7 @@ const Dashboard = () => {
               {/* Gráfico de Rosca - Situação 380 */}
               <div className={`mt-6 p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
                 <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                  Situacao 380
+                  Situação 380
                 </h3>
                 <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                   Vendido vs Falta Vender (Esperado = Compra x 1.25)
@@ -1263,10 +1325,10 @@ const Dashboard = () => {
                   </div>
                   {temDadosFiscais && dadosFiscaisImportados?.resumoAcumulador && (
                     <div className={`p-6 rounded-xl ${isDarkMode ? 'bg-slate-700/50' : 'bg-slate-50'}`}>
-                      <h4 className={`text-sm font-bold mb-4 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>Resumo da Situacao</h4>
+                      <h4 className={`text-sm font-bold mb-4 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>Resumo da Situação</h4>
                       <div className="space-y-3">
                         <div className="flex justify-between items-center">
-                          <span className={isDarkMode ? 'text-slate-400' : 'text-slate-500'}>Compra p/ Comercializacao</span>
+                          <span className={isDarkMode ? 'text-slate-400' : 'text-slate-500'}>Compra p/ Comercialização</span>
                           <span className={`font-bold ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
                             {formatCurrency(dadosFiscaisImportados.resumoAcumulador?.categorias?.compraComercializacao || 0)}
                           </span>
@@ -1285,7 +1347,7 @@ const Dashboard = () => {
                         </div>
                         <div className={`pt-3 mt-3 border-t ${isDarkMode ? 'border-slate-600' : 'border-slate-200'}`}>
                           <div className="flex justify-between items-center">
-                            <span className={`font-semibold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Situacao</span>
+                            <span className={`font-semibold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Situação</span>
                             <span className={`px-3 py-1 rounded-full text-sm font-bold ${
                               (dadosFiscaisImportados.resumoAcumulador?.categorias?.totalVendas380 || 0) >= (dadosFiscaisImportados.resumoAcumulador?.categorias?.esperado380 || 0)
                                 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
@@ -1307,8 +1369,8 @@ const Dashboard = () => {
               <div className={`p-8 rounded-xl shadow-sm transition-all duration-500 delay-500 ${cardAnimation} ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
                 <div className="flex items-center justify-between mb-8">
                   <div>
-                    <h3 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Operacoes Mensais</h3>
-                    <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Entradas vs Saidas por mes</p>
+                    <h3 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Operações Mensais</h3>
+                    <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Entradas vs Saídas por mês</p>
                   </div>
                   <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-slate-700' : 'bg-slate-100'}`}>
                     <BarChartHorizontal className={`w-6 h-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`} />
@@ -1325,20 +1387,20 @@ const Dashboard = () => {
                   <Award className="w-8 h-8" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold mb-3">Analise Fiscal {selectedYear}</h3>
+                  <h3 className="text-xl font-bold mb-3">Análise Fiscal {selectedYear}</h3>
                   <p className="text-white/80 leading-relaxed">
                     {temDadosFiscais ? (
                       <>
-                        Dados importados do Sistema Dominio. Os relatorios fiscais mostram a movimentacao
-                        de entradas e saidas, impostos a recolher e situacao do 380 (comercializacao de mercadorias).
-                        Acompanhe mensalmente para garantir conformidade tributaria.
+                        Dados importados do Sistema Domínio. Os relatórios fiscais mostram a movimentação
+                        de entradas e saídas, impostos a recolher e situação do 380 (comercialização de mercadorias).
+                        Acompanhe mensalmente para garantir conformidade tributária.
                       </>
                     ) : (
                       <>
-                        Para visualizar dados reais, importe os relatorios do Sistema Dominio
-                        (Resumo por Acumulador, Demonstrativo Mensal, Resumo dos Impostos) na area de Configuracoes.
-                        Volume de entradas superior a <strong>R$ 45 milhoes</strong> contra saidas de
-                        <strong> R$ 15,6 milhoes</strong> sugere formacao de estoque ou aquisicao de insumos.
+                        Para visualizar dados reais, importe os relatórios do Sistema Domínio
+                        (Resumo por Acumulador, Demonstrativo Mensal, Resumo dos Impostos) na área de Configurações.
+                        Volume de entradas superior a <strong>R$ 45 milhões</strong> contra saídas de
+                        <strong> R$ 15,6 milhões</strong> sugere formação de estoque ou aquisição de insumos.
                       </>
                     )}
                   </p>
@@ -1363,10 +1425,10 @@ const Dashboard = () => {
                   </span>
                 </div>
                 <h1 className={`text-4xl font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-[#1e293b]'}`}>
-                  Gestao de Pessoas
+                  Gestão de Pessoas
                 </h1>
                 <p className={`text-lg font-medium ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>
-                  Recursos humanos e obrigacoes sociais
+                  Recursos humanos e obrigações sociais
                 </p>
               </div>
               <div className="flex gap-2">
@@ -1419,7 +1481,7 @@ const Dashboard = () => {
                     <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}>
                       <div className="flex items-center justify-between mb-6">
                         <div>
-                          <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>FGTS Ultimos 3 Meses</h3>
+                          <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>FGTS Últimos 3 Meses</h3>
                           <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Comparativo recente</p>
                         </div>
                         <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-teal-900/30' : 'bg-teal-50'}`}>
@@ -1437,7 +1499,7 @@ const Dashboard = () => {
                     <div className={`md:col-span-2 ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}>
                       <div className="flex items-center justify-between mb-6">
                         <div>
-                          <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>FGTS Mes a Mes</h3>
+                          <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>FGTS Mês a Mês</h3>
                           <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Evolucao mensal do FGTS</p>
                         </div>
                       </div>
@@ -1489,8 +1551,8 @@ const Dashboard = () => {
                   <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm transition-all duration-500 delay-500 ${cardAnimation}`}>
                     <div className="flex items-center justify-between mb-6">
                       <div>
-                        <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>INSS Mes a Mes</h3>
-                        <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Evolucao mensal do INSS</p>
+                        <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>INSS Mês a Mês</h3>
+                        <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Evolução mensal do INSS</p>
                       </div>
                     </div>
                     <INSSMensalChart dados={dadosPessoalImportados.inss} />
@@ -1504,8 +1566,8 @@ const Dashboard = () => {
                       <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}>
                         <div className="flex items-center justify-between mb-6">
                           <div>
-                            <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Admissoes e Demissoes</h3>
-                            <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Movimentacao de pessoal</p>
+                            <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Admissões e Demissões</h3>
+                            <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Movimentação de pessoal</p>
                           </div>
                           <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-green-900/30' : 'bg-green-50'}`}>
                             <UserPlus className={`w-6 h-6 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`} />
@@ -1519,7 +1581,7 @@ const Dashboard = () => {
                       <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}>
                         <div className="flex items-center justify-between mb-6">
                           <div>
-                            <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Por Situacao</h3>
+                            <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Por Situação</h3>
                             <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Ativos, Demitidos, Afastados</p>
                           </div>
                           <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-amber-900/30' : 'bg-amber-50'}`}>
@@ -1537,8 +1599,8 @@ const Dashboard = () => {
                   <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm transition-all duration-500 delay-700 ${cardAnimation}`}>
                     <div className="flex items-center justify-between mb-6">
                       <div>
-                        <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Salario Medio por Cargo</h3>
-                        <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Top 10 cargos por salario</p>
+                        <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Salário Médio por Cargo</h3>
+                        <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Top 10 cargos por salário</p>
                       </div>
                       <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-emerald-900/30' : 'bg-emerald-50'}`}>
                         <Banknote className={`w-6 h-6 ${isDarkMode ? 'text-emerald-700' : 'text-emerald-700'}`} />
@@ -1553,8 +1615,8 @@ const Dashboard = () => {
                   <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} rounded-xl border shadow-sm overflow-hidden transition-all duration-500 delay-800 ${cardAnimation}`}>
                     <div className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'} flex items-center justify-between`}>
                       <div>
-                        <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Programacao de Ferias</h3>
-                        <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Proximas ferias programadas</p>
+                        <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Programação de Férias</h3>
+                        <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Próximas férias programadas</p>
                       </div>
                       <span className={`px-3 py-1 rounded-full text-sm font-medium ${isDarkMode ? 'bg-teal-900/30 text-teal-400' : 'bg-teal-50 text-teal-700'}`}>
                         {dadosPessoalImportados.ferias?.ferias?.length || 0} registros
@@ -1614,11 +1676,11 @@ const Dashboard = () => {
                     Importe os Dados do Setor Pessoal
                   </h3>
                   <p className={`text-lg mb-6 max-w-xl mx-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                    Para visualizar os graficos de FGTS, INSS, Empregados, Salarios e Ferias,
-                    importe os arquivos CSV do Sistema Dominio.
+                    Para visualizar os gráficos de FGTS, INSS, Empregados, Salários e Férias,
+                    importe os arquivos CSV do Sistema Domínio.
                   </p>
                   <div className={`flex flex-wrap justify-center gap-3 mb-8`}>
-                    {['Demonstrativo FGTS', 'Folha de INSS', 'Relacao de Empregados', 'Salario Base', 'Programacao de Ferias'].map((item) => (
+                    {['Demonstrativo FGTS', 'Folha de INSS', 'Relação de Empregados', 'Salário Base', 'Programação de Férias'].map((item) => (
                       <span key={item} className={`px-3 py-1 rounded-full text-sm font-medium ${isDarkMode ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>
                         {item}
                       </span>
@@ -1629,7 +1691,7 @@ const Dashboard = () => {
                     className="inline-flex items-center gap-2 px-6 py-3 bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-colors font-semibold"
                   >
                     <Upload className="w-5 h-5" />
-                    Ir para Importacao
+                    Ir para Importação
                   </a>
                 </div>
 
@@ -1639,7 +1701,7 @@ const Dashboard = () => {
                     <div className="flex items-center justify-between mb-6">
                       <div>
                         <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>FGTS por Tipo</h3>
-                        <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Mensal, 13o, Rescisao</p>
+                        <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Mensal, 13º, Rescisão</p>
                       </div>
                     </div>
                     <FGTSPorTipoChart dados={null} />
@@ -1649,7 +1711,7 @@ const Dashboard = () => {
                     <div className="flex items-center justify-between mb-6">
                       <div>
                         <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>INSS por Empresa</h3>
-                        <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Distribuicao por empresa</p>
+                        <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Distribuição por empresa</p>
                       </div>
                     </div>
                     <INSSPorEmpresaChart dados={null} />
@@ -1660,8 +1722,8 @@ const Dashboard = () => {
                   <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}>
                     <div className="flex items-center justify-between mb-6">
                       <div>
-                        <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Admissoes e Demissoes</h3>
-                        <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Movimentacao de pessoal</p>
+                        <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Admissões e Demissões</h3>
+                        <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Movimentação de pessoal</p>
                       </div>
                     </div>
                     <AdmissoesDemissoesChart dados={null} />
@@ -1670,8 +1732,8 @@ const Dashboard = () => {
                   <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}>
                     <div className="flex items-center justify-between mb-6">
                       <div>
-                        <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Salario por Cargo</h3>
-                        <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Top cargos por salario</p>
+                        <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Salário por Cargo</h3>
+                        <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Top cargos por salário</p>
                       </div>
                     </div>
                     <SalarioPorCargoChart dados={null} />
@@ -1691,14 +1753,14 @@ const Dashboard = () => {
                   <p className="text-white/80 leading-relaxed">
                     {temDadosPessoal ? (
                       <>
-                        Dados importados do Sistema Dominio. Visualize FGTS, INSS, relacao de empregados,
-                        salarios por cargo e programacao de ferias. Para atualizar os dados, importe novos
-                        arquivos CSV na pagina de Configuracoes.
+                        Dados importados do Sistema Domínio. Visualize FGTS, INSS, relação de empregados,
+                        salários por cargo e programação de férias. Para atualizar os dados, importe novos
+                        arquivos CSV na página de Configurações.
                       </>
                     ) : (
                       <>
-                        Importe os relatorios do Sistema Dominio para visualizar dados de FGTS, INSS,
-                        empregados, salarios e ferias. Acesse Configuracoes &gt; Importacao &gt; Setor Pessoal.
+                        Importe os relatórios do Sistema Domínio para visualizar dados de FGTS, INSS,
+                        empregados, salários e férias. Acesse Configurações &gt; Importação &gt; Setor Pessoal.
                       </>
                     )}
                   </p>

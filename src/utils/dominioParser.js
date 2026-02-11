@@ -285,6 +285,7 @@ export const parseAnaliseHorizontal = (csvContent) => {
       resultadoFinanceiro: dados.resultadoFinanceiro[m],
       outrasReceitasOperacionais: dados.outrasReceitasOperacionais[m],
       outrasDespesasReceitas: dados.outrasDespesasReceitas[m],
+      lucroAntesIR: dados.lucroAntesIR[m],
       provisaoCSLL: dados.provisaoCSLL[m],
       provisaoIRPJ: dados.provisaoIRPJ[m],
       resultadoLiquidoOriginal: dados.resultadoLiquido[m],
