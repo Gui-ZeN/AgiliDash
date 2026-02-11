@@ -165,8 +165,8 @@ export const VariacaoLucroChart = ({ dadosAtual, dadosAnterior }) => {
   const chartInstance = useRef(null);
   const { isDarkMode } = useTheme();
 
-  // Labels de meses dinâmicos
-  const meses = useMemo(() => dadosAtual?.meses || DEFAULT_MESES, [dadosAtual?.meses]);
+  // Labels trimestrais
+  const trimestres = ['1º Tri', '2º Tri', '3º Tri', '4º Tri'];
 
   // Anos dinâmicos baseados nos dados
   const anoAtual = useMemo(() => {
@@ -177,32 +177,44 @@ export const VariacaoLucroChart = ({ dadosAtual, dadosAnterior }) => {
     return dadosAnterior?.anoExercicio || (anoAtual - 1);
   }, [dadosAnterior?.anoExercicio, anoAtual]);
 
-  // Calcular lucro mensal (Receita - Despesa) usando useMemo
-  // Prioriza receitasMensais/despesasMensais (classificação automática)
-  const lucroAtual = useMemo(() => {
-    // Se tiver a classificação automática, usa ela
-    if (dadosAtual?.receitasMensais && dadosAtual?.despesasMensais) {
-      return dadosAtual.receitasMensais.map((rec, i) => rec - dadosAtual.despesasMensais[i]);
+  // Função para agregar dados mensais em trimestrais
+  const agregarTrimestral = (dadosMensais) => {
+    if (!dadosMensais || dadosMensais.length < 12) return [0, 0, 0, 0];
+    return [
+      dadosMensais.slice(0, 3).reduce((a, b) => a + b, 0),   // Q1: Jan-Mar
+      dadosMensais.slice(3, 6).reduce((a, b) => a + b, 0),   // Q2: Abr-Jun
+      dadosMensais.slice(6, 9).reduce((a, b) => a + b, 0),   // Q3: Jul-Set
+      dadosMensais.slice(9, 12).reduce((a, b) => a + b, 0)   // Q4: Out-Dez
+    ];
+  };
+
+  // Usar Lucro Antes do IR (LAIR) - lucroAntesIR do parser
+  // Esse é o "Lucro antes do IRPJ e CSLL"
+  const lucroAtualTrimestral = useMemo(() => {
+    // Prioriza lucroAntesIR se disponível
+    if (dadosAtual?.dados?.lucroAntesIR) {
+      return agregarTrimestral(dadosAtual.dados.lucroAntesIR);
     }
-    // Fallback para método antigo
-    if (!dadosAtual?.dados?.receitaBruta) return DEFAULT_VALORES;
-    return dadosAtual.dados.receitaBruta.map((rec, i) => {
-      const desp = Math.abs(dadosAtual.dados.despesasOperacionais?.[i] || 0);
-      return rec - desp;
-    });
+    // Fallback: calcula a partir de receitas e despesas
+    if (dadosAtual?.receitasMensais && dadosAtual?.despesasMensais) {
+      const lucroMensal = dadosAtual.receitasMensais.map((rec, i) => rec - dadosAtual.despesasMensais[i]);
+      return agregarTrimestral(lucroMensal);
+    }
+    return [0, 0, 0, 0];
   }, [dadosAtual]);
 
-  const lucroAnterior = useMemo(() => {
-    // Se tiver a classificação automática, usa ela
-    if (dadosAnterior?.receitasMensais && dadosAnterior?.despesasMensais) {
-      return dadosAnterior.receitasMensais.map((rec, i) => rec - dadosAnterior.despesasMensais[i]);
+  const lucroAnteriorTrimestral = useMemo(() => {
+    // Prioriza lucroAntesIR se disponível
+    if (dadosAnterior?.dados?.lucroAntesIR) {
+      return agregarTrimestral(dadosAnterior.dados.lucroAntesIR);
     }
-    // Fallback para método antigo
-    if (!dadosAnterior?.dados?.receitaBruta) return DEFAULT_VALORES;
-    return dadosAnterior.dados.receitaBruta.map((rec, i) => {
-      const desp = Math.abs(dadosAnterior.dados.despesasOperacionais?.[i] || 0);
-      return rec - desp;
-    });
+    // Fallback: calcula a partir de receitas e despesas
+    if (dadosAnterior?.receitasMensais && dadosAnterior?.despesasMensais) {
+      const lucroMensal = dadosAnterior.receitasMensais.map((rec, i) => rec - dadosAnterior.despesasMensais[i]);
+      return agregarTrimestral(lucroMensal);
+    }
+    // Mock data para ano anterior
+    return [0, 0, 0, 0];
   }, [dadosAnterior]);
 
   useEffect(() => {
@@ -215,37 +227,30 @@ export const VariacaoLucroChart = ({ dadosAtual, dadosAnterior }) => {
     const ctx = chartRef.current.getContext('2d');
 
     chartInstance.current = new Chart(ctx, {
-      type: 'line',
+      type: 'bar',
       data: {
-        labels: meses,
+        labels: trimestres,
         datasets: [
           {
             label: String(anoAtual),
-            data: lucroAtual,
+            data: lucroAtualTrimestral,
+            backgroundColor: isDarkMode ? 'rgba(14, 79, 109, 0.8)' : 'rgba(14, 79, 109, 0.7)',
             borderColor: COLORS.primary,
-            backgroundColor: isDarkMode ? 'rgba(14, 79, 109, 0.2)' : 'rgba(14, 79, 109, 0.1)',
-            borderWidth: 3,
-            fill: true,
-            tension: 0.4,
-            pointRadius: 6,
-            pointBackgroundColor: COLORS.primary,
-            pointBorderColor: isDarkMode ? '#1e293b' : 'white',
-            pointBorderWidth: 2,
-            pointHoverRadius: 8
+            borderWidth: 2,
+            borderRadius: 8,
+            barPercentage: 0.7,
+            categoryPercentage: 0.8
           },
           {
             label: String(anoAnterior),
-            data: lucroAnterior,
+            data: lucroAnteriorTrimestral,
+            backgroundColor: isDarkMode ? 'rgba(88, 163, 164, 0.6)' : 'rgba(88, 163, 164, 0.5)',
             borderColor: COLORS.secondary,
-            backgroundColor: 'transparent',
             borderWidth: 2,
-            borderDash: [8, 4],
-            fill: false,
-            tension: 0.4,
-            pointRadius: 4,
-            pointBackgroundColor: COLORS.secondary,
-            pointBorderColor: isDarkMode ? '#1e293b' : 'white',
-            pointBorderWidth: 2
+            borderRadius: 8,
+            borderDash: [4, 4],
+            barPercentage: 0.7,
+            categoryPercentage: 0.8
           }
         ]
       },
@@ -308,7 +313,7 @@ export const VariacaoLucroChart = ({ dadosAtual, dadosAnterior }) => {
         chartInstance.current.destroy();
       }
     };
-  }, [meses, lucroAtual, lucroAnterior, anoAtual, anoAnterior, isDarkMode]);
+  }, [trimestres, lucroAtualTrimestral, lucroAnteriorTrimestral, anoAtual, anoAnterior, isDarkMode]);
 
   return (
     <div className="h-[350px]">

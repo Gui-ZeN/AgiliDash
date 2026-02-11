@@ -709,7 +709,7 @@ const Dashboard = () => {
             <div className={`rounded-xl shadow-sm overflow-hidden transition-all duration-500 delay-300 ${cardAnimation} ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
               <div className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
                 <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Detalhamento Mensal</h3>
-                <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Mes Referencia | Entradas | Saidas | Lucro Liquido</p>
+                <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Mes Referencia | Entradas | Saídas/Custos | Lucro Liquido</p>
               </div>
               {temDadosContabeis ? (
                 <TabelaComparativoMensal dados={dadosContabeisImportados?.analiseHorizontal} />
@@ -720,7 +720,7 @@ const Dashboard = () => {
                       <tr>
                         <th className={`px-6 py-4 text-left text-xs font-bold uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Mes</th>
                         <th className={`px-6 py-4 text-right text-xs font-bold uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Entradas</th>
-                        <th className={`px-6 py-4 text-right text-xs font-bold uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Saidas</th>
+                        <th className={`px-6 py-4 text-right text-xs font-bold uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Saídas/Custos</th>
                         <th className={`px-6 py-4 text-right text-xs font-bold uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Saldo</th>
                       </tr>
                     </thead>
@@ -741,12 +741,12 @@ const Dashboard = () => {
               )}
             </div>
 
-            {/* Gráfico de Variação Anual do Lucro */}
+            {/* Gráfico de Variação do Lucro */}
             <div className={`p-6 rounded-xl shadow-sm transition-all duration-500 delay-400 ${cardAnimation} ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Variacao Anual do Lucro</h3>
-                  <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Comparativo 2024 vs 2025</p>
+                  <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Variação do Lucro</h3>
+                  <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Lucro antes do IRPJ e CSLL</p>
                 </div>
                 <div className="flex items-center gap-4">
                   <span className={`flex items-center gap-2 text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
@@ -767,14 +767,14 @@ const Dashboard = () => {
               )}
             </div>
 
-            {/* Seção 2: Movimentações e Aplicações */}
+            {/* Seção 2: Variação de Estoque e Saldos Bancários */}
             <section className={`transition-all duration-500 delay-500 ${cardAnimation}`}>
               <div className="flex items-center gap-3 mb-6">
                 <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-blue-900/50' : 'bg-blue-100'}`}>
                   <Wallet className={`w-5 h-5 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
                 </div>
                 <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                  Movimentacoes e Aplicacoes
+                  Variação de Estoque e Saldos Bancários
                 </h2>
               </div>
 
