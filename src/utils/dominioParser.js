@@ -142,7 +142,8 @@ export const parseAnaliseHorizontal = (csvContent) => {
     resultadoFinanceiro: new Array(12).fill(0),
     despesasFinanceiras: new Array(12).fill(0),
     receitaFinanceira: new Array(12).fill(0),
-    outrasReceitas: new Array(12).fill(0),
+    outrasReceitasOperacionais: new Array(12).fill(0),
+    outrasDespesasReceitas: new Array(12).fill(0),
     lucroAntesIR: new Array(12).fill(0),
     provisaoCSLL: new Array(12).fill(0),
     provisaoIRPJ: new Array(12).fill(0),
@@ -163,7 +164,8 @@ export const parseAnaliseHorizontal = (csvContent) => {
     { match: '+ / - RESULTADO FINANCEIRO', key: 'resultadoFinanceiro', exact: true },
     { match: '(-) DESPESAS FINANCEIRAS', key: 'despesasFinanceiras', exact: true },
     { match: 'RECEITA FINANCEIRA', key: 'receitaFinanceira', exact: true },
-    { match: 'OUTRAS RECEITAS OPERACIONAIS', key: 'outrasReceitas', exact: true },
+    { match: 'OUTRAS RECEITAS OPERACIONAIS', key: 'outrasReceitasOperacionais', exact: true },
+    { match: 'OUTRAS DESPESAS E OUTRAS RECEITAS', key: 'outrasDespesasReceitas', exact: true },
     { match: '= LUCRO ANTES DO IR', key: 'lucroAntesIR', exact: false },
     { match: '(-) PROVISAO PARA A CONTRIBUICAO SOCIAL', key: 'provisaoCSLL', exact: true },
     { match: '(-) PROVISAO PARA O IMPOSTO DE RENDA', key: 'provisaoIRPJ', exact: true },
@@ -230,20 +232,39 @@ export const parseAnaliseHorizontal = (csvContent) => {
   console.log('Parser Análise Horizontal - Receita Bruta:', dados.receitaBruta);
   console.log('Parser Análise Horizontal - Resultado Líquido:', dados.resultadoLiquido);
 
-  // Calcular receitas e despesas por mês
-  const receitasMensais = new Array(12).fill(0);
-  const despesasMensais = new Array(12).fill(0);
+  // Calcular receitas e despesas por mês usando LINHAS ESPECÍFICAS do DRE
+  // RECEITA = RECEITA BRUTA
+  const receitasMensais = [...dados.receitaBruta];
 
-  // Processar todas as categorias de dados
-  Object.values(dados).forEach(valores => {
-    valores.forEach((valor, mesIndex) => {
-      if (valor > 0) {
-        receitasMensais[mesIndex] += valor;
-      } else if (valor < 0) {
-        despesasMensais[mesIndex] += Math.abs(valor);
-      }
-    });
-  });
+  // DESPESAS/CUSTOS = Soma das seguintes linhas:
+  // (-) CMV/CPV
+  // (-) DESPESAS OPERACIONAIS DAS ATIVIDADES EM GERAL
+  // + / - RESULTADO FINANCEIRO
+  // OUTRAS RECEITAS OPERACIONAIS
+  // OUTRAS DESPESAS E OUTRAS RECEITAS
+  // (-) PROVISAO PARA A CONTRIBUICAO SOCIAL
+  // (-) PROVISAO PARA O IMPOSTO DE RENDA
+  const despesasMensais = new Array(12).fill(0);
+  for (let m = 0; m < 12; m++) {
+    const somaDespesas =
+      dados.cmv[m] +
+      dados.despesasOperacionais[m] +
+      dados.resultadoFinanceiro[m] +
+      dados.outrasReceitasOperacionais[m] +
+      dados.outrasDespesasReceitas[m] +
+      dados.provisaoCSLL[m] +
+      dados.provisaoIRPJ[m];
+    // Converter para valor positivo (as despesas vêm negativas do CSV)
+    despesasMensais[m] = Math.abs(somaDespesas);
+  }
+
+  // LUCRO LÍQUIDO = Receita - Despesas (calculado no retorno)
+
+  // Calcular lucro líquido mensal (Receita - Despesas)
+  const lucroLiquidoMensal = new Array(12).fill(0);
+  for (let m = 0; m < 12; m++) {
+    lucroLiquidoMensal[m] = receitasMensais[m] - despesasMensais[m];
+  }
 
   // Criar estrutura de dados por competência (MM/YYYY)
   const dadosPorCompetencia = {};
@@ -262,11 +283,26 @@ export const parseAnaliseHorizontal = (csvContent) => {
       despesasPessoal: dados.despesasPessoal[m],
       despesasGerais: dados.despesasGerais[m],
       resultadoFinanceiro: dados.resultadoFinanceiro[m],
-      resultadoLiquido: dados.resultadoLiquido[m],
+      outrasReceitasOperacionais: dados.outrasReceitasOperacionais[m],
+      outrasDespesasReceitas: dados.outrasDespesasReceitas[m],
+      provisaoCSLL: dados.provisaoCSLL[m],
+      provisaoIRPJ: dados.provisaoIRPJ[m],
+      resultadoLiquidoOriginal: dados.resultadoLiquido[m],
+      // Valores calculados com base nas linhas específicas
       receita: receitasMensais[m],
-      despesa: despesasMensais[m]
+      despesa: despesasMensais[m],
+      lucroLiquido: lucroLiquidoMensal[m]
     };
   }
+
+  // Totais
+  const totalReceitas = receitasMensais.reduce((a, b) => a + b, 0);
+  const totalDespesas = despesasMensais.reduce((a, b) => a + b, 0);
+  const totalLucroLiquido = totalReceitas - totalDespesas;
+
+  console.log('Parser Análise Horizontal - Total Receita (RECEITA BRUTA):', totalReceitas);
+  console.log('Parser Análise Horizontal - Total Despesas/Custos:', totalDespesas);
+  console.log('Parser Análise Horizontal - Total Lucro Líquido:', totalLucroLiquido);
 
   return {
     empresaInfo,
@@ -275,16 +311,17 @@ export const parseAnaliseHorizontal = (csvContent) => {
     meses: mesNomes,
     dados,
     dadosPorCompetencia, // NOVA ESTRUTURA POR COMPETÊNCIA
-    // Receitas e Despesas mensais calculadas
+    // Receitas e Despesas mensais calculadas (usando linhas específicas)
     receitasMensais,
     despesasMensais,
+    lucroLiquidoMensal,
     // Calcular totais
     totais: {
-      receitaBruta: dados.receitaBruta.reduce((a, b) => a + b, 0),
-      despesaTotal: dados.despesasOperacionais.reduce((a, b) => a + Math.abs(b), 0),
-      lucroLiquido: dados.resultadoLiquido.reduce((a, b) => a + b, 0),
-      totalReceitas: receitasMensais.reduce((a, b) => a + b, 0),
-      totalDespesas: despesasMensais.reduce((a, b) => a + b, 0)
+      receitaBruta: totalReceitas,
+      despesaTotal: totalDespesas,
+      lucroLiquido: totalLucroLiquido,
+      totalReceitas,
+      totalDespesas
     }
   };
 };

@@ -1200,14 +1200,14 @@ const Configuracoes = () => {
                         <div className="bg-emerald-700 p-4 rounded-xl text-white">
                           <div className="flex items-center gap-2 mb-2">
                             <TrendingUp className="w-5 h-5 opacity-80" />
-                            <span className="text-sm opacity-80">Total Receitas (positivos)</span>
+                            <span className="text-sm opacity-80">Receita (RECEITA BRUTA)</span>
                           </div>
                           <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totais?.totalReceitas || 0)}</p>
                         </div>
                         <div className="bg-red-600 p-4 rounded-xl text-white">
                           <div className="flex items-center gap-2 mb-2">
                             <TrendingDown className="w-5 h-5 opacity-80" />
-                            <span className="text-sm opacity-80">Total Despesas (negativos)</span>
+                            <span className="text-sm opacity-80">Despesas/Custos</span>
                           </div>
                           <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totais?.totalDespesas || 0)}</p>
                         </div>
@@ -1221,9 +1221,19 @@ const Configuracoes = () => {
                         <div className="bg-slate-700 p-4 rounded-xl text-white">
                           <div className="flex items-center gap-2 mb-2">
                             <Activity className="w-5 h-5 opacity-80" />
-                            <span className="text-sm opacity-80">Competência</span>
+                            <span className="text-sm opacity-80">Exercício</span>
                           </div>
-                          <p className="text-2xl font-bold">{importPreview.dadosParsed.competencia || '-'}</p>
+                          <p className="text-2xl font-bold">{importPreview.dadosParsed.anoExercicio || '-'}</p>
+                        </div>
+                      </div>
+
+                      {/* Info sobre cálculo */}
+                      <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl">
+                        <p className="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-2">Cálculo dos Valores:</p>
+                        <div className="text-xs text-blue-700 dark:text-blue-400 space-y-1">
+                          <p><strong>Receita:</strong> RECEITA BRUTA</p>
+                          <p><strong>Despesas/Custos:</strong> CMV/CPV + Despesas Operacionais + Resultado Financeiro + Outras Receitas Operacionais + Outras Despesas/Receitas + Provisão CSLL + Provisão IRPJ</p>
+                          <p><strong>Resultado Líquido:</strong> Receita - Despesas/Custos</p>
                         </div>
                       </div>
 
@@ -1236,51 +1246,86 @@ const Configuracoes = () => {
                           <table className="w-full text-sm">
                             <thead className="bg-slate-100 dark:bg-slate-800">
                               <tr>
-                                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500 sticky left-0 bg-slate-100 dark:bg-slate-800">Mês</th>
+                                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500 sticky left-0 bg-slate-100 dark:bg-slate-800 min-w-[200px]">Linha</th>
                                 {importPreview.dadosParsed.meses?.map((mes, i) => (
                                   <th key={i} className="px-3 py-2 text-right text-xs font-semibold text-slate-500 whitespace-nowrap">{mes}</th>
                                 ))}
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                              <tr className="bg-green-50 dark:bg-green-900/10">
-                                <td className="px-3 py-2 font-medium text-green-700 dark:text-green-400 sticky left-0 bg-green-50 dark:bg-green-900/10">Receita Bruta</td>
+                              {/* RECEITA */}
+                              <tr className="bg-emerald-50 dark:bg-emerald-900/10 font-bold">
+                                <td className="px-3 py-2 font-bold text-emerald-800 dark:text-emerald-300 sticky left-0 bg-emerald-50 dark:bg-emerald-900/10">RECEITA BRUTA</td>
                                 {importPreview.dadosParsed.dados?.receitaBruta?.map((val, i) => (
-                                  <td key={i} className="px-3 py-2 text-right text-green-600 dark:text-green-400 whitespace-nowrap">{formatCurrency(val)}</td>
+                                  <td key={i} className="px-3 py-2 text-right text-emerald-700 dark:text-emerald-400 whitespace-nowrap font-bold">{formatCurrency(val)}</td>
                                 ))}
                               </tr>
-                              <tr className="bg-red-50 dark:bg-red-900/10">
-                                <td className="px-3 py-2 font-medium text-red-700 dark:text-red-400 sticky left-0 bg-red-50 dark:bg-red-900/10">Despesas Operacionais</td>
+                              {/* Separador - DESPESAS */}
+                              <tr className="bg-red-100 dark:bg-red-900/20">
+                                <td colSpan={13} className="px-3 py-1 text-xs font-semibold text-red-600 dark:text-red-400 uppercase tracking-wide">Componentes de Despesas/Custos</td>
+                              </tr>
+                              <tr>
+                                <td className="px-3 py-2 font-medium text-slate-700 dark:text-slate-300 sticky left-0 bg-white dark:bg-slate-800">(-) CMV/CPV</td>
+                                {importPreview.dadosParsed.dados?.cmv?.map((val, i) => (
+                                  <td key={i} className="px-3 py-2 text-right text-red-600 dark:text-red-400 whitespace-nowrap">{formatCurrency(val)}</td>
+                                ))}
+                              </tr>
+                              <tr className="bg-slate-50 dark:bg-slate-900/30">
+                                <td className="px-3 py-2 font-medium text-slate-700 dark:text-slate-300 sticky left-0 bg-slate-50 dark:bg-slate-900/30">(-) Despesas Operacionais</td>
                                 {importPreview.dadosParsed.dados?.despesasOperacionais?.map((val, i) => (
-                                  <td key={i} className="px-3 py-2 text-right text-red-600 dark:text-red-400 whitespace-nowrap">{formatCurrency(Math.abs(val))}</td>
+                                  <td key={i} className="px-3 py-2 text-right text-red-600 dark:text-red-400 whitespace-nowrap">{formatCurrency(val)}</td>
                                 ))}
                               </tr>
-                              <tr className="bg-blue-50 dark:bg-blue-900/10">
-                                <td className="px-3 py-2 font-medium text-blue-700 dark:text-blue-400 sticky left-0 bg-blue-50 dark:bg-blue-900/10">Lucro Bruto</td>
-                                {importPreview.dadosParsed.dados?.lucroBruto?.map((val, i) => (
-                                  <td key={i} className={`px-3 py-2 text-right whitespace-nowrap ${val >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-red-600 dark:text-red-400'}`}>{formatCurrency(val)}</td>
+                              <tr>
+                                <td className="px-3 py-2 font-medium text-slate-700 dark:text-slate-300 sticky left-0 bg-white dark:bg-slate-800">+/- Resultado Financeiro</td>
+                                {importPreview.dadosParsed.dados?.resultadoFinanceiro?.map((val, i) => (
+                                  <td key={i} className={`px-3 py-2 text-right whitespace-nowrap ${val >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>{formatCurrency(val)}</td>
                                 ))}
                               </tr>
-                              <tr className="bg-slate-50 dark:bg-slate-800/50 font-bold">
-                                <td className="px-3 py-2 font-bold text-slate-800 dark:text-white sticky left-0 bg-slate-50 dark:bg-slate-800/50">Resultado Líquido</td>
-                                {importPreview.dadosParsed.dados?.resultadoLiquido?.map((val, i) => (
-                                  <td key={i} className={`px-3 py-2 text-right whitespace-nowrap font-bold ${val >= 0 ? 'text-emerald-700 dark:text-emerald-700' : 'text-red-600 dark:text-red-400'}`}>{formatCurrency(val)}</td>
+                              <tr className="bg-slate-50 dark:bg-slate-900/30">
+                                <td className="px-3 py-2 font-medium text-slate-700 dark:text-slate-300 sticky left-0 bg-slate-50 dark:bg-slate-900/30">Outras Receitas Operacionais</td>
+                                {importPreview.dadosParsed.dados?.outrasReceitasOperacionais?.map((val, i) => (
+                                  <td key={i} className={`px-3 py-2 text-right whitespace-nowrap ${val >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>{formatCurrency(val)}</td>
                                 ))}
                               </tr>
-                              {/* Separador */}
+                              <tr>
+                                <td className="px-3 py-2 font-medium text-slate-700 dark:text-slate-300 sticky left-0 bg-white dark:bg-slate-800">Outras Despesas e Receitas</td>
+                                {importPreview.dadosParsed.dados?.outrasDespesasReceitas?.map((val, i) => (
+                                  <td key={i} className={`px-3 py-2 text-right whitespace-nowrap ${val >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>{formatCurrency(val)}</td>
+                                ))}
+                              </tr>
+                              <tr className="bg-slate-50 dark:bg-slate-900/30">
+                                <td className="px-3 py-2 font-medium text-slate-700 dark:text-slate-300 sticky left-0 bg-slate-50 dark:bg-slate-900/30">(-) Provisão CSLL</td>
+                                {importPreview.dadosParsed.dados?.provisaoCSLL?.map((val, i) => (
+                                  <td key={i} className="px-3 py-2 text-right text-red-600 dark:text-red-400 whitespace-nowrap">{formatCurrency(val)}</td>
+                                ))}
+                              </tr>
+                              <tr>
+                                <td className="px-3 py-2 font-medium text-slate-700 dark:text-slate-300 sticky left-0 bg-white dark:bg-slate-800">(-) Provisão IRPJ</td>
+                                {importPreview.dadosParsed.dados?.provisaoIRPJ?.map((val, i) => (
+                                  <td key={i} className="px-3 py-2 text-right text-red-600 dark:text-red-400 whitespace-nowrap">{formatCurrency(val)}</td>
+                                ))}
+                              </tr>
+                              {/* Separador - TOTAIS CALCULADOS */}
                               <tr className="bg-slate-200 dark:bg-slate-700">
-                                <td colSpan={13} className="px-3 py-1 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Classificação Automática (positivo = receita, negativo = despesa)</td>
+                                <td colSpan={13} className="px-3 py-1 text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">Valores Calculados para Gráficos</td>
                               </tr>
                               <tr className="bg-emerald-50 dark:bg-emerald-900/10">
-                                <td className="px-3 py-2 font-medium text-emerald-700 dark:text-emerald-700 sticky left-0 bg-emerald-50 dark:bg-emerald-900/10">Total Receitas (+)</td>
+                                <td className="px-3 py-2 font-bold text-emerald-800 dark:text-emerald-300 sticky left-0 bg-emerald-50 dark:bg-emerald-900/10">Receita</td>
                                 {importPreview.dadosParsed.receitasMensais?.map((val, i) => (
-                                  <td key={i} className="px-3 py-2 text-right text-emerald-700 dark:text-emerald-700 whitespace-nowrap font-medium">{formatCurrency(val)}</td>
+                                  <td key={i} className="px-3 py-2 text-right text-emerald-700 dark:text-emerald-400 whitespace-nowrap font-bold">{formatCurrency(val)}</td>
                                 ))}
                               </tr>
                               <tr className="bg-red-50 dark:bg-red-900/10">
-                                <td className="px-3 py-2 font-medium text-rose-700 dark:text-red-500 sticky left-0 bg-red-50 dark:bg-red-900/10">Total Despesas (-)</td>
+                                <td className="px-3 py-2 font-bold text-red-800 dark:text-red-300 sticky left-0 bg-red-50 dark:bg-red-900/10">Despesas/Custos</td>
                                 {importPreview.dadosParsed.despesasMensais?.map((val, i) => (
-                                  <td key={i} className="px-3 py-2 text-right text-rose-600 dark:text-red-500 whitespace-nowrap font-medium">{formatCurrency(val)}</td>
+                                  <td key={i} className="px-3 py-2 text-right text-red-700 dark:text-red-400 whitespace-nowrap font-bold">{formatCurrency(val)}</td>
+                                ))}
+                              </tr>
+                              <tr className="bg-slate-100 dark:bg-slate-800 font-bold">
+                                <td className="px-3 py-2 font-bold text-slate-800 dark:text-white sticky left-0 bg-slate-100 dark:bg-slate-800">Resultado Líquido</td>
+                                {importPreview.dadosParsed.lucroLiquidoMensal?.map((val, i) => (
+                                  <td key={i} className={`px-3 py-2 text-right whitespace-nowrap font-bold ${val >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>{formatCurrency(val)}</td>
                                 ))}
                               </tr>
                             </tbody>
