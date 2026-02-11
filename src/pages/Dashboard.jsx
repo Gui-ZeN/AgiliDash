@@ -546,7 +546,7 @@ const Dashboard = () => {
                   Analise Financeira
                 </h1>
                 <p className={`text-lg font-medium ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                  Demonstrativo mensal de receitas, despesas e resultados.
+                  Demonstrativo de receitas, despesas, estoque e saldos
                 </p>
               </div>
               <div className="flex gap-2">
@@ -621,14 +621,14 @@ const Dashboard = () => {
               </div>
             )}
 
-            {/* Seção 1: Comparativo de Lucro */}
+            {/* Seção 1: Resultado Líquido */}
             <section className={`transition-all duration-500 delay-200 ${cardAnimation}`}>
               <div className="flex items-center gap-3 mb-6">
                 <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
                   <BarChart2 className={`w-5 h-5 ${isDarkMode ? 'text-emerald-700' : 'text-emerald-700'}`} />
                 </div>
                 <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                  Comparativo de Lucro
+                  Resultado Líquido
                 </h2>
               </div>
 
@@ -639,10 +639,10 @@ const Dashboard = () => {
                   <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
                     <div>
                       <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                        Receita vs Despesa
+                        Receita x Despesas/Custo
                       </h3>
                       <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                        Evolucao mensal comparativa
+                        Variação comparativa
                       </p>
                     </div>
                     <ButtonGroup
