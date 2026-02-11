@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   User,
   ShieldCheck,
@@ -206,6 +206,33 @@ const Dashboard = () => {
   // Comparação com ano anterior
   const totalReceita2024 = sumArray(dreData2024.receita);
   const variacaoReceita = isConsolidado ? 0 : (((totalReceita - totalReceita2024) / totalReceita2024) * 100).toFixed(1);
+
+  // Dados combinados para gráfico Receita x Custo x Estoque
+  // Custo vem do CMV/CPV da DRE Horizontal, Estoque vem do Balancete
+  const dadosReceitaCustoEstoque = useMemo(() => {
+    const balancetes = dadosContabeisImportados?.balancetesConsolidados;
+    const meses = balancetes?.meses || ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+
+    // Receita: prioriza DRE Horizontal, fallback para Balancete
+    const receita = analiseHorizontal?.receitasMensais || balancetes?.series?.receita || new Array(12).fill(0);
+
+    // Custo: usa CMV/CPV da DRE Horizontal (valor absoluto)
+    const custo = analiseHorizontal?.dados?.cmv
+      ? analiseHorizontal.dados.cmv.map(v => Math.abs(v))
+      : (balancetes?.series?.custo || new Array(12).fill(0));
+
+    // Estoque: usa dados do Balancete
+    const estoque = balancetes?.series?.estoque || new Array(12).fill(0);
+
+    return {
+      meses,
+      series: {
+        receita,
+        custo,
+        estoque
+      }
+    };
+  }, [dadosContabeisImportados, analiseHorizontal]);
 
   // Callback para receber dados do gráfico de distribuição
   const handleFiscalDataCalculated = (data) => {
@@ -799,7 +826,7 @@ const Dashboard = () => {
                     </div>
                   </div>
                   {temDadosContabeis ? (
-                    <ReceitaCustoEstoqueChart dados={dadosContabeisImportados?.balancetesConsolidados} />
+                    <ReceitaCustoEstoqueChart dados={dadosReceitaCustoEstoque} />
                   ) : (
                     <MovimentacaoChart />
                   )}
