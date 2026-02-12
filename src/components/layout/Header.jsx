@@ -5,6 +5,7 @@ import Logo from './Logo';
 import { useEmpresa } from '../../context/EmpresaContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
+import { useData } from '../../context/DataContext';
 
 /**
  * Header do Dashboard
@@ -14,6 +15,7 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
   const navigate = useNavigate();
   const { isDarkMode, toggleTheme } = useTheme();
   const { user, isAdmin, logout } = useAuth();
+  const { isSecaoVisivel } = useData();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -42,6 +44,8 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
     { id: 'pessoal', label: 'PESSOAL' },
     { id: 'administrativo', label: 'ADMIN' }
   ];
+
+  const tabsVisiveis = tabs.filter(tab => isSecaoVisivel(cnpjInfo?.id, tab.id));
 
   const handleLogout = () => {
     logout();
@@ -92,7 +96,7 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
         {/* Desktop Navigation */}
         {showTabs && (
           <nav className="hidden lg:flex h-full items-center mx-4">
-            {tabs.map((tab) => (
+            {tabsVisiveis.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
@@ -344,7 +348,7 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
       {showTabs && (
         <div className="lg:hidden border-t border-slate-200/80 dark:border-slate-700/80 overflow-x-auto scrollbar-hide">
           <div className="flex min-w-max">
-            {tabs.map((tab) => (
+            {tabsVisiveis.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}

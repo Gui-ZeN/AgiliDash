@@ -138,22 +138,525 @@ const Dashboard = () => {
   const [fiscalTrimestre, setFiscalTrimestre] = useState(null); // 1, 2, 3, 4 ou null (ano todo)
   const [mesesSelecionados, setMesesSelecionados] = useState([]); // Para seleção de meses específicos
 
+  const ordenarCompetencia = (a, b) => {
+    const [mesA, anoA] = String(a || '').split('/').map(Number);
+    const [mesB, anoB] = String(b || '').split('/').map(Number);
+    if (anoA !== anoB) return anoA - anoB;
+    return mesA - mesB;
+  };
+
+  const mergeDeep = (target, source) => {
+    if (source == null) return target;
+    if (target == null) return source;
+
+    if (typeof target === 'number' && typeof source === 'number') {
+      return target + source;
+    }
+
+    if (Array.isArray(target) && Array.isArray(source)) {
+      const arrayNumerico = target.every(v => typeof v === 'number') && source.every(v => typeof v === 'number');
+      if (arrayNumerico) {
+        const max = Math.max(target.length, source.length);
+        return Array.from({ length: max }, (_, i) => (target[i] || 0) + (source[i] || 0));
+      }
+      return [...target, ...source];
+    }
+
+    if (typeof target === 'object' && typeof source === 'object') {
+      const merged = { ...target };
+      Object.keys(source).forEach((key) => {
+        if (merged[key] === undefined) {
+          merged[key] = source[key];
+        } else {
+          merged[key] = mergeDeep(merged[key], source[key]);
+        }
+      });
+      return merged;
+    }
+
+    return target ?? source;
+  };
+
+  const somarArrayNumerico = (arrays, tamanho = 12) => {
+    const base = new Array(tamanho).fill(0);
+    arrays.forEach((arr) => {
+      if (!Array.isArray(arr)) return;
+      for (let i = 0; i < tamanho; i += 1) {
+        base[i] += Number(arr[i] || 0);
+      }
+    });
+    return base;
+  };
+
   // Usar contexto da empresa e tema
-  const { cnpjInfo, cnpjDados, isConsolidado, totaisConsolidados, modoVisualizacao, grupoAtual, empresaAtual, modoLabel } = useEmpresa();
+  const {
+    cnpjInfo,
+    cnpjDados,
+    isConsolidado,
+    totaisConsolidados,
+    modoVisualizacao,
+    grupoAtual,
+    empresaAtual,
+    modoLabel,
+    listaCnpjs,
+    todosCnpjs,
+    todasEmpresas
+  } = useEmpresa();
   const { isDarkMode } = useTheme();
-  const { getDadosContabeis, getDadosFiscais, getDadosPessoal, isSecaoVisivel, isItemVisivel } = useData();
+  const { getDadosContabeis, getDadosFiscais, getDadosPessoal, isSecaoVisivel } = useData();
 
   // Obter dados contábeis importados para o CNPJ selecionado
-  const dadosContabeisImportados = getDadosContabeis(cnpjInfo?.id);
-  const temDadosContabeis = dadosContabeisImportados?.analiseHorizontal || dadosContabeisImportados?.balancetesConsolidados;
+  const cnpjIdsEscopo = useMemo(() => {
+    if (!isConsolidado) return [cnpjInfo?.id].filter(Boolean);
 
-  // Obter dados fiscais importados para o CNPJ selecionado
-  const dadosFiscaisImportados = getDadosFiscais(cnpjInfo?.id);
-  const temDadosFiscais = dadosFiscaisImportados?.resumoAcumulador || dadosFiscaisImportados?.demonstrativoMensal || dadosFiscaisImportados?.resumoImpostos;
+    if (modoVisualizacao === 'empresa') {
+      return [...new Set(listaCnpjs.map(c => c.id))];
+    }
 
-  // Obter dados do setor pessoal importados para o CNPJ selecionado
-  const dadosPessoalImportados = getDadosPessoal(cnpjInfo?.id);
-  const temDadosPessoal = dadosPessoalImportados?.fgts || dadosPessoalImportados?.inss || dadosPessoalImportados?.empregados || dadosPessoalImportados?.salarioBase || dadosPessoalImportados?.ferias;
+    if (modoVisualizacao === 'grupo') {
+      const empresasDoGrupo = todasEmpresas
+        .filter(e => e.grupoId === grupoAtual?.id)
+        .map(e => e.id);
+      return [...new Set(todosCnpjs.filter(c => empresasDoGrupo.includes(c.empresaId)).map(c => c.id))];
+    }
+
+    if (modoVisualizacao === 'todos') {
+      return [...new Set(todosCnpjs.map(c => c.id))];
+    }
+
+    return [cnpjInfo?.id].filter(Boolean);
+  }, [isConsolidado, cnpjInfo?.id, modoVisualizacao, listaCnpjs, grupoAtual?.id, todosCnpjs, todasEmpresas]);
+
+  const tabsDisponiveis = useMemo(() => {
+    const tabs = ['gerais', 'contabil', 'fiscal', 'pessoal', 'administrativo'];
+    return tabs.filter(tab => isSecaoVisivel(cnpjInfo?.id, tab));
+  }, [cnpjInfo?.id, isSecaoVisivel]);
+
+  const dadosContabeisEscopo = useMemo(
+    () => cnpjIdsEscopo.map(id => getDadosContabeis(id)).filter(Boolean),
+    [cnpjIdsEscopo, getDadosContabeis]
+  );
+  const dadosFiscaisEscopo = useMemo(
+    () => cnpjIdsEscopo.map(id => getDadosFiscais(id)).filter(Boolean),
+    [cnpjIdsEscopo, getDadosFiscais]
+  );
+  const dadosPessoalEscopo = useMemo(
+    () => cnpjIdsEscopo.map(id => getDadosPessoal(id)).filter(Boolean),
+    [cnpjIdsEscopo, getDadosPessoal]
+  );
+
+  const dadosContabeisSelecionado = getDadosContabeis(cnpjInfo?.id);
+  const dadosFiscaisSelecionado = getDadosFiscais(cnpjInfo?.id);
+  const dadosPessoalSelecionado = getDadosPessoal(cnpjInfo?.id);
+
+  const dadosContabeisConsolidados = useMemo(() => {
+    if (!isConsolidado) return null;
+
+    const competenciasMap = {};
+    dadosContabeisEscopo.forEach((item) => {
+      const competencias = item?.analiseHorizontal?.dadosPorCompetencia || {};
+      Object.entries(competencias).forEach(([chave, valor]) => {
+        const atual = competenciasMap[chave] || {};
+        const proximo = { ...atual };
+        Object.entries(valor).forEach(([campo, conteudo]) => {
+          if (typeof conteudo === 'number' && Number.isFinite(conteudo)) {
+            proximo[campo] = Number(proximo[campo] || 0) + conteudo;
+          } else if (proximo[campo] === undefined) {
+            proximo[campo] = conteudo;
+          }
+        });
+        if (!proximo.competencia) proximo.competencia = chave;
+        competenciasMap[chave] = proximo;
+      });
+    });
+
+    const competenciasOrdenadas = Object.keys(competenciasMap).sort(ordenarCompetencia);
+    let analiseHorizontal = null;
+    if (competenciasOrdenadas.length > 0) {
+      const mesesLabels = competenciasOrdenadas.map((comp) => {
+        const item = competenciasMap[comp];
+        if (item?.mesNome && item?.ano) return `${item.mesNome}/${String(item.ano).slice(-2)}`;
+        return comp;
+      });
+      const receitasMensais = competenciasOrdenadas.map(comp => Number(competenciasMap[comp]?.receita || competenciasMap[comp]?.receitaBruta || 0));
+      const despesasMensais = competenciasOrdenadas.map(comp => Number(competenciasMap[comp]?.despesa || 0));
+      const lucroLiquidoMensal = receitasMensais.map((rec, i) => rec - (despesasMensais[i] || 0));
+      const anoExercicio = Number(competenciasMap[competenciasOrdenadas[competenciasOrdenadas.length - 1]]?.ano) || selectedYear;
+      const totalReceitas = receitasMensais.reduce((acc, val) => acc + val, 0);
+      const totalDespesas = despesasMensais.reduce((acc, val) => acc + val, 0);
+
+      analiseHorizontal = {
+        anoExercicio,
+        dadosPorCompetencia: competenciasMap,
+        competenciasOrdenadas,
+        meses: mesesLabels,
+        receitasMensais,
+        despesasMensais,
+        lucroLiquidoMensal,
+        dados: {
+          receitaBruta: competenciasOrdenadas.map(comp => Number(competenciasMap[comp]?.receitaBruta || 0)),
+          cmv: competenciasOrdenadas.map(comp => Number(competenciasMap[comp]?.cmv || 0)),
+          despesasOperacionais: competenciasOrdenadas.map(comp => Number(competenciasMap[comp]?.despesasOperacionais || 0)),
+          resultadoFinanceiro: competenciasOrdenadas.map(comp => Number(competenciasMap[comp]?.resultadoFinanceiro || 0)),
+          outrasReceitasOperacionais: competenciasOrdenadas.map(comp => Number(competenciasMap[comp]?.outrasReceitasOperacionais || 0)),
+          outrasDespesasReceitas: competenciasOrdenadas.map(comp => Number(competenciasMap[comp]?.outrasDespesasReceitas || 0)),
+          provisaoCSLL: competenciasOrdenadas.map(comp => Number(competenciasMap[comp]?.provisaoCSLL || 0)),
+          provisaoIRPJ: competenciasOrdenadas.map(comp => Number(competenciasMap[comp]?.provisaoIRPJ || 0)),
+          lucroAntesIR: competenciasOrdenadas.map(comp => Number(competenciasMap[comp]?.lucroAntesIR || 0))
+        },
+        totais: {
+          totalReceitas,
+          totalDespesas,
+          lucroLiquido: totalReceitas - totalDespesas
+        }
+      };
+    }
+
+    const balancetesEscopo = dadosContabeisEscopo
+      .map(item => item?.balancetesConsolidados)
+      .filter(Boolean);
+    let balancetesConsolidados = null;
+    if (balancetesEscopo.length > 0) {
+      const mesesPadrao = balancetesEscopo[0]?.meses || ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+      const tamanho = mesesPadrao.length;
+      const series = {
+        bancosMovimento: somarArrayNumerico(balancetesEscopo.map(b => b?.series?.bancosMovimento || []), tamanho),
+        aplicacoesFinanceiras: somarArrayNumerico(balancetesEscopo.map(b => b?.series?.aplicacoesFinanceiras || []), tamanho),
+        estoque: somarArrayNumerico(balancetesEscopo.map(b => b?.series?.estoque || []), tamanho),
+        receita: somarArrayNumerico(balancetesEscopo.map(b => b?.series?.receita || []), tamanho),
+        custo: somarArrayNumerico(balancetesEscopo.map(b => b?.series?.custo || []), tamanho)
+      };
+      balancetesConsolidados = { meses: mesesPadrao, series };
+    }
+
+    return {
+      analiseHorizontal,
+      balancetesConsolidados
+    };
+  }, [isConsolidado, dadosContabeisEscopo, selectedYear]);
+
+  const dadosFiscaisConsolidados = useMemo(() => {
+    if (!isConsolidado) return null;
+
+    const mergeTrimestres = (listas) => {
+      const mapa = {};
+      listas.flat().forEach((item) => {
+        if (!item) return;
+        const tri = Number(item.trimestreNumero || 0);
+        if (!tri) return;
+        if (!mapa[tri]) {
+          mapa[tri] = {
+            ...item,
+            dados: { ...item.dados }
+          };
+        } else {
+          mapa[tri] = mergeDeep(mapa[tri], item);
+        }
+      });
+      return Object.values(mapa).sort((a, b) => (a.trimestreNumero || 0) - (b.trimestreNumero || 0));
+    };
+
+    const movimentoMap = {};
+    dadosFiscaisEscopo.forEach((item) => {
+      const movimentacao = item?.demonstrativoMensal?.movimentacao || [];
+      movimentacao.forEach((mov) => {
+        const competencia = mov.competencia || `${String(mov.mesIndex || 1).padStart(2, '0')}/${mov.ano || selectedYear}`;
+        if (!movimentoMap[competencia]) {
+          movimentoMap[competencia] = {
+            mes: mov.mes,
+            mesIndex: mov.mesIndex,
+            ano: mov.ano,
+            competencia,
+            entradas: 0,
+            saidas: 0,
+            servicos: 0
+          };
+        }
+        movimentoMap[competencia].entradas += Number(mov.entradas || 0);
+        movimentoMap[competencia].saidas += Number(mov.saidas || 0);
+        movimentoMap[competencia].servicos += Number(mov.servicos || 0);
+      });
+    });
+    const movimentacaoConsolidada = Object.values(movimentoMap).sort((a, b) => {
+      if ((a.ano || 0) !== (b.ano || 0)) return (a.ano || 0) - (b.ano || 0);
+      return (a.mesIndex || 0) - (b.mesIndex || 0);
+    });
+    let demonstrativoMensal = null;
+    if (movimentacaoConsolidada.length > 0) {
+      const anosUnicos = [...new Set(movimentacaoConsolidada.map(m => m.ano))].sort();
+      const movimentacaoPorAno = {};
+      const totaisPorAno = {};
+      anosUnicos.forEach((ano) => {
+        const lista = movimentacaoConsolidada.filter(m => m.ano === ano);
+        movimentacaoPorAno[ano] = lista;
+        totaisPorAno[ano] = {
+          entradas: lista.reduce((acc, m) => acc + (m.entradas || 0), 0),
+          saidas: lista.reduce((acc, m) => acc + (m.saidas || 0), 0),
+          servicos: lista.reduce((acc, m) => acc + (m.servicos || 0), 0)
+        };
+      });
+      demonstrativoMensal = {
+        movimentacao: movimentacaoConsolidada,
+        movimentacaoPorAno,
+        totaisPorAno,
+        totaisGerais: {
+          entradas: movimentacaoConsolidada.reduce((acc, m) => acc + (m.entradas || 0), 0),
+          saidas: movimentacaoConsolidada.reduce((acc, m) => acc + (m.saidas || 0), 0),
+          servicos: movimentacaoConsolidada.reduce((acc, m) => acc + (m.servicos || 0), 0)
+        },
+        anosUnicos,
+        movimentacao2024: movimentacaoPorAno[2024] || [],
+        movimentacao2025: movimentacaoPorAno[2025] || [],
+        totais2024: totaisPorAno[2024] || { entradas: 0, saidas: 0, servicos: 0 },
+        totais2025: totaisPorAno[2025] || { entradas: 0, saidas: 0, servicos: 0 },
+        tipo: 'demonstrativoMensal'
+      };
+    }
+
+    const impostosPorMes = {};
+    dadosFiscaisEscopo.forEach((item) => {
+      const origem = item?.resumoImpostos?.impostosPorMes || {};
+      Object.entries(origem).forEach(([competencia, dadosMes]) => {
+        if (!impostosPorMes[competencia]) {
+          impostosPorMes[competencia] = { impostos: [], totalRecolher: 0, totalCredor: 0 };
+        }
+
+        const impostos = Array.isArray(dadosMes) ? dadosMes : (dadosMes?.impostos || []);
+        impostos.forEach((imp) => {
+          const idx = impostosPorMes[competencia].impostos.findIndex(i => i.nome === imp.nome);
+          if (idx === -1) {
+            impostosPorMes[competencia].impostos.push({ ...imp });
+          } else {
+            impostosPorMes[competencia].impostos[idx] = mergeDeep(impostosPorMes[competencia].impostos[idx], imp);
+          }
+        });
+
+        const totalRecolherMes = Array.isArray(dadosMes)
+          ? impostos.reduce((acc, imp) => acc + Number(imp?.impostoRecolher || 0), 0)
+          : Number(dadosMes?.totalRecolher || 0);
+        const totalCredorMes = Array.isArray(dadosMes)
+          ? impostos.reduce((acc, imp) => acc + Number(imp?.saldoCredorFinal || 0), 0)
+          : Number(dadosMes?.totalCredor || 0);
+
+        impostosPorMes[competencia].totalRecolher += totalRecolherMes;
+        impostosPorMes[competencia].totalCredor += totalCredorMes;
+      });
+    });
+
+    let resumoImpostos = null;
+    if (Object.keys(impostosPorMes).length > 0) {
+      const totaisPorImposto = {};
+      Object.values(impostosPorMes).forEach((dadosMes) => {
+        dadosMes.impostos.forEach((imp) => {
+          if (!totaisPorImposto[imp.nome]) {
+            totaisPorImposto[imp.nome] = { recolher: 0, credito: 0, debitos: 0, creditos: 0 };
+          }
+          totaisPorImposto[imp.nome].recolher += Number(imp.impostoRecolher || 0);
+          totaisPorImposto[imp.nome].credito += Number(imp.saldoCredorFinal || 0);
+          totaisPorImposto[imp.nome].debitos += Number(imp.debitos || 0);
+          totaisPorImposto[imp.nome].creditos += Number(imp.creditos || 0);
+        });
+      });
+
+      resumoImpostos = {
+        impostosPorMes,
+        totaisPorImposto,
+        competencias: Object.keys(impostosPorMes).sort(ordenarCompetencia),
+        totalRecolher: Object.values(impostosPorMes).reduce((acc, mes) => acc + Number(mes.totalRecolher || 0), 0),
+        totalCredor: Object.values(impostosPorMes).reduce((acc, mes) => acc + Number(mes.totalCredor || 0), 0),
+        periodosImportados: Object.keys(impostosPorMes).length,
+        tipo: 'resumoImpostos'
+      };
+    }
+
+    const entradasMap = new Map();
+    const saidasMap = new Map();
+    const categorias = {
+      compraComercializacao: 0,
+      vendaMercadoria: 0,
+      vendaProduto: 0,
+      vendaExterior: 0,
+      totalVendas380: 0,
+      esperado380: 0
+    };
+    const somarItens = (mapa, itens = []) => {
+      itens.forEach((item) => {
+        const chave = `${item.codigo || ''}::${item.descricao || ''}`;
+        if (!mapa.has(chave)) {
+          mapa.set(chave, { ...item });
+          return;
+        }
+        const atual = mapa.get(chave);
+        Object.entries(item).forEach(([campo, valor]) => {
+          if (typeof valor === 'number' && Number.isFinite(valor)) {
+            atual[campo] = Number(atual[campo] || 0) + valor;
+          } else if (atual[campo] === undefined) {
+            atual[campo] = valor;
+          }
+        });
+        mapa.set(chave, atual);
+      });
+    };
+
+    dadosFiscaisEscopo.forEach((item) => {
+      if (!item?.resumoAcumulador) return;
+      somarItens(entradasMap, item.resumoAcumulador.entradas || []);
+      somarItens(saidasMap, item.resumoAcumulador.saidas || []);
+      Object.keys(categorias).forEach((campo) => {
+        categorias[campo] += Number(item.resumoAcumulador?.categorias?.[campo] || 0);
+      });
+    });
+
+    let resumoAcumulador = null;
+    if (entradasMap.size > 0 || saidasMap.size > 0) {
+      const entradas = Array.from(entradasMap.values());
+      const saidas = Array.from(saidasMap.values());
+      const detalhesVendas = saidas.filter((s) => {
+        const desc = String(s.descricao || '').toUpperCase();
+        return desc.startsWith('VENDA') && !desc.includes('ATIVO') && !desc.includes('IMOBILIZADO');
+      });
+      resumoAcumulador = {
+        entradas,
+        saidas,
+        totais: {
+          entradas: entradas.reduce((acc, e) => acc + Number(e.vlrContabil || 0), 0),
+          saidas: saidas.reduce((acc, s) => acc + Number(s.vlrContabil || 0), 0)
+        },
+        categorias,
+        detalhes380: {
+          compras: entradas.filter(e => String(e.descricao || '').toUpperCase().includes('COMERCIALIZA')),
+          vendasMercadoria: detalhesVendas,
+          vendasProduto: detalhesVendas.filter(s => String(s.descricao || '').toUpperCase().includes('PRODUTO')),
+          vendasExterior: detalhesVendas.filter(s => String(s.descricao || '').toUpperCase().includes('EXTERIOR'))
+        },
+        tipo: 'resumoAcumulador'
+      };
+    }
+
+    return {
+      csll: mergeTrimestres(dadosFiscaisEscopo.map(item => item?.csll || [])),
+      irpj: mergeTrimestres(dadosFiscaisEscopo.map(item => item?.irpj || [])),
+      demonstrativoMensal,
+      resumoImpostos,
+      resumoAcumulador
+    };
+  }, [isConsolidado, dadosFiscaisEscopo, selectedYear]);
+
+  const dadosPessoalConsolidados = useMemo(() => {
+    if (!isConsolidado) return null;
+
+    const fgts = dadosPessoalEscopo
+      .map(item => item?.fgts)
+      .filter(Boolean)
+      .reduce((acc, atual) => mergeDeep(acc, atual), null);
+    const inss = dadosPessoalEscopo
+      .map(item => item?.inss)
+      .filter(Boolean)
+      .reduce((acc, atual) => mergeDeep(acc, atual), null);
+    const empregados = dadosPessoalEscopo
+      .map(item => item?.empregados)
+      .filter(Boolean)
+      .reduce((acc, atual) => mergeDeep(acc, atual), null);
+    const salarioBase = dadosPessoalEscopo
+      .map(item => item?.salarioBase)
+      .filter(Boolean)
+      .reduce((acc, atual) => mergeDeep(acc, atual), null);
+    const ferias = dadosPessoalEscopo
+      .map(item => item?.ferias)
+      .filter(Boolean)
+      .reduce((acc, atual) => mergeDeep(acc, atual), null);
+
+    if (fgts?.totaisPorCompetencia) {
+      fgts.competencias = Object.keys(fgts.totaisPorCompetencia).sort(ordenarCompetencia);
+      fgts.ultimos3Meses = fgts.competencias.slice(-3);
+      fgts.anos = Object.keys(fgts.totaisPorAno || {}).map(Number).sort();
+      fgts.totalGeral = {
+        base: Object.values(fgts.totaisPorCompetencia).reduce((acc, item) => acc + Number(item.base || 0), 0),
+        valorFGTS: Object.values(fgts.totaisPorCompetencia).reduce((acc, item) => acc + Number(item.valorFGTS || 0), 0)
+      };
+    }
+
+    if (inss?.totaisPorCompetencia) {
+      inss.competencias = Object.keys(inss.totaisPorCompetencia).sort(ordenarCompetencia);
+      inss.totalGeral = {
+        baseCalculo: Object.values(inss.totaisPorCompetencia).reduce((acc, item) => acc + Number(item.baseCalculo || 0), 0),
+        valorINSS: Object.values(inss.totaisPorCompetencia).reduce((acc, item) => acc + Number(item.valorINSS || 0), 0)
+      };
+    }
+
+    if (empregados?.admissoesPorMes) {
+      empregados.competenciasAdmissao = Object.keys(empregados.admissoesPorMes).sort(ordenarCompetencia);
+      empregados.competenciasDemissao = Object.keys(empregados.demissoesPorMes || {}).sort(ordenarCompetencia);
+      const ativos = Number(empregados.empregadosPorSituacao?.Ativo || 0);
+      const demitidos = Number(empregados.empregadosPorSituacao?.Demitido || 0);
+      const afastados = Number(empregados.empregadosPorSituacao?.Afastado || 0);
+      empregados.estatisticas = {
+        total: Number(empregados.empregados?.length || 0),
+        ativos,
+        demitidos,
+        afastados
+      };
+    }
+
+    if (salarioBase?.salariosPorCargo) {
+      const cargosOrdenados = Object.entries(salarioBase.salariosPorCargo).map(([cargo, dados]) => {
+        const quantidade = Number(dados.quantidade || 0);
+        const salarioTotal = Number(dados.salarioTotal || 0);
+        const salarioMin = Number.isFinite(dados.salarioMin) ? Number(dados.salarioMin) : 0;
+        const salarioMax = Number(dados.salarioMax || 0);
+        return {
+          cargo,
+          quantidade,
+          salarioTotal,
+          salarioMedio: quantidade > 0 ? salarioTotal / quantidade : 0,
+          salarioMin,
+          salarioMax
+        };
+      }).sort((a, b) => b.salarioMedio - a.salarioMedio);
+
+      salarioBase.cargosOrdenados = cargosOrdenados;
+      const totalSalarios = cargosOrdenados.reduce((acc, item) => acc + item.salarioTotal, 0);
+      const totalEmpregados = cargosOrdenados.reduce((acc, item) => acc + item.quantidade, 0);
+      salarioBase.estatisticas = {
+        totalEmpregados,
+        totalSalarios,
+        salarioMedioGeral: totalEmpregados > 0 ? totalSalarios / totalEmpregados : 0,
+        quantidadeCargos: cargosOrdenados.length
+      };
+    }
+
+    if (ferias?.feriasPorMes) {
+      ferias.mesesOrdenados = Object.keys(ferias.feriasPorMes).sort(ordenarCompetencia);
+      ferias.estatisticas = {
+        totalRegistros: Number(ferias.ferias?.length || 0),
+        diasTotalProgramados: (ferias.ferias || []).reduce((acc, item) => acc + Number(item.diasDireito || 0), 0),
+        diasTotalGozados: (ferias.ferias || []).reduce((acc, item) => acc + Number(item.diasGozados || 0), 0),
+        diasRestantes: (ferias.ferias || []).reduce((acc, item) => acc + Number(item.diasRestantes || 0), 0)
+      };
+    }
+
+    return { fgts, inss, empregados, salarioBase, ferias };
+  }, [isConsolidado, dadosPessoalEscopo]);
+
+  const dadosContabeisImportados = isConsolidado ? dadosContabeisConsolidados : dadosContabeisSelecionado;
+  const dadosFiscaisImportados = isConsolidado ? dadosFiscaisConsolidados : dadosFiscaisSelecionado;
+  const dadosPessoalImportados = isConsolidado ? dadosPessoalConsolidados : dadosPessoalSelecionado;
+
+  const temDadosContabeis = Boolean(dadosContabeisImportados?.analiseHorizontal || dadosContabeisImportados?.balancetesConsolidados);
+  const temDadosFiscais = Boolean(
+    dadosFiscaisImportados?.resumoAcumulador ||
+    dadosFiscaisImportados?.demonstrativoMensal ||
+    dadosFiscaisImportados?.resumoImpostos ||
+    (dadosFiscaisImportados?.csll?.length > 0) ||
+    (dadosFiscaisImportados?.irpj?.length > 0)
+  );
+  const temDadosPessoal = Boolean(
+    dadosPessoalImportados?.fgts ||
+    dadosPessoalImportados?.inss ||
+    dadosPessoalImportados?.empregados ||
+    dadosPessoalImportados?.salarioBase ||
+    dadosPessoalImportados?.ferias
+  );
 
   // Dados do CNPJ selecionado
   const dreData = selectedYear === 2025 ? cnpjDados.dreData2025 : cnpjDados.dreData2024;
@@ -169,12 +672,20 @@ const Dashboard = () => {
     setAnimateCards(false);
     const timer = setTimeout(() => setAnimateCards(true), 50);
     return () => clearTimeout(timer);
-  }, [activeTab, cnpjInfo.id]);
+  }, [activeTab, cnpjInfo?.id]);
 
   // Persistir aba ativa no localStorage
   useEffect(() => {
     localStorage.setItem('dashboard_activeTab', activeTab);
   }, [activeTab]);
+
+  // Se a aba salva n�o estiver vis�vel para o CNPJ atual, ajusta automaticamente
+  useEffect(() => {
+    if (tabsDisponiveis.length === 0) return;
+    if (!tabsDisponiveis.includes(activeTab)) {
+      setActiveTab(tabsDisponiveis[0]);
+    }
+  }, [activeTab, tabsDisponiveis]);
 
   // Calcular totais do DRE
   // Se em modo consolidado, usa totaisConsolidados; senão, prioriza dados importados (Análise Horizontal)
@@ -2083,3 +2594,5 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
+
