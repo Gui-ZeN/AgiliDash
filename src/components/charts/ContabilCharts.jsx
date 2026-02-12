@@ -24,6 +24,59 @@ const COLORS = {
 const DEFAULT_MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 const DEFAULT_VALORES = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
+const toNumber = (value) => {
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue) ? numericValue : 0;
+};
+
+const normalizeSerie = (serie = [], absolute = false) =>
+  serie.map((value) => {
+    const numericValue = toNumber(value);
+    return absolute ? Math.abs(numericValue) : numericValue;
+  });
+
+const getReceitasSeries = (dados) => {
+  if (Array.isArray(dados?.receitasMensais) && dados.receitasMensais.length > 0) {
+    return normalizeSerie(dados.receitasMensais);
+  }
+
+  if (Array.isArray(dados?.dados?.receitaBruta) && dados.dados.receitaBruta.length > 0) {
+    return normalizeSerie(dados.dados.receitaBruta);
+  }
+
+  return DEFAULT_VALORES;
+};
+
+const getDespesasSeries = (dados, tamanhoFallback = DEFAULT_VALORES.length) => {
+  if (Array.isArray(dados?.despesasMensais) && dados.despesasMensais.length > 0) {
+    return normalizeSerie(dados.despesasMensais, true);
+  }
+
+  const fontes = [
+    dados?.dados?.cmv,
+    dados?.dados?.despesasOperacionais,
+    dados?.dados?.resultadoFinanceiro,
+    dados?.dados?.outrasReceitasOperacionais,
+    dados?.dados?.outrasDespesasReceitas,
+    dados?.dados?.provisaoCSLL,
+    dados?.dados?.provisaoIRPJ
+  ].filter((serie) => Array.isArray(serie) && serie.length > 0);
+
+  if (fontes.length > 0) {
+    const tamanho = Math.max(
+      tamanhoFallback,
+      ...fontes.map((serie) => serie.length)
+    );
+
+    return Array.from({ length: tamanho }, (_, index) => {
+      const somaDespesas = fontes.reduce((acc, serie) => acc + toNumber(serie[index]), 0);
+      return Math.abs(somaDespesas);
+    });
+  }
+
+  return new Array(tamanhoFallback).fill(0);
+};
+
 /**
  * 1. Gráfico de Barras - Comparativo Receita x Despesa
  * Fonte: DRE Horizontal
@@ -35,21 +88,10 @@ export const ComparativoReceitaDespesaChart = ({ dados }) => {
 
   // Usar useMemo para evitar recriação de arrays em cada render
   // Prioriza receitasMensais/despesasMensais (soma de todos positivos/negativos)
-  // Fallback para receitaBruta/despesasOperacionais se não disponível
+  // Fallback para receitaBruta e composição oficial de Despesas/Custos se não disponível
   const meses = useMemo(() => dados?.meses || DEFAULT_MESES, [dados?.meses]);
-  const receitas = useMemo(() => {
-    // Usa receitasMensais (todos positivos) se disponível
-    if (dados?.receitasMensais) return dados.receitasMensais;
-    return dados?.dados?.receitaBruta || DEFAULT_VALORES;
-  }, [dados?.receitasMensais, dados?.dados?.receitaBruta]);
-  const despesas = useMemo(() => {
-    // Usa despesasMensais (todos negativos) se disponível
-    if (dados?.despesasMensais) return dados.despesasMensais;
-    if (dados?.dados?.despesasOperacionais) {
-      return dados.dados.despesasOperacionais.map(d => Math.abs(d));
-    }
-    return DEFAULT_VALORES;
-  }, [dados?.despesasMensais, dados?.dados?.despesasOperacionais]);
+  const receitas = useMemo(() => getReceitasSeries(dados), [dados]);
+  const despesas = useMemo(() => getDespesasSeries(dados, meses.length), [dados, meses.length]);
 
   useEffect(() => {
     if (!chartRef.current) return;
@@ -693,18 +735,9 @@ export const TabelaComparativoMensal = ({ dados }) => {
   // Usar meses dinâmicos (com ano) se disponíveis
   const meses = useMemo(() => dados?.meses || DEFAULT_MESES, [dados?.meses]);
 
-  // Prioriza receitasMensais/despesasMensais (classificação automática)
-  const receitas = useMemo(() => {
-    if (dados?.receitasMensais) return dados.receitasMensais;
-    return dados?.dados?.receitaBruta || DEFAULT_VALORES;
-  }, [dados?.receitasMensais, dados?.dados?.receitaBruta]);
-  const despesas = useMemo(() => {
-    if (dados?.despesasMensais) return dados.despesasMensais;
-    if (dados?.dados?.despesasOperacionais) {
-      return dados.dados.despesasOperacionais.map(d => Math.abs(d));
-    }
-    return DEFAULT_VALORES;
-  }, [dados?.despesasMensais, dados?.dados?.despesasOperacionais]);
+  // Prioriza receitasMensais/despesasMensais e aplica fallback oficial quando necessário
+  const receitas = useMemo(() => getReceitasSeries(dados), [dados]);
+  const despesas = useMemo(() => getDespesasSeries(dados, meses.length), [dados, meses.length]);
 
   const { totalReceita, totalDespesa, totalLucro } = useMemo(() => {
     const totalRec = receitas.reduce((a, b) => a + b, 0);
@@ -792,18 +825,9 @@ export const TabelaComparativoMensal = ({ dados }) => {
 export const CardsMetricasContabil = ({ dados }) => {
   const { isDarkMode } = useTheme();
 
-  // Prioriza receitasMensais/despesasMensais (classificação automática)
-  const receitas = useMemo(() => {
-    if (dados?.receitasMensais) return dados.receitasMensais;
-    return dados?.dados?.receitaBruta || DEFAULT_VALORES;
-  }, [dados?.receitasMensais, dados?.dados?.receitaBruta]);
-  const despesas = useMemo(() => {
-    if (dados?.despesasMensais) return dados.despesasMensais;
-    if (dados?.dados?.despesasOperacionais) {
-      return dados.dados.despesasOperacionais.map(d => Math.abs(d));
-    }
-    return DEFAULT_VALORES;
-  }, [dados?.despesasMensais, dados?.dados?.despesasOperacionais]);
+  // Prioriza receitasMensais/despesasMensais e aplica fallback oficial quando necessário
+  const receitas = useMemo(() => getReceitasSeries(dados), [dados]);
+  const despesas = useMemo(() => getDespesasSeries(dados, receitas.length), [dados, receitas.length]);
 
   const { totalReceita, totalDespesa, totalLucro, margem, variacaoReceita } = useMemo(() => {
     const totalRec = receitas.reduce((a, b) => a + b, 0);

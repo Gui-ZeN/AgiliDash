@@ -145,6 +145,44 @@ const Dashboard = () => {
     return mesA - mesB;
   };
 
+  const calcularDespesasCustos = (competencia = {}) => {
+    const camposDespesas = [
+      'cmv',
+      'despesasOperacionais',
+      'resultadoFinanceiro',
+      'outrasReceitasOperacionais',
+      'outrasDespesasReceitas',
+      'provisaoCSLL',
+      'provisaoIRPJ'
+    ];
+
+    const somaDespesas = camposDespesas.reduce((acc, campo) => {
+      const valor = Number(competencia?.[campo]);
+      return acc + (Number.isFinite(valor) ? valor : 0);
+    }, 0);
+
+    return Math.abs(somaDespesas);
+  };
+
+  const obterReceitaCompetencia = (competencia = {}) => {
+    if (Object.prototype.hasOwnProperty.call(competencia, 'receita')) {
+      const receita = Number(competencia.receita);
+      if (Number.isFinite(receita)) return receita;
+    }
+
+    const receitaBruta = Number(competencia?.receitaBruta);
+    return Number.isFinite(receitaBruta) ? receitaBruta : 0;
+  };
+
+  const obterDespesaCompetencia = (competencia = {}) => {
+    if (Object.prototype.hasOwnProperty.call(competencia, 'despesa')) {
+      const despesa = Number(competencia.despesa);
+      if (Number.isFinite(despesa)) return Math.abs(despesa);
+    }
+
+    return calcularDespesasCustos(competencia);
+  };
+
   const mergeDeep = (target, source) => {
     if (source == null) return target;
     if (target == null) return source;
@@ -304,8 +342,8 @@ const Dashboard = () => {
         if (item?.mesNome && item?.ano) return `${item.mesNome}/${String(item.ano).slice(-2)}`;
         return comp;
       });
-      const receitasMensais = competenciasOrdenadas.map(comp => Number(competenciasMap[comp]?.receita || competenciasMap[comp]?.receitaBruta || 0));
-      const despesasMensais = competenciasOrdenadas.map(comp => Number(competenciasMap[comp]?.despesa || 0));
+      const receitasMensais = competenciasOrdenadas.map(comp => obterReceitaCompetencia(competenciasMap[comp]));
+      const despesasMensais = competenciasOrdenadas.map(comp => obterDespesaCompetencia(competenciasMap[comp]));
       const lucroLiquidoMensal = receitasMensais.map((rec, i) => rec - (despesasMensais[i] || 0));
       const anoExercicio = Number(competenciasMap[competenciasOrdenadas[competenciasOrdenadas.length - 1]]?.ano) || selectedYear;
       const totalReceitas = receitasMensais.reduce((acc, val) => acc + val, 0);
@@ -1170,7 +1208,7 @@ const Dashboard = () => {
                   Análise Financeira
                 </h1>
                 <p className={`text-lg font-medium ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                  Demonstrativo de receitas, despesas, estoque e saldos
+                  Demonstrativo de receitas, despesas, estoque e saldos.
                 </p>
               </div>
               <div className="flex gap-2">
