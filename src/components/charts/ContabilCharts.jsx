@@ -23,10 +23,93 @@ const COLORS = {
 // Arrays padrão (constantes para evitar recriação em cada render)
 const DEFAULT_MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 const DEFAULT_VALORES = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+const CHART_HEIGHT_PRIMARY = 'h-[300px] md:h-[360px]';
+const CHART_HEIGHT_SECONDARY = 'h-[280px] md:h-[320px]';
+
+const compactCurrencyFormatter = new Intl.NumberFormat('pt-BR', {
+  style: 'currency',
+  currency: 'BRL',
+  notation: 'compact',
+  maximumFractionDigits: 1
+});
 
 const toNumber = (value) => {
   const numericValue = Number(value);
   return Number.isFinite(numericValue) ? numericValue : 0;
+};
+
+const formatCompactCurrency = (value) => {
+  const numericValue = toNumber(value);
+  if (Math.abs(numericValue) < 1000) return formatCurrency(numericValue);
+  return compactCurrencyFormatter.format(numericValue);
+};
+
+const getThemeStyles = (isDarkMode) => ({
+  legendText: isDarkMode ? '#e2e8f0' : '#334155',
+  tickText: isDarkMode ? '#94a3b8' : '#64748b',
+  tooltipBg: isDarkMode ? '#0f172a' : '#ffffff',
+  tooltipTitle: isDarkMode ? '#f1f5f9' : '#0f172a',
+  tooltipBody: isDarkMode ? '#cbd5e1' : '#475569',
+  tooltipBorder: isDarkMode ? '#334155' : '#e2e8f0',
+  grid: isDarkMode ? 'rgba(148, 163, 184, 0.16)' : 'rgba(15, 23, 42, 0.08)'
+});
+
+const getTooltipBase = (isDarkMode) => {
+  const theme = getThemeStyles(isDarkMode);
+  return {
+    backgroundColor: theme.tooltipBg,
+    titleColor: theme.tooltipTitle,
+    bodyColor: theme.tooltipBody,
+    borderColor: theme.tooltipBorder,
+    borderWidth: 1,
+    padding: 14,
+    cornerRadius: 10
+  };
+};
+
+const getLegendBase = (isDarkMode) => {
+  const theme = getThemeStyles(isDarkMode);
+  return {
+    position: 'top',
+    labels: {
+      color: theme.legendText,
+      font: { weight: 'bold', size: 12 },
+      usePointStyle: true,
+      pointStyle: 'circle',
+      boxWidth: 10,
+      boxHeight: 10,
+      padding: 16
+    }
+  };
+};
+
+const getXAxisBase = (isDarkMode) => {
+  const theme = getThemeStyles(isDarkMode);
+  return {
+    grid: { display: false },
+    ticks: {
+      color: theme.tickText,
+      font: { weight: '600' },
+      autoSkip: true,
+      maxTicksLimit: 8,
+      maxRotation: 0,
+      minRotation: 0
+    }
+  };
+};
+
+const getYAxisBase = (isDarkMode) => {
+  const theme = getThemeStyles(isDarkMode);
+  return {
+    beginAtZero: true,
+    grid: { color: theme.grid },
+    ticks: {
+      color: theme.tickText,
+      maxTicksLimit: 6,
+      padding: 8,
+      callback: (value) => formatCompactCurrency(value)
+    }
+  };
 };
 
 const normalizeSerie = (serie = [], absolute = false) =>
@@ -101,6 +184,7 @@ export const ComparativoReceitaDespesaChart = ({ dados }) => {
     }
 
     const ctx = chartRef.current.getContext('2d');
+    const theme = getThemeStyles(isDarkMode);
 
     chartInstance.current = new Chart(ctx, {
       type: 'bar',
@@ -135,47 +219,35 @@ export const ComparativoReceitaDespesaChart = ({ dados }) => {
           mode: 'index'
         },
         plugins: {
-          legend: {
-            position: 'top',
-            labels: {
-              color: isDarkMode ? '#e2e8f0' : '#475569',
-              font: { weight: 'bold', size: 12 },
-              usePointStyle: true,
-              pointStyle: 'circle',
-              padding: 20
-            }
-          },
+          legend: getLegendBase(isDarkMode),
           tooltip: {
-            backgroundColor: isDarkMode ? '#1e293b' : 'white',
-            titleColor: isDarkMode ? '#f1f5f9' : '#1e293b',
-            bodyColor: isDarkMode ? '#cbd5e1' : '#475569',
-            borderColor: isDarkMode ? '#334155' : '#e2e8f0',
-            borderWidth: 1,
-            padding: 16,
-            cornerRadius: 12,
+            ...getTooltipBase(isDarkMode),
             displayColors: true,
             callbacks: {
-              label: (context) => `${context.dataset.label}: ${formatCurrency(context.raw)}`
+              label: (context) => {
+                const value = toNumber(context.raw);
+                const index = context.dataIndex;
+                const totalMes = context.chart.data.datasets.reduce((acc, dataset) => {
+                  return acc + Math.abs(toNumber(dataset?.data?.[index]));
+                }, 0);
+                const percentual = totalMes > 0 ? ` (${((Math.abs(value) / totalMes) * 100).toFixed(1)}%)` : '';
+                return `${context.dataset.label}: ${formatCurrency(value)}${percentual}`;
+              }
             }
           }
         },
+        layout: {
+          padding: { top: 6, right: 8, left: 8 }
+        },
         scales: {
-          x: {
-            grid: {
-              display: false
-            },
-            ticks: {
-              color: isDarkMode ? '#94a3b8' : '#64748b',
-              font: { weight: '600' }
-            }
-          },
+          x: getXAxisBase(isDarkMode),
           y: {
-            grid: {
-              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)'
-            },
+            ...getYAxisBase(isDarkMode),
             ticks: {
-              color: isDarkMode ? '#94a3b8' : '#64748b',
-              callback: (value) => formatCurrency(value)
+              color: theme.tickText,
+              maxTicksLimit: 6,
+              padding: 8,
+              callback: (value) => formatCompactCurrency(value)
             }
           }
         }
@@ -190,7 +262,7 @@ export const ComparativoReceitaDespesaChart = ({ dados }) => {
   }, [meses, receitas, despesas, isDarkMode]);
 
   return (
-    <div className="h-[350px]">
+    <div className={CHART_HEIGHT_PRIMARY}>
       <canvas ref={chartRef} />
     </div>
   );
@@ -311,46 +383,26 @@ export const VariacaoLucroChart = ({ dadosAtual, dadosAnterior }) => {
           mode: 'index'
         },
         plugins: {
-          legend: {
-            position: 'top',
-            labels: {
-              color: isDarkMode ? '#e2e8f0' : '#475569',
-              font: { weight: 'bold', size: 12 },
-              usePointStyle: true,
-              pointStyle: 'circle',
-              padding: 20
-            }
-          },
+          legend: getLegendBase(isDarkMode),
           tooltip: {
-            backgroundColor: isDarkMode ? '#1e293b' : 'white',
-            titleColor: isDarkMode ? '#f1f5f9' : '#1e293b',
-            bodyColor: isDarkMode ? '#cbd5e1' : '#475569',
-            borderColor: isDarkMode ? '#334155' : '#e2e8f0',
-            borderWidth: 1,
-            padding: 16,
-            cornerRadius: 12,
+            ...getTooltipBase(isDarkMode),
             callbacks: {
               label: (context) => `${context.dataset.label}: ${formatCurrency(context.raw)}`
             }
           }
         },
+        layout: {
+          padding: { top: 6, right: 8, left: 8 }
+        },
         scales: {
-          x: {
-            grid: {
-              display: false
-            },
-            ticks: {
-              color: isDarkMode ? '#94a3b8' : '#64748b',
-              font: { weight: '600' }
-            }
-          },
+          x: getXAxisBase(isDarkMode),
           y: {
-            grid: {
-              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)'
-            },
+            ...getYAxisBase(isDarkMode),
             ticks: {
-              color: isDarkMode ? '#94a3b8' : '#64748b',
-              callback: (value) => formatCurrency(value)
+              color: theme.tickText,
+              maxTicksLimit: 6,
+              padding: 8,
+              callback: (value) => formatCompactCurrency(value)
             }
           }
         }
@@ -365,7 +417,7 @@ export const VariacaoLucroChart = ({ dadosAtual, dadosAnterior }) => {
   }, [trimestres, lucroAtualTrimestral, lucroAnteriorTrimestral, anoAtual, anoAnterior, isDarkMode]);
 
   return (
-    <div className="h-[350px]">
+    <div className={CHART_HEIGHT_PRIMARY}>
       <canvas ref={chartRef} />
     </div>
   );
@@ -393,6 +445,7 @@ export const ReceitaCustoEstoqueChart = ({ dados }) => {
     }
 
     const ctx = chartRef.current.getContext('2d');
+    const theme = getThemeStyles(isDarkMode);
 
     chartInstance.current = new Chart(ctx, {
       type: 'line',
@@ -402,12 +455,13 @@ export const ReceitaCustoEstoqueChart = ({ dados }) => {
           {
             label: 'Receita',
             data: receita,
+            yAxisID: 'y',
             borderColor: COLORS.success,
             backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.05)',
             borderWidth: 3,
             fill: true,
-            tension: 0.4,
-            pointRadius: 5,
+            tension: 0.35,
+            pointRadius: 4,
             pointBackgroundColor: COLORS.success,
             pointBorderColor: isDarkMode ? '#1e293b' : 'white',
             pointBorderWidth: 2
@@ -415,12 +469,13 @@ export const ReceitaCustoEstoqueChart = ({ dados }) => {
           {
             label: 'Custo',
             data: custo,
+            yAxisID: 'y',
             borderColor: COLORS.danger,
             backgroundColor: 'transparent',
             borderWidth: 3,
             fill: false,
-            tension: 0.4,
-            pointRadius: 5,
+            tension: 0.35,
+            pointRadius: 4,
             pointBackgroundColor: COLORS.danger,
             pointBorderColor: isDarkMode ? '#1e293b' : 'white',
             pointBorderWidth: 2
@@ -428,12 +483,14 @@ export const ReceitaCustoEstoqueChart = ({ dados }) => {
           {
             label: 'Estoque',
             data: estoque,
+            yAxisID: 'y1',
             borderColor: COLORS.info,
             backgroundColor: 'transparent',
             borderWidth: 3,
             fill: false,
-            tension: 0.4,
-            pointRadius: 5,
+            borderDash: [6, 4],
+            tension: 0.35,
+            pointRadius: 4,
             pointBackgroundColor: COLORS.info,
             pointBorderColor: isDarkMode ? '#1e293b' : 'white',
             pointBorderWidth: 2
@@ -448,46 +505,39 @@ export const ReceitaCustoEstoqueChart = ({ dados }) => {
           mode: 'index'
         },
         plugins: {
-          legend: {
-            position: 'top',
-            labels: {
-              color: isDarkMode ? '#e2e8f0' : '#475569',
-              font: { weight: 'bold', size: 12 },
-              usePointStyle: true,
-              pointStyle: 'circle',
-              padding: 20
-            }
-          },
+          legend: getLegendBase(isDarkMode),
           tooltip: {
-            backgroundColor: isDarkMode ? '#1e293b' : 'white',
-            titleColor: isDarkMode ? '#f1f5f9' : '#1e293b',
-            bodyColor: isDarkMode ? '#cbd5e1' : '#475569',
-            borderColor: isDarkMode ? '#334155' : '#e2e8f0',
-            borderWidth: 1,
-            padding: 16,
-            cornerRadius: 12,
+            ...getTooltipBase(isDarkMode),
             callbacks: {
               label: (context) => `${context.dataset.label}: ${formatCurrency(context.raw)}`
             }
           }
         },
+        layout: {
+          padding: { top: 6, right: 8, left: 8 }
+        },
         scales: {
-          x: {
-            grid: {
-              display: false
-            },
+          x: getXAxisBase(isDarkMode),
+          y: {
+            ...getYAxisBase(isDarkMode),
             ticks: {
-              color: isDarkMode ? '#94a3b8' : '#64748b',
-              font: { weight: '600' }
+              color: theme.tickText,
+              maxTicksLimit: 6,
+              padding: 8,
+              callback: (value) => formatCompactCurrency(value)
             }
           },
-          y: {
+          y1: {
+            ...getYAxisBase(isDarkMode),
+            position: 'right',
             grid: {
-              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)'
+              drawOnChartArea: false
             },
             ticks: {
-              color: isDarkMode ? '#94a3b8' : '#64748b',
-              callback: (value) => formatCurrency(value)
+              color: theme.tickText,
+              maxTicksLimit: 6,
+              padding: 8,
+              callback: (value) => formatCompactCurrency(value)
             }
           }
         }
@@ -502,7 +552,7 @@ export const ReceitaCustoEstoqueChart = ({ dados }) => {
   }, [meses, receita, custo, estoque, isDarkMode]);
 
   return (
-    <div className="h-[350px]">
+    <div className={CHART_HEIGHT_PRIMARY}>
       <canvas ref={chartRef} />
     </div>
   );
@@ -528,6 +578,7 @@ export const MovimentacaoBancariaChart = ({ dados }) => {
     }
 
     const ctx = chartRef.current.getContext('2d');
+    const theme = getThemeStyles(isDarkMode);
 
     // Gradiente
     const gradient = ctx.createLinearGradient(0, 0, 0, 300);
@@ -567,35 +618,26 @@ export const MovimentacaoBancariaChart = ({ dados }) => {
             display: false
           },
           tooltip: {
-            backgroundColor: isDarkMode ? '#1e293b' : 'white',
-            titleColor: isDarkMode ? '#f1f5f9' : '#1e293b',
-            bodyColor: isDarkMode ? '#cbd5e1' : '#475569',
+            ...getTooltipBase(isDarkMode),
             borderColor: COLORS.primary,
-            borderWidth: 2,
-            padding: 16,
-            cornerRadius: 12,
+            borderWidth: 1,
             callbacks: {
               label: (context) => `Saldo: ${formatCurrency(context.raw)}`
             }
           }
         },
+        layout: {
+          padding: { top: 6, right: 8, left: 8 }
+        },
         scales: {
-          x: {
-            grid: {
-              display: false
-            },
-            ticks: {
-              color: isDarkMode ? '#94a3b8' : '#64748b',
-              font: { weight: '600' }
-            }
-          },
+          x: getXAxisBase(isDarkMode),
           y: {
-            grid: {
-              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)'
-            },
+            ...getYAxisBase(isDarkMode),
             ticks: {
-              color: isDarkMode ? '#94a3b8' : '#64748b',
-              callback: (value) => formatCurrency(value)
+              color: theme.tickText,
+              maxTicksLimit: 6,
+              padding: 8,
+              callback: (value) => formatCompactCurrency(value)
             }
           }
         }
@@ -610,7 +652,7 @@ export const MovimentacaoBancariaChart = ({ dados }) => {
   }, [meses, saldos, isDarkMode]);
 
   return (
-    <div className="h-[300px]">
+    <div className={CHART_HEIGHT_SECONDARY}>
       <canvas ref={chartRef} />
     </div>
   );
@@ -636,6 +678,7 @@ export const AplicacoesFinanceirasChart = ({ dados }) => {
     }
 
     const ctx = chartRef.current.getContext('2d');
+    const theme = getThemeStyles(isDarkMode);
 
     // Gradiente
     const gradient = ctx.createLinearGradient(0, 0, 0, 300);
@@ -675,35 +718,26 @@ export const AplicacoesFinanceirasChart = ({ dados }) => {
             display: false
           },
           tooltip: {
-            backgroundColor: isDarkMode ? '#1e293b' : 'white',
-            titleColor: isDarkMode ? '#f1f5f9' : '#1e293b',
-            bodyColor: isDarkMode ? '#cbd5e1' : '#475569',
+            ...getTooltipBase(isDarkMode),
             borderColor: COLORS.secondary,
-            borderWidth: 2,
-            padding: 16,
-            cornerRadius: 12,
+            borderWidth: 1,
             callbacks: {
               label: (context) => `Aplicações: ${formatCurrency(context.raw)}`
             }
           }
         },
+        layout: {
+          padding: { top: 6, right: 8, left: 8 }
+        },
         scales: {
-          x: {
-            grid: {
-              display: false
-            },
-            ticks: {
-              color: isDarkMode ? '#94a3b8' : '#64748b',
-              font: { weight: '600' }
-            }
-          },
+          x: getXAxisBase(isDarkMode),
           y: {
-            grid: {
-              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)'
-            },
+            ...getYAxisBase(isDarkMode),
             ticks: {
-              color: isDarkMode ? '#94a3b8' : '#64748b',
-              callback: (value) => formatCurrency(value)
+              color: theme.tickText,
+              maxTicksLimit: 6,
+              padding: 8,
+              callback: (value) => formatCompactCurrency(value)
             }
           }
         }
@@ -718,7 +752,7 @@ export const AplicacoesFinanceirasChart = ({ dados }) => {
   }, [meses, saldos, isDarkMode]);
 
   return (
-    <div className="h-[300px]">
+    <div className={CHART_HEIGHT_SECONDARY}>
       <canvas ref={chartRef} />
     </div>
   );

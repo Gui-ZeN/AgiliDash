@@ -1483,7 +1483,7 @@ const Dashboard = () => {
                   {temDadosContabeis ? (
                     <MovimentacaoBancariaChart dados={dadosContabeisImportados?.balancetesConsolidados} />
                   ) : (
-                    <div className="h-[300px] flex items-center justify-center">
+                    <div className="h-[280px] md:h-[320px] flex items-center justify-center">
                       <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Importe Balancetes para visualizar</p>
                     </div>
                   )}
@@ -1505,7 +1505,7 @@ const Dashboard = () => {
               {temDadosContabeis ? (
                 <AplicacoesFinanceirasChart dados={dadosContabeisImportados?.balancetesConsolidados} />
               ) : (
-                <div className="h-[300px] flex items-center justify-center">
+                <div className="h-[280px] md:h-[320px] flex items-center justify-center">
                   <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Importe Balancetes para visualizar</p>
                 </div>
               )}
