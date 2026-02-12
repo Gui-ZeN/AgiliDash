@@ -1134,6 +1134,8 @@ export const parseResumoPorAcumulador = (csvContent) => {
   const lines = csvContent.split('\n');
   let empresaInfo = {};
   let periodo = '';
+  let periodoInicio = '';
+  let periodoFim = '';
   const entradas = [];
   const saidas = [];
   let secaoAtual = null; // 'ENTRADAS' ou 'SAIDAS'
@@ -1155,6 +1157,13 @@ export const parseResumoPorAcumulador = (csvContent) => {
     return t === 'ENTRADAS';
   };
 
+  const dataParaCompetencia = (data = '') => {
+    const match = String(data).match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (!match) return '';
+    const [, , mes, ano] = match;
+    return `${mes}/${ano}`;
+  };
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const cols = line.split(';').map(c => c.trim());
@@ -1164,7 +1173,12 @@ export const parseResumoPorAcumulador = (csvContent) => {
       empresaInfo.cnpj = cols.find(c => c.match(/\d{8,}/)) || '';
     }
     if (line.toUpperCase().includes('PER') && line.includes(':')) {
-      periodo = cols.find(c => c.match(/\d{2}\/\d{2}\/\d{4}/)) || '';
+      const datas = line.match(/\d{2}\/\d{2}\/\d{4}/g) || [];
+      periodoInicio = datas[0] || '';
+      periodoFim = datas[1] || datas[0] || '';
+      periodo = periodoInicio && periodoFim
+        ? `${periodoInicio} até ${periodoFim}`
+        : (periodoInicio || periodoFim || '');
     }
 
     // Identificar seção
@@ -1290,9 +1304,22 @@ export const parseResumoPorAcumulador = (csvContent) => {
   );
   const vendaMercadoriaEspecifica = itensVendaMercadoriaEspecifica.reduce((acc, s) => acc + s.vlrContabil, 0);
 
+  const competenciaInicio = dataParaCompetencia(periodoInicio);
+  const competenciaFim = dataParaCompetencia(periodoFim);
+  const competenciaReferencia = competenciaFim || competenciaInicio || '';
+  const anoReferencia = competenciaReferencia ? Number(competenciaReferencia.split('/')[1]) : null;
+  const mesReferencia = competenciaReferencia ? Number(competenciaReferencia.split('/')[0]) : null;
+
   return {
     empresaInfo,
     periodo,
+    periodoInicio,
+    periodoFim,
+    competenciaInicio,
+    competenciaFim,
+    competenciaReferencia,
+    anoReferencia,
+    mesReferencia,
     entradas,
     saidas,
     totais: {

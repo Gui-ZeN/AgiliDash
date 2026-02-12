@@ -310,7 +310,7 @@ export const TabelaAcumuladores = ({ dados, tipo = 'entradas' }) => {
 
     const total = lista.reduce((acc, item) => acc + item.vlrContabil, 0);
 
-    return lista
+    return [...lista]
       .sort((a, b) => b.vlrContabil - a.vlrContabil)
       .slice(0, 10)
       .map(item => ({
@@ -1195,18 +1195,10 @@ export const Tabela380 = ({ dados, dadosMensais }) => {
 /**
  * Cards de Métricas Fiscais
  */
-export const CardsMetricasFiscais = ({ dados, dadosImpostos }) => {
-  const { isDarkMode } = useTheme();
-
+export const CardsMetricasFiscais = ({ dados, totalFaturamento = 0 }) => {
   const metricas = useMemo(() => {
-    let totalImpostos = 0;
     let totalEntradas = 0;
     let totalSaidas = 0;
-
-    if (dadosImpostos?.totaisPorImposto) {
-      totalImpostos = Object.values(dadosImpostos.totaisPorImposto)
-        .reduce((acc, imp) => acc + imp.recolher, 0);
-    }
 
     if (dados?.totais) {
       totalEntradas = dados.totais.entradas || 0;
@@ -1214,15 +1206,14 @@ export const CardsMetricasFiscais = ({ dados, dadosImpostos }) => {
     }
 
     return {
-      totalImpostos,
       totalEntradas,
       totalSaidas,
-      saldo: totalEntradas - totalSaidas
+      totalFaturamento
     };
-  }, [dados, dadosImpostos]);
+  }, [dados, totalFaturamento]);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div className="bg-emerald-700 p-6 rounded-xl text-white shadow-md">
         <div className="flex items-center justify-between mb-4">
           <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1246,21 +1237,11 @@ export const CardsMetricasFiscais = ({ dados, dadosImpostos }) => {
       <div className="bg-[#0e4f6d] p-6 rounded-xl text-white shadow-md">
         <div className="flex items-center justify-between mb-4">
           <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
-          </svg>
-        </div>
-        <p className="text-3xl font-bold">{formatCurrency(metricas.totalImpostos)}</p>
-        <p className="text-white/70 text-sm mt-1">Impostos a Recolher</p>
-      </div>
-
-      <div className={`${metricas.saldo >= 0 ? 'bg-slate-700' : 'bg-orange-600'} p-6 rounded-xl text-white shadow-md`}>
-        <div className="flex items-center justify-between mb-4">
-          <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <p className="text-3xl font-bold">{formatCurrency(metricas.saldo)}</p>
-        <p className="text-white/70 text-sm mt-1">Saldo (Ent. - Saí.)</p>
+        <p className="text-3xl font-bold">{formatCurrency(metricas.totalFaturamento)}</p>
+        <p className="text-white/70 text-sm mt-1">Faturamento Total</p>
       </div>
     </div>
   );

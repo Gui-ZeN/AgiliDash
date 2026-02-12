@@ -533,16 +533,28 @@ const Dashboard = () => {
       };
     }
 
-    const entradasMap = new Map();
-    const saidasMap = new Map();
-    const categorias = {
-      compraComercializacao: 0,
-      vendaMercadoria: 0,
-      vendaProduto: 0,
-      vendaExterior: 0,
-      totalVendas380: 0,
-      esperado380: 0
+    const normalizarTexto = (texto = '') =>
+      String(texto)
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toUpperCase()
+        .trim();
+    const mesIndexPorNome = {
+      JANEIRO: 1,
+      FEVEREIRO: 2,
+      MARCO: 3,
+      ABRIL: 4,
+      MAIO: 5,
+      JUNHO: 6,
+      JULHO: 7,
+      AGOSTO: 8,
+      SETEMBRO: 9,
+      OUTUBRO: 10,
+      NOVEMBRO: 11,
+      DEZEMBRO: 12
     };
+    const getMesIndexByNome = (mesNome = '') => mesIndexPorNome[normalizarTexto(mesNome)] || null;
+
     const somarItens = (mapa, itens = []) => {
       itens.forEach((item) => {
         const chave = `${item.codigo || ''}::${item.descricao || ''}`;
@@ -562,24 +574,35 @@ const Dashboard = () => {
       });
     };
 
-    dadosFiscaisEscopo.forEach((item) => {
-      if (!item?.resumoAcumulador) return;
-      somarItens(entradasMap, item.resumoAcumulador.entradas || []);
-      somarItens(saidasMap, item.resumoAcumulador.saidas || []);
-      Object.keys(categorias).forEach((campo) => {
-        categorias[campo] += Number(item.resumoAcumulador?.categorias?.[campo] || 0);
-      });
-    });
+    const consolidarResumoAcumuladorLista = (lista = []) => {
+      const entradasMap = new Map();
+      const saidasMap = new Map();
+      const categorias = {
+        compraComercializacao: 0,
+        vendaMercadoria: 0,
+        vendaProduto: 0,
+        vendaExterior: 0,
+        totalVendas380: 0,
+        esperado380: 0
+      };
 
-    let resumoAcumulador = null;
-    if (entradasMap.size > 0 || saidasMap.size > 0) {
+      lista.forEach((resumo) => {
+        if (!resumo) return;
+        somarItens(entradasMap, resumo.entradas || []);
+        somarItens(saidasMap, resumo.saidas || []);
+        Object.keys(categorias).forEach((campo) => {
+          categorias[campo] += Number(resumo?.categorias?.[campo] || 0);
+        });
+      });
+
       const entradas = Array.from(entradasMap.values());
       const saidas = Array.from(saidasMap.values());
       const detalhesVendas = saidas.filter((s) => {
         const desc = String(s.descricao || '').toUpperCase();
         return desc.startsWith('VENDA') && !desc.includes('ATIVO') && !desc.includes('IMOBILIZADO');
       });
-      resumoAcumulador = {
+
+      return {
         entradas,
         saidas,
         totais: {
@@ -595,12 +618,128 @@ const Dashboard = () => {
         },
         tipo: 'resumoAcumulador'
       };
+    };
+
+    const resumoListaPorCompetencia = {};
+    dadosFiscaisEscopo.forEach((item) => {
+      const resumo = item?.resumoAcumulador;
+      if (!resumo) return;
+
+      const porCompetencia = resumo?.porCompetencia || {};
+      if (Object.keys(porCompetencia).length > 0) {
+        Object.entries(porCompetencia).forEach(([competencia, dadosCompetencia]) => {
+          if (!resumoListaPorCompetencia[competencia]) resumoListaPorCompetencia[competencia] = [];
+          resumoListaPorCompetencia[competencia].push(dadosCompetencia);
+        });
+        return;
+      }
+
+      const fallbackCompetencia = resumo?.competenciaReferencia || resumo?.competenciaFim || resumo?.competenciaInicio || `${selectedYear}`;
+      if (!resumoListaPorCompetencia[fallbackCompetencia]) resumoListaPorCompetencia[fallbackCompetencia] = [];
+      resumoListaPorCompetencia[fallbackCompetencia].push(resumo);
+    });
+
+    const resumoPorCompetencia = {};
+    Object.entries(resumoListaPorCompetencia).forEach(([competencia, lista]) => {
+      resumoPorCompetencia[competencia] = consolidarResumoAcumuladorLista(lista);
+    });
+
+    let resumoAcumulador = null;
+    if (Object.keys(resumoPorCompetencia).length > 0) {
+      const competencias = Object.keys(resumoPorCompetencia).sort(ordenarCompetencia);
+      resumoAcumulador = {
+        ...consolidarResumoAcumuladorLista(Object.values(resumoPorCompetencia)),
+        porCompetencia: resumoPorCompetencia,
+        competencias
+      };
+    }
+
+    const faturamentoPorCompetencia = {};
+    dadosFiscaisEscopo.forEach((item) => {
+      const dadosFaturamento = item?.faturamento;
+      if (!dadosFaturamento) return;
+
+      const porCompetencia = dadosFaturamento?.porCompetencia || {};
+      if (Object.keys(porCompetencia).length > 0) {
+        Object.entries(porCompetencia).forEach(([competencia, dadosCompetencia]) => {
+          if (!faturamentoPorCompetencia[competencia]) {
+            faturamentoPorCompetencia[competencia] = {
+              mes: dadosCompetencia?.mes || '',
+              ano: Number(dadosCompetencia?.ano || 0),
+              saidas: 0,
+              servicos: 0,
+              outros: 0,
+              total: 0
+            };
+          }
+          faturamentoPorCompetencia[competencia].saidas += Number(dadosCompetencia?.saidas || 0);
+          faturamentoPorCompetencia[competencia].servicos += Number(dadosCompetencia?.servicos || 0);
+          faturamentoPorCompetencia[competencia].outros += Number(dadosCompetencia?.outros || 0);
+          faturamentoPorCompetencia[competencia].total += Number(dadosCompetencia?.total || dadosCompetencia?.saidas || 0);
+        });
+        return;
+      }
+
+      (dadosFaturamento?.faturamento || []).forEach((registro) => {
+        const mesIndex = Number(registro?.mesIndex || getMesIndexByNome(registro?.mes));
+        const ano = Number(registro?.ano || 0);
+        if (!mesIndex || !ano) return;
+        const competencia = `${String(mesIndex).padStart(2, '0')}/${ano}`;
+        if (!faturamentoPorCompetencia[competencia]) {
+          faturamentoPorCompetencia[competencia] = {
+            mes: registro?.mes || '',
+            ano,
+            saidas: 0,
+            servicos: 0,
+            outros: 0,
+            total: 0
+          };
+        }
+        faturamentoPorCompetencia[competencia].saidas += Number(registro?.saidas || 0);
+        faturamentoPorCompetencia[competencia].servicos += Number(registro?.servicos || 0);
+        faturamentoPorCompetencia[competencia].outros += Number(registro?.outros || 0);
+        faturamentoPorCompetencia[competencia].total += Number(registro?.total || registro?.saidas || 0);
+      });
+    });
+
+    let faturamento = null;
+    if (Object.keys(faturamentoPorCompetencia).length > 0) {
+      const competencias = Object.keys(faturamentoPorCompetencia).sort(ordenarCompetencia);
+      const registros = competencias.map((competencia) => {
+        const [mes, ano] = competencia.split('/').map(Number);
+        const item = faturamentoPorCompetencia[competencia] || {};
+        return {
+          mes: item.mes || '',
+          mesIndex: mes,
+          ano,
+          competencia,
+          saidas: Number(item.saidas || 0),
+          servicos: Number(item.servicos || 0),
+          outros: Number(item.outros || 0),
+          total: Number(item.total || 0)
+        };
+      });
+      faturamento = {
+        faturamento: registros,
+        faturamento2024: registros.filter(r => r.ano === 2024),
+        faturamento2025: registros.filter(r => r.ano === 2025),
+        totais: {
+          saidas: registros.reduce((acc, r) => acc + Number(r.saidas || 0), 0),
+          servicos: registros.reduce((acc, r) => acc + Number(r.servicos || 0), 0),
+          outros: registros.reduce((acc, r) => acc + Number(r.outros || 0), 0),
+          total: registros.reduce((acc, r) => acc + Number(r.total || 0), 0)
+        },
+        porCompetencia: faturamentoPorCompetencia,
+        competencias,
+        tipo: 'faturamento'
+      };
     }
 
     return {
       csll: mergeTrimestres(dadosFiscaisEscopo.map(item => item?.csll || [])),
       irpj: mergeTrimestres(dadosFiscaisEscopo.map(item => item?.irpj || [])),
       demonstrativoMensal,
+      faturamento,
       resumoImpostos,
       resumoAcumulador
     };
@@ -709,6 +848,7 @@ const Dashboard = () => {
   const temDadosContabeis = Boolean(dadosContabeisImportados?.analiseHorizontal || dadosContabeisImportados?.balancetesConsolidados);
   const temDadosFiscais = Boolean(
     dadosFiscaisImportados?.resumoAcumulador ||
+    dadosFiscaisImportados?.faturamento ||
     dadosFiscaisImportados?.demonstrativoMensal ||
     dadosFiscaisImportados?.resumoImpostos ||
     (dadosFiscaisImportados?.csll?.length > 0) ||
@@ -721,6 +861,162 @@ const Dashboard = () => {
     dadosPessoalImportados?.salarioBase ||
     dadosPessoalImportados?.ferias
   );
+
+  const competenciasFiltroFiscal = useMemo(() => {
+    const ano = Number(periodFilter?.year);
+    if (!ano) return [];
+
+    if (periodFilter?.type === 'month') {
+      const mes = Number(periodFilter?.month || 0);
+      if (!mes) return [];
+      return [`${String(mes).padStart(2, '0')}/${ano}`];
+    }
+
+    if (periodFilter?.type === 'quarter') {
+      const trimestre = Number(periodFilter?.quarter || 0);
+      const mesesTrimestre = {
+        1: [1, 2, 3],
+        2: [4, 5, 6],
+        3: [7, 8, 9],
+        4: [10, 11, 12]
+      };
+      return (mesesTrimestre[trimestre] || []).map((mes) => `${String(mes).padStart(2, '0')}/${ano}`);
+    }
+
+    return Array.from({ length: 12 }, (_, idx) => `${String(idx + 1).padStart(2, '0')}/${ano}`);
+  }, [periodFilter]);
+
+  const consolidarResumoAcumuladorLista = (lista = []) => {
+    const entradasMap = new Map();
+    const saidasMap = new Map();
+    const categorias = {
+      compraComercializacao: 0,
+      vendaMercadoria: 0,
+      vendaProduto: 0,
+      vendaExterior: 0,
+      totalVendas380: 0,
+      esperado380: 0
+    };
+
+    const somarItens = (mapa, itens = []) => {
+      itens.forEach((item) => {
+        const chave = `${item.codigo || ''}::${item.descricao || ''}`;
+        if (!mapa.has(chave)) {
+          mapa.set(chave, { ...item });
+          return;
+        }
+        const atual = mapa.get(chave);
+        Object.entries(item).forEach(([campo, valor]) => {
+          if (typeof valor === 'number' && Number.isFinite(valor)) {
+            atual[campo] = Number(atual[campo] || 0) + valor;
+          } else if (atual[campo] === undefined) {
+            atual[campo] = valor;
+          }
+        });
+        mapa.set(chave, atual);
+      });
+    };
+
+    lista.forEach((resumo) => {
+      if (!resumo) return;
+      somarItens(entradasMap, resumo.entradas || []);
+      somarItens(saidasMap, resumo.saidas || []);
+      Object.keys(categorias).forEach((campo) => {
+        categorias[campo] += Number(resumo?.categorias?.[campo] || 0);
+      });
+    });
+
+    const entradas = Array.from(entradasMap.values());
+    const saidas = Array.from(saidasMap.values());
+    const detalhesVendas = saidas.filter((s) => {
+      const desc = String(s.descricao || '').toUpperCase();
+      return desc.startsWith('VENDA') && !desc.includes('ATIVO') && !desc.includes('IMOBILIZADO');
+    });
+
+    return {
+      entradas,
+      saidas,
+      totais: {
+        entradas: entradas.reduce((acc, e) => acc + Number(e.vlrContabil || 0), 0),
+        saidas: saidas.reduce((acc, s) => acc + Number(s.vlrContabil || 0), 0)
+      },
+      categorias,
+      detalhes380: {
+        compras: entradas.filter(e => String(e.descricao || '').toUpperCase().includes('COMERCIALIZA')),
+        vendasMercadoria: detalhesVendas,
+        vendasProduto: detalhesVendas.filter(s => String(s.descricao || '').toUpperCase().includes('PRODUTO')),
+        vendasExterior: detalhesVendas.filter(s => String(s.descricao || '').toUpperCase().includes('EXTERIOR'))
+      },
+      tipo: 'resumoAcumulador'
+    };
+  };
+
+  const resumoAcumuladorFiltrado = useMemo(() => {
+    const resumoBase = dadosFiscaisImportados?.resumoAcumulador;
+    if (!resumoBase) return null;
+
+    const porCompetencia = resumoBase?.porCompetencia || {};
+    if (!Object.keys(porCompetencia).length) return resumoBase;
+
+    const competenciasAlvo = new Set(competenciasFiltroFiscal);
+    const filtrado = Object.entries(porCompetencia)
+      .filter(([competencia]) => competenciasAlvo.has(String(competencia)))
+      .reduce((acc, [competencia, dados]) => {
+        acc[competencia] = dados;
+        return acc;
+      }, {});
+
+    if (!Object.keys(filtrado).length) {
+      return {
+        ...resumoBase,
+        entradas: [],
+        saidas: [],
+        totais: { entradas: 0, saidas: 0 },
+        categorias: {
+          compraComercializacao: 0,
+          vendaMercadoria: 0,
+          vendaProduto: 0,
+          vendaExterior: 0,
+          totalVendas380: 0,
+          esperado380: 0
+        },
+        detalhes380: { compras: [], vendasMercadoria: [], vendasProduto: [], vendasExterior: [] },
+        porCompetencia: {},
+        competencias: []
+      };
+    }
+
+    return {
+      ...consolidarResumoAcumuladorLista(Object.values(filtrado)),
+      porCompetencia: filtrado,
+      competencias: Object.keys(filtrado).sort(ordenarCompetencia)
+    };
+  }, [dadosFiscaisImportados?.resumoAcumulador, competenciasFiltroFiscal]);
+
+  const totalFaturamentoFiltrado = useMemo(() => {
+    const faturamento = dadosFiscaisImportados?.faturamento;
+    if (!faturamento) return 0;
+
+    const porCompetencia = faturamento?.porCompetencia || {};
+    if (Object.keys(porCompetencia).length) {
+      const competenciasAlvo = new Set(competenciasFiltroFiscal);
+      return Object.entries(porCompetencia).reduce((acc, [competencia, item]) => {
+        if (!competenciasAlvo.has(String(competencia))) return acc;
+        return acc + Number(item?.total || item?.saidas || 0);
+      }, 0);
+    }
+
+    const registros = faturamento?.faturamento || [];
+    const competenciasAlvo = new Set(competenciasFiltroFiscal);
+    return registros.reduce((acc, item) => {
+      const mes = Number(item?.mesIndex || 0);
+      const ano = Number(item?.ano || 0);
+      if (!mes || !ano) return acc;
+      const competencia = `${String(mes).padStart(2, '0')}/${ano}`;
+      if (!competenciasAlvo.has(competencia)) return acc;
+      return acc + Number(item?.total || item?.saidas || 0);
+    }, 0);
+  }, [dadosFiscaisImportados?.faturamento, competenciasFiltroFiscal]);
 
   // Dados do CNPJ selecionado
   const dreData = selectedYear === 2025 ? cnpjDados.dreData2025 : cnpjDados.dreData2024;
@@ -1593,8 +1889,8 @@ const Dashboard = () => {
             {temDadosFiscais ? (
               <div className={`transition-all duration-500 delay-100 ${cardAnimation}`}>
                 <CardsMetricasFiscais
-                  dados={dadosFiscaisImportados?.resumoAcumulador}
-                  dadosImpostos={dadosFiscaisImportados?.resumoImpostos}
+                  dados={resumoAcumuladorFiltrado || dadosFiscaisImportados?.resumoAcumulador}
+                  totalFaturamento={totalFaturamentoFiltrado}
                 />
               </div>
             ) : (
@@ -1721,18 +2017,32 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              {/* Tabela de Acumuladores */}
-              {temDadosFiscais && dadosFiscaisImportados?.resumoAcumulador && (
-                <div className={`mt-6 rounded-xl shadow-sm overflow-hidden ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
-                  <div className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
-                    <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                      Principais Acumuladores - Entradas
-                    </h3>
-                    <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                      Categorias com maior valor contabil
-                    </p>
+              {/* Tabelas de Acumuladores */}
+              {temDadosFiscais && resumoAcumuladorFiltrado && (
+                <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className={`rounded-xl shadow-sm overflow-hidden ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                    <div className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
+                      <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                        Principais Acumuladores - Entradas
+                      </h3>
+                      <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                        Categorias com maior valor contábil
+                      </p>
+                    </div>
+                    <TabelaAcumuladores dados={resumoAcumuladorFiltrado} tipo="entradas" />
                   </div>
-                  <TabelaAcumuladores dados={dadosFiscaisImportados.resumoAcumulador} tipo="entradas" />
+
+                  <div className={`rounded-xl shadow-sm overflow-hidden ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                    <div className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
+                      <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                        Principais Acumuladores - Saídas
+                      </h3>
+                      <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                        Categorias com maior valor contábil
+                      </p>
+                    </div>
+                    <TabelaAcumuladores dados={resumoAcumuladorFiltrado} tipo="saidas" />
+                  </div>
                 </div>
               )}
             </section>
