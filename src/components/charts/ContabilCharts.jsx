@@ -341,6 +341,7 @@ export const VariacaoLucroChart = ({ dadosAtual, dadosAnterior }) => {
     }
 
     const ctx = chartRef.current.getContext('2d');
+    const theme = getThemeStyles(isDarkMode);
 
     const datasets = [
       {
