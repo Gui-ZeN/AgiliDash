@@ -95,8 +95,25 @@ const Configuracoes = () => {
   const [modalDelete, setModalDelete] = useState({ open: false, type: null, item: null });
 
   // Estados de formularios
-  const [formGrupo, setFormGrupo] = useState({ nome: '', descricao: '' });
-  const [formCnpj, setFormCnpj] = useState({ cnpj: '', razaoSocial: '', nomeFantasia: '', tipo: 'Filial', regimeTributario: 'Lucro Real', cidade: '', estado: '' });
+  const [formGrupo, setFormGrupo] = useState({
+    nome: '',
+    descricao: '',
+    responsavelPadraoNome: '',
+    responsavelPadraoCargo: '',
+    responsavelPadraoWhatsapp: ''
+  });
+  const [formCnpj, setFormCnpj] = useState({
+    cnpj: '',
+    razaoSocial: '',
+    nomeFantasia: '',
+    tipo: 'Filial',
+    regimeTributario: 'Lucro Real',
+    cidade: '',
+    estado: '',
+    responsavelNome: '',
+    responsavelCargo: '',
+    responsavelWhatsapp: ''
+  });
   const [formUsuario, setFormUsuario] = useState({ nome: '', email: '', telefone: '', perfil: 'Visualizador', status: 'Ativo', grupoId: '', setoresAcesso: [] });
 
   // Estados de importacao
@@ -256,22 +273,48 @@ const Configuracoes = () => {
 
   // Handlers CRUD Grupo
   const handleAddGrupo = () => {
-    setFormGrupo({ nome: '', descricao: '' });
+    setFormGrupo({
+      nome: '',
+      descricao: '',
+      responsavelPadraoNome: '',
+      responsavelPadraoCargo: '',
+      responsavelPadraoWhatsapp: ''
+    });
     setModalGrupo({ open: true, mode: 'add', data: null });
   };
 
   const handleEditGrupo = (grupo) => {
-    setFormGrupo({ nome: grupo.nome, descricao: grupo.descricao || '' });
+    setFormGrupo({
+      nome: grupo.nome,
+      descricao: grupo.descricao || '',
+      responsavelPadraoNome: grupo.responsavelPadrao?.nome || '',
+      responsavelPadraoCargo: grupo.responsavelPadrao?.cargo || '',
+      responsavelPadraoWhatsapp: grupo.responsavelPadrao?.whatsapp || ''
+    });
     setModalGrupo({ open: true, mode: 'edit', data: grupo });
   };
 
   const handleSaveGrupo = () => {
     if (!formGrupo.nome.trim()) return;
+    const { responsavelPadraoNome, responsavelPadraoCargo, responsavelPadraoWhatsapp, ...rest } = formGrupo;
+    const responsavelPadrao = {
+      nome: responsavelPadraoNome.trim(),
+      cargo: responsavelPadraoCargo.trim(),
+      whatsapp: responsavelPadraoWhatsapp.trim()
+    };
+    const payload = {
+      ...rest,
+      nome: rest.nome.trim(),
+      descricao: (rest.descricao || '').trim(),
+      responsavelPadrao: responsavelPadrao.nome || responsavelPadrao.cargo || responsavelPadrao.whatsapp
+        ? responsavelPadrao
+        : null
+    };
     if (modalGrupo.mode === 'add') {
-      addGrupo(formGrupo);
+      addGrupo(payload);
       showSuccess('Grupo criado!');
     } else {
-      updateGrupo(modalGrupo.data.id, formGrupo);
+      updateGrupo(modalGrupo.data.id, payload);
       showSuccess('Grupo atualizado!');
     }
     setModalGrupo({ open: false, mode: 'add', data: null });
@@ -279,22 +322,58 @@ const Configuracoes = () => {
 
   // Handlers CRUD CNPJ
   const handleAddCnpj = (grupoId) => {
-    setFormCnpj({ cnpj: '', razaoSocial: '', nomeFantasia: '', tipo: 'Filial', regimeTributario: 'Lucro Real', cidade: '', estado: '' });
+    setFormCnpj({
+      cnpj: '',
+      razaoSocial: '',
+      nomeFantasia: '',
+      tipo: 'Filial',
+      regimeTributario: 'Lucro Real',
+      cidade: '',
+      estado: '',
+      responsavelNome: '',
+      responsavelCargo: '',
+      responsavelWhatsapp: ''
+    });
     setModalCnpj({ open: true, mode: 'add', data: null, grupoId });
   };
 
   const handleEditCnpj = (cnpj) => {
-    setFormCnpj({ cnpj: cnpj.cnpj, razaoSocial: cnpj.razaoSocial, nomeFantasia: cnpj.nomeFantasia, tipo: cnpj.tipo, regimeTributario: cnpj.regimeTributario, cidade: cnpj.cidade || '', estado: cnpj.estado || '' });
+    setFormCnpj({
+      cnpj: cnpj.cnpj,
+      razaoSocial: cnpj.razaoSocial,
+      nomeFantasia: cnpj.nomeFantasia,
+      tipo: cnpj.tipo,
+      regimeTributario: cnpj.regimeTributario,
+      cidade: cnpj.cidade || '',
+      estado: cnpj.estado || '',
+      responsavelNome: cnpj.responsavel?.nome || '',
+      responsavelCargo: cnpj.responsavel?.cargo || '',
+      responsavelWhatsapp: cnpj.responsavel?.whatsapp || ''
+    });
     setModalCnpj({ open: true, mode: 'edit', data: cnpj, grupoId: cnpj.grupoId });
   };
 
   const handleSaveCnpj = () => {
     if (!formCnpj.cnpj.trim() || !formCnpj.razaoSocial.trim()) return;
+    const { responsavelNome, responsavelCargo, responsavelWhatsapp, ...rest } = formCnpj;
+    const responsavel = {
+      nome: responsavelNome.trim(),
+      cargo: responsavelCargo.trim(),
+      whatsapp: responsavelWhatsapp.trim()
+    };
+    const payload = {
+      ...rest,
+      cnpj: rest.cnpj.trim(),
+      razaoSocial: rest.razaoSocial.trim(),
+      nomeFantasia: (rest.nomeFantasia || '').trim(),
+      cidade: (rest.cidade || '').trim(),
+      responsavel: responsavel.nome || responsavel.cargo || responsavel.whatsapp ? responsavel : null
+    };
     if (modalCnpj.mode === 'add') {
-      addCnpj({ ...formCnpj, grupoId: modalCnpj.grupoId });
+      addCnpj({ ...payload, grupoId: modalCnpj.grupoId });
       showSuccess('CNPJ cadastrado!');
     } else {
-      updateCnpj(modalCnpj.data.id, formCnpj);
+      updateCnpj(modalCnpj.data.id, payload);
       showSuccess('CNPJ atualizado!');
     }
     setModalCnpj({ open: false, mode: 'add', data: null, grupoId: null });
@@ -2161,6 +2240,41 @@ const Configuracoes = () => {
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Descrição (opcional)</label>
                 <textarea value={formGrupo.descricao} onChange={(e) => setFormGrupo({ ...formGrupo, descricao: e.target.value })} placeholder="Uma breve descrição do grupo..." rows={3} className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white outline-none resize-none" />
               </div>
+              <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">Responsavel padrao do grupo (opcional)</p>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nome</label>
+                    <input
+                      type="text"
+                      value={formGrupo.responsavelPadraoNome}
+                      onChange={(e) => setFormGrupo({ ...formGrupo, responsavelPadraoNome: e.target.value })}
+                      placeholder="Nome do responsavel"
+                      className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Cargo</label>
+                    <input
+                      type="text"
+                      value={formGrupo.responsavelPadraoCargo}
+                      onChange={(e) => setFormGrupo({ ...formGrupo, responsavelPadraoCargo: e.target.value })}
+                      placeholder="Ex: Socio-Administrador"
+                      className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">WhatsApp</label>
+                    <input
+                      type="text"
+                      value={formGrupo.responsavelPadraoWhatsapp}
+                      onChange={(e) => setFormGrupo({ ...formGrupo, responsavelPadraoWhatsapp: e.target.value })}
+                      placeholder="(85) 99999-9999"
+                      className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
             <div className="p-6 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 rounded-b-xl">
               <div className="flex items-center justify-between">
@@ -2196,6 +2310,41 @@ const Configuracoes = () => {
               <div><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Regime Tributario</label><select value={formCnpj.regimeTributario} onChange={(e) => setFormCnpj({ ...formCnpj, regimeTributario: e.target.value })} className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white outline-none"><option value="Lucro Real">Lucro Real</option><option value="Lucro Presumido">Lucro Presumido</option><option value="Simples Nacional">Simples Nacional</option></select></div>
               <div><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Cidade</label><input type="text" value={formCnpj.cidade} onChange={(e) => setFormCnpj({ ...formCnpj, cidade: e.target.value })} className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white outline-none" /></div>
               <div><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Estado</label><select value={formCnpj.estado} onChange={(e) => setFormCnpj({ ...formCnpj, estado: e.target.value })} className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white outline-none"><option value="">Selecione...</option>{['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'].map(uf => <option key={uf} value={uf}>{uf}</option>)}</select></div>
+              <div className="col-span-2 mt-2 pt-4 border-t border-slate-200 dark:border-slate-700">
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">Responsavel legal (opcional)</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nome</label>
+                    <input
+                      type="text"
+                      value={formCnpj.responsavelNome}
+                      onChange={(e) => setFormCnpj({ ...formCnpj, responsavelNome: e.target.value })}
+                      placeholder="Nome do responsavel"
+                      className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Cargo</label>
+                    <input
+                      type="text"
+                      value={formCnpj.responsavelCargo}
+                      onChange={(e) => setFormCnpj({ ...formCnpj, responsavelCargo: e.target.value })}
+                      placeholder="Ex: Diretor"
+                      className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white outline-none"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">WhatsApp</label>
+                    <input
+                      type="text"
+                      value={formCnpj.responsavelWhatsapp}
+                      onChange={(e) => setFormCnpj({ ...formCnpj, responsavelWhatsapp: e.target.value })}
+                      placeholder="(85) 99999-9999"
+                      className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
             <div className="p-6 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3">
               <button onClick={() => setModalCnpj({ open: false, mode: 'add', data: null, grupoId: null })} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg">Cancelar</button>

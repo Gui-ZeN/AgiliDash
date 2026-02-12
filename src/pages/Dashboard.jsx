@@ -203,7 +203,14 @@ const Dashboard = () => {
     todasEmpresas
   } = useEmpresa();
   const { isDarkMode } = useTheme();
-  const { getDadosContabeis, getDadosFiscais, getDadosPessoal, isSecaoVisivel } = useData();
+  const {
+    getDadosContabeis,
+    getDadosFiscais,
+    getDadosPessoal,
+    isSecaoVisivel,
+    cnpjs: cnpjsAdmin,
+    grupos: gruposAdmin
+  } = useData();
 
   // Obter dados contábeis importados para o CNPJ selecionado
   const cnpjIdsEscopo = useMemo(() => {
@@ -248,6 +255,25 @@ const Dashboard = () => {
   const dadosContabeisSelecionado = getDadosContabeis(cnpjInfo?.id);
   const dadosFiscaisSelecionado = getDadosFiscais(cnpjInfo?.id);
   const dadosPessoalSelecionado = getDadosPessoal(cnpjInfo?.id);
+
+  const responsavelInfo = useMemo(() => {
+    const responsavelVazio = { nome: 'Nao informado', cargo: 'Nao informado', whatsapp: '' };
+    const cnpjAdmin = cnpjsAdmin.find(c => c.id === cnpjInfo?.id);
+    const grupoAdmin = gruposAdmin.find(g => g.id === (cnpjAdmin?.grupoId || grupoAtual?.id));
+    const candidato = [cnpjAdmin?.responsavel, grupoAdmin?.responsavelPadrao, cnpjInfo?.responsavel]
+      .find(r => r && (r.nome || r.cargo || r.whatsapp));
+
+    if (!candidato) return responsavelVazio;
+    return {
+      nome: candidato.nome || responsavelVazio.nome,
+      cargo: candidato.cargo || responsavelVazio.cargo,
+      whatsapp: candidato.whatsapp || ''
+    };
+  }, [cnpjsAdmin, gruposAdmin, cnpjInfo?.id, cnpjInfo?.responsavel, grupoAtual?.id]);
+
+  const responsavelWhatsappLink = responsavelInfo.whatsapp
+    ? `https://wa.me/55${responsavelInfo.whatsapp.replace(/\D/g, '')}`
+    : '#';
 
   const dadosContabeisConsolidados = useMemo(() => {
     if (!isConsolidado) return null;
@@ -1018,11 +1044,11 @@ const Dashboard = () => {
               <div className="p-8 dark:bg-slate-800">
                 <div className="flex items-center gap-6">
                   <a
-                    href={cnpjInfo.responsavel.whatsapp ? `https://wa.me/55${cnpjInfo.responsavel.whatsapp.replace(/\D/g, '')}` : '#'}
+                    href={responsavelWhatsappLink}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-20 h-20 rounded-xl bg-[#0e4f6d] hover:bg-[#0c4058] flex items-center justify-center shadow-md transition-colors cursor-pointer group"
-                    title={cnpjInfo.responsavel.whatsapp ? 'Abrir WhatsApp' : 'WhatsApp não cadastrado'}
+                    title={responsavelInfo.whatsapp ? 'Abrir WhatsApp' : 'WhatsApp não cadastrado'}
                   >
                     <User className="w-10 h-10 text-white group-hover:scale-110 transition-transform" />
                   </a>
@@ -1031,22 +1057,22 @@ const Dashboard = () => {
                       Responsável Legal
                     </p>
                     <h3 className={`text-2xl font-bold mb-1 ${isDarkMode ? 'text-teal-400' : 'text-[#0e4f6d]'}`}>
-                      {cnpjInfo.responsavel.nome}
+                      {responsavelInfo.nome}
                     </h3>
                     <div className="flex items-center gap-4">
                       <span className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-1">
                         <Briefcase className="w-4 h-4" />
-                        {cnpjInfo.responsavel.cargo}
+                        {responsavelInfo.cargo}
                       </span>
-                      {cnpjInfo.responsavel.whatsapp && (
+                      {responsavelInfo.whatsapp && (
                         <a
-                          href={`https://wa.me/55${cnpjInfo.responsavel.whatsapp.replace(/\D/g, '')}`}
+                          href={responsavelWhatsappLink}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-sm text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 flex items-center gap-1 transition-colors"
                         >
                           <Phone className="w-4 h-4" />
-                          {cnpjInfo.responsavel.whatsapp}
+                          {responsavelInfo.whatsapp}
                         </a>
                       )}
                     </div>

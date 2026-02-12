@@ -23,7 +23,18 @@ const DataContext = createContext();
 
 // Dados iniciais
 const initialGrupos = [
-  { id: 'grupo_001', nome: 'Grupo EJP', descricao: 'Holding principal', status: 'Ativo', criadoEm: '2024-01-15' }
+  {
+    id: 'grupo_001',
+    nome: 'Grupo EJP',
+    descricao: 'Holding principal',
+    status: 'Ativo',
+    criadoEm: '2024-01-15',
+    responsavelPadrao: {
+      nome: 'Responsavel Grupo',
+      cargo: 'Socio-Administrador',
+      whatsapp: '(85) 99999-0000'
+    }
+  }
 ];
 
 const initialCnpjs = [
@@ -37,6 +48,11 @@ const initialCnpjs = [
     regimeTributario: 'Lucro Real',
     cidade: 'Sao Paulo',
     estado: 'SP',
+    responsavel: {
+      nome: 'Responsavel CNPJ',
+      cargo: 'Diretor',
+      whatsapp: '(85) 99999-0001'
+    },
     status: 'Ativo'
   }
 ];
