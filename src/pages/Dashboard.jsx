@@ -2128,15 +2128,15 @@ const Dashboard = () => {
               </div>
 
               <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                {/* Gr?fico - IRPJ por Per?odo */}
+                {/* Gráfico - IRPJ por Período */}
                 <div className={`xl:col-span-2 p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                        IRPJ por Per?odo
+                        IRPJ por Período
                       </h3>
                       <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                        Composi??o do IRPJ apurado
+                        Composição do IRPJ apurado
                       </p>
                     </div>
                     <div className="flex gap-1">
@@ -2172,26 +2172,26 @@ const Dashboard = () => {
                   />
                 </div>
 
-                {/* Gr?fico de Rosca - Resumo dos Impostos */}
+                {/* Gráfico de Rosca - Resumo dos Impostos */}
                 {Object.keys(resumoImpostosFiltrado?.totaisPorImposto || {}).length > 0 && (
                   <div className={`p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
                     <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
                       Resumo dos Impostos
                     </h3>
                     <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                      Distribui??o dos impostos no per?odo
+                      Distribuição dos impostos no período
                     </p>
                     <ResumoImpostosRoscaChart dados={resumoImpostosFiltrado} />
                   </div>
                 )}
 
-                {/* Gr?fico - CSLL por Per?odo */}
+                {/* Gráfico - CSLL por Período */}
                 <div className={`xl:col-span-3 p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
                   <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                    CSLL por Per?odo
+                    CSLL por Período
                   </h3>
                   <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                    Composi??o do CSLL
+                    Composição do CSLL
                   </p>
                   <CSLLPorPeriodoChart
                     dados={dadosFiscaisImportados?.csll || []}
@@ -3045,5 +3045,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
 
