@@ -59,6 +59,31 @@ export const parseBalancete = (csvContent) => {
   let empresaInfo = {};
   let periodo = '';
 
+  const normalizarTexto = (texto = '') =>
+    texto
+      .toString()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toUpperCase()
+      .trim();
+
+  const encontrarConta = ({ classificacoes = [], descricoes = [] }) => {
+    const classificacoesAlvo = new Set(classificacoes.map(c => c.trim()));
+    const descricoesAlvo = descricoes.map(normalizarTexto);
+
+    return contas.find((conta) => {
+      if (!conta) return false;
+
+      const classificacaoConta = (conta.classificacao || '').trim();
+      if (classificacoesAlvo.has(classificacaoConta)) {
+        return true;
+      }
+
+      const descricaoConta = normalizarTexto(conta.descricao || '');
+      return descricoesAlvo.some(alvo => descricaoConta.includes(alvo));
+    });
+  };
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const cols = line.split(';').map(c => c.trim());
@@ -105,15 +130,42 @@ export const parseBalancete = (csvContent) => {
     periodo,
     contas,
     // Extrair contas específicas para os gráficos
-    bancosMovimento: contas.find(c => c.classificacao === '1.1.1.02'),
-    aplicacoesFinanceiras: contas.find(c => c.classificacao === '1.1.1.03'),
-    estoque: contas.find(c => c.classificacao === '1.1.5'),
-    clientes: contas.find(c => c.classificacao === '1.1.2'),
-    fornecedores: contas.find(c => c.classificacao === '2.1.1'),
-    receitaBruta: contas.find(c => c.classificacao === '3.1.1'),
-    custoVendas: contas.find(c => c.classificacao === '3.1.5'),
-    despesasOperacionais: contas.find(c => c.classificacao === '3.2.1'),
-    resultadoLiquido: contas.find(c => c.classificacao === '3')
+    bancosMovimento: encontrarConta({
+      classificacoes: ['1.1.1.02'],
+      descricoes: ['BANCOS CONTA MOVIMENTO']
+    }),
+    aplicacoesFinanceiras: encontrarConta({
+      classificacoes: ['1.1.1.03'],
+      descricoes: ['APLICACOES FINANCEIRAS DE LIQUIDEZ IMEDIATA']
+    }),
+    estoque: encontrarConta({
+      classificacoes: ['1.1.5'],
+      descricoes: ['ESTOQUE']
+    }),
+    clientes: encontrarConta({
+      classificacoes: ['1.1.2'],
+      descricoes: ['CLIENTES']
+    }),
+    fornecedores: encontrarConta({
+      classificacoes: ['2.1.1'],
+      descricoes: ['FORNECEDORES']
+    }),
+    receitaBruta: encontrarConta({
+      classificacoes: ['3.1.1'],
+      descricoes: ['RECEITA BRUTA']
+    }),
+    custoVendas: encontrarConta({
+      classificacoes: ['3.1.5'],
+      descricoes: ['CMV', 'CPV', 'CUSTO DAS MERCADORIAS VENDIDAS', 'CUSTO DOS PRODUTOS VENDIDOS']
+    }),
+    despesasOperacionais: encontrarConta({
+      classificacoes: ['3.2.1'],
+      descricoes: ['DESPESAS OPERACIONAIS']
+    }),
+    resultadoLiquido: encontrarConta({
+      classificacoes: ['3'],
+      descricoes: ['RESULTADO LIQUIDO']
+    })
   };
 };
 
