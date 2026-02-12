@@ -1247,10 +1247,481 @@ export const CardsMetricasFiscais = ({ dados, totalFaturamento = 0 }) => {
   );
 };
 
+/**
+ * Tabela de Faturamento por Periodo
+ * Exibe total por mes, trimestre ou ano conforme filtro atual
+ */
+export const TabelaFaturamentoPeriodo = ({ dadosFaturamento, periodFilter }) => {
+  const { isDarkMode } = useTheme();
+
+  const linhas = useMemo(() => {
+    if (!dadosFaturamento) return [];
+
+    const porCompetencia = dadosFaturamento?.porCompetencia || {};
+    if (!Object.keys(porCompetencia).length) return [];
+
+    const ano = Number(periodFilter?.year || 0);
+    if (!ano) return [];
+
+    const getTotalCompetencia = (mes, anoRef) => {
+      const competencia = `${String(mes).padStart(2, '0')}/${anoRef}`;
+      const item = porCompetencia[competencia] || {};
+      return Number(item.total || item.saidas || 0);
+    };
+
+    if (periodFilter?.type === 'month') {
+      const mes = Number(periodFilter?.month || 0);
+      if (!mes) return [];
+      return [
+        {
+          periodo: `${String(mes).padStart(2, '0')}/${ano}`,
+          total: getTotalCompetencia(mes, ano)
+        }
+      ];
+    }
+
+    if (periodFilter?.type === 'quarter') {
+      const trimestre = Number(periodFilter?.quarter || 0);
+      const mesesTrimestre = {
+        1: [1, 2, 3],
+        2: [4, 5, 6],
+        3: [7, 8, 9],
+        4: [10, 11, 12]
+      };
+      const meses = mesesTrimestre[trimestre] || [];
+      if (!meses.length) return [];
+      const total = meses.reduce((acc, mes) => acc + getTotalCompetencia(mes, ano), 0);
+      return [{ periodo: `${trimestre}T/${ano}`, total }];
+    }
+
+    const totalAno = Array.from({ length: 12 }, (_, idx) => idx + 1)
+      .reduce((acc, mes) => acc + getTotalCompetencia(mes, ano), 0);
+    return [{ periodo: `Ano ${ano}`, total: totalAno }];
+  }, [dadosFaturamento, periodFilter]);
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full">
+        <thead className={isDarkMode ? 'bg-slate-700/50' : 'bg-slate-50'}>
+          <tr>
+            <th className={`px-4 py-3 text-left text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+              Periodo
+            </th>
+            <th className={`px-4 py-3 text-right text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+              Total Faturamento
+            </th>
+          </tr>
+        </thead>
+        <tbody className={`divide-y ${isDarkMode ? 'divide-slate-700' : 'divide-slate-100'}`}>
+          {linhas.map((linha, idx) => (
+            <tr key={`${linha.periodo}-${idx}`} className={`transition-colors ${isDarkMode ? 'hover:bg-slate-700/30' : 'hover:bg-slate-50'}`}>
+              <td className={`px-4 py-3 font-semibold ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>
+                {linha.periodo}
+              </td>
+              <td className={`px-4 py-3 text-right font-bold ${isDarkMode ? 'text-emerald-400' : 'text-emerald-700'}`}>
+                {formatCurrency(linha.total)}
+              </td>
+            </tr>
+          ))}
+          {linhas.length === 0 && (
+            <tr>
+              <td colSpan={2} className={`px-4 py-6 text-center text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                Sem dados de faturamento para o periodo selecionado
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+const parseAnoTrimestre = (item = {}) => {
+  const trim = Number(item?.trimestreNumero || 0);
+  let ano = Number(item?.ano || 0);
+  if (!ano && typeof item?.trimestre === 'string') {
+    const match = item.trimestre.match(/(\d{2,4})$/);
+    if (match) {
+      const anoRaw = Number(match[1]);
+      ano = anoRaw < 100 ? (2000 + anoRaw) : anoRaw;
+    }
+  }
+  return {
+    trimestre: trim,
+    ano: ano || null
+  };
+};
+
+/**
+ * Grafico de barras - IRPJ por periodo
+ * Mostra IRPJ devido, adicional IRPJ e IRPJ a recolher
+ */
+export const IRPJPorPeriodoChart = ({ dados = [], trimestre = null, year }) => {
+  const chartRef = useRef(null);
+  const chartInstance = useRef(null);
+  const { isDarkMode } = useTheme();
+
+  const dadosGrafico = useMemo(() => {
+    const selecionados = (Array.isArray(dados) ? dados : []).map((item) => {
+      const { trimestre: tri, ano } = parseAnoTrimestre(item);
+      return {
+        ...item,
+        trimestreNumero: tri,
+        anoNormalizado: ano || Number(year || 0)
+      };
+    }).filter(item => Number(item?.trimestreNumero || 0) > 0);
+
+    const anoAlvo = Number(year || 0);
+    let filtrados = selecionados;
+
+    if (anoAlvo) {
+      filtrados = filtrados.filter(item => Number(item?.anoNormalizado || 0) === anoAlvo);
+    }
+
+    if (trimestre) {
+      filtrados = filtrados.filter(item => Number(item?.trimestreNumero || 0) === Number(trimestre));
+    }
+
+    filtrados.sort((a, b) => Number(a.trimestreNumero || 0) - Number(b.trimestreNumero || 0));
+
+    const labels = filtrados.map((item) => {
+      const tri = Number(item?.trimestreNumero || 0);
+      if (trimestre) return `${tri}T/${item?.anoNormalizado || ''}`;
+      return `${tri}T`;
+    });
+
+    return {
+      labels,
+      devido: filtrados.map(item => Number(item?.dados?.irpjDevido || 0)),
+      adicional: filtrados.map(item => Number(item?.dados?.adicionalIR || item?.dados?.adicionalIrpj || 0)),
+      recolher: filtrados.map(item => Number(item?.dados?.irpjRecolher || 0))
+    };
+  }, [dados, trimestre, year]);
+
+  useEffect(() => {
+    if (!chartRef.current) return;
+    if (chartInstance.current) chartInstance.current.destroy();
+
+    const ctx = chartRef.current.getContext('2d');
+    chartInstance.current = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: dadosGrafico.labels,
+        datasets: [
+          {
+            label: 'IRPJ Devido',
+            data: dadosGrafico.devido,
+            backgroundColor: COLORS.primary + 'CC',
+            borderColor: COLORS.primary,
+            borderWidth: 2,
+            borderRadius: 8
+          },
+          {
+            label: 'Adicional IRPJ',
+            data: dadosGrafico.adicional,
+            backgroundColor: COLORS.warning + 'CC',
+            borderColor: COLORS.warning,
+            borderWidth: 2,
+            borderRadius: 8
+          },
+          {
+            label: 'IRPJ a Recolher',
+            data: dadosGrafico.recolher,
+            backgroundColor: COLORS.danger + 'CC',
+            borderColor: COLORS.danger,
+            borderWidth: 2,
+            borderRadius: 8
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: isDarkMode ? '#e2e8f0' : '#475569',
+              usePointStyle: true,
+              pointStyle: 'circle'
+            }
+          },
+          tooltip: {
+            backgroundColor: isDarkMode ? '#1e293b' : 'white',
+            titleColor: isDarkMode ? '#f1f5f9' : '#1e293b',
+            bodyColor: isDarkMode ? '#cbd5e1' : '#475569',
+            borderColor: isDarkMode ? '#334155' : '#e2e8f0',
+            borderWidth: 1,
+            padding: 12,
+            cornerRadius: 10,
+            callbacks: {
+              label: (context) => `${context.dataset.label}: ${formatCurrency(context.raw)}`
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { color: isDarkMode ? '#94a3b8' : '#64748b', font: { weight: '600' } }
+          },
+          y: {
+            grid: {
+              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)'
+            },
+            ticks: {
+              color: isDarkMode ? '#94a3b8' : '#64748b',
+              callback: (value) => formatCurrency(value)
+            }
+          }
+        }
+      }
+    });
+
+    return () => {
+      if (chartInstance.current) chartInstance.current.destroy();
+    };
+  }, [dadosGrafico, isDarkMode]);
+
+  if (!dadosGrafico.labels.length) {
+    return (
+      <div className="h-[300px] flex items-center justify-center">
+        <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+          Importe os relatorios de IRPJ por trimestre
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-[320px]">
+      <canvas ref={chartRef} />
+    </div>
+  );
+};
+
+/**
+ * Grafico de barras - CSLL por periodo
+ * Mostra somente CSLL devida
+ */
+export const CSLLPorPeriodoChart = ({ dados = [], trimestre = null, year }) => {
+  const chartRef = useRef(null);
+  const chartInstance = useRef(null);
+  const { isDarkMode } = useTheme();
+
+  const dadosGrafico = useMemo(() => {
+    const selecionados = (Array.isArray(dados) ? dados : []).map((item) => {
+      const { trimestre: tri, ano } = parseAnoTrimestre(item);
+      return {
+        ...item,
+        trimestreNumero: tri,
+        anoNormalizado: ano || Number(year || 0)
+      };
+    }).filter(item => Number(item?.trimestreNumero || 0) > 0);
+
+    const anoAlvo = Number(year || 0);
+    let filtrados = selecionados;
+    if (anoAlvo) {
+      filtrados = filtrados.filter(item => Number(item?.anoNormalizado || 0) === anoAlvo);
+    }
+    if (trimestre) {
+      filtrados = filtrados.filter(item => Number(item?.trimestreNumero || 0) === Number(trimestre));
+    }
+
+    filtrados.sort((a, b) => Number(a.trimestreNumero || 0) - Number(b.trimestreNumero || 0));
+
+    return {
+      labels: filtrados.map((item) => trimestre ? `${item.trimestreNumero}T/${item?.anoNormalizado || ''}` : `${item.trimestreNumero}T`),
+      valores: filtrados.map(item => Number(item?.dados?.csllDevida || 0))
+    };
+  }, [dados, trimestre, year]);
+
+  useEffect(() => {
+    if (!chartRef.current) return;
+    if (chartInstance.current) chartInstance.current.destroy();
+
+    const ctx = chartRef.current.getContext('2d');
+    chartInstance.current = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: dadosGrafico.labels,
+        datasets: [{
+          label: 'CSLL Devida',
+          data: dadosGrafico.valores,
+          backgroundColor: COLORS.secondary + 'CC',
+          borderColor: COLORS.secondary,
+          borderWidth: 2,
+          borderRadius: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: isDarkMode ? '#e2e8f0' : '#475569',
+              usePointStyle: true,
+              pointStyle: 'circle'
+            }
+          },
+          tooltip: {
+            backgroundColor: isDarkMode ? '#1e293b' : 'white',
+            titleColor: isDarkMode ? '#f1f5f9' : '#1e293b',
+            bodyColor: isDarkMode ? '#cbd5e1' : '#475569',
+            borderColor: isDarkMode ? '#334155' : '#e2e8f0',
+            borderWidth: 1,
+            padding: 12,
+            cornerRadius: 10,
+            callbacks: {
+              label: (context) => `${context.dataset.label}: ${formatCurrency(context.raw)}`
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { color: isDarkMode ? '#94a3b8' : '#64748b', font: { weight: '600' } }
+          },
+          y: {
+            grid: {
+              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)'
+            },
+            ticks: {
+              color: isDarkMode ? '#94a3b8' : '#64748b',
+              callback: (value) => formatCurrency(value)
+            }
+          }
+        }
+      }
+    });
+
+    return () => {
+      if (chartInstance.current) chartInstance.current.destroy();
+    };
+  }, [dadosGrafico, isDarkMode]);
+
+  if (!dadosGrafico.labels.length) {
+    return (
+      <div className="h-[300px] flex items-center justify-center">
+        <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+          Importe os relatorios de CSLL por trimestre
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-[320px]">
+      <canvas ref={chartRef} />
+    </div>
+  );
+};
+
+/**
+ * Grafico de rosca - Resumo dos Impostos
+ * Exibe composicao do total a recolher por imposto
+ */
+export const ResumoImpostosRoscaChart = ({ dados }) => {
+  const chartRef = useRef(null);
+  const chartInstance = useRef(null);
+  const { isDarkMode } = useTheme();
+
+  const series = useMemo(() => {
+    if (!dados?.totaisPorImposto) return { labels: [], valores: [] };
+    const itens = Object.entries(dados.totaisPorImposto)
+      .map(([nome, item]) => ({ nome, valor: Number(item?.recolher || 0) }))
+      .filter(item => item.valor > 0)
+      .sort((a, b) => b.valor - a.valor);
+
+    return {
+      labels: itens.map(i => i.nome),
+      valores: itens.map(i => i.valor)
+    };
+  }, [dados]);
+
+  useEffect(() => {
+    if (!chartRef.current) return;
+    if (chartInstance.current) chartInstance.current.destroy();
+
+    const ctx = chartRef.current.getContext('2d');
+    chartInstance.current = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: series.labels,
+        datasets: [{
+          data: series.valores,
+          backgroundColor: CHART_COLORS.slice(0, series.valores.length).map(c => c + 'CC'),
+          borderColor: CHART_COLORS.slice(0, series.valores.length),
+          borderWidth: 2,
+          hoverOffset: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '58%',
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: isDarkMode ? '#e2e8f0' : '#475569',
+              font: { weight: 'bold', size: 11 },
+              usePointStyle: true,
+              pointStyle: 'circle',
+              padding: 14
+            }
+          },
+          tooltip: {
+            backgroundColor: isDarkMode ? '#1e293b' : 'white',
+            titleColor: isDarkMode ? '#f1f5f9' : '#1e293b',
+            bodyColor: isDarkMode ? '#cbd5e1' : '#475569',
+            borderColor: isDarkMode ? '#334155' : '#e2e8f0',
+            borderWidth: 1,
+            padding: 12,
+            cornerRadius: 10,
+            callbacks: {
+              label: (context) => {
+                const total = context.dataset.data.reduce((acc, val) => acc + val, 0);
+                const perc = total > 0 ? ((context.raw / total) * 100).toFixed(1) : '0.0';
+                return `${context.label}: ${formatCurrency(context.raw)} (${perc}%)`;
+              }
+            }
+          }
+        }
+      }
+    });
+
+    return () => {
+      if (chartInstance.current) chartInstance.current.destroy();
+    };
+  }, [series, isDarkMode]);
+
+  if (!series.labels.length) {
+    return (
+      <div className="h-[300px] flex items-center justify-center">
+        <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+          Sem dados de Resumo dos Impostos para o periodo
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-[320px]">
+      <canvas ref={chartRef} />
+    </div>
+  );
+};
+
 export default {
   FaturamentoPorCategoriaChart,
   FaturamentoPorTrimestreChart,
   TabelaAcumuladores,
+  TabelaFaturamentoPeriodo,
+  IRPJPorPeriodoChart,
+  CSLLPorPeriodoChart,
+  ResumoImpostosRoscaChart,
   ImpostosPorPeriodoChart,
   ImpostosPorTipoChart,
   ImpostosConsolidadosChart,

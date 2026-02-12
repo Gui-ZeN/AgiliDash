@@ -74,9 +74,10 @@ import {
   FaturamentoPorCategoriaChart,
   FaturamentoPorTrimestreChart,
   TabelaAcumuladores,
-  ImpostosPorPeriodoChart,
-  ImpostosPorTipoChart,
-  ImpostosConsolidadosChart,
+  TabelaFaturamentoPeriodo,
+  IRPJPorPeriodoChart,
+  CSLLPorPeriodoChart,
+  ResumoImpostosRoscaChart,
   CompraVendaChart,
   Detalhamento380Chart,
   Situacao380Chart,
@@ -99,8 +100,6 @@ import {
 } from '../components/charts/PessoalCharts';
 import { useData } from '../context/DataContext';
 import FaturamentoChart from '../components/charts/FaturamentoChart';
-import IRPJChart from '../components/charts/IRPJChart';
-import CSLLChart from '../components/charts/CSLLChart';
 import FluxoFiscalChart from '../components/charts/FluxoFiscalChart';
 import DistribuicaoChart from '../components/charts/DistribuicaoChart';
 import FolhaPagamentoChart from '../components/charts/FolhaPagamentoChart';
@@ -1017,6 +1016,58 @@ const Dashboard = () => {
       return acc + Number(item?.total || item?.saidas || 0);
     }, 0);
   }, [dadosFiscaisImportados?.faturamento, competenciasFiltroFiscal]);
+
+  const resumoImpostosFiltrado = useMemo(() => {
+    const resumo = dadosFiscaisImportados?.resumoImpostos;
+    if (!resumo?.impostosPorMes) return null;
+
+    const competenciasAlvo = new Set(competenciasFiltroFiscal);
+    const impostosPorMes = Object.entries(resumo.impostosPorMes)
+      .filter(([competencia]) => competenciasAlvo.has(String(competencia)))
+      .reduce((acc, [competencia, dadosCompetencia]) => {
+        acc[competencia] = dadosCompetencia;
+        return acc;
+      }, {});
+
+    if (!Object.keys(impostosPorMes).length) {
+      return {
+        ...resumo,
+        impostosPorMes: {},
+        totaisPorImposto: {},
+        totalRecolher: 0,
+        totalCredor: 0,
+        competencias: []
+      };
+    }
+
+    const totaisPorImposto = {};
+    let totalRecolher = 0;
+    let totalCredor = 0;
+
+    Object.values(impostosPorMes).forEach((dadosCompetencia = {}) => {
+      totalRecolher += Number(dadosCompetencia?.totalRecolher || 0);
+      (dadosCompetencia?.impostos || []).forEach((imposto = {}) => {
+        const nome = imposto?.nome || 'Imposto';
+        if (!totaisPorImposto[nome]) {
+          totaisPorImposto[nome] = { recolher: 0, credito: 0, debitos: 0, creditos: 0 };
+        }
+        totaisPorImposto[nome].recolher += Number(imposto?.impostoRecolher || 0);
+        totaisPorImposto[nome].credito += Number(imposto?.saldoCredorFinal || 0);
+        totaisPorImposto[nome].debitos += Number(imposto?.debitos || 0);
+        totaisPorImposto[nome].creditos += Number(imposto?.creditos || 0);
+        totalCredor += Number(imposto?.saldoCredorFinal || 0);
+      });
+    });
+
+    return {
+      ...resumo,
+      impostosPorMes,
+      totaisPorImposto,
+      totalRecolher,
+      totalCredor,
+      competencias: Object.keys(impostosPorMes).sort(ordenarCompetencia)
+    };
+  }, [dadosFiscaisImportados?.resumoImpostos, competenciasFiltroFiscal]);
 
   // Dados do CNPJ selecionado
   const dreData = selectedYear === 2025 ? cnpjDados.dreData2025 : cnpjDados.dreData2024;
@@ -2045,6 +2096,24 @@ const Dashboard = () => {
                   </div>
                 </div>
               )}
+
+              {/* Tabela de Faturamento por Periodo */}
+              {temDadosFiscais && dadosFiscaisImportados?.faturamento && (
+                <div className={`mt-6 rounded-xl shadow-sm overflow-hidden ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                  <div className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
+                    <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                      Faturamento por PerÃ­odo
+                    </h3>
+                    <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                      Total do faturamento no recorte de mÃªs, trimestre ou ano
+                    </p>
+                  </div>
+                  <TabelaFaturamentoPeriodo
+                    dadosFaturamento={dadosFiscaisImportados.faturamento}
+                    periodFilter={periodFilter}
+                  />
+                </div>
+              )}
             </section>
 
             {/* ===== SEÃ‡ÃƒO SITUAÃ‡ÃƒO FISCAL ===== */}
@@ -2058,19 +2127,18 @@ const Dashboard = () => {
                 </h2>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* GrÃ¡fico de Barras Verticais - Impostos por PerÃ­odo */}
-                <div className={`p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+              <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                {/* Gráfico - IRPJ por Período */}
+                <div className={`xl:col-span-2 p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                        Impostos por Periodo
+                        IRPJ por Período
                       </h3>
                       <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                        Total a recolher por mes
+                        Composição do IRPJ apurado
                       </p>
                     </div>
-                    {/* Seletor de PerÃ­odo */}
                     <div className="flex gap-1">
                       <button
                         onClick={() => setFiscalTrimestre(null)}
@@ -2097,30 +2165,39 @@ const Dashboard = () => {
                       ))}
                     </div>
                   </div>
-                  {temDadosFiscais && dadosFiscaisImportados?.resumoImpostos ? (
-                    <ImpostosPorPeriodoChart dados={dadosFiscaisImportados.resumoImpostos} trimestre={fiscalTrimestre} />
-                  ) : (
-                    <IRPJChart />
-                  )}
+                  <IRPJPorPeriodoChart
+                    dados={dadosFiscaisImportados?.irpj || []}
+                    trimestre={fiscalTrimestre}
+                    year={periodFilter?.year}
+                  />
                 </div>
 
-                {/* GrÃ¡fico de Barras Horizontais - Por Tipo de Imposto (Consolidado) */}
-                <div className={`p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                {/* Gráfico de Rosca - Resumo dos Impostos */}
+                {Object.keys(resumoImpostosFiltrado?.totaisPorImposto || {}).length > 0 && (
+                  <div className={`p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                    <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                      Resumo dos Impostos
+                    </h3>
+                    <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                      Distribuição dos impostos no período
+                    </p>
+                    <ResumoImpostosRoscaChart dados={resumoImpostosFiltrado} />
+                  </div>
+                )}
+
+                {/* Gráfico - CSLL por Período */}
+                <div className={`xl:col-span-3 p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
                   <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                    Por Tipo de Imposto
+                    CSLL por Período
                   </h3>
                   <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                    Consolidado: Resumo Impostos + CSLL + IRPJ
+                    Composição do CSLL
                   </p>
-                  {temDadosFiscais && (dadosFiscaisImportados?.resumoImpostos || dadosFiscaisImportados?.csll?.length > 0 || dadosFiscaisImportados?.irpj?.length > 0) ? (
-                    <ImpostosConsolidadosChart
-                      dadosResumo={dadosFiscaisImportados.resumoImpostos}
-                      dadosCsll={dadosFiscaisImportados.csll}
-                      dadosIrpj={dadosFiscaisImportados.irpj}
-                    />
-                  ) : (
-                    <CSLLChart />
-                  )}
+                  <CSLLPorPeriodoChart
+                    dados={dadosFiscaisImportados?.csll || []}
+                    trimestre={fiscalTrimestre}
+                    year={periodFilter?.year}
+                  />
                 </div>
               </div>
             </section>
