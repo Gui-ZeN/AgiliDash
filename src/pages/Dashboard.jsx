@@ -1090,7 +1090,7 @@ const Dashboard = () => {
     localStorage.setItem('dashboard_activeTab', activeTab);
   }, [activeTab]);
 
-  // Se a aba salva nï¿½o estiver visï¿½vel para o CNPJ atual, ajusta automaticamente
+  // Se a aba salva n?o estiver vis?vel para o CNPJ atual, ajusta automaticamente
   useEffect(() => {
     if (tabsDisponiveis.length === 0) return;
     if (!tabsDisponiveis.includes(activeTab)) {
@@ -2128,15 +2128,15 @@ const Dashboard = () => {
               </div>
 
               <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                {/* Gráfico - IRPJ por Período */}
+                {/* Gr?fico - IRPJ por Per?odo */}
                 <div className={`xl:col-span-2 p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                        IRPJ por Período
+                        IRPJ por Per?odo
                       </h3>
                       <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                        Composição do IRPJ apurado
+                        Composi??o do IRPJ apurado
                       </p>
                     </div>
                     <div className="flex gap-1">
@@ -2172,26 +2172,26 @@ const Dashboard = () => {
                   />
                 </div>
 
-                {/* Gráfico de Rosca - Resumo dos Impostos */}
+                {/* Gr?fico de Rosca - Resumo dos Impostos */}
                 {Object.keys(resumoImpostosFiltrado?.totaisPorImposto || {}).length > 0 && (
                   <div className={`p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
                     <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
                       Resumo dos Impostos
                     </h3>
                     <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                      Distribuição dos impostos no período
+                      Distribui??o dos impostos no per?odo
                     </p>
                     <ResumoImpostosRoscaChart dados={resumoImpostosFiltrado} />
                   </div>
                 )}
 
-                {/* Gráfico - CSLL por Período */}
+                {/* Gr?fico - CSLL por Per?odo */}
                 <div className={`xl:col-span-3 p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
                   <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                    CSLL por Período
+                    CSLL por Per?odo
                   </h3>
                   <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                    Composição do CSLL
+                    Composi??o do CSLL
                   </p>
                   <CSLLPorPeriodoChart
                     dados={dadosFiscaisImportados?.csll || []}
