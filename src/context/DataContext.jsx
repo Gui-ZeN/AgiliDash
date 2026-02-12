@@ -385,11 +385,35 @@ export const DataProvider = ({ children }) => {
     const saidasMap = new Map();
     const categorias = {
       compraComercializacao: 0,
+      compraIndustrializacao: 0,
       vendaMercadoria: 0,
       vendaProduto: 0,
       vendaExterior: 0,
+      servicos: 0,
       totalVendas380: 0,
       esperado380: 0
+    };
+
+    const normalizarDescricao = (texto = '') =>
+      String(texto)
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toUpperCase()
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    const isServicoRelacionado = (descricao = '') => {
+      const desc = normalizarDescricao(descricao);
+      return (
+        desc.includes('SERVICO TOMADO') ||
+        desc.includes('SERVICO TOMADO ISS RET') ||
+        desc.includes('LANC. COMPRA P/ RECEBIMENTO FUTURO') ||
+        desc.includes('COMPRA P/ RECEBIMENTO FUTURO') ||
+        desc.includes('COMPRA PARA RECEBIMENTO FUTURO') ||
+        desc.includes('SERVICO DE TRANSPORTE') ||
+        desc.includes('SISTEMA DE SEGURANCA ELETRONICA') ||
+        desc.includes('AQ. SERVICO DE MANUT E REVISAO VEICULAR')
+      );
     };
 
     const somarItens = (mapa, itens = []) => {
@@ -425,8 +449,8 @@ export const DataProvider = ({ children }) => {
     const competencias = Object.keys(porCompetencia).sort(ordenarCompetencia);
 
     const detalhesVendas = saidas.filter((s) => {
-      const desc = String(s.descricao || '').toUpperCase();
-      return desc.startsWith('VENDA') && !desc.includes('ATIVO') && !desc.includes('IMOBILIZADO');
+      const desc = normalizarDescricao(s.descricao || '');
+      return desc.startsWith('VENDA') && !desc.includes('ATIVO') && !desc.includes('IMOBILIZADO') && !desc.includes('CANCEL');
     });
 
     return {
@@ -438,10 +462,11 @@ export const DataProvider = ({ children }) => {
       },
       categorias,
       detalhes380: {
-        compras: entradas.filter(e => String(e.descricao || '').toUpperCase().includes('COMERCIALIZA')),
+        compras: entradas.filter(e => normalizarDescricao(e.descricao || '').includes('COMPRA P/ COMERCIALIZA')),
         vendasMercadoria: detalhesVendas,
-        vendasProduto: detalhesVendas.filter(s => String(s.descricao || '').toUpperCase().includes('PRODUTO')),
-        vendasExterior: detalhesVendas.filter(s => String(s.descricao || '').toUpperCase().includes('EXTERIOR'))
+        vendasProduto: detalhesVendas.filter(s => normalizarDescricao(s.descricao || '').includes('PRODUTO')),
+        vendasExterior: detalhesVendas.filter(s => normalizarDescricao(s.descricao || '').includes('EXTERIOR')),
+        servicos: entradas.filter(e => isServicoRelacionado(e.descricao || ''))
       },
       porCompetencia,
       competencias,

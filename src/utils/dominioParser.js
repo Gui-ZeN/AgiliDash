@@ -1263,44 +1263,79 @@ export const parseResumoPorAcumulador = (csvContent) => {
   const totalEntradas = entradas.reduce((acc, e) => acc + e.vlrContabil, 0);
   const totalSaidas = saidas.reduce((acc, s) => acc + s.vlrContabil, 0);
 
-  // Categorias específicas para 380
-  // Compras para comercialização (códigos 5, 7 e similares)
-  const itensCompraComercializacao = entradas.filter(e =>
-    e.descricao.toUpperCase().includes('COMERCIALIZA') ||
-    e.descricao.toUpperCase().includes('COMERCIALIZAÇÃO')
+  // Categorias espec?ficas para 380
+  const normalizarDescricao = (texto = '') =>
+    String(texto)
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toUpperCase()
+      .replace(/\s+/g, ' ')
+      .trim();
+
+  const isServicoRelacionado = (descricao = '') => {
+    const desc = normalizarDescricao(descricao);
+    return (
+      desc.includes('SERVICO TOMADO') ||
+      desc.includes('SERVICO TOMADO ISS RET') ||
+      desc.includes('LANC. COMPRA P/ RECEBIMENTO FUTURO') ||
+      desc.includes('COMPRA P/ RECEBIMENTO FUTURO') ||
+      desc.includes('COMPRA PARA RECEBIMENTO FUTURO') ||
+      desc.includes('SERVICO DE TRANSPORTE') ||
+      desc.includes('SISTEMA DE SEGURANCA ELETRONICA') ||
+      desc.includes('AQ. SERVICO DE MANUT E REVISAO VEICULAR')
+    );
+  };
+
+  // Compras para comercializa??o (unificando varia??es de acentua??o)
+  const itensCompraComercializacao = entradas.filter((e) =>
+    normalizarDescricao(e.descricao).includes('COMPRA P/ COMERCIALIZA')
   );
   const compraComercializacao = itensCompraComercializacao.reduce((acc, e) => acc + e.vlrContabil, 0);
 
-  // Vendas - pegar todas que começam com "VENDA" (exceto ativo imobilizado)
-  const itensVendas = saidas.filter(s => {
-    const desc = s.descricao.toUpperCase();
-    // Começa com VENDA mas não é venda de ativo imobilizado
+  // Compras para industrializa??o (inclui ST)
+  const itensCompraIndustrializacao = entradas.filter((e) =>
+    normalizarDescricao(e.descricao).includes('COMPRA P/ INDUSTRIALIZA')
+  );
+  const compraIndustrializacao = itensCompraIndustrializacao.reduce((acc, e) => acc + e.vlrContabil, 0);
+
+  // Servi?os relacionados
+  const itensServicos = entradas.filter((e) => isServicoRelacionado(e.descricao));
+  const servicos = itensServicos.reduce((acc, e) => acc + e.vlrContabil, 0);
+
+  // Em Sa?das, ignorar cancelamentos para os c?lculos do 380
+  const saidasSemCancelamento = saidas.filter((s) => !normalizarDescricao(s.descricao).includes('CANCEL'));
+
+  // Vendas (exceto ativo imobilizado)
+  const itensVendas = saidasSemCancelamento.filter((s) => {
+    const desc = normalizarDescricao(s.descricao);
     return desc.startsWith('VENDA') && !desc.includes('ATIVO') && !desc.includes('IMOBILIZADO');
   });
 
-  // Total de vendas para 380 = TODAS as vendas (exceto ativo imobilizado)
-  const totalVendas380 = itensVendas.reduce((acc, s) => acc + s.vlrContabil, 0);
+  // Vendas agrupadas (somente vendas)
+  const totalVendasAgrupadas = itensVendas.reduce((acc, s) => acc + s.vlrContabil, 0);
 
-  // Para o 380, vendaMercadoria = total de todas as vendas
-  // (inclui VENDA DE SORVETES, VENDA DE PRODUTOS, VENDA DE MERCADORIA, etc)
-  const vendaMercadoria = totalVendas380;
+  // Para o c?lculo 380: venda = vendas + servi?os
+  const totalVendas380 = totalVendasAgrupadas + servicos;
 
-  // Detalhamento por categoria (para gráfico de barras horizontais)
-  const itensVendaProduto = itensVendas.filter(s =>
-    s.descricao.toUpperCase().includes('PRODUTO') ||
-    s.descricao.toUpperCase().includes('PRODUÇÃO')
+  // Campo legado para componentes atuais (representa vendas agrupadas)
+  const vendaMercadoria = totalVendasAgrupadas;
+
+  // Detalhamento de vendas
+  const itensVendaProduto = itensVendas.filter((s) =>
+    normalizarDescricao(s.descricao).includes('PRODUTO') ||
+    normalizarDescricao(s.descricao).includes('PRODUCAO')
   );
   const vendaProduto = itensVendaProduto.reduce((acc, s) => acc + s.vlrContabil, 0);
 
-  const itensVendaExterior = itensVendas.filter(s =>
-    s.descricao.toUpperCase().includes('EXTERIOR')
+  const itensVendaExterior = itensVendas.filter((s) =>
+    normalizarDescricao(s.descricao).includes('EXTERIOR')
   );
   const vendaExterior = itensVendaExterior.reduce((acc, s) => acc + s.vlrContabil, 0);
 
-  // Vendas de mercadoria específicas (para detalhamento)
-  const itensVendaMercadoriaEspecifica = itensVendas.filter(s =>
-    s.descricao.toUpperCase().includes('MERCADORIA') ||
-    s.descricao.toUpperCase().includes('SORVETE')
+  // Vendas de mercadoria espec?ficas (mantido para compatibilidade)
+  const itensVendaMercadoriaEspecifica = itensVendas.filter((s) =>
+    normalizarDescricao(s.descricao).includes('MERCADORIA') ||
+    normalizarDescricao(s.descricao).includes('SORVETE')
   );
   const vendaMercadoriaEspecifica = itensVendaMercadoriaEspecifica.reduce((acc, s) => acc + s.vlrContabil, 0);
 
@@ -1328,9 +1363,11 @@ export const parseResumoPorAcumulador = (csvContent) => {
     },
     categorias: {
       compraComercializacao,
+      compraIndustrializacao,
       vendaMercadoria,
       vendaProduto,
       vendaExterior,
+      servicos,
       totalVendas380,
       // Cálculo 380: Esperado = Compra Comercialização + 25%
       esperado380: compraComercializacao * 1.25
@@ -1340,7 +1377,8 @@ export const parseResumoPorAcumulador = (csvContent) => {
       compras: itensCompraComercializacao,
       vendasMercadoria: itensVendas,
       vendasProduto: itensVendaProduto,
-      vendasExterior: itensVendaExterior
+      vendasExterior: itensVendaExterior,
+      servicos: itensServicos
     },
     tipo: 'resumoAcumulador'
   };

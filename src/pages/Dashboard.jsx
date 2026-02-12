@@ -578,11 +578,35 @@ const Dashboard = () => {
       const saidasMap = new Map();
       const categorias = {
         compraComercializacao: 0,
+        compraIndustrializacao: 0,
         vendaMercadoria: 0,
         vendaProduto: 0,
         vendaExterior: 0,
+        servicos: 0,
         totalVendas380: 0,
         esperado380: 0
+      };
+
+      const normalizarDescricao = (texto = '') =>
+        String(texto)
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toUpperCase()
+          .replace(/\s+/g, ' ')
+          .trim();
+
+      const isServicoRelacionado = (descricao = '') => {
+        const desc = normalizarDescricao(descricao);
+        return (
+          desc.includes('SERVICO TOMADO') ||
+          desc.includes('SERVICO TOMADO ISS RET') ||
+          desc.includes('LANC. COMPRA P/ RECEBIMENTO FUTURO') ||
+          desc.includes('COMPRA P/ RECEBIMENTO FUTURO') ||
+          desc.includes('COMPRA PARA RECEBIMENTO FUTURO') ||
+          desc.includes('SERVICO DE TRANSPORTE') ||
+          desc.includes('SISTEMA DE SEGURANCA ELETRONICA') ||
+          desc.includes('AQ. SERVICO DE MANUT E REVISAO VEICULAR')
+        );
       };
 
       lista.forEach((resumo) => {
@@ -597,8 +621,8 @@ const Dashboard = () => {
       const entradas = Array.from(entradasMap.values());
       const saidas = Array.from(saidasMap.values());
       const detalhesVendas = saidas.filter((s) => {
-        const desc = String(s.descricao || '').toUpperCase();
-        return desc.startsWith('VENDA') && !desc.includes('ATIVO') && !desc.includes('IMOBILIZADO');
+        const desc = normalizarDescricao(s.descricao || '');
+        return desc.startsWith('VENDA') && !desc.includes('ATIVO') && !desc.includes('IMOBILIZADO') && !desc.includes('CANCEL');
       });
 
       return {
@@ -610,10 +634,11 @@ const Dashboard = () => {
         },
         categorias,
         detalhes380: {
-          compras: entradas.filter(e => String(e.descricao || '').toUpperCase().includes('COMERCIALIZA')),
+          compras: entradas.filter(e => normalizarDescricao(e.descricao || '').includes('COMPRA P/ COMERCIALIZA')),
           vendasMercadoria: detalhesVendas,
-          vendasProduto: detalhesVendas.filter(s => String(s.descricao || '').toUpperCase().includes('PRODUTO')),
-          vendasExterior: detalhesVendas.filter(s => String(s.descricao || '').toUpperCase().includes('EXTERIOR'))
+          vendasProduto: detalhesVendas.filter(s => normalizarDescricao(s.descricao || '').includes('PRODUTO')),
+          vendasExterior: detalhesVendas.filter(s => normalizarDescricao(s.descricao || '').includes('EXTERIOR')),
+          servicos: entradas.filter(e => isServicoRelacionado(e.descricao || ''))
         },
         tipo: 'resumoAcumulador'
       };
@@ -890,11 +915,35 @@ const Dashboard = () => {
     const saidasMap = new Map();
     const categorias = {
       compraComercializacao: 0,
+      compraIndustrializacao: 0,
       vendaMercadoria: 0,
       vendaProduto: 0,
       vendaExterior: 0,
+      servicos: 0,
       totalVendas380: 0,
       esperado380: 0
+    };
+
+    const normalizarDescricao = (texto = '') =>
+      String(texto)
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toUpperCase()
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    const isServicoRelacionado = (descricao = '') => {
+      const desc = normalizarDescricao(descricao);
+      return (
+        desc.includes('SERVICO TOMADO') ||
+        desc.includes('SERVICO TOMADO ISS RET') ||
+        desc.includes('LANC. COMPRA P/ RECEBIMENTO FUTURO') ||
+        desc.includes('COMPRA P/ RECEBIMENTO FUTURO') ||
+        desc.includes('COMPRA PARA RECEBIMENTO FUTURO') ||
+        desc.includes('SERVICO DE TRANSPORTE') ||
+        desc.includes('SISTEMA DE SEGURANCA ELETRONICA') ||
+        desc.includes('AQ. SERVICO DE MANUT E REVISAO VEICULAR')
+      );
     };
 
     const somarItens = (mapa, itens = []) => {
@@ -928,8 +977,8 @@ const Dashboard = () => {
     const entradas = Array.from(entradasMap.values());
     const saidas = Array.from(saidasMap.values());
     const detalhesVendas = saidas.filter((s) => {
-      const desc = String(s.descricao || '').toUpperCase();
-      return desc.startsWith('VENDA') && !desc.includes('ATIVO') && !desc.includes('IMOBILIZADO');
+      const desc = normalizarDescricao(s.descricao || '');
+      return desc.startsWith('VENDA') && !desc.includes('ATIVO') && !desc.includes('IMOBILIZADO') && !desc.includes('CANCEL');
     });
 
     return {
@@ -941,10 +990,11 @@ const Dashboard = () => {
       },
       categorias,
       detalhes380: {
-        compras: entradas.filter(e => String(e.descricao || '').toUpperCase().includes('COMERCIALIZA')),
+        compras: entradas.filter(e => normalizarDescricao(e.descricao || '').includes('COMPRA P/ COMERCIALIZA')),
         vendasMercadoria: detalhesVendas,
-        vendasProduto: detalhesVendas.filter(s => String(s.descricao || '').toUpperCase().includes('PRODUTO')),
-        vendasExterior: detalhesVendas.filter(s => String(s.descricao || '').toUpperCase().includes('EXTERIOR'))
+        vendasProduto: detalhesVendas.filter(s => normalizarDescricao(s.descricao || '').includes('PRODUTO')),
+        vendasExterior: detalhesVendas.filter(s => normalizarDescricao(s.descricao || '').includes('EXTERIOR')),
+        servicos: entradas.filter(e => isServicoRelacionado(e.descricao || ''))
       },
       tipo: 'resumoAcumulador'
     };
@@ -973,13 +1023,15 @@ const Dashboard = () => {
         totais: { entradas: 0, saidas: 0 },
         categorias: {
           compraComercializacao: 0,
+          compraIndustrializacao: 0,
           vendaMercadoria: 0,
           vendaProduto: 0,
           vendaExterior: 0,
+          servicos: 0,
           totalVendas380: 0,
           esperado380: 0
         },
-        detalhes380: { compras: [], vendasMercadoria: [], vendasProduto: [], vendasExterior: [] },
+        detalhes380: { compras: [], vendasMercadoria: [], vendasProduto: [], vendasExterior: [], servicos: [] },
         porCompetencia: {},
         competencias: []
       };
@@ -2102,10 +2154,10 @@ const Dashboard = () => {
                 <div className={`mt-6 rounded-xl shadow-sm overflow-hidden ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
                   <div className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
                     <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                      Faturamento por Período
+                      {"Faturamento por Per\u00edodo"}
                     </h3>
                     <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                      Total do faturamento no recorte de mês, trimestre ou ano
+                      {"Total do faturamento no recorte de m\u00eas, trimestre ou ano"}
                     </p>
                   </div>
                   <TabelaFaturamentoPeriodo
@@ -2114,6 +2166,40 @@ const Dashboard = () => {
                   />
                 </div>
               )}
+
+              <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className={`p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                  <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                    Compra vs Venda
+                  </h3>
+                  <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                    {"Compra p/ Comercializa\u00e7\u00e3o, Vendas e Servi\u00e7os"}
+                  </p>
+                  {temDadosFiscais && dadosFiscaisImportados?.resumoAcumulador ? (
+                    <CompraVendaChart dados={dadosFiscaisImportados.resumoAcumulador} />
+                  ) : (
+                    <div className="h-[300px] flex items-center justify-center">
+                      <DistribuicaoChart onDataCalculated={handleFiscalDataCalculated} />
+                    </div>
+                  )}
+                </div>
+
+                <div className={`p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
+                  <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                    Por Categoria
+                  </h3>
+                  <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                    {"Vendas, Compra p/ Comercializa\u00e7\u00e3o e Servi\u00e7os"}
+                  </p>
+                  {temDadosFiscais && dadosFiscaisImportados?.resumoAcumulador ? (
+                    <Detalhamento380Chart dados={dadosFiscaisImportados.resumoAcumulador} />
+                  ) : (
+                    <div className="h-[250px] flex items-center justify-center">
+                      <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Importe Resumo por Acumulador</p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </section>
 
             {/* ===== SEÇÃO SITUAÇÃO FISCAL ===== */}
@@ -2123,20 +2209,20 @@ const Dashboard = () => {
                   <Receipt className={`w-5 h-5 ${isDarkMode ? 'text-slate-500' : 'text-slate-700'}`} />
                 </div>
                 <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                  Situação Fiscal
+                  {"Situa\u00e7\u00e3o Fiscal"}
                 </h2>
               </div>
 
               <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                {/* Gráfico - IRPJ por Período */}
+                {/* Grafico - IRPJ por Periodo */}
                 <div className={`xl:col-span-2 p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                        IRPJ por Período
+                        {"IRPJ por Per\u00edodo"}
                       </h3>
                       <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                        Composição do IRPJ apurado
+                        {"Composi\u00e7\u00e3o do IRPJ apurado"}
                       </p>
                     </div>
                     <div className="flex gap-1">
@@ -2179,19 +2265,19 @@ const Dashboard = () => {
                       Resumo dos Impostos
                     </h3>
                     <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                      Distribuição dos impostos no período
+                      {"Distribui\u00e7\u00e3o dos impostos no per\u00edodo"}
                     </p>
                     <ResumoImpostosRoscaChart dados={resumoImpostosFiltrado} />
                   </div>
                 )}
 
-                {/* Gráfico - CSLL por Período */}
+                {/* Grafico - CSLL por Periodo */}
                 <div className={`xl:col-span-3 p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
                   <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                    CSLL por Período
+                    {"CSLL por Per\u00edodo"}
                   </h3>
                   <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                    Composição do CSLL
+                    {"Composi\u00e7\u00e3o do CSLL"}
                   </p>
                   <CSLLPorPeriodoChart
                     dados={dadosFiscaisImportados?.csll || []}
@@ -2212,43 +2298,6 @@ const Dashboard = () => {
                   Comparativo 380
                 </h2>
               </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Gráfico de Rosca - Compra vs Venda */}
-                <div className={`p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
-                  <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                    Compra vs Venda
-                  </h3>
-                  <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                    Total de comercializacao
-                  </p>
-                  {temDadosFiscais && dadosFiscaisImportados?.resumoAcumulador ? (
-                    <CompraVendaChart dados={dadosFiscaisImportados.resumoAcumulador} />
-                  ) : (
-                    <div className="h-[300px] flex items-center justify-center">
-                      <DistribuicaoChart onDataCalculated={handleFiscalDataCalculated} />
-                    </div>
-                  )}
-                </div>
-
-                {/* Gráfico de Barras Horizontais - Detalhamento */}
-                <div className={`p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
-                  <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                    Por Categoria
-                  </h3>
-                  <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                    Compra Comercialização vs Vendas (Mercadoria, Produto, Exterior)
-                  </p>
-                  {temDadosFiscais && dadosFiscaisImportados?.resumoAcumulador ? (
-                    <Detalhamento380Chart dados={dadosFiscaisImportados.resumoAcumulador} />
-                  ) : (
-                    <div className="h-[250px] flex items-center justify-center">
-                      <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Importe Resumo por Acumulador</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
               {/* Tabela 380 */}
               {temDadosFiscais && dadosFiscaisImportados?.resumoAcumulador && (
                 <div className={`mt-6 rounded-xl shadow-sm overflow-hidden ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
@@ -3045,4 +3094,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-

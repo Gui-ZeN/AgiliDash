@@ -770,11 +770,11 @@ export const CompraVendaChart = ({ dados }) => {
   const { isDarkMode } = useTheme();
 
   const totais = useMemo(() => {
-    if (!dados?.categorias) return { compra: 0, venda: 0 };
+    if (!dados?.categorias) return { compra: 0, venda: 0, servicos: 0 };
     return {
       compra: dados.categorias.compraComercializacao || 0,
-      // Usar total de vendas 380 (Mercadoria + Produto + Exterior)
-      venda: dados.categorias.totalVendas380 || dados.categorias.vendaMercadoria || 0
+      venda: dados.categorias.vendaMercadoria || 0,
+      servicos: dados.categorias.servicos || 0
     };
   }, [dados]);
 
@@ -790,11 +790,11 @@ export const CompraVendaChart = ({ dados }) => {
     chartInstance.current = new Chart(ctx, {
       type: 'doughnut',
       data: {
-        labels: ['Compra', 'Venda'],
+        labels: ['Compra p/ Comercializa\u00e7\u00e3o', 'Vendas', 'Servi\u00e7os'],
         datasets: [{
-          data: [totais.compra, totais.venda],
-          backgroundColor: [COLORS.info + 'CC', COLORS.success + 'CC'],
-          borderColor: [COLORS.info, COLORS.success],
+          data: [totais.compra, totais.venda, totais.servicos],
+          backgroundColor: [COLORS.info + 'CC', COLORS.success + 'CC', COLORS.secondary + 'CC'],
+          borderColor: [COLORS.info, COLORS.success, COLORS.secondary],
           borderWidth: 2,
           hoverOffset: 8
         }]
@@ -824,7 +824,7 @@ export const CompraVendaChart = ({ dados }) => {
             cornerRadius: 12,
             callbacks: {
               label: (context) => {
-                const total = totais.compra + totais.venda;
+                const total = totais.compra + totais.venda + totais.servicos;
                 const percentage = total > 0 ? ((context.raw / total) * 100).toFixed(1) : 0;
                 return `${context.label}: ${formatCurrency(context.raw)} (${percentage}%)`;
               }
@@ -865,36 +865,30 @@ export const Detalhamento380Chart = ({ dados }) => {
     // Adicionar compras
     if (dados.categorias.compraComercializacao > 0) {
       items.push({
-        label: 'Compra p/ Comercialização',
+        label: 'Compra p/ Comercializa\u00e7\u00e3o',
         valor: dados.categorias.compraComercializacao,
         cor: COLORS.info,
         tipo: 'compra'
       });
     }
 
-    // Adicionar vendas
+    // Adicionar vendas agrupadas
     if (dados.categorias.vendaMercadoria > 0) {
       items.push({
-        label: 'Venda de Mercadoria',
+        label: 'Vendas',
         valor: dados.categorias.vendaMercadoria,
         cor: COLORS.success,
         tipo: 'venda'
       });
     }
-    if (dados.categorias.vendaProduto > 0) {
+
+    // Adicionar servicos
+    if (dados.categorias.servicos > 0) {
       items.push({
-        label: 'Venda de Produto',
-        valor: dados.categorias.vendaProduto,
+        label: 'Servi\u00e7os',
+        valor: dados.categorias.servicos,
         cor: COLORS.secondary,
-        tipo: 'venda'
-      });
-    }
-    if (dados.categorias.vendaExterior > 0) {
-      items.push({
-        label: 'Venda p/ Exterior',
-        valor: dados.categorias.vendaExterior,
-        cor: COLORS.purple,
-        tipo: 'venda'
+        tipo: 'servico'
       });
     }
 
