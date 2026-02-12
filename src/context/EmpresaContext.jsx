@@ -1,142 +1,269 @@
-import { createContext, useContext, useState, useCallback, useMemo } from 'react';
+﻿import { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
 import {
   grupos,
   empresas,
   cnpjsEmpresa,
   getDadosCnpj,
-  getInfoCnpj,
-  getTotaisConsolidados,
-  getTotaisConsolidadosPorEmpresa,
-  getTotaisConsolidadosPorGrupo,
-  getCnpjsByEmpresa,
-  getEmpresasByGrupo,
-  getEmpresaByCnpj,
-  getGrupoByEmpresa,
   setoresDisponiveis
 } from '../data/mockData';
+import { useAuth } from './AuthContext';
 
 /**
- * Contexto para gerenciar estado global da empresa e CNPJ selecionado
- * Suporta hierarquia: Grupo → Empresa → CNPJ
+ * Context for global company/CNPJ selection state.
+ * Hierarchy: Group -> Company -> CNPJ
  */
 const EmpresaContext = createContext(null);
 
-export const EmpresaProvider = ({ children }) => {
-  // Seleções atuais
-  const [grupoSelecionado, setGrupoSelecionado] = useState('grupo_001');
-  const [empresaSelecionada, setEmpresaSelecionada] = useState('empresa_001');
-  const [cnpjSelecionado, setCnpjSelecionado] = useState('cnpj_001');
+const EMPTY_TOTALS = {
+  receita: 0,
+  despesa: 0,
+  lucro: 0,
+  funcionarios: 0,
+  folhaMensal: 0,
+  irpj: 0,
+  csll: 0,
+  cargaTributaria: 0,
+  qtdCnpjs: 0
+};
 
-  // Modo de visualização: 'cnpj', 'empresa', 'grupo' ou 'todos'
+const criarSet = (lista) => (Array.isArray(lista) && lista.length > 0 ? new Set(lista) : null);
+
+const somarArray = (arr) => (Array.isArray(arr) ? arr.reduce((acc, v) => acc + Number(v || 0), 0) : 0);
+
+const calcularTotaisConsolidados = (cnpjIds) => {
+  if (!Array.isArray(cnpjIds) || cnpjIds.length === 0) return EMPTY_TOTALS;
+
+  return cnpjIds.reduce((totais, cnpjId) => {
+    const dados = getDadosCnpj(cnpjId);
+    if (!dados) return totais;
+
+    const receita = somarArray(dados?.dreData2025?.receita);
+    const despesa = somarArray(dados?.dreData2025?.despesa);
+    const lucro = somarArray(dados?.dreData2025?.lucro);
+    const funcionarios = Number(dados?.pessoalData?.funcionarios || 0);
+    const folhaMensal = Number(dados?.pessoalData?.folhaMensal || 0);
+    const irpj = Number(dados?.totaisFiscais?.irpj || 0);
+    const csll = Number(dados?.totaisFiscais?.csll || 0);
+
+    return {
+      receita: totais.receita + receita,
+      despesa: totais.despesa + despesa,
+      lucro: totais.lucro + lucro,
+      funcionarios: totais.funcionarios + funcionarios,
+      folhaMensal: totais.folhaMensal + folhaMensal,
+      irpj: totais.irpj + irpj,
+      csll: totais.csll + csll,
+      cargaTributaria: totais.cargaTributaria + irpj + csll,
+      qtdCnpjs: totais.qtdCnpjs + 1
+    };
+  }, { ...EMPTY_TOTALS });
+};
+
+export const EmpresaProvider = ({ children }) => {
+  const { user, isAdmin } = useAuth();
+
+  const [grupoSelecionado, setGrupoSelecionado] = useState(null);
+  const [empresaSelecionada, setEmpresaSelecionada] = useState(null);
+  const [cnpjSelecionado, setCnpjSelecionado] = useState(null);
+
+  // View mode: 'cnpj', 'empresa', 'grupo' or 'todos'
   const [modoVisualizacao, setModoVisualizacao] = useState('cnpj');
 
-  // Obtém informações do CNPJ atual
-  const cnpjInfo = useMemo(() => getInfoCnpj(cnpjSelecionado), [cnpjSelecionado]);
+  const grupoIdsPermitidos = useMemo(() => (isAdmin ? null : criarSet(user?.acesso?.grupoIds)), [isAdmin, user?.acesso?.grupoIds]);
+  const empresaIdsPermitidas = useMemo(() => (isAdmin ? null : criarSet(user?.acesso?.empresaIds)), [isAdmin, user?.acesso?.empresaIds]);
+  const cnpjIdsPermitidos = useMemo(() => (isAdmin ? null : criarSet(user?.acesso?.cnpjIds)), [isAdmin, user?.acesso?.cnpjIds]);
 
-  // Obtém dados financeiros do CNPJ atual
-  const cnpjDados = useMemo(() => getDadosCnpj(cnpjSelecionado), [cnpjSelecionado]);
+  const empresasPermitidas = useMemo(() => {
+    if (isAdmin) return empresas;
 
-  // Obtém empresa atual
-  const empresaAtual = useMemo(() =>
-    empresas.find(e => e.id === empresaSelecionada),
-    [empresaSelecionada]
+    const temEscopo = !!(grupoIdsPermitidos || empresaIdsPermitidas || cnpjIdsPermitidos);
+    if (!temEscopo) return [];
+
+    let resultado = [...empresas];
+
+    if (grupoIdsPermitidos) {
+      resultado = resultado.filter(e => grupoIdsPermitidos.has(e.grupoId));
+    }
+
+    if (empresaIdsPermitidas) {
+      resultado = resultado.filter(e => empresaIdsPermitidas.has(e.id));
+    }
+
+    if (cnpjIdsPermitidos) {
+      const empresaIdsDoCnpj = new Set(
+        cnpjsEmpresa.filter(c => cnpjIdsPermitidos.has(c.id)).map(c => c.empresaId)
+      );
+      resultado = resultado.filter(e => empresaIdsDoCnpj.has(e.id));
+    }
+
+    return resultado;
+  }, [isAdmin, grupoIdsPermitidos, empresaIdsPermitidas, cnpjIdsPermitidos]);
+
+  const empresaIdsPermitidasSet = useMemo(
+    () => new Set(empresasPermitidas.map(e => e.id)),
+    [empresasPermitidas]
   );
 
-  // Obtém grupo atual
-  const grupoAtual = useMemo(() =>
-    grupos.find(g => g.id === grupoSelecionado),
-    [grupoSelecionado]
+  const cnpjsPermitidos = useMemo(() => {
+    if (isAdmin) return cnpjsEmpresa;
+
+    let resultado = cnpjsEmpresa.filter(c => empresaIdsPermitidasSet.has(c.empresaId));
+
+    if (cnpjIdsPermitidos) {
+      resultado = resultado.filter(c => cnpjIdsPermitidos.has(c.id));
+    }
+
+    return resultado;
+  }, [isAdmin, empresaIdsPermitidasSet, cnpjIdsPermitidos]);
+
+  const gruposPermitidos = useMemo(() => {
+    const grupoIds = new Set(empresasPermitidas.map(e => e.grupoId));
+    return grupos.filter(g => grupoIds.has(g.id));
+  }, [empresasPermitidas]);
+
+  // Keep selected group/company/CNPJ always inside permitted scope.
+  useEffect(() => {
+    if (empresasPermitidas.length === 0 || cnpjsPermitidos.length === 0 || gruposPermitidos.length === 0) {
+      if (grupoSelecionado !== null) setGrupoSelecionado(null);
+      if (empresaSelecionada !== null) setEmpresaSelecionada(null);
+      if (cnpjSelecionado !== null) setCnpjSelecionado(null);
+      if (modoVisualizacao !== 'cnpj') setModoVisualizacao('cnpj');
+      return;
+    }
+
+    const empresaValida = empresasPermitidas.find(e => e.id === empresaSelecionada) || empresasPermitidas[0];
+    const grupoValido = empresaValida.grupoId;
+    const cnpjsDaEmpresa = cnpjsPermitidos.filter(c => c.empresaId === empresaValida.id);
+    const cnpjValido = cnpjsDaEmpresa.find(c => c.id === cnpjSelecionado) || cnpjsDaEmpresa[0] || cnpjsPermitidos[0];
+
+    if (grupoSelecionado !== grupoValido) setGrupoSelecionado(grupoValido);
+    if (empresaSelecionada !== empresaValida.id) setEmpresaSelecionada(empresaValida.id);
+    if (cnpjSelecionado !== cnpjValido?.id) setCnpjSelecionado(cnpjValido?.id || null);
+  }, [
+    empresasPermitidas,
+    cnpjsPermitidos,
+    gruposPermitidos,
+    grupoSelecionado,
+    empresaSelecionada,
+    cnpjSelecionado,
+    modoVisualizacao
+  ]);
+
+  const cnpjInfo = useMemo(
+    () => cnpjsPermitidos.find(c => c.id === cnpjSelecionado) || cnpjsPermitidos[0] || null,
+    [cnpjsPermitidos, cnpjSelecionado]
   );
 
-  // Lista de grupos
-  const listaGrupos = grupos;
-
-  // Lista de empresas do grupo selecionado
-  const listaEmpresas = useMemo(() =>
-    getEmpresasByGrupo(grupoSelecionado),
-    [grupoSelecionado]
+  const cnpjDados = useMemo(
+    () => (cnpjInfo?.id ? getDadosCnpj(cnpjInfo.id) : null),
+    [cnpjInfo?.id]
   );
 
-  // Lista de CNPJs da empresa selecionada
-  const listaCnpjs = useMemo(() =>
-    getCnpjsByEmpresa(empresaSelecionada),
-    [empresaSelecionada]
+  const empresaAtual = useMemo(
+    () => empresasPermitidas.find(e => e.id === empresaSelecionada) || empresasPermitidas[0] || null,
+    [empresasPermitidas, empresaSelecionada]
   );
 
-  // Todos os CNPJs (para visualização consolidada)
-  const todosCnpjs = cnpjsEmpresa;
+  const grupoAtual = useMemo(
+    () => gruposPermitidos.find(g => g.id === grupoSelecionado) || gruposPermitidos[0] || null,
+    [gruposPermitidos, grupoSelecionado]
+  );
 
-  // Totais consolidados baseado no modo de visualização
-  const totaisConsolidados = useMemo(() => {
+  const listaGrupos = gruposPermitidos;
+
+  const listaEmpresas = useMemo(
+    () => empresasPermitidas.filter(e => e.grupoId === grupoSelecionado),
+    [empresasPermitidas, grupoSelecionado]
+  );
+
+  const listaCnpjs = useMemo(
+    () => cnpjsPermitidos.filter(c => c.empresaId === empresaSelecionada),
+    [cnpjsPermitidos, empresaSelecionada]
+  );
+
+  const todosCnpjs = cnpjsPermitidos;
+
+  const cnpjIdsEscopo = useMemo(() => {
+    if (!cnpjInfo?.id) return [];
+
     switch (modoVisualizacao) {
       case 'empresa':
-        return getTotaisConsolidadosPorEmpresa(empresaSelecionada);
-      case 'grupo':
-        return getTotaisConsolidadosPorGrupo(grupoSelecionado);
+        return cnpjsPermitidos.filter(c => c.empresaId === empresaSelecionada).map(c => c.id);
+      case 'grupo': {
+        const empresasDoGrupo = new Set(empresasPermitidas.filter(e => e.grupoId === grupoSelecionado).map(e => e.id));
+        return cnpjsPermitidos.filter(c => empresasDoGrupo.has(c.empresaId)).map(c => c.id);
+      }
       case 'todos':
-        return getTotaisConsolidados();
+        return cnpjsPermitidos.map(c => c.id);
       default:
-        return null;
+        return [cnpjInfo.id];
     }
-  }, [modoVisualizacao, empresaSelecionada, grupoSelecionado]);
+  }, [cnpjInfo?.id, modoVisualizacao, cnpjsPermitidos, empresaSelecionada, empresasPermitidas, grupoSelecionado]);
 
-  // Função para selecionar grupo
+  const isConsolidado = modoVisualizacao !== 'cnpj';
+
+  const totaisConsolidados = useMemo(() => {
+    if (!isConsolidado) return null;
+    return calcularTotaisConsolidados(cnpjIdsEscopo);
+  }, [isConsolidado, cnpjIdsEscopo]);
+
   const selecionarGrupo = useCallback((grupoId) => {
+    const grupoExiste = gruposPermitidos.some(g => g.id === grupoId);
+    if (!grupoExiste) return;
+
     setGrupoSelecionado(grupoId);
-    // Seleciona primeira empresa do grupo
-    const empresasDoGrupo = getEmpresasByGrupo(grupoId);
+
+    const empresasDoGrupo = empresasPermitidas.filter(e => e.grupoId === grupoId);
     if (empresasDoGrupo.length > 0) {
       const primeiraEmpresa = empresasDoGrupo[0];
       setEmpresaSelecionada(primeiraEmpresa.id);
-      // Seleciona primeiro CNPJ da empresa
-      const cnpjsDaEmpresa = getCnpjsByEmpresa(primeiraEmpresa.id);
+
+      const cnpjsDaEmpresa = cnpjsPermitidos.filter(c => c.empresaId === primeiraEmpresa.id);
       if (cnpjsDaEmpresa.length > 0) {
         setCnpjSelecionado(cnpjsDaEmpresa[0].id);
       }
     }
-    setModoVisualizacao('cnpj');
-  }, []);
 
-  // Função para selecionar empresa
+    setModoVisualizacao('cnpj');
+  }, [gruposPermitidos, empresasPermitidas, cnpjsPermitidos]);
+
   const selecionarEmpresa = useCallback((empresaId) => {
-    setEmpresaSelecionada(empresaId);
-    // Atualiza grupo se necessário
-    const empresa = empresas.find(e => e.id === empresaId);
-    if (empresa && empresa.grupoId !== grupoSelecionado) {
+    const empresa = empresasPermitidas.find(e => e.id === empresaId);
+    if (!empresa) return;
+
+    setEmpresaSelecionada(empresa.id);
+
+    if (empresa.grupoId !== grupoSelecionado) {
       setGrupoSelecionado(empresa.grupoId);
     }
-    // Seleciona primeiro CNPJ da empresa
-    const cnpjsDaEmpresa = getCnpjsByEmpresa(empresaId);
+
+    const cnpjsDaEmpresa = cnpjsPermitidos.filter(c => c.empresaId === empresa.id);
     if (cnpjsDaEmpresa.length > 0) {
       setCnpjSelecionado(cnpjsDaEmpresa[0].id);
     }
-    setModoVisualizacao('cnpj');
-  }, [grupoSelecionado]);
 
-  // Função para trocar CNPJ
+    setModoVisualizacao('cnpj');
+  }, [empresasPermitidas, cnpjsPermitidos, grupoSelecionado]);
+
   const selecionarCnpj = useCallback((cnpjId) => {
-    setCnpjSelecionado(cnpjId);
-    // Atualiza empresa e grupo se necessário
-    const empresa = getEmpresaByCnpj(cnpjId);
+    const cnpj = cnpjsPermitidos.find(c => c.id === cnpjId);
+    if (!cnpj) return;
+
+    setCnpjSelecionado(cnpj.id);
+
+    const empresa = empresasPermitidas.find(e => e.id === cnpj.empresaId);
     if (empresa) {
       setEmpresaSelecionada(empresa.id);
-      const grupo = getGrupoByEmpresa(empresa.id);
-      if (grupo) {
-        setGrupoSelecionado(grupo.id);
-      }
+      setGrupoSelecionado(empresa.grupoId);
     }
+
     setModoVisualizacao('cnpj');
-  }, []);
+  }, [cnpjsPermitidos, empresasPermitidas]);
 
-  // Função para alternar modo consolidado
   const toggleModoConsolidado = useCallback((modo) => {
-    setModoVisualizacao(prev => prev === modo ? 'cnpj' : modo);
+    setModoVisualizacao(prev => (prev === modo ? 'cnpj' : modo));
   }, []);
 
-  // Verifica se está em modo consolidado
-  const isConsolidado = modoVisualizacao !== 'cnpj';
-
-  // Label do modo atual
   const modoLabel = useMemo(() => {
     switch (modoVisualizacao) {
       case 'empresa':
@@ -144,14 +271,14 @@ export const EmpresaProvider = ({ children }) => {
       case 'grupo':
         return `Consolidado: ${grupoAtual?.nome || 'Grupo'}`;
       case 'todos':
-        return 'Visão Consolidada Total';
+        return isAdmin ? 'Visao Consolidada Total' : 'Visao Consolidada Permitida';
       default:
         return cnpjInfo?.nomeFantasia || 'CNPJ';
     }
-  }, [modoVisualizacao, empresaAtual, grupoAtual, cnpjInfo]);
+  }, [modoVisualizacao, empresaAtual?.nomeFantasia, grupoAtual?.nome, cnpjInfo?.nomeFantasia, isAdmin]);
 
   const value = {
-    // Estado atual
+    // Current state
     grupoSelecionado,
     empresaSelecionada,
     cnpjSelecionado,
@@ -159,25 +286,25 @@ export const EmpresaProvider = ({ children }) => {
     isConsolidado,
     modoLabel,
 
-    // Informações atuais
+    // Current entities
     cnpjInfo,
     cnpjDados,
     empresaAtual,
     grupoAtual,
 
-    // Listas
+    // Lists (already filtered by permission)
     listaGrupos,
     listaEmpresas,
     listaCnpjs,
     todosCnpjs,
-    todasEmpresas: empresas,
-    todosGrupos: grupos,
+    todasEmpresas: empresasPermitidas,
+    todosGrupos: gruposPermitidos,
     setoresDisponiveis,
 
-    // Totais
+    // Totals
     totaisConsolidados,
 
-    // Ações
+    // Actions
     selecionarGrupo,
     selecionarEmpresa,
     selecionarCnpj,
@@ -192,7 +319,7 @@ export const EmpresaProvider = ({ children }) => {
   );
 };
 
-// Hook para usar o contexto
+// Hook to consume context
 export const useEmpresa = () => {
   const context = useContext(EmpresaContext);
   if (!context) {

@@ -1,12 +1,12 @@
-import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+﻿import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 
 /**
- * Contexto de Autenticação
- * Gerencia login, logout e controle de acesso
+ * Authentication context
+ * Handles login, logout and profile access info.
  */
 const AuthContext = createContext(null);
 
-// Usuários mock (futuro: Firebase Auth)
+// Mock users (future: Firebase Auth)
 const USERS = [
   {
     id: 'admin_001',
@@ -14,26 +14,55 @@ const USERS = [
     password: 'admin123',
     nome: 'Administrador',
     perfil: 'Admin',
-    avatar: null
+    avatar: null,
+    acesso: null
   },
   {
     id: 'user_001',
     email: 'usuario@agili.com.br',
     password: 'usuario123',
-    nome: 'Usuário Comum',
+    nome: 'Usuario Comum',
     perfil: 'Visualizador',
-    avatar: null
+    avatar: null,
+    acesso: {
+      grupoIds: ['grupo_001'],
+      empresaIds: ['empresa_001'],
+      cnpjIds: []
+    }
   }
 ];
+
+const normalizarUsuarioSalvo = (rawUser) => {
+  if (!rawUser) return null;
+
+  const usuarioBase = USERS.find(
+    u => u.id === rawUser.id || u.email.toLowerCase() === String(rawUser.email || '').toLowerCase()
+  );
+
+  if (!usuarioBase) return rawUser;
+
+  const { password: _, ...baseSemSenha } = usuarioBase;
+  return {
+    ...baseSemSenha,
+    ...rawUser,
+    acesso: rawUser.acesso ?? baseSemSenha.acesso ?? null
+  };
+};
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem('agili_auth_user');
-    return saved ? JSON.parse(saved) : null;
+    if (!saved) return null;
+
+    try {
+      return normalizarUsuarioSalvo(JSON.parse(saved));
+    } catch {
+      return null;
+    }
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  // Persistir usuário no localStorage
+  // Persist user in localStorage
   useEffect(() => {
     if (user) {
       localStorage.setItem('agili_auth_user', JSON.stringify(user));
@@ -46,7 +75,7 @@ export const AuthProvider = ({ children }) => {
   const login = useCallback(async (email, password) => {
     setIsLoading(true);
 
-    // Simular delay de rede
+    // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 800));
 
     const foundUser = USERS.find(
@@ -56,7 +85,7 @@ export const AuthProvider = ({ children }) => {
     setIsLoading(false);
 
     if (foundUser) {
-      // Não salvar a senha no estado
+      // Do not keep password in state
       const { password: _, ...userWithoutPassword } = foundUser;
       setUser(userWithoutPassword);
       return { success: true, user: userWithoutPassword };
@@ -71,10 +100,8 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('agili_auth_user');
   }, []);
 
-  // Verificar se é admin
+  // Role checks
   const isAdmin = user?.perfil === 'Admin';
-
-  // Verificar se está autenticado
   const isAuthenticated = !!user;
 
   const value = {
