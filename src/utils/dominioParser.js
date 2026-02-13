@@ -1441,9 +1441,33 @@ export const parseDemonstrativoFGTS = (csvContent) => {
   let empresaInfo = {};
   const registros = [];
   let competenciaAtual = '';
+  const normalizeText = (text = '') =>
+    String(text)
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toUpperCase();
+
+  const detectarTipoRecolhimento = (text = '') => {
+    const normalized = normalizeText(text);
+    if (!normalized) return null;
+
+    if (/CONSIGN/.test(normalized)) return 'Consignado';
+    if (/RESCISAO|GRRF|MULTA RESCISORIA/.test(normalized)) return 'Rescisao';
+    if (/DECIMO TERCEIRO|13[Oº]?\s*SALARIO|13[Oº]\b/.test(normalized)) return '13o';
+    if (/MENSAL|FOLHA/.test(normalized)) return 'Mensal';
+    return null;
+  };
+
+  const tipoArquivo = detectarTipoRecolhimento(csvContent) || 'Mensal';
+  let tipoRecolhimentoAtual = tipoArquivo;
 
   // Totais por tipo de recolhimento
-  const totaisPorTipo = {};
+  const totaisPorTipo = {
+    Mensal: { quantidade: 0, base: 0, valorFGTS: 0 },
+    '13o': { quantidade: 0, base: 0, valorFGTS: 0 },
+    Rescisao: { quantidade: 0, base: 0, valorFGTS: 0 },
+    Consignado: { quantidade: 0, base: 0, valorFGTS: 0 },
+  };
   // Totais por competência
   const totaisPorCompetencia = {};
   // Totais por ano
@@ -1456,6 +1480,10 @@ export const parseDemonstrativoFGTS = (csvContent) => {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const cols = line.split(';').map(c => c.trim());
+    const tipoDetectadoNaLinha = detectarTipoRecolhimento(line);
+    if (tipoDetectadoNaLinha) {
+      tipoRecolhimentoAtual = tipoDetectadoNaLinha;
+    }
 
     // Extrair informações da empresa (formato: Empresa:;;;;;;;NOME DA EMPRESA)
     if (/^Empresa:/i.test(line)) {
@@ -1575,7 +1603,7 @@ export const parseDemonstrativoFGTS = (csvContent) => {
     }
 
     // Determinar tipo de recolhimento
-    const tipo = 'Mensal'; // No formato atual, todos são mensais
+    const tipo = tipoRecolhimentoAtual || tipoArquivo || 'Mensal';
 
     const registro = {
       codigo,
@@ -1592,9 +1620,7 @@ export const parseDemonstrativoFGTS = (csvContent) => {
     registros.push(registro);
 
     // Acumular totais por tipo
-    if (!totaisPorTipo[tipo]) {
-      totaisPorTipo[tipo] = { quantidade: 0, base: 0, valorFGTS: 0 };
-    }
+    if (!totaisPorTipo[tipo]) totaisPorTipo[tipo] = { quantidade: 0, base: 0, valorFGTS: 0 };
     totaisPorTipo[tipo].quantidade++;
     totaisPorTipo[tipo].base += base;
     totaisPorTipo[tipo].valorFGTS += valorFGTS;
@@ -1629,7 +1655,7 @@ export const parseDemonstrativoFGTS = (csvContent) => {
       }
     }
 
-    const tipo = 'Mensal';
+    const tipo = tipoRecolhimentoAtual || tipoArquivo || 'Mensal';
     totaisPorTipo[tipo] = { quantidade: 1, base: totalBaseSistema, valorFGTS: totalValorSistema };
     if (competenciaAtual) {
       totaisPorCompetencia[competenciaAtual] = { colaboradores: 1, base: totalBaseSistema, valorFGTS: totalValorSistema };

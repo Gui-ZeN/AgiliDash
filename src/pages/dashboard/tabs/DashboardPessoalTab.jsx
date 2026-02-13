@@ -1,6 +1,5 @@
-﻿import {
+import {
   Award,
-  Banknote,
   BarChart2,
   BarChartHorizontal,
   Download,
@@ -340,7 +339,7 @@ const DashboardPessoalTab = ({
           {/* Cards de metricas vazias */}
           <VisibleItem show={isVisible('cards_metricas')}>
             <div
-              className={`grid grid-cols-1 md:grid-cols-4 gap-4 transition-all duration-500 delay-100 ${cardAnimation}`}
+              className={`grid grid-cols-1 md:grid-cols-3 gap-4 transition-all duration-500 delay-100 ${cardAnimation}`}
             >
               <div className="bg-teal-700 p-6 rounded-xl text-white shadow-md">
                 <div className="flex items-center justify-between mb-4">
@@ -351,14 +350,6 @@ const DashboardPessoalTab = ({
                 </div>
                 <p className="text-3xl font-bold">-</p>
                 <p className="text-white/70 text-sm mt-1">Colaboradores</p>
-              </div>
-
-              <div className="bg-emerald-700 p-6 rounded-xl text-white shadow-md">
-                <div className="flex items-center justify-between mb-4">
-                  <Banknote className="w-8 h-8 opacity-80" />
-                </div>
-                <p className="text-3xl font-bold">-</p>
-                <p className="text-white/70 text-sm mt-1">Folha Salarial</p>
               </div>
 
               <div className="bg-slate-700 p-6 rounded-xl text-white shadow-md">

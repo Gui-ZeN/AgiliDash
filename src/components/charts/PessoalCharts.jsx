@@ -41,7 +41,7 @@ const MESES_CURTOS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'S
 
 const FGTSCATEGORIAS = [
   { id: 'mensal', label: 'FGTS Mensal', color: COLORS.primary },
-  { id: 'decimo_terceiro', label: 'FGTS 13o', color: COLORS.warning },
+  { id: 'decimo_terceiro', label: 'FGTS 13º', color: COLORS.warning },
   { id: 'rescisao', label: 'FGTS Rescisao', color: COLORS.danger },
   { id: 'consignado', label: 'FGTS Consignado', color: COLORS.secondary },
 ];
@@ -221,13 +221,13 @@ export const FGTSPorTipoChart = ({ dados }) => {
 
   const dadosGrafico = useMemo(() => {
     const totais = obterTotaisFgtsPorCategoria(dados);
-    const categoriasComValor = FGTSCATEGORIAS.filter((categoria) => totais[categoria.id] > 0);
-    if (categoriasComValor.length === 0) return { labels: [], valores: [], cores: [] };
+    const totalGeral = Object.values(totais).reduce((acc, value) => acc + Number(value || 0), 0);
+    if (totalGeral <= 0) return { labels: [], valores: [], cores: [] };
 
     return {
-      labels: categoriasComValor.map((categoria) => categoria.label),
-      valores: categoriasComValor.map((categoria) => totais[categoria.id]),
-      cores: categoriasComValor.map((categoria) => categoria.color),
+      labels: FGTSCATEGORIAS.map((categoria) => categoria.label),
+      valores: FGTSCATEGORIAS.map((categoria) => Number(totais[categoria.id] || 0)),
+      cores: FGTSCATEGORIAS.map((categoria) => categoria.color),
     };
   }, [dados]);
 
@@ -1458,22 +1458,17 @@ export const TabelaFerias = ({ dados }) => {
 /**
  * Cards de Métricas do Setor Pessoal
  */
-export const CardsMetricasPessoal = ({ dadosFGTS, dadosINSS, dadosEmpregados, dadosSalario }) => {
+export const CardsMetricasPessoal = ({ dadosFGTS, dadosINSS, dadosEmpregados }) => {
   const metricas = useMemo(() => {
-    const folhaViaEmpregados = Array.isArray(dadosEmpregados?.empregados)
-      ? dadosEmpregados.empregados.reduce((acc, empregado) => acc + Number(empregado?.salario || 0), 0)
-      : 0;
-
     return {
       totalFGTS: dadosFGTS?.totalGeral?.valorFGTS || 0,
       totalINSS: dadosINSS?.totalGeral?.valorINSS || 0,
       totalEmpregados: dadosEmpregados?.estatisticas?.ativos || 0,
-      folhaSalarial: dadosSalario?.estatisticas?.totalSalarios || folhaViaEmpregados || 0,
     };
-  }, [dadosFGTS, dadosINSS, dadosEmpregados, dadosSalario]);
+  }, [dadosFGTS, dadosINSS, dadosEmpregados]);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div className="bg-[#0e4f6d] p-6 rounded-xl text-white shadow-md">
         <div className="flex items-center justify-between mb-4">
           <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1482,16 +1477,6 @@ export const CardsMetricasPessoal = ({ dadosFGTS, dadosINSS, dadosEmpregados, da
         </div>
         <p className="text-3xl font-bold">{metricas.totalEmpregados}</p>
         <p className="text-white/70 text-sm mt-1">Colaboradores Ativos</p>
-      </div>
-
-      <div className="bg-emerald-700 p-6 rounded-xl text-white shadow-md">
-        <div className="flex items-center justify-between mb-4">
-          <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        </div>
-        <p className="text-3xl font-bold">{formatCurrency(metricas.folhaSalarial)}</p>
-        <p className="text-white/70 text-sm mt-1">Folha Salarial</p>
       </div>
 
       <div className="bg-slate-700 p-6 rounded-xl text-white shadow-md">
