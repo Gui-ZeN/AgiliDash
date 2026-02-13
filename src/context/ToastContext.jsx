@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+﻿import { createContext, useContext, useState, useCallback } from 'react';
 import { CheckCircle, XCircle, AlertTriangle, Info, X } from 'lucide-react';
 
 const ToastContext = createContext(null);
@@ -62,7 +62,7 @@ const Toast = ({ id, type = 'info', title, message, onClose }) => {
       <button
         onClick={() => onClose(id)}
         className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors flex-shrink-0"
-        aria-label="Fechar notificação"
+        aria-label="Fechar notificAção"
       >
         <X className="w-4 h-4" />
       </button>

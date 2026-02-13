@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Componentes de Gráficos do Setor Pessoal (RH)
  * Baseados nos relatórios do Sistema Domínio
  */
@@ -1038,7 +1038,7 @@ export const EmpregadosPorSituacaoChart = ({ dados }) => {
     return (
       <div className="h-[250px] flex items-center justify-center">
         <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-          Sem dados de situação
+          Sem dados de Situação
         </p>
       </div>
     );
@@ -1173,7 +1173,7 @@ export const TabelaFerias = ({ dados }) => {
     return (
       <div className="h-[300px] flex items-center justify-center">
         <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-          Importe a Programação de Férias
+          {'Importe a Programa\u00e7\u00e3o de F\u00e9rias'}
         </p>
       </div>
     );

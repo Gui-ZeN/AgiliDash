@@ -52,7 +52,7 @@ const DashboardAdministrativoTab = ({
           <h1
             className={`text-4xl font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-[#1e293b]'}`}
           >
-            GestÃ£o Administrativa
+            Gestão Administrativa
           </h1>
           <p className="text-lg text-slate-400 font-medium">
             Contratos, despesas e documentos da empresa.
@@ -76,7 +76,7 @@ const DashboardAdministrativoTab = ({
         </div>
       </section>
 
-      {/* Cards de mÃ©tricas principais */}
+      {/* Cards de métricas principais */}
       <VisibleItem show={isVisible('cards_metricas')}>
         <div
           className={`grid grid-cols-1 md:grid-cols-4 gap-4 transition-all duration-500 delay-100 ${cardAnimation}`}
@@ -97,7 +97,7 @@ const DashboardAdministrativoTab = ({
             <p className="text-3xl font-bold">
               {formatCurrency(administrativoData.indicadores.custoOperacional)}
             </p>
-            <p className="text-white/70 text-sm mt-1">Custo Operacional/MÃªs</p>
+            <p className="text-white/70 text-sm mt-1">Custo Operacional/Mês</p>
           </div>
 
           <div className="bg-emerald-700 p-6 rounded-xl text-white shadow-md">
@@ -105,9 +105,9 @@ const DashboardAdministrativoTab = ({
               <FileCheck className="w-8 h-8 opacity-80" />
             </div>
             <p className="text-3xl font-bold">
-              {administrativoData.certidoes.filter((c) => c.status === 'VÃ¡lida').length}
+              {administrativoData.certidoes.filter((c) => c.status === 'Válida').length}
             </p>
-            <p className="text-white/70 text-sm mt-1">CertidÃµes VÃ¡lidas</p>
+            <p className="text-white/70 text-sm mt-1">Certidões Válidas</p>
           </div>
 
           <div className="bg-red-600 p-6 rounded-xl text-white shadow-md">
@@ -120,7 +120,7 @@ const DashboardAdministrativoTab = ({
         </div>
       </VisibleItem>
 
-      {/* GrÃ¡fico de Despesas Mensais */}
+      {/* Gráfico de Despesas Mensais */}
       <VisibleItem show={isVisible('despesas_mensais')}>
         <div
           className={`bg-white dark:bg-slate-800 p-8 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm transition-all duration-500 delay-200 ${cardAnimation}`}
@@ -130,7 +130,7 @@ const DashboardAdministrativoTab = ({
               <h3 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
                 Despesas Administrativas
               </h3>
-              <p className="text-sm text-slate-400">EvoluÃ§Ã£o mensal das despesas</p>
+              <p className="text-sm text-slate-400">Evolução mensal das despesas</p>
             </div>
             <div className="p-3 bg-amber-50 dark:bg-amber-900/30 rounded-xl">
               <BarChartBig className="w-6 h-6 text-amber-600 dark:text-amber-400" />
@@ -155,7 +155,7 @@ const DashboardAdministrativoTab = ({
                   >
                     Despesas por Categoria
                   </h3>
-                  <p className="text-sm text-slate-400">DistribuiÃ§Ã£o dos custos</p>
+                  <p className="text-sm text-slate-400">Distribuição dos custos</p>
                 </div>
                 <div className="p-3 bg-amber-50 dark:bg-amber-900/30 rounded-xl">
                   <PieChart className="w-6 h-6 text-amber-600 dark:text-amber-400" />
@@ -182,7 +182,7 @@ const DashboardAdministrativoTab = ({
                       <DollarSign className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                     </div>
                     <span className="font-medium text-slate-700 dark:text-slate-300">
-                      Ticket MÃ©dio de Venda
+                      Ticket Médio de Venda
                     </span>
                   </div>
                   <span className="text-xl font-bold text-blue-600 dark:text-blue-400">
@@ -210,7 +210,7 @@ const DashboardAdministrativoTab = ({
                       <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
                     </div>
                     <span className="font-medium text-slate-700 dark:text-slate-300">
-                      Taxa de InadimplÃªncia
+                      Taxa de Inadimplência
                     </span>
                   </div>
                   <span className="text-xl font-bold text-red-600 dark:text-red-400">
@@ -237,7 +237,7 @@ const DashboardAdministrativoTab = ({
         </div>
       )}
 
-      {/* Tabela de CertidÃµes */}
+      {/* Tabela de Certidões */}
       <VisibleItem show={isVisible('tabela_certidoes')}>
         <div
           className={`bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden transition-all duration-500 delay-400 ${cardAnimation}`}
@@ -245,9 +245,9 @@ const DashboardAdministrativoTab = ({
           <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
             <div>
               <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                CertidÃµes e Documentos
+                Certidões e Documentos
               </h3>
-              <p className="text-sm text-slate-400">Status das certidÃµes da empresa</p>
+              <p className="text-sm text-slate-400">Status das certidões da empresa</p>
             </div>
             <span className="px-3 py-1 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full text-sm font-medium">
               {administrativoData.certidoes.length} documentos
@@ -280,10 +280,10 @@ const DashboardAdministrativoTab = ({
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div
-                          className={`p-2 rounded-lg ${cert.status === 'VÃ¡lida' ? 'bg-green-100 dark:bg-green-900/30' : 'bg-amber-100 dark:bg-amber-900/30'}`}
+                          className={`p-2 rounded-lg ${cert.status === 'Válida' ? 'bg-green-100 dark:bg-green-900/30' : 'bg-amber-100 dark:bg-amber-900/30'}`}
                         >
                           <FileCheck
-                            className={`w-4 h-4 ${cert.status === 'VÃ¡lida' ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'}`}
+                            className={`w-4 h-4 ${cert.status === 'Válida' ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'}`}
                           />
                         </div>
                         <span className="font-semibold text-slate-700 dark:text-slate-300">
@@ -301,9 +301,9 @@ const DashboardAdministrativoTab = ({
                     </td>
                     <td className="px-6 py-4">
                       <span
-                        className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${cert.status === 'VÃ¡lida' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'}`}
+                        className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${cert.status === 'Válida' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'}`}
                       >
-                        {cert.status === 'VÃ¡lida' ? (
+                        {cert.status === 'Válida' ? (
                           <CheckCircle className="w-3 h-3" />
                         ) : (
                           <AlertTriangle className="w-3 h-3" />
@@ -362,7 +362,7 @@ const DashboardAdministrativoTab = ({
                     Aluguel: Home,
                     Utilidades: Zap,
                     Seguro: Shield,
-                    'ServiÃ§os': Wrench,
+                    'Serviços': Wrench,
                   };
                   const Icon = iconMap[contrato.tipo] || Package;
 
@@ -415,7 +415,7 @@ const DashboardAdministrativoTab = ({
         </div>
       </VisibleItem>
 
-      {/* Card de informaÃ§Ã£o */}
+      {/* Card de informação */}
       <div
         className={`bg-amber-600 p-8 rounded-xl text-white shadow-md transition-all duration-500 delay-600 ${cardAnimation}`}
       >
@@ -424,18 +424,18 @@ const DashboardAdministrativoTab = ({
             <Briefcase className="w-8 h-8" />
           </div>
           <div>
-            <h3 className="text-xl font-bold mb-3">GestÃ£o Administrativa</h3>
+            <h3 className="text-xl font-bold mb-3">Gestão Administrativa</h3>
             <p className="text-white/80 leading-relaxed">
               O setor administrativo gerencia{' '}
               <strong>{administrativoData.contratos.total} contratos</strong> com custo operacional
               mensal de{' '}
               <strong>{formatCurrency(administrativoData.indicadores.custoOperacional)}</strong>.
-              Todas as certidÃµes estÃ£o em dia, garantindo a regularidade fiscal e trabalhista da
+              Todas as certidões estão em dia, garantindo a regularidade fiscal e trabalhista da
               empresa.
               {administrativoData.contratos.vencendo30dias > 0 && (
                 <strong className="block mt-2">
-                  AtenÃ§Ã£o: {administrativoData.contratos.vencendo30dias} contrato(s) vencendo nos
-                  prÃ³ximos 30 dias.
+                  Atenção: {administrativoData.contratos.vencendo30dias} contrato(s) vencendo nos
+                  próximos 30 dias.
                 </strong>
               )}
             </p>

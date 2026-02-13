@@ -55,7 +55,7 @@ const DashboardContabilTab = ({
 
   return (
     <div className="space-y-8">
-      {/* Header da seÃ§Ã£o */}
+      {/* Header da seção */}
       <section
         className={`flex flex-col lg:flex-row items-start justify-between gap-4 transition-all duration-500 ${cardAnimation}`}
       >
@@ -67,13 +67,13 @@ const DashboardContabilTab = ({
             <span
               className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-emerald-700' : 'text-emerald-700'}`}
             >
-              Departamento ContÃ¡bil
+              Departamento Contábil
             </span>
           </div>
           <h1
             className={`text-4xl font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-[#1e293b]'}`}
           >
-            AnÃ¡lise Financeira
+            Análise Financeira
           </h1>
           <p className={`text-lg font-medium ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
             Demonstrativo de receitas, despesas, estoque e saldos.
@@ -104,13 +104,13 @@ const DashboardContabilTab = ({
         >
           <AlertCircle className={`w-5 h-5 ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`} />
           <span className={isDarkMode ? 'text-amber-300' : 'text-amber-800'}>
-            Nenhum relatÃ³rio importado. Acesse <strong>ConfiguraÃ§Ãµes</strong> para importar dados
-            do DomÃ­nio.
+            Nenhum relatório importado. Acesse <strong>Configurações</strong> para importar dados
+            do Domínio.
           </span>
         </div>
       )}
 
-      {/* Cards de mÃ©tricas - usando dados importados ou mock */}
+      {/* Cards de métricas - usando dados importados ou mock */}
       <VisibleItem show={isVisible('cards_metricas')}>
         {temDadosContabeis ? (
           <div className={`transition-all duration-500 delay-100 ${cardAnimation}`}>
@@ -144,7 +144,7 @@ const DashboardContabilTab = ({
                 <Coins className="w-8 h-8 opacity-80" />
               </div>
               <p className="text-3xl font-bold">{formatCurrency(totalLucro)}</p>
-              <p className="text-white/70 text-sm mt-1">Lucro LÃ­quido</p>
+              <p className="text-white/70 text-sm mt-1">Lucro Líquido</p>
             </div>
 
             <div className="bg-slate-700 p-6 rounded-xl text-white shadow-md">
@@ -158,7 +158,7 @@ const DashboardContabilTab = ({
         )}
       </VisibleItem>
 
-      {/* SeÃ§Ã£o 1: Resultado LÃ­quido */}
+      {/* Seção 1: Resultado Líquido */}
       {(isVisible('grafico_receita_despesa') || isVisible('card_resumo_exercicio')) && (
         <section className={`transition-all duration-500 delay-200 ${cardAnimation}`}>
           <div className="flex items-center gap-3 mb-6">
@@ -170,13 +170,13 @@ const DashboardContabilTab = ({
               />
             </div>
             <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-              Resultado LÃ­quido
+              Resultado Líquido
             </h2>
           </div>
 
-          {/* Grid: GrÃ¡fico de Barras + Cards Resumo */}
+          {/* Grid: Gráfico de Barras + Cards Resumo */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* GrÃ¡fico de Barras - Receita x Despesa */}
+            {/* Gráfico de Barras - Receita x Despesa */}
             <VisibleItem show={isVisible('grafico_receita_despesa')}>
               <div
                 className={`lg:col-span-2 p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
@@ -189,7 +189,7 @@ const DashboardContabilTab = ({
                       Receita x Despesas/Custo
                     </h3>
                     <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                      VariaÃ§Ã£o comparativa
+                      Variação comparativa
                     </p>
                   </div>
                   <ButtonGroup
@@ -219,7 +219,7 @@ const DashboardContabilTab = ({
                 <h3
                   className={`text-lg font-bold mb-6 pb-4 border-b ${isDarkMode ? 'text-white border-slate-700' : 'text-slate-800 border-slate-100'}`}
                 >
-                  Resumo do ExercÃ­cio
+                  Resumo do Exercício
                 </h3>
 
                 <div className="space-y-4">
@@ -271,7 +271,7 @@ const DashboardContabilTab = ({
                       <p
                         className={`text-sm font-medium ${isDarkMode ? 'text-teal-500' : 'text-[#0e4f6d]'}`}
                       >
-                        Lucro LÃ­quido
+                        Lucro Líquido
                       </p>
                     </div>
                     <p
@@ -302,7 +302,7 @@ const DashboardContabilTab = ({
               Detalhamento Mensal
             </h3>
             <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-              MÃªs ReferÃªncia | Entradas | SaÃ­das/Custos | Lucro LÃ­quido
+              Mês Referência | Entradas | Saídas/Custos | Lucro Líquido
             </p>
           </div>
           {temDadosContabeis ? (
@@ -315,7 +315,7 @@ const DashboardContabilTab = ({
                     <th
                       className={`px-6 py-4 text-left text-xs font-bold uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
                     >
-                      MÃªs
+                      Mês
                     </th>
                     <th
                       className={`px-6 py-4 text-right text-xs font-bold uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
@@ -325,7 +325,7 @@ const DashboardContabilTab = ({
                     <th
                       className={`px-6 py-4 text-right text-xs font-bold uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
                     >
-                      SaÃ­das/Custos
+                      Saídas/Custos
                     </th>
                     <th
                       className={`px-6 py-4 text-right text-xs font-bold uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
@@ -371,7 +371,7 @@ const DashboardContabilTab = ({
         </div>
       </VisibleItem>
 
-      {/* GrÃ¡fico de VariaÃ§Ã£o do Lucro */}
+      {/* Gráfico de Variação do Lucro */}
       <VisibleItem show={isVisible('grafico_variacao_lucro')}>
         <div
           className={`p-6 rounded-xl shadow-sm transition-all duration-500 delay-400 ${cardAnimation} ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
@@ -379,7 +379,7 @@ const DashboardContabilTab = ({
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                VariaÃ§Ã£o do Lucro
+                Variação do Lucro
               </h3>
               <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                 Lucro antes do IRPJ e CSLL
@@ -413,7 +413,7 @@ const DashboardContabilTab = ({
         </div>
       </VisibleItem>
 
-      {/* SeÃ§Ã£o 2: VariaÃ§Ã£o de Estoque e Saldos BancÃ¡rios */}
+      {/* Seção 2: Variação de Estoque e Saldos Bancários */}
       {(isVisible('grafico_receita_custo_estoque') ||
         isVisible('grafico_movimentacao_bancaria')) && (
         <section className={`transition-all duration-500 delay-500 ${cardAnimation}`}>
@@ -422,12 +422,12 @@ const DashboardContabilTab = ({
               <Wallet className={`w-5 h-5 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
             </div>
             <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-              VariaÃ§Ã£o de Estoque e Saldos BancÃ¡rios
+              Variação de Estoque e Saldos Bancários
             </h2>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* GrÃ¡fico de Receita x Custo x Estoque */}
+            {/* Gráfico de Receita x Custo x Estoque */}
             <VisibleItem show={isVisible('grafico_receita_custo_estoque')}>
               <div
                 className={`p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
@@ -440,7 +440,7 @@ const DashboardContabilTab = ({
                       Receita x Custo x Estoque
                     </h3>
                     <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                      Ãšltimos 12 meses
+                      Últimos 12 meses
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
@@ -469,7 +469,7 @@ const DashboardContabilTab = ({
               </div>
             </VisibleItem>
 
-            {/* GrÃ¡fico de MovimentaÃ§Ã£o BancÃ¡ria */}
+            {/* Gráfico de Movimentação Bancária */}
             <VisibleItem show={isVisible('grafico_movimentacao_bancaria')}>
               <div
                 className={`p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
@@ -479,7 +479,7 @@ const DashboardContabilTab = ({
                     <h3
                       className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
                     >
-                      MovimentaÃ§Ã£o BancÃ¡ria
+                      Movimentação Bancária
                     </h3>
                     <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                       Saldo em Bancos Conta Movimento
@@ -510,7 +510,7 @@ const DashboardContabilTab = ({
         </section>
       )}
 
-      {/* GrÃ¡fico de AplicaÃ§Ãµes Financeiras */}
+      {/* Gráfico de Aplicações Financeiras */}
       <VisibleItem show={isVisible('grafico_aplicacoes_financeiras')}>
         <div
           className={`p-6 rounded-xl shadow-sm transition-all duration-500 delay-600 ${cardAnimation} ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
@@ -518,10 +518,10 @@ const DashboardContabilTab = ({
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                AplicaÃ§Ãµes Financeiras
+                Aplicações Financeiras
               </h3>
               <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                AplicaÃ§Ãµes Financeiras de Liquidez Imediata
+                Aplicações Financeiras de Liquidez Imediata
               </p>
             </div>
             <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-[#58a3a4]/30' : 'bg-[#58a3a4]/10'}`}>
@@ -542,7 +542,7 @@ const DashboardContabilTab = ({
         </div>
       </VisibleItem>
 
-      {/* Card de anÃ¡lise */}
+      {/* Card de análise */}
       <VisibleItem show={isVisible('analise_contabil')}>
         <div
           className={`bg-[#0e4f6d] p-8 rounded-xl text-white shadow-md transition-all duration-500 delay-700 ${cardAnimation}`}
@@ -552,20 +552,20 @@ const DashboardContabilTab = ({
               <Award className="w-8 h-8" />
             </div>
             <div>
-              <h3 className="text-xl font-bold mb-3">AnÃ¡lise de Performance 2025</h3>
+              <h3 className="text-xl font-bold mb-3">Análise de Performance 2025</h3>
               <p className="text-white/80 leading-relaxed">
                 {temDadosContabeis ? (
                   <>
-                    Dados importados do Sistema DomÃ­nio. Os relatÃ³rios mostram a evoluÃ§Ã£o
-                    financeira da empresa ao longo do exercÃ­cio, permitindo acompanhar receitas,
-                    despesas, movimentaÃ§Ã£o bancÃ¡ria e aplicaÃ§Ãµes financeiras mÃªs a mÃªs.
+                    Dados importados do Sistema Domínio. Os relatórios mostram a evolução
+                    financeira da empresa ao longo do exercício, permitindo acompanhar receitas,
+                    despesas, movimentação bancária e aplicações financeiras mês a mês.
                   </>
                 ) : (
                   <>
-                    O exercÃ­cio de 2025 demonstra crescimento de receita com estabilidade nos
-                    primeiros trimestres. Para visualizar dados reais, importe os relatÃ³rios do
-                    Sistema DomÃ­nio (Balancete, AnÃ¡lise Horizontal, DRE) na Ã¡rea de
-                    ConfiguraÃ§Ãµes.
+                    O exercício de 2025 demonstra crescimento de receita com estabilidade nos
+                    primeiros trimestres. Para visualizar dados reais, importe os relatórios do
+                    Sistema Domínio (Balancete, Análise Horizontal, DRE) na área de
+                    Configurações.
                   </>
                 )}
               </p>

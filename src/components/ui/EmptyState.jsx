@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+﻿import { Link } from 'react-router-dom';
 import { FileQuestion, Upload, Database, Users, BarChart3, FileSpreadsheet } from 'lucide-react';
 
 /**
@@ -89,7 +89,7 @@ export const TableEmptyState = ({ tableName }) => (
   <EmptyState
     icon="spreadsheet"
     title="Nenhum registro encontrado"
-    description={`A tabela ${tableName} não possui dados para exibir.`}
+    description={`A tabela ${tableName} Não possui dados para exibir.`}
   />
 );
 
@@ -100,20 +100,20 @@ export const ListEmptyState = ({ itemType = 'itens', onAdd }) => (
   <EmptyState
     icon="users"
     title={`Nenhum ${itemType} cadastrado`}
-    description={`Clique no botão abaixo para adicionar o primeiro ${itemType}.`}
+    description={`Clique no Botão abaixo para adicionar o primeiro ${itemType}.`}
     actionLabel={`Adicionar ${itemType}`}
     onAction={onAdd}
   />
 );
 
 /**
- * Empty state para importação de dados
+ * Empty state para importAção de dados
  */
 export const ImportEmptyState = ({ dataType }) => (
   <EmptyState
     icon="upload"
-    title="Dados não importados"
-    description={`Importe o arquivo ${dataType} para visualizar os dados nesta seção.`}
+    title="Dados Não importados"
+    description={`Importe o arquivo ${dataType} para visualizar os dados nesta Seção.`}
     actionLabel="Importar Dados"
     actionLink="/configuracoes"
   />

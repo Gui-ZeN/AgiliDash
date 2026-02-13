@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Componentes de Gráficos do Setor Contábil
  * Baseados nos relatórios do Sistema Domínio
  */
@@ -171,7 +171,7 @@ export const ComparativoReceitaDespesaChart = ({ dados }) => {
 
   // Usar useMemo para evitar recriação de arrays em cada render
   // Prioriza receitasMensais/despesasMensais (soma de todos positivos/negativos)
-  // Fallback para receitaBruta e composição oficial de Despesas/Custos se não disponível
+  // Fallback para receitaBruta e composição oficial de Despesas/Custos se Não disponível
   const meses = useMemo(() => dados?.meses || DEFAULT_MESES, [dados?.meses]);
   const receitas = useMemo(() => getReceitasSeries(dados), [dados]);
   const despesas = useMemo(() => getDespesasSeries(dados, meses.length), [dados, meses.length]);

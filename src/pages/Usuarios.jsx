@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+﻿import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowLeft, Users, Plus, Search, Edit2, Trash2, Shield, Eye,
@@ -508,7 +508,7 @@ const Usuarios = () => {
               </div>
               <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">Excluir Usuário</h3>
               <p className="text-slate-500 dark:text-slate-400 mb-6">
-                Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.
+                Tem certeza que deseja excluir este usuário? Esta Ação Não pode ser desfeita.
               </p>
               <div className="flex gap-3">
                 <button

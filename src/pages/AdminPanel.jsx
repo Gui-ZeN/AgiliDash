@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Upload,
@@ -544,7 +544,7 @@ const AdminPanel = () => {
                 Sobre a Importação de Dados
               </h3>
               <p className="text-slate-500 leading-relaxed mb-4">
-                O sistema suporta importação de arquivos CSV para os departamentos Contábil,
+                O sistema suporta importAção de arquivos CSV para os departamentos Contábil,
                 Fiscal e Pessoal. Os dados serão processados e armazenados no Firebase Firestore,
                 permitindo visualização em tempo real no dashboard do cliente.
               </p>
@@ -697,7 +697,7 @@ const AdminPanel = () => {
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-slate-800">Confirmar Exclusão</h2>
-                  <p className="text-sm text-slate-500">Esta ação não pode ser desfeita.</p>
+                  <p className="text-sm text-slate-500">Esta Ação Não pode ser desfeita.</p>
                 </div>
               </div>
 

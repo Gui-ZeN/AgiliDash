@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Mail, ArrowRight, Building2, Shield, Eye, EyeOff, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -37,7 +37,7 @@ const Login = () => {
     <div className="min-h-screen bg-slate-100 flex">
       {/* Lado esquerdo - Branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-[#0e4f6d] relative overflow-hidden">
-        {/* Padrão geométrico sutil */}
+        {/* padrão geométrico sutil */}
         <div className="absolute inset-0">
           <div className="absolute top-0 left-0 w-full h-full opacity-5">
             <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
@@ -107,7 +107,7 @@ const Login = () => {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-8 relative overflow-hidden bg-slate-50">
         {/* Elementos decorativos de fundo */}
         <div className="absolute inset-0 pointer-events-none">
-          {/* Padrão de pontos sutis */}
+          {/* padrão de pontos sutis */}
           <div className="absolute inset-0 opacity-[0.03]">
             <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
               <defs>

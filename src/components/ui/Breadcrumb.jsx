@@ -1,8 +1,8 @@
-import { ChevronRight, Home, FolderTree, Building, Building2 } from 'lucide-react';
+﻿import { ChevronRight, Home, FolderTree, Building, Building2 } from 'lucide-react';
 import { useEmpresa } from '../../context/EmpresaContext';
 
 /**
- * Componente Breadcrumb - Navegação hierárquica
+ * Componente Breadcrumb - navegação hierárquica
  * Mostra: Home > Grupo > Empresa > CNPJ
  */
 const Breadcrumb = ({ className = '' }) => {

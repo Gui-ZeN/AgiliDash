@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Componentes de Skeleton Loading
  * Placeholders animados enquanto dados carregam
  */

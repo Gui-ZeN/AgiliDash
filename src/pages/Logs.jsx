@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+﻿import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowLeft, Activity, Search, Filter, Calendar, Download, Trash2,
@@ -85,21 +85,21 @@ const Logs = () => {
   const typeLabels = {
     [ActivityTypes.LOGIN]: 'Login',
     [ActivityTypes.LOGOUT]: 'Logout',
-    [ActivityTypes.VIEW]: 'Visualização',
-    [ActivityTypes.CREATE]: 'Criação',
-    [ActivityTypes.UPDATE]: 'Atualização',
+    [ActivityTypes.VIEW]: 'VisualizaÇão',
+    [ActivityTypes.CREATE]: 'CriAção',
+    [ActivityTypes.UPDATE]: 'AtualizAção',
     [ActivityTypes.DELETE]: 'Exclusão',
-    [ActivityTypes.EXPORT]: 'Exportação',
-    [ActivityTypes.CONFIG_CHANGE]: 'Configuração',
+    [ActivityTypes.EXPORT]: 'ExportAção',
+    [ActivityTypes.CONFIG_CHANGE]: 'ConfiguraÇão',
     [ActivityTypes.PERMISSION_CHANGE]: 'Permissão'
   };
 
   const categoryLabels = {
-    [ActivityCategories.AUTH]: 'Autenticação',
-    [ActivityCategories.NAVIGATION]: 'Navegação',
+    [ActivityCategories.AUTH]: 'AutenticAção',
+    [ActivityCategories.NAVIGATION]: 'NavegAção',
     [ActivityCategories.DATA]: 'Dados',
-    [ActivityCategories.CONFIG]: 'Configuração',
-    [ActivityCategories.EXPORT]: 'Exportação'
+    [ActivityCategories.CONFIG]: 'ConfiguraÇão',
+    [ActivityCategories.EXPORT]: 'ExportAção'
   };
 
   return (
@@ -264,7 +264,7 @@ const Logs = () => {
               </div>
               <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">Limpar Logs</h3>
               <p className="text-slate-500 dark:text-slate-400 mb-6">
-                Tem certeza que deseja limpar todos os logs? Esta ação não pode ser desfeita.
+                Tem certeza que deseja limpar todos os logs? Esta Ação Não pode ser desfeita.
               </p>
               <div className="flex gap-3">
                 <button

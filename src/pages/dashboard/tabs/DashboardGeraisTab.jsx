@@ -188,7 +188,7 @@ const DashboardGeraisTab = ({
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-20 h-20 rounded-xl bg-[#0e4f6d] hover:bg-[#0c4058] flex items-center justify-center shadow-md transition-colors cursor-pointer group"
-                  title={responsavelInfo?.whatsapp ? 'Abrir WhatsApp' : 'WhatsApp não cadastrado'}
+                  title={responsavelInfo?.whatsapp ? 'Abrir WhatsApp' : 'WhatsApp Não cadastrado'}
                 >
                   <User className="w-10 h-10 text-white group-hover:scale-110 transition-transform" />
                 </a>

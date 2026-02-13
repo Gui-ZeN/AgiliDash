@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Componente Card reutilizável
  * Design premium com estilos consistentes e suporte a dark mode
  */

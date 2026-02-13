@@ -1,8 +1,8 @@
-import { useState, useRef, useEffect } from 'react';
+﻿import { useState, useRef, useEffect } from 'react';
 import { Download, FileText, FileSpreadsheet, ChevronDown, Loader2 } from 'lucide-react';
 
 /**
- * Componente ExportButton - Botão de exportação PDF/Excel
+ * Componente ExportButton - Botão de exportaÇão PDF/Excel
  */
 const ExportButton = ({
   data = [],

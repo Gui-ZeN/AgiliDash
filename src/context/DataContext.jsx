@@ -70,7 +70,7 @@ const initialUsuarios = [
   },
 ];
 
-// Estrutura inicial para dados contÃ¡beis
+// Estrutura inicial para dados contábeis
 const initialDadosContabeis = {
   // cnpjId -> { balancetes: [], analiseHorizontal: null, dreComparativa: null, dreMensal: null }
 };
@@ -104,7 +104,7 @@ export const DataProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : initialUsuarios;
   });
 
-  // Estado para dados contÃ¡beis por CNPJ
+  // Estado para dados contábeis por CNPJ
   const [dadosContabeis, setDadosContabeis] = useState(() => {
     const saved = localStorage.getItem('agili_dados_contabeis');
     return saved ? JSON.parse(saved) : initialDadosContabeis;
@@ -238,7 +238,7 @@ export const DataProvider = ({ children }) => {
           dadosParsed = parseDREMensal(csvContent);
           break;
         default:
-          throw new Error(`Tipo de relatÃ³rio desconhecido: ${tipoRelatorio}`);
+          throw new Error(`Tipo de relatório desconhecido: ${tipoRelatorio}`);
       }
 
       setDadosContabeis((prev) => {
@@ -251,7 +251,7 @@ export const DataProvider = ({ children }) => {
         };
 
         if (tipoRelatorio === 'balancete') {
-          // Adicionar ao array de balancetes (mÃ¡ximo 12 para sÃ©rie mensal)
+          // Adicionar ao array de balancetes (máximo 12 para série mensal)
           const newBalancetes = [...cnpjData.balancetes, dadosParsed].slice(-12);
           return {
             ...prev,
@@ -262,24 +262,24 @@ export const DataProvider = ({ children }) => {
             },
           };
         } else if (tipoRelatorio === 'analiseHorizontal') {
-          // MESCLAR dados por competÃªncia - suporta mÃºltiplos anos
+          // MESCLAR dados por competência - suporta múltiplos anos
           const existingData = cnpjData.analiseHorizontal || {};
           const existingCompetencias = existingData.dadosPorCompetencia || {};
 
-          // Mesclar competÃªncias existentes com novas
+          // Mesclar competências existentes com novas
           const mergedCompetencias = {
             ...existingCompetencias,
             ...dadosParsed.dadosPorCompetencia,
           };
 
-          // Ordenar competÃªncias cronologicamente
+          // Ordenar competências cronologicamente
           const competenciasOrdenadas = Object.keys(mergedCompetencias).sort((a, b) => {
             const [mesA, anoA] = a.split('/').map(Number);
             const [mesB, anoB] = b.split('/').map(Number);
             return anoA !== anoB ? anoA - anoB : mesA - mesB;
           });
 
-          // Reconstruir arrays ordenados para grÃ¡ficos
+          // Reconstruir arrays ordenados para gráficos
           const mesesLabels = competenciasOrdenadas.map((c) => {
             const dados = mergedCompetencias[c];
             return `${dados.mesNome}/${String(dados.ano).slice(-2)}`;
@@ -323,7 +323,7 @@ export const DataProvider = ({ children }) => {
 
       return { success: true, dados: dadosParsed };
     } catch (error) {
-      console.error('Erro ao importar relatÃ³rio:', error);
+      console.error('Erro ao importar relatório:', error);
       return { success: false, error: error.message };
     }
   };
@@ -554,7 +554,7 @@ export const DataProvider = ({ children }) => {
           dadosParsed = parseResumoPorAcumulador(csvContent);
           break;
         default:
-          throw new Error(`Tipo de relatÃ³rio fiscal desconhecido: ${tipoRelatorio}`);
+          throw new Error(`Tipo de relatório fiscal desconhecido: ${tipoRelatorio}`);
       }
 
       // Para CSLL e IRPJ, usar trimestre selecionado manualmente
@@ -573,7 +573,7 @@ export const DataProvider = ({ children }) => {
           resumoAcumulador: null,
         };
 
-        // CSLL e IRPJ sÃ£o trimestrais, guardar por nÃºmero do trimestre
+        // CSLL e IRPJ são trimestrais, guardar por número do trimestre
         if (tipoRelatorio === 'csll') {
           // Substituir se ja existir trimestre igual, senao adicionar
           const trimNum = dadosParsed.trimestreNumero || cnpjData.csll.length + 1;
@@ -668,7 +668,7 @@ export const DataProvider = ({ children }) => {
 
       return { success: true, dados: dadosParsed };
     } catch (error) {
-      console.error('Erro ao importar relatÃ³rio fiscal:', error);
+      console.error('Erro ao importar relatório fiscal:', error);
       return { success: false, error: error.message };
     }
   };
@@ -707,7 +707,7 @@ export const DataProvider = ({ children }) => {
           dadosParsed = parseProgramacaoFerias(csvContent);
           break;
         default:
-          throw new Error(`Tipo de relatÃ³rio pessoal desconhecido: ${tipoRelatorio}`);
+          throw new Error(`Tipo de relatório pessoal desconhecido: ${tipoRelatorio}`);
       }
 
       setDadosPessoal((prev) => {
@@ -730,7 +730,7 @@ export const DataProvider = ({ children }) => {
 
       return { success: true, dados: dadosParsed };
     } catch (error) {
-      console.error('Erro ao importar relatÃ³rio pessoal:', error);
+      console.error('Erro ao importar relatório pessoal:', error);
       return { success: false, error: error.message };
     }
   };

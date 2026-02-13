@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Componentes de Gráficos do Setor Fiscal
  * Baseados nos relatórios do Sistema Domínio
  */
@@ -370,7 +370,7 @@ export const FaturamentoPorTrimestreChart = ({ dados, trimestre = null, year }) 
 
 /**
  * 3. Tabela de Principais Acumuladores
- * Mostra descrição, percentual e valor das principais categorias
+ * Mostra Descrição, percentual e valor das principais categorias
  */
 export const TabelaAcumuladores = ({ dados, tipo = 'entradas' }) => {
   const { isDarkMode } = useTheme();
@@ -813,7 +813,7 @@ export const ImpostosConsolidadosChart = ({ dadosResumo, dadosCsll, dadosIrpj })
     };
   }, [dadosGrafico, isDarkMode]);
 
-  // Se não há dados, mostrar mensagem
+  // Se Não há dados, mostrar mensagem
   if (dadosGrafico.valores.length === 0) {
     return (
       <div className="h-[400px] flex items-center justify-center">
@@ -1163,7 +1163,7 @@ export const Tabela380 = ({ dados, dadosMensais }) => {
 
     return dadosMensais.movimentacao2025.map(m => {
       // Simplificação: usando saídas como venda e entradas como compra
-      const compra = m.entradas * 0.1; // Estimativa: 10% das entradas é comercialização
+      const compra = m.entradas * 0.1; // Estimativa: 10% das entradas e comercializacao
       const venda = m.saidas;
       const esperado = compra * 1.25;
       const receitaComplementar = Math.max(0, esperado - venda);

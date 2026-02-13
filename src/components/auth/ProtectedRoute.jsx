@@ -1,21 +1,21 @@
-import { Navigate, useLocation } from 'react-router-dom';
+﻿import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 /**
  * Rota Protegida
- * Requer autenticação para acessar
+ * Requer autenticaÇão para acessar
  * Opcionalmente requer perfil Admin
  */
 const ProtectedRoute = ({ children, requireAdmin = false }) => {
   const { isAuthenticated, isAdmin, user } = useAuth();
   const location = useLocation();
 
-  // Se não estiver autenticado, redireciona para login
+  // Se Não estiver autenticado, redireciona para login
   if (!isAuthenticated) {
     return <Navigate to="/" state={{ from: location }} replace />;
   }
 
-  // Se requer admin e não é admin, mostra mensagem de acesso negado
+  // Se requer admin e Não é admin, mostra mensagem de acesso negado
   if (requireAdmin && !isAdmin) {
     return (
       <div className="min-h-screen bg-slate-100 dark:bg-slate-900 flex items-center justify-center p-4">

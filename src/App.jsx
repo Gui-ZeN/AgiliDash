@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+﻿import { Routes, Route, Navigate } from 'react-router-dom';
 import { EmpresaProvider } from './context/EmpresaContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { DataProvider } from './context/DataContext';
@@ -14,7 +14,7 @@ import Logs from './pages/Logs';
  * App Principal
  * Rotas:
  * - / = Login (público)
- * - /dashboard = Dashboard com 5 abas (requer autenticação)
+ * - /dashboard = Dashboard com 5 abas (requer autenticaÇão)
  * - /configuracoes = Painel Admin (requer Admin)
  * - /logs = Logs de atividade (requer Admin)
  */
@@ -29,7 +29,7 @@ function App() {
               {/* Login - Público */}
               <Route path="/" element={<Login />} />
 
-              {/* Dashboard - Requer autenticação */}
+              {/* Dashboard - Requer autenticaÇão */}
               <Route
                 path="/dashboard"
                 element={

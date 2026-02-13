@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Parser para relatórios do Sistema Domínio
  * Suporta: Balancete, Análise Horizontal, DRE Comparativa, DRE Mensal
  */
@@ -274,7 +274,7 @@ export const parseAnaliseHorizontal = (csvContent) => {
             dados[cat.key][m] = valor;
           }
         }
-        break; // Encontrou a categoria, não precisa continuar
+        break; // Encontrou a categoria, Não precisa continuar
       }
     }
   }
@@ -532,7 +532,7 @@ export const parseRelatorioContabil = (csvContent) => {
     case 'dreMensal':
       return { tipo, dados: parseDREMensal(csvContent) };
     default:
-      throw new Error('Tipo de relatório não reconhecido');
+      throw new Error('Tipo de Relatório Não reconhecido');
   }
 };
 
@@ -578,7 +578,7 @@ export const parseContribuicaoSocial = (csvContent) => {
   let trimestre = '';
   let dados = {};
 
-  // Função auxiliar para encontrar o último valor numérico em uma linha
+  // Função auxiliar para encontrar o Último valor numérico em uma linha
   const findLastValue = (cols) => {
     // Procura de trás pra frente o primeiro valor que parece número brasileiro
     for (let i = cols.length - 1; i >= 0; i--) {
@@ -662,7 +662,7 @@ export const parseImpostoRenda = (csvContent) => {
   let trimestre = '';
   let dados = {};
 
-  // Função auxiliar para encontrar o último valor numérico em uma linha
+  // Função auxiliar para encontrar o Último valor numérico em uma linha
   const findLastValue = (cols) => {
     for (let i = cols.length - 1; i >= 0; i--) {
       const val = cols[i].trim();
@@ -822,7 +822,7 @@ export const parseDemonstrativoFinanceiro = (csvContent) => {
 
 /**
  * Parser para Demonstrativo Mensal (Entradas e Saídas)
- * Extrai movimentação mensal detalhada
+ * Extrai Movimentação mensal detalhada
  */
 export const parseDemonstrativoMensal = (csvContent) => {
   const lines = csvContent.split('\n');
@@ -841,7 +841,7 @@ export const parseDemonstrativoMensal = (csvContent) => {
       empresaInfo.cnpj = cols.find(c => c.match(/\d{2}\.\d{3}\.\d{3}|\d+E\+\d+/)) || '';
     }
 
-    // Identificar linhas de movimentação (começam com mês)
+    // Identificar linhas de Movimentação (começam com mês)
     const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
                    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
@@ -939,7 +939,7 @@ export const parseResumoImpostos = (csvContent) => {
 
   // Lista de impostos conhecidos (padrões flexíveis, mais específicos primeiro)
   const impostosPatterns = [
-    { pattern: /SUBSTITUI/i, nome: 'Substituição Tributária', tipo: 'lancado' },
+    { pattern: /SUBSTITUI/i, nome: 'Substitui\u00e7\u00e3o Tribut\u00e1ria', tipo: 'lancado' },
     { pattern: /ISS.*RETIDO/i, nome: 'ISS Retido', tipo: 'lancado' },
     { pattern: /INSS.*RETIDO/i, nome: 'INSS Retido', tipo: 'lancado' },
     { pattern: /CONTRIBUI.*RETID/i, nome: 'Contribuições Retidas', tipo: 'lancado' },
@@ -967,7 +967,7 @@ export const parseResumoImpostos = (csvContent) => {
     const line = lines[i];
     const cols = line.split(';').map(c => c.trim());
 
-    // Detectar seção do relatório
+    // Detectar Seção do Relatório
     if (/RESUMO DOS IMPOSTOS LAN/i.test(line)) {
       secaoAtual = 'lancados';
       continue;
@@ -1140,7 +1140,7 @@ export const parseResumoPorAcumulador = (csvContent) => {
   const saidas = [];
   let secaoAtual = null; // 'ENTRADAS' ou 'SAIDAS'
 
-  // Função para verificar se é seção SAIDAS (com ou sem acento, qualquer encoding)
+  // Função para verificar se é Seção SAIDAS (com ou sem acento, qualquer encoding)
   const isSaidas = (texto) => {
     if (!texto) return false;
     const t = texto.toUpperCase().trim();
@@ -1150,7 +1150,7 @@ export const parseResumoPorAcumulador = (csvContent) => {
            (t.startsWith('SA') && t.endsWith('DAS') && t.length <= 7);
   };
 
-  // Função para verificar se é seção ENTRADAS
+  // Função para verificar se é Seção ENTRADAS
   const isEntradas = (texto) => {
     if (!texto) return false;
     const t = texto.toUpperCase().trim();
@@ -1181,7 +1181,7 @@ export const parseResumoPorAcumulador = (csvContent) => {
         : (periodoInicio || periodoFim || '');
     }
 
-    // Identificar seção
+    // Identificar Seção
     if (isEntradas(cols[0])) {
       secaoAtual = 'ENTRADAS';
       continue;
@@ -1197,7 +1197,7 @@ export const parseResumoPorAcumulador = (csvContent) => {
     // Processar linhas de dados
     if (secaoAtual && cols[0] && /^\d+$/.test(cols[0])) {
       const codigo = parseInt(cols[0]);
-      // Encontrar descrição (geralmente na coluna 2 ou 3)
+      // Encontrar Descrição (geralmente na coluna 2 ou 3)
       let descricao = '';
       let vlrContabil = 0;
       let baseIcms = 0;
@@ -1208,7 +1208,7 @@ export const parseResumoPorAcumulador = (csvContent) => {
       let bcIcmsSt = 0;
       let vlrIcmsSt = 0;
 
-      // Buscar descrição (texto com mais de 5 caracteres)
+      // Buscar Descrição (texto com mais de 5 caracteres)
       for (let j = 1; j < Math.min(cols.length, 10); j++) {
         if (cols[j] && cols[j].length > 5 && isNaN(parseFloat(cols[j].replace(/\./g, '').replace(',', '.')))) {
           descricao = cols[j];
@@ -1216,7 +1216,7 @@ export const parseResumoPorAcumulador = (csvContent) => {
         }
       }
 
-      // Buscar valores numéricos - COMEÇAR A PARTIR DA COLUNA 5 para pular código e descrição
+      // Buscar valores numéricos - COMEÇAR A PARTIR DA COLUNA 5 para pular Código e Descrição
       // O formato do CSV é: Código;;Descrição;;;;;;Vlr Contábil;;;;;;;Base ICMS;;etc
       const valores = [];
       for (let j = 5; j < cols.length; j++) {
@@ -1286,19 +1286,19 @@ export const parseResumoPorAcumulador = (csvContent) => {
     );
   };
 
-  // Compras para comercializa??o (unificando varia??es de acentua??o)
+  // Compras para comercializacao (unificando variacoes de acentuacao)
   const itensCompraComercializacao = entradas.filter((e) =>
     normalizarDescricao(e.descricao).includes('COMPRA P/ COMERCIALIZA')
   );
   const compraComercializacao = itensCompraComercializacao.reduce((acc, e) => acc + e.vlrContabil, 0);
 
-  // Compras para industrializa??o (inclui ST)
+  // Compras para industrializacao (inclui ST)
   const itensCompraIndustrializacao = entradas.filter((e) =>
     normalizarDescricao(e.descricao).includes('COMPRA P/ INDUSTRIALIZA')
   );
   const compraIndustrializacao = itensCompraIndustrializacao.reduce((acc, e) => acc + e.vlrContabil, 0);
 
-  // Servi?os relacionados
+  // Servicos relacionados
   const itensServicos = entradas.filter((e) => isServicoRelacionado(e.descricao));
   const servicos = itensServicos.reduce((acc, e) => acc + e.vlrContabil, 0);
 
@@ -1434,7 +1434,7 @@ export const parseRelatorioFiscal = (csvContent) => {
     case 'resumoAcumulador':
       return { tipo, dados: parseResumoPorAcumulador(csvContent) };
     default:
-      throw new Error('Tipo de relatório fiscal não reconhecido');
+      throw new Error('Tipo de Relatório fiscal Não reconhecido');
   }
 };
 
@@ -1514,7 +1514,7 @@ export const parseDemonstrativoFGTS = (csvContent) => {
     }
 
     // Identificar linhas de dados de funcionários
-    // Formato: ;código;;códigoEsocial;;nome;;;;;;base;;valor;;;baseEsocial;;valorEsocial;;;;situação
+    // Formato: ;Código;;CódigoEsocial;;nome;;;;;;base;;valor;;;baseEsocial;;valorEsocial;;;;Situação
     // Critério: deve ter um código numérico e um nome de pessoa
     let codigo = null;
     let nome = null;
@@ -1530,20 +1530,20 @@ export const parseDemonstrativoFGTS = (csvContent) => {
       }
     }
 
-    // Se não tem código, não é linha de dados
+    // Se Não tem Código, Não é linha de dados
     if (codigo === null) continue;
 
     // Procurar nome (texto longo com espaços, provavelmente nome de pessoa)
     for (let j = 0; j < cols.length; j++) {
       const col = cols[j];
       if (col && col.length > 10 && /[A-Za-z]/.test(col) && col.includes(' ') &&
-          !/sistema|esocial|total|base|valor|enviado|pendente|página|emissão/i.test(col)) {
+          !/sistema|esocial|total|base|valor|enviado|pendente|p\u00e1gina|emiss\u00e3o/i.test(col)) {
         nome = col;
         break;
       }
     }
 
-    // Se não tem nome, não é linha de dados
+    // Se Não tem nome, Não é linha de dados
     if (!nome) continue;
 
     // Procurar valores monetários (formato 0,00 ou 1.234,56)
@@ -1564,7 +1564,7 @@ export const parseDemonstrativoFGTS = (csvContent) => {
       valorFGTS = valoresMonetarios[0];
     }
 
-    // Procurar situação (Enviado, Pendente, etc)
+    // Procurar Situação (Enviado, Pendente, etc)
     for (let j = cols.length - 1; j >= 0; j--) {
       const col = cols[j].toLowerCase();
       if (col === 'enviado' || col === 'pendente' || col === 'erro') {
@@ -1627,7 +1627,7 @@ export const parseDemonstrativoFGTS = (csvContent) => {
     totaisPorAno[ano].valorFGTS += valorFGTS;
   }
 
-  // Se não encontrou registros mas tem totalizador, usar os valores do totalizador
+  // Se Não encontrou registros mas tem totalizador, usar os valores do totalizador
   if (registros.length === 0 && (totalBaseSistema > 0 || totalValorSistema > 0)) {
     let ano = new Date().getFullYear();
     let mes = new Date().getMonth() + 1;
@@ -1657,7 +1657,7 @@ export const parseDemonstrativoFGTS = (csvContent) => {
   // Últimos 3 meses para gráfico
   const ultimos3Meses = competencias.slice(-3);
 
-  // Total geral (usar totalizador se disponível, senão somar registros)
+  // Total geral (usar totalizador se disponível, seNão somar registros)
   const totalGeral = {
     base: totalBaseSistema > 0 ? totalBaseSistema : registros.reduce((acc, r) => acc + r.base, 0),
     valorFGTS: totalValorSistema > 0 ? totalValorSistema : registros.reduce((acc, r) => acc + r.valorFGTS, 0)
@@ -1794,20 +1794,20 @@ export const parseFolhaINSS = (csvContent) => {
       }
     }
 
-    // Se não tem código, não é linha de dados de funcionário
+    // Se Não tem Código, Não é linha de dados de funcionário
     if (codigo === null) continue;
 
     // Procurar nome (texto longo com espaços)
     for (let j = 0; j < cols.length; j++) {
       const col = cols[j];
       if (col && col.length > 10 && /[A-Za-z]/.test(col) && col.includes(' ') &&
-          !/sistema|total|base|valor|página|emissão|folha|inss|empregados|contribuintes/i.test(col)) {
+          !/sistema|total|base|valor|p\u00e1gina|emiss\u00e3o|folha|inss|empregados|contribuintes/i.test(col)) {
         nome = col;
         break;
       }
     }
 
-    // Se não tem nome, não é linha de dados
+    // Se Não tem nome, Não é linha de dados
     if (!nome) continue;
 
     // Procurar valores monetários
@@ -1820,7 +1820,7 @@ export const parseFolhaINSS = (csvContent) => {
     }
 
     // Estrutura: Base cálculo, Excedente, Ded.sal.mat.13, Deduções, Taxa, Valor
-    // O primeiro valor não-zero é base, o último é valor INSS, penúltimo é taxa
+    // O primeiro valor Não-zero é base, o Último é valor INSS, penÚltimo é taxa
     if (valoresMonetarios.length >= 2) {
       baseCalculo = valoresMonetarios[0]; // Primeiro valor é base de cálculo
       valorINSS = valoresMonetarios[valoresMonetarios.length - 1]; // Último é valor INSS
@@ -1842,7 +1842,7 @@ export const parseFolhaINSS = (csvContent) => {
       }
     }
 
-    const tipoGuia = 'Original'; // Padrão
+    const tipoGuia = 'Original'; // Padrao
     totaisPorTipo.original++;
 
     const registro = {
@@ -1880,7 +1880,7 @@ export const parseFolhaINSS = (csvContent) => {
     }
   }
 
-  // Se não encontrou registros mas tem competência, criar entrada com totais
+  // Se Não encontrou registros mas tem competência, criar entrada com totais
   if (Object.keys(totaisPorCompetencia).length === 0 && competenciaAtual) {
     totaisPorCompetencia[competenciaAtual] = {
       empregados: totalEmpregados || registros.length,
@@ -1918,7 +1918,7 @@ export const parseFolhaINSS = (csvContent) => {
  * Parser para Relação de Empregados - Formato Domínio
  *
  * Formato CSV:
- * - Seções: "Trabalhando", "Demitido", etc. indicam situação
+ * - Seções: "Trabalhando", "Demitido", etc. indicam Situação
  * - Linha empregado: Código;;;;NOME;;;;;;;;;;CodCargo;;CARGO;;;;;Vin;;Cat;;Fpg;;H.mes;;;Admissão;;ST;;DataST
  * - ST (Situação): 1=Trabalhando, 8=Demitido, 2-7/9-24=Afastados
  * - Linhas com "Total" devem ser ignoradas
@@ -1937,10 +1937,10 @@ export const parseRelacaoEmpregados = (csvContent) => {
   const empregadosPorCargo = {};
   const empregadosPorSituacao = {};
 
-  // Situação atual baseada na seção do CSV
+  // Situação atual baseada na Seção do CSV
   let secaoAtual = 'Trabalhando';
 
-  // Mapeamento de códigos ST para situação
+  // Mapeamento de Códigos ST para Situação
   // 1=Trabalhando, 8=Demitido, outros=Afastado
   const mapearSituacaoST = (st) => {
     const codigo = parseInt(st);
@@ -1957,17 +1957,18 @@ export const parseRelacaoEmpregados = (csvContent) => {
 
     // Ignorar linhas de total
     if (lineUpper.includes('TOTAL') || lineUpper.includes('PÁGINA') ||
-        lineUpper.includes('EMISSÃO') || lineUpper.includes('RELAÇÃO DE EMPREGADOS')) {
+        lineUpper.includes('EMISS\u00c3O') ||
+        lineUpper.includes('RELA\u00c7\u00c3O DE EMPREGADOS')) {
       continue;
     }
 
-    // Extrair informações da empresa (primeira coluna não vazia com texto longo)
+    // Extrair informações da empresa (primeira coluna Não vazia com texto longo)
     if (cols[0] && cols[0].length > 10 && !cols[0].includes('Código') &&
         /[A-Z]/.test(cols[0]) && !empresaInfo.razaoSocial) {
       empresaInfo.razaoSocial = cols[0];
     }
 
-    // Detectar seção atual
+    // Detectar Seção atual
     if (cols[0] === 'Trabalhando' || lineUpper.startsWith('TRABALHANDO')) {
       secaoAtual = 'Trabalhando';
       continue;
@@ -2015,13 +2016,13 @@ export const parseRelacaoEmpregados = (csvContent) => {
       }
     }
 
-    if (!nome) continue; // Se não encontrou nome, não é linha de empregado
+    if (!nome) continue; // Se nao encontrou nome, nao e linha de empregado
 
     // Procurar cargo (texto após o código do cargo, que vem depois do nome)
     let cargo = '';
     for (let j = nomeIndex + 1; j < cols.length; j++) {
       const val = cols[j];
-      // Cargo é texto que não é data nem número, com pelo menos 3 caracteres
+      // Cargo é texto que Não é data nem Número, com pelo menos 3 caracteres
       if (val && val.length >= 3 && /[A-Za-z]/.test(val) &&
           !/^\d{2}\/\d{2}\/\d{4}$/.test(val) && !/^[\d.,]+$/.test(val) &&
           !/^[A-Z]$/.test(val) && val !== 'D' && val !== 'M') { // Excluir letras soltas como Fpg=D
@@ -2042,7 +2043,7 @@ export const parseRelacaoEmpregados = (csvContent) => {
     let dataAdmissao = datas.length >= 1 ? datas[0].valor : null;
     let dataSituacao = datas.length >= 2 ? datas[1].valor : null;
 
-    // Procurar ST (situação) - número de 1-2 dígitos que vem após a data de admissão
+    // Procurar ST (Situação) - Número de 1-2 dígitos que vem após a data de admissão
     let stValue = null;
     if (datas.length >= 1) {
       // ST vem logo após a primeira data
@@ -2054,12 +2055,12 @@ export const parseRelacaoEmpregados = (csvContent) => {
       }
     }
 
-    // Determinar situação: usar ST se disponível, senão usar seção atual
+    // Determinar Situação: usar ST se disponível, seNão usar Seção atual
     let situacaoNormalizada;
     if (stValue) {
       situacaoNormalizada = mapearSituacaoST(stValue);
     } else {
-      // Usar seção atual do CSV
+      // Usar Seção atual do CSV
       if (secaoAtual === 'Demitido') {
         situacaoNormalizada = 'Demitido';
       } else if (secaoAtual === 'Afastado') {
@@ -2083,7 +2084,7 @@ export const parseRelacaoEmpregados = (csvContent) => {
       }
     }
 
-    // Contabilizar por situação
+    // Contabilizar por Situação
     if (situacaoNormalizada === 'Demitido') {
       totalDemitidos++;
     } else if (situacaoNormalizada === 'Afastado') {
@@ -2114,7 +2115,7 @@ export const parseRelacaoEmpregados = (csvContent) => {
       empregadosPorCargo[empregado.cargo].salarioTotal += salario;
     }
 
-    // Contabilizar por situação
+    // Contabilizar por Situação
     if (!empregadosPorSituacao[situacaoNormalizada]) {
       empregadosPorSituacao[situacaoNormalizada] = 0;
     }
@@ -2357,7 +2358,7 @@ export const parseProgramacaoFerias = (csvContent) => {
       // Limite p/ Gozo é geralmente a última data válida (posição ~33)
       const limiteGozo = datasEncontradas.length > 0 ? datasEncontradas[datasEncontradas.length - 1].data : null;
 
-      // Início Gozo Férias - procurar na posição ~23, verificar se não é ..../..../......
+      // início Gozo Férias - procurar na posição ~23, verificar se Não é ..../..../......
       let inicioGozo = null;
       const possivelInicioGozo = cols[23];
       if (possivelInicioGozo && /^\d{2}\/\d{2}\/\d{4}$/.test(possivelInicioGozo)) {
@@ -2554,6 +2555,6 @@ export const parseRelatorioPessoal = (csvContent) => {
     case 'ferias':
       return { tipo, dados: parseProgramacaoFerias(csvContent) };
     default:
-      throw new Error('Tipo de relatório pessoal não reconhecido');
+      throw new Error('Tipo de Relatório pessoal Não reconhecido');
   }
 };

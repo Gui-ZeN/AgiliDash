@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Mock Data para o Dashboard Fiscal
  * Estrutura Hierárquica: Grupo → Empresa → CNPJ
  * TODO: Integrar com Firebase Firestore para dados dinâmicos
@@ -283,7 +283,7 @@ export const dadosPorCnpj = {
     },
     // Grupos de custos
     custosGrupos: {
-      labels: ['Compra p/ Industrialização', 'Compra p/ Ind. ST'],
+      labels: ['Compra p/ IndustrializAção', 'Compra p/ Ind. ST'],
       data: [44609086.27, 1101668.36]
     },
     // Totais acumulados
@@ -422,7 +422,7 @@ export const dadosPorCnpj = {
       data: [3200000, 850000, 405000]
     },
     custosGrupos: {
-      labels: ['Compra p/ Industrialização', 'Compra p/ Ind. ST'],
+      labels: ['Compra p/ IndustrializAção', 'Compra p/ Ind. ST'],
       data: [15800000, 670000]
     },
     totaisAcumulados: {
@@ -546,7 +546,7 @@ export const dadosPorCnpj = {
       data: [1850000, 520000, 240000]
     },
     custosGrupos: {
-      labels: ['Compra p/ Industrialização', 'Compra p/ Ind. ST'],
+      labels: ['Compra p/ IndustrializAção', 'Compra p/ Ind. ST'],
       data: [9200000, 440000]
     },
     totaisAcumulados: {

@@ -70,10 +70,10 @@ const DashboardFiscalTab = ({
           <h1
             className={`text-4xl font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-[#1e293b]'}`}
           >
-            AnÃ¡lise TributÃ¡ria
+            Análise Tributária
           </h1>
           <p className={`text-lg font-medium ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-            ApuraÃ§Ã£o trimestral sobre Lucro Real - Dados importados do Sistema DomÃ­nio.
+            Apuração trimestral sobre Lucro Real - Dados importados do Sistema Domínio.
           </p>
         </div>
         <div className="flex gap-2">
@@ -101,14 +101,14 @@ const DashboardFiscalTab = ({
         >
           <AlertCircle className={`w-5 h-5 ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`} />
           <span className={isDarkMode ? 'text-amber-300' : 'text-amber-800'}>
-            Nenhum relatÃ³rio fiscal importado. Acesse <strong>ConfiguraÃ§Ãµes</strong> para
-            importar dados do DomÃ­nio (Resumo por Acumulador, Demonstrativo Mensal, Resumo dos
+            Nenhum relatório fiscal importado. Acesse <strong>Configurações</strong> para
+            importar dados do Domínio (Resumo por Acumulador, Demonstrativo Mensal, Resumo dos
             Impostos).
           </span>
         </div>
       )}
 
-      {/* Cards de mÃ©tricas - usando dados importados ou mock */}
+      {/* Cards de métricas - usando dados importados ou mock */}
       <VisibleItem show={isVisible('cards_metricas')}>
         {temDadosFiscais ? (
           <div className={`transition-all duration-500 delay-100 ${cardAnimation}`}>
@@ -189,13 +189,13 @@ const DashboardFiscalTab = ({
                   </p>
                 </div>
               </div>
-              <p className="text-sm text-white/70">Carga tributÃ¡ria do exercÃ­cio</p>
+              <p className="text-sm text-white/70">Carga tributária do exercício</p>
             </div>
           </div>
         )}
       </VisibleItem>
 
-      {/* ===== SEÃ‡ÃƒO FATURAMENTO ===== */}
+      {/* ===== SEÇÃO FATURAMENTO ===== */}
       <section className={`transition-all duration-500 delay-200 ${cardAnimation}`}>
         <div className="flex items-center gap-3 mb-6">
           <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-green-900/50' : 'bg-green-100'}`}>
@@ -390,7 +390,7 @@ const DashboardFiscalTab = ({
                   Compra vs Venda
                 </h3>
                 <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                  {'Compra p/ Comercialização, Vendas e Serviços'}
+                  {'Compra p/ comercialização, Vendas e Serviços'}
                 </p>
                 {temDadosFiscais && dadosFiscaisImportados?.resumoAcumulador ? (
                   <CompraVendaChart dados={dadosFiscaisImportados.resumoAcumulador} />
@@ -412,7 +412,7 @@ const DashboardFiscalTab = ({
                   Por Categoria
                 </h3>
                 <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                  {'Vendas, Compra p/ Comercialização e Serviços'}
+                  {'Vendas, Compra p/ comercialização e Serviços'}
                 </p>
                 {temDadosFiscais && dadosFiscaisImportados?.resumoAcumulador ? (
                   <Detalhamento380Chart dados={dadosFiscaisImportados.resumoAcumulador} />
@@ -429,7 +429,7 @@ const DashboardFiscalTab = ({
         )}
       </section>
 
-      {/* ===== SEÃ‡ÃƒO SITUAÃ‡ÃƒO FISCAL ===== */}
+      {/* ===== SEÇÃO SITUAÇÃO FISCAL ===== */}
       {(isVisible('irpj_periodo') || isVisible('resumo_impostos') || isVisible('csll_periodo')) && (
         <section className={`transition-all duration-500 delay-300 ${cardAnimation}`}>
           <div className="flex items-center gap-3 mb-6">
@@ -496,7 +496,7 @@ const DashboardFiscalTab = ({
               </div>
             </VisibleItem>
 
-            {/* GrÃ¡fico de Rosca - Resumo dos Impostos */}
+            {/* Gráfico de Rosca - Resumo dos Impostos */}
             <VisibleItem
               show={
                 isVisible('resumo_impostos') &&
@@ -542,7 +542,7 @@ const DashboardFiscalTab = ({
         </section>
       )}
 
-      {/* ===== SEÃ‡ÃƒO COMPARATIVO 380 ===== */}
+      {/* ===== SEÇÃO COMPARATIVO 380 ===== */}
       {(isVisible('tabela_380') || isVisible('situacao_380')) && (
         <section className={`transition-all duration-500 delay-400 ${cardAnimation}`}>
           <div className="flex items-center gap-3 mb-6">
@@ -566,10 +566,10 @@ const DashboardFiscalTab = ({
                 className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}
               >
                 <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                  CÃ¡lculo 380
+                  Cálculo 380
                 </h3>
                 <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                  PerÃ­odo | Compra | Venda | Esperado | Receita Complementar | SituaÃ§Ã£o
+                  Período | Compra | Venda | Esperado | Receita Complementar | Situação
                 </p>
               </div>
               <Tabela380
@@ -579,7 +579,7 @@ const DashboardFiscalTab = ({
             </div>
           </VisibleItem>
 
-          {/* GrÃ¡fico de Rosca - SituaÃ§Ã£o 380 */}
+          {/* Gráfico de Rosca - Situação 380 */}
           <VisibleItem show={isVisible('situacao_380')}>
             <div
               className={`mt-6 p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
@@ -587,7 +587,7 @@ const DashboardFiscalTab = ({
               <h3
                 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
               >
-                SituaÃ§Ã£o 380
+                Situação 380
               </h3>
               <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                 Vendido vs Falta Vender (Esperado = Compra x 1.25)
@@ -611,12 +611,12 @@ const DashboardFiscalTab = ({
                     <h4
                       className={`text-sm font-bold mb-4 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}
                     >
-                      Resumo da SituaÃ§Ã£o
+                      Resumo da Situação
                     </h4>
                     <div className="space-y-3">
                       <div className="flex justify-between items-center">
                         <span className={isDarkMode ? 'text-slate-400' : 'text-slate-500'}>
-                          Compra p/ ComercializaÃ§Ã£o
+                          Compra p/ Comercialização
                         </span>
                         <span
                           className={`font-bold ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}
@@ -658,7 +658,7 @@ const DashboardFiscalTab = ({
                           <span
                             className={`font-semibold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
                           >
-                            SituaÃ§Ã£o
+                            Situação
                           </span>
                           <span
                             className={`px-3 py-1 rounded-full text-sm font-bold ${
@@ -695,10 +695,10 @@ const DashboardFiscalTab = ({
           <div className="flex items-center justify-between mb-8">
             <div>
               <h3 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                OperaÃ§Ãµes Mensais
+                Operações Mensais
               </h3>
               <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                Entradas vs SaÃ­das por mÃªs
+                Entradas vs Saídas por mês
               </p>
             </div>
             <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-slate-700' : 'bg-slate-100'}`}>
@@ -711,7 +711,7 @@ const DashboardFiscalTab = ({
         </div>
       )}
 
-      {/* Card de anÃ¡lise */}
+      {/* Card de análise */}
       <VisibleItem show={isVisible('analise_fiscal')}>
         <div
           className={`bg-slate-700 p-8 rounded-xl text-white shadow-md transition-all duration-500 delay-600 ${cardAnimation}`}
@@ -721,22 +721,22 @@ const DashboardFiscalTab = ({
               <Award className="w-8 h-8" />
             </div>
             <div>
-              <h3 className="text-xl font-bold mb-3">AnÃ¡lise Fiscal {selectedYear}</h3>
+              <h3 className="text-xl font-bold mb-3">Análise Fiscal {selectedYear}</h3>
               <p className="text-white/80 leading-relaxed">
                 {temDadosFiscais ? (
                   <>
-                    Dados importados do Sistema DomÃ­nio. Os relatÃ³rios fiscais mostram a
-                    movimentaÃ§Ã£o de entradas e saÃ­das, impostos a recolher e situaÃ§Ã£o do 380
-                    (comercializaÃ§Ã£o de mercadorias). Acompanhe mensalmente para garantir
-                    conformidade tributÃ¡ria.
+                    Dados importados do Sistema Domínio. Os relatórios fiscais mostram a
+                    movimentação de entradas e saídas, impostos a recolher e situação do 380
+                    (comercialização de mercadorias). Acompanhe mensalmente para garantir
+                    conformidade tributária.
                   </>
                 ) : (
                   <>
-                    Para visualizar dados reais, importe os relatÃ³rios do Sistema DomÃ­nio (Resumo
-                    por Acumulador, Demonstrativo Mensal, Resumo dos Impostos) na Ã¡rea de
-                    ConfiguraÃ§Ãµes. Volume de entradas superior a <strong>R$ 45 milhÃµes</strong>{' '}
-                    contra saÃ­das de
-                    <strong> R$ 15,6 milhÃµes</strong> sugere formaÃ§Ã£o de estoque ou aquisiÃ§Ã£o
+                    Para visualizar dados reais, importe os relatórios do Sistema Domínio (Resumo
+                    por Acumulador, Demonstrativo Mensal, Resumo dos Impostos) na área de
+                    Configurações. Volume de entradas superior a <strong>R$ 45 milhões</strong>{' '}
+                    contra saídas de
+                    <strong> R$ 15,6 milhões</strong> sugere formação de estoque ou aquisição
                     de insumos.
                   </>
                 )}

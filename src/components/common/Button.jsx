@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Componente Button reutilizável
  * Botões com diferentes variantes de estilo
  */

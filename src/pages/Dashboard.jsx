@@ -18,10 +18,10 @@ import { equipeTecnica, meses } from '../data/mockData';
 
 /**
  * Dashboard Principal - Design Aprimorado
- * ContÃ©m as 5 tabs: Info. Gerais, ContÃ¡bil, Fiscal, Pessoal, Administrativo
+ * Contém as 5 tabs: Info. Gerais, Contábil, Fiscal, Pessoal, Administrativo
  */
 const Dashboard = () => {
-  // Recupera a aba ativa do localStorage ou usa 'gerais' como padrÃ£o
+  // Recupera a aba ativa do localStorage ou usa 'gerais' como padrão
   const [activeTab, setActiveTab] = useState(() => {
     const savedTab = localStorage.getItem('dashboard_activeTab');
     return savedTab || 'gerais';
@@ -150,7 +150,7 @@ const Dashboard = () => {
 
   const itemVisivel = (secaoId, itemId) => isItemVisivel(cnpjInfo?.id, secaoId, itemId);
 
-  // Obter dados contÃ¡beis importados para o CNPJ selecionado
+  // Obter dados contábeis importados para o CNPJ selecionado
   const cnpjIdsEscopo = useMemo(() => {
     if (!isConsolidado) return [cnpjInfo?.id].filter(Boolean);
 
@@ -1183,7 +1183,7 @@ const Dashboard = () => {
   const pessoalData = cnpjDados.pessoalData;
   const administrativoData = cnpjDados.administrativoData;
 
-  // AnimaÃ§Ã£o ao trocar de tab ou CNPJ
+  // Animação ao trocar de tab ou CNPJ
   useEffect(() => {
     setAnimateCards(false);
     const timer = setTimeout(() => setAnimateCards(true), 50);
@@ -1204,7 +1204,7 @@ const Dashboard = () => {
   }, [activeTab, tabsDisponiveis]);
 
   // Calcular totais do DRE
-  // Se em modo consolidado, usa totaisConsolidados; senÃ£o, prioriza dados importados (AnÃ¡lise Horizontal)
+  // Se em modo consolidado, usa totaisConsolidados; senão, prioriza dados importados (Análise Horizontal)
   const analiseHorizontal = dadosContabeisImportados?.analiseHorizontal;
 
   const totalReceita =
@@ -1228,20 +1228,20 @@ const Dashboard = () => {
 
   const margemLucro = totalReceita > 0 ? ((totalLucro / totalReceita) * 100).toFixed(1) : '0.0';
 
-  // Dados consolidados extras (funcionÃ¡rios, folha, tributos)
+  // Dados consolidados extras (funcionários, folha, tributos)
   const totalFuncionarios =
     isConsolidado && totaisConsolidados
       ? totaisConsolidados.funcionarios
       : pessoalData?.totalFuncionarios || 0;
   const qtdCnpjsConsolidado = isConsolidado && totaisConsolidados ? totaisConsolidados.qtdCnpjs : 1;
 
-  // ComparaÃ§Ã£o com ano anterior
+  // Comparação com ano anterior
   const totalReceita2024 = sumArray(dreData2024.receita);
   const variacaoReceita = isConsolidado
     ? 0
     : (((totalReceita - totalReceita2024) / totalReceita2024) * 100).toFixed(1);
 
-  // Dados combinados para grÃ¡fico Receita x Custo x Estoque
+  // Dados combinados para gráfico Receita x Custo x Estoque
   // Custo vem do CMV/CPV da DRE Horizontal, Estoque vem do Balancete
   const dadosReceitaCustoEstoque = useMemo(() => {
     const balancetes = dadosContabeisImportados?.balancetesConsolidados;
@@ -1282,7 +1282,7 @@ const Dashboard = () => {
     };
   }, [dadosContabeisImportados, analiseHorizontal]);
 
-  // Dados para comparaÃ§Ã£o trimestral de lucro (ano atual x ano anterior)
+  // Dados para comparação trimestral de lucro (ano atual x ano anterior)
   const dadosComparativoLucro = useMemo(() => {
     const competencias = analiseHorizontal?.dadosPorCompetencia;
 
@@ -1343,28 +1343,28 @@ const Dashboard = () => {
     };
   }, [analiseHorizontal, selectedYear]);
 
-  // Callback para receber dados do grÃ¡fico de distribuiÃ§Ã£o
+  // Callback para receber dados do gráfico de distribuição
   const handleFiscalDataCalculated = () => {};
 
-  // Classe de animaÃ§Ã£o
+  // Classe de animação
   const cardAnimation = animateCards ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4';
 
-  // FunÃ§Ã£o para exportar relatÃ³rio (mock)
+  // Função para exportar relatório (mock)
   const handleExportReport = (type) => {
     alert(
-      `ExportaÃ§Ã£o de relatÃ³rio ${type.toUpperCase()} serÃ¡ implementada com integraÃ§Ã£o Firebase.`
+      `Exportação de relatório ${type.toUpperCase()} será implementada com integração Firebase.`
     );
   };
 
-  // Dados para sparklines (mock - Ãºltimos 12 meses)
+  // Dados para sparklines (mock - últimos 12 meses)
   const receitaSparkline = cnpjDados?.dreData2025?.receita || [0];
   const lucroSparkline = cnpjDados?.dreData2025?.receita?.map(
     (r, i) => r - (cnpjDados?.dreData2025?.despesa?.[i] || 0)
   ) || [0];
 
-  // Dados para exportaÃ§Ã£o
+  // Dados para exportação
   const exportColumns = [
-    { key: 'mes', label: 'MÃªs' },
+    { key: 'mes', label: 'Mês' },
     { key: 'receita', label: 'Receita' },
     { key: 'despesa', label: 'Despesa' },
     { key: 'lucro', label: 'Lucro' },
@@ -1393,7 +1393,7 @@ const Dashboard = () => {
               data={exportData}
               columns={exportColumns}
               filename={`relatorio-${cnpjInfo?.nomeFantasia || 'empresa'}`}
-              title={`RelatÃ³rio ${cnpjInfo?.nomeFantasia || 'Empresa'}`}
+              title={`Relatório ${cnpjInfo?.nomeFantasia || 'Empresa'}`}
             />
           </div>
         </div>
@@ -1405,12 +1405,12 @@ const Dashboard = () => {
               <Layers className="w-5 h-5" />
               <div>
                 <span className="font-medium block">
-                  {modoVisualizacao === 'todos' && 'VisÃ£o Consolidada Total'}
+                  {modoVisualizacao === 'todos' && 'Visão Consolidada Total'}
                   {modoVisualizacao === 'grupo' && `Consolidado: ${grupoAtual?.nome}`}
                   {modoVisualizacao === 'empresa' && `Consolidado: ${empresaAtual?.nomeFantasia}`}
                 </span>
                 <span className="text-sm text-white/70">
-                  {qtdCnpjsConsolidado} CNPJ(s) â€¢ Receita: {formatCurrency(totalReceita)} â€¢
+                  {qtdCnpjsConsolidado} CNPJ(s) • Receita: {formatCurrency(totalReceita)} •
                   Lucro: {formatCurrency(totalLucro)}
                 </span>
               </div>
@@ -1422,7 +1422,7 @@ const Dashboard = () => {
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold">{totalFuncionarios}</p>
-                <p className="text-xs text-white/70">FuncionÃ¡rios</p>
+                <p className="text-xs text-white/70">Funcionários</p>
               </div>
             </div>
           </div>

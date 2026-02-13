@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Utilitários de formatação para o Dashboard Fiscal
  */
 
@@ -41,7 +41,7 @@ export const formatPercentage = (value, decimals = 1) => {
 };
 
 /**
- * Calcula e formata a porcentagem de um valor em relação ao total
+ * Calcula e formata a porcentagem de um valor em RELAÇÃO ao total
  * @param {number} value - Valor parcial
  * @param {number} total - Valor total
  * @param {number} decimals - Casas decimais (padrão: 1)
