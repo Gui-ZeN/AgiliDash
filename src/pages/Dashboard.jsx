@@ -950,7 +950,6 @@ const Dashboard = () => {
     dadosPessoalImportados?.fgts ||
     dadosPessoalImportados?.inss ||
     dadosPessoalImportados?.empregados ||
-    dadosPessoalImportados?.salarioBase ||
     dadosPessoalImportados?.ferias
   );
 
@@ -1576,6 +1575,7 @@ const Dashboard = () => {
               handleExportReport={handleExportReport}
               isDarkMode={isDarkMode}
               itemVisivel={itemVisivel}
+              periodFilter={periodFilter}
               temDadosPessoal={temDadosPessoal}
             />
           </Suspense>

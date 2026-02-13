@@ -172,12 +172,6 @@ const SETORES_CONFIG = {
         formato: 'dominio',
       },
       {
-        id: 'salarioBase',
-        nome: 'Salario Base',
-        descricao: 'Exportar do Dominio: Relatorios > Pessoal > Salario Base',
-        formato: 'dominio',
-      },
-      {
         id: 'ferias',
         nome: 'Programacao de Ferias',
         descricao: 'Exportar do Dominio: Relatorios > Pessoal > Programacao de Ferias',
@@ -449,17 +443,18 @@ const Configuracoes = () => {
       descricao: 'RH e folha de pagamento',
       itens: [
         { id: 'cards_metricas', nome: 'Cards de Metricas', descricao: 'Resumo do setor pessoal' },
-        { id: 'fgts_tipo', nome: 'FGTS por Tipo', descricao: 'Mensal, 13 e rescisao' },
-        { id: 'fgts_3_meses', nome: 'FGTS Ultimos 3 Meses', descricao: 'Comparativo recente' },
-        { id: 'fgts_mensal', nome: 'FGTS Mes a Mes', descricao: 'Linha mensal' },
-        { id: 'fgts_ano', nome: 'FGTS por Ano', descricao: 'Acumulado anual' },
-        { id: 'inss_empresa', nome: 'INSS por Empresa', descricao: 'Distribuicao por empresa' },
+        { id: 'fgts_tipo', nome: 'FGTS por Tipo', descricao: 'Consignado, rescisao, mensal e 13o' },
         {
-          id: 'inss_tipo_guia',
-          nome: 'INSS por Tipo de Guia',
-          descricao: 'Original vs retificador',
+          id: 'fgts_periodo',
+          nome: 'FGTS por Periodo',
+          descricao: 'Barras por mes, trimestre ou ano',
         },
-        { id: 'inss_mensal', nome: 'INSS Mes a Mes', descricao: 'Evolucao mensal' },
+        {
+          id: 'inss_empresa',
+          nome: 'Relacao do INSS',
+          descricao: 'Distribuicao por categoria',
+        },
+        { id: 'inss_periodo', nome: 'INSS por Periodo', descricao: 'Evolucao por periodo' },
         {
           id: 'admissoes_demissoes',
           nome: 'Admissoes e Demissoes',
@@ -470,7 +465,6 @@ const Configuracoes = () => {
           nome: 'Empregados por Situacao',
           descricao: 'Ativos, demitidos e afastados',
         },
-        { id: 'salario_cargo', nome: 'Salario por Cargo', descricao: 'Top cargos por salario' },
         { id: 'tabela_ferias', nome: 'Programacao de Ferias', descricao: 'Tabela de ferias' },
         { id: 'resumo_pessoal', nome: 'Resumo Pessoal', descricao: 'Card final de orientacao' },
       ],

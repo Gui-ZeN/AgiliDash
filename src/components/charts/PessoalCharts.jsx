@@ -37,13 +37,182 @@ const CHART_COLORS = [
   COLORS.teal
 ];
 
+const MESES_CURTOS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+
+const FGTSCATEGORIAS = [
+  { id: 'mensal', label: 'FGTS Mensal', color: COLORS.primary },
+  { id: 'decimo_terceiro', label: 'FGTS 13o', color: COLORS.warning },
+  { id: 'rescisao', label: 'FGTS Rescisao', color: COLORS.danger },
+  { id: 'consignado', label: 'FGTS Consignado', color: COLORS.secondary },
+];
+
+const normalizarTexto = (valor = '') =>
+  String(valor)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase();
+
+const parseCompetencia = (competencia) => {
+  if (!competencia) return null;
+  const [mesRaw, anoRaw] = String(competencia).split('/');
+  const mes = Number(mesRaw);
+  const ano = Number(anoRaw);
+  if (!Number.isInteger(mes) || !Number.isInteger(ano) || mes < 1 || mes > 12) return null;
+  return { mes, ano, competencia: `${String(mes).padStart(2, '0')}/${ano}` };
+};
+
+const competenciaFromMesAno = (mes, ano) => {
+  if (!Number.isInteger(Number(mes)) || !Number.isInteger(Number(ano))) return null;
+  const competencia = parseCompetencia(`${String(mes).padStart(2, '0')}/${ano}`);
+  return competencia?.competencia || null;
+};
+
+const formatarLabelCompetencia = (competencia) => {
+  const parsed = parseCompetencia(competencia);
+  if (!parsed) return competencia || '-';
+  return `${MESES_CURTOS[parsed.mes - 1]}/${String(parsed.ano).slice(-2)}`;
+};
+
+const competenciaNoPeriodo = (competencia, periodFilter) => {
+  if (!periodFilter) return true;
+  const parsed = parseCompetencia(competencia);
+  if (!parsed) return false;
+
+  const anoFiltro = Number(periodFilter.year);
+  if (!anoFiltro) return true;
+  if (parsed.ano !== anoFiltro) return false;
+
+  if (periodFilter.type === 'month') {
+    return parsed.mes === Number(periodFilter.month);
+  }
+
+  if (periodFilter.type === 'quarter') {
+    const trimestre = Number(periodFilter.quarter);
+    return Math.ceil(parsed.mes / 3) === trimestre;
+  }
+
+  return true;
+};
+
+const ordenarCompetencias = (competencias = []) =>
+  [...competencias]
+    .map((comp) => parseCompetencia(comp)?.competencia)
+    .filter(Boolean)
+    .sort((a, b) => {
+      const parsedA = parseCompetencia(a);
+      const parsedB = parseCompetencia(b);
+      if (!parsedA || !parsedB) return 0;
+      return parsedA.ano !== parsedB.ano ? parsedA.ano - parsedB.ano : parsedA.mes - parsedB.mes;
+    });
+
+const mapearCategoriaFgts = (tipoRaw = '') => {
+  const tipo = normalizarTexto(tipoRaw);
+  if (tipo.includes('CONSIGN')) return 'consignado';
+  if (tipo.includes('RESCIS')) return 'rescisao';
+  if (tipo.includes('13') || tipo.includes('DECIMO')) return 'decimo_terceiro';
+  if (tipo.includes('MENSAL')) return 'mensal';
+  return 'mensal';
+};
+
+const criarTotaisFgtsCategorias = () =>
+  FGTSCATEGORIAS.reduce((acc, categoria) => {
+    acc[categoria.id] = 0;
+    return acc;
+  }, {});
+
+const consolidarFgtsPorCompetenciaECategoria = (dados) => {
+  const mapa = {};
+
+  if (Array.isArray(dados?.registros) && dados.registros.length > 0) {
+    dados.registros.forEach((registro) => {
+      const competencia =
+        parseCompetencia(registro?.competencia)?.competencia ||
+        competenciaFromMesAno(Number(registro?.mes), Number(registro?.ano));
+      if (!competencia) return;
+
+      const categoria = mapearCategoriaFgts(
+        registro?.tipo || registro?.tipoRecolhimento || registro?.descricao || ''
+      );
+      const valor = Number(registro?.valorFGTS || 0);
+      if (!Number.isFinite(valor)) return;
+
+      if (!mapa[competencia]) mapa[competencia] = criarTotaisFgtsCategorias();
+      mapa[competencia][categoria] += valor;
+    });
+    return mapa;
+  }
+
+  Object.entries(dados?.totaisPorCompetencia || {}).forEach(([competenciaRaw, valores]) => {
+    const competencia = parseCompetencia(competenciaRaw)?.competencia;
+    if (!competencia) return;
+    if (!mapa[competencia]) mapa[competencia] = criarTotaisFgtsCategorias();
+    mapa[competencia].mensal += Number(valores?.valorFGTS || 0);
+  });
+
+  return mapa;
+};
+
+const obterTotaisFgtsPorCategoria = (dados, periodFilter = null) => {
+  const totais = criarTotaisFgtsCategorias();
+  const mapaCompetencia = consolidarFgtsPorCompetenciaECategoria(dados);
+  const competenciasFiltradas = ordenarCompetencias(Object.keys(mapaCompetencia)).filter((comp) =>
+    competenciaNoPeriodo(comp, periodFilter)
+  );
+
+  competenciasFiltradas.forEach((competencia) => {
+    const categoriaData = mapaCompetencia[competencia] || {};
+    FGTSCATEGORIAS.forEach(({ id }) => {
+      totais[id] += Number(categoriaData[id] || 0);
+    });
+  });
+
+  if (competenciasFiltradas.length === 0 && !periodFilter) {
+    Object.entries(dados?.totaisPorTipo || {}).forEach(([tipo, valores]) => {
+      const categoriaId = mapearCategoriaFgts(tipo);
+      totais[categoriaId] += Number(valores?.valorFGTS || 0);
+    });
+  }
+
+  return totais;
+};
+
+const obterTotaisInssPorCategoria = (dados, periodFilter = null) => {
+  const totais = {};
+
+  if (Array.isArray(dados?.registros) && dados.registros.length > 0) {
+    dados.registros.forEach((registro) => {
+      const competencia =
+        parseCompetencia(registro?.competencia)?.competencia ||
+        competenciaFromMesAno(Number(registro?.mes), Number(registro?.ano));
+      if (periodFilter && !competenciaNoPeriodo(competencia, periodFilter)) return;
+
+      const categoria = registro?.categoria || 'Empregados';
+      totais[categoria] = Number(totais[categoria] || 0) + Number(registro?.valorINSS || 0);
+    });
+  }
+
+  if (Object.keys(totais).length === 0 && dados?.totaisPorCompetencia) {
+    Object.entries(dados.totaisPorCompetencia).forEach(([competencia, valores]) => {
+      if (periodFilter && !competenciaNoPeriodo(competencia, periodFilter)) return;
+      totais.Empregados = Number(totais.Empregados || 0) + Number(valores?.valorINSS || 0);
+    });
+  }
+
+  if (Object.keys(totais).length === 0 && dados?.totaisPorEmpresa) {
+    Object.entries(dados.totaisPorEmpresa).forEach(([categoria, valores]) => {
+      totais[categoria] = Number(totais[categoria] || 0) + Number(valores?.valorINSS || 0);
+    });
+  }
+
+  return totais;
+};
+
 // ============================================
 // GRÁFICOS DE FGTS
 // ============================================
 
 /**
- * 1. Gráfico de Rosca - FGTS por Tipo de Recolhimento
- * Mostra Mensal, 13º, Rescisão, etc.
+ * 1. Gráfico de Barras - FGTS por Tipo de Recolhimento
  */
 export const FGTSPorTipoChart = ({ dados }) => {
   const chartRef = useRef(null);
@@ -51,15 +220,14 @@ export const FGTSPorTipoChart = ({ dados }) => {
   const { isDarkMode } = useTheme();
 
   const dadosGrafico = useMemo(() => {
-    if (!dados?.totaisPorTipo) return { labels: [], valores: [] };
-
-    const tipos = Object.entries(dados.totaisPorTipo)
-      .filter(([, val]) => val.valorFGTS > 0)
-      .sort((a, b) => b[1].valorFGTS - a[1].valorFGTS);
+    const totais = obterTotaisFgtsPorCategoria(dados);
+    const categoriasComValor = FGTSCATEGORIAS.filter((categoria) => totais[categoria.id] > 0);
+    if (categoriasComValor.length === 0) return { labels: [], valores: [], cores: [] };
 
     return {
-      labels: tipos.map(([tipo]) => tipo),
-      valores: tipos.map(([, val]) => val.valorFGTS)
+      labels: categoriasComValor.map((categoria) => categoria.label),
+      valores: categoriasComValor.map((categoria) => totais[categoria.id]),
+      cores: categoriasComValor.map((categoria) => categoria.color),
     };
   }, [dados]);
 
@@ -73,32 +241,23 @@ export const FGTSPorTipoChart = ({ dados }) => {
     const ctx = chartRef.current.getContext('2d');
 
     chartInstance.current = new Chart(ctx, {
-      type: 'doughnut',
+      type: 'bar',
       data: {
         labels: dadosGrafico.labels,
         datasets: [{
+          label: 'FGTS',
           data: dadosGrafico.valores,
-          backgroundColor: CHART_COLORS.slice(0, dadosGrafico.valores.length).map(c => c + 'CC'),
-          borderColor: CHART_COLORS.slice(0, dadosGrafico.valores.length),
+          backgroundColor: dadosGrafico.cores.map((cor) => cor + 'CC'),
+          borderColor: dadosGrafico.cores,
           borderWidth: 2,
-          hoverOffset: 8
+          borderRadius: 8,
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        cutout: '60%',
         plugins: {
-          legend: {
-            position: 'bottom',
-            labels: {
-              color: isDarkMode ? '#e2e8f0' : '#475569',
-              font: { weight: 'bold', size: 12 },
-              usePointStyle: true,
-              pointStyle: 'circle',
-              padding: 20
-            }
-          },
+          legend: { display: false },
           tooltip: {
             backgroundColor: isDarkMode ? '#1e293b' : 'white',
             titleColor: isDarkMode ? '#f1f5f9' : '#1e293b',
@@ -108,13 +267,27 @@ export const FGTSPorTipoChart = ({ dados }) => {
             padding: 16,
             cornerRadius: 12,
             callbacks: {
-              label: (context) => {
-                const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                const percentage = ((context.raw / total) * 100).toFixed(1);
-                return `${context.label}: ${formatCurrency(context.raw)} (${percentage}%)`;
-              }
-            }
+              label: (context) => `${context.label}: ${formatCurrency(context.raw)}`,
+            },
           }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: {
+              color: isDarkMode ? '#94a3b8' : '#64748b',
+              font: { weight: '600', size: 11 },
+            },
+          },
+          y: {
+            grid: {
+              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+            },
+            ticks: {
+              color: isDarkMode ? '#94a3b8' : '#64748b',
+              callback: (value) => formatCurrency(value),
+            },
+          },
         }
       }
     });
@@ -126,7 +299,7 @@ export const FGTSPorTipoChart = ({ dados }) => {
     };
   }, [dadosGrafico, isDarkMode]);
 
-  if (!dados?.totaisPorTipo || dadosGrafico.valores.length === 0) {
+  if (dadosGrafico.valores.length === 0) {
     return (
       <div className="h-[300px] flex items-center justify-center">
         <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
@@ -250,28 +423,25 @@ export const FGTSPorAnoChart = ({ dados }) => {
 };
 
 /**
- * 3. Gráfico de Barras Verticais - FGTS Últimos 3 Meses
+ * 3. Gráfico de Barras - FGTS por Período
+ * Composição por tipo dentro do período selecionado.
  */
-export const FGTSUltimos3MesesChart = ({ dados }) => {
+export const FGTSPorPeriodoChart = ({ dados, periodFilter }) => {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
   const { isDarkMode } = useTheme();
 
   const dadosGrafico = useMemo(() => {
-    if (!dados?.ultimos3Meses || !dados?.totaisPorCompetencia) {
-      return { labels: [], valores: [] };
-    }
-
-    const mesesNomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    const totais = obterTotaisFgtsPorCategoria(dados, periodFilter);
+    const totalPeriodo = Object.values(totais).reduce((acc, value) => acc + Number(value || 0), 0);
+    if (totalPeriodo <= 0) return { labels: [], valores: [], cores: [] };
 
     return {
-      labels: dados.ultimos3Meses.map(comp => {
-        const [mes, ano] = comp.split('/');
-        return `${mesesNomes[parseInt(mes) - 1]}/${ano.slice(-2)}`;
-      }),
-      valores: dados.ultimos3Meses.map(comp => dados.totaisPorCompetencia[comp]?.valorFGTS || 0)
+      labels: FGTSCATEGORIAS.map((categoria) => categoria.label),
+      valores: FGTSCATEGORIAS.map((categoria) => Number(totais[categoria.id] || 0)),
+      cores: FGTSCATEGORIAS.map((categoria) => categoria.color),
     };
-  }, [dados]);
+  }, [dados, periodFilter]);
 
   useEffect(() => {
     if (!chartRef.current) return;
@@ -289,11 +459,11 @@ export const FGTSUltimos3MesesChart = ({ dados }) => {
         datasets: [{
           label: 'FGTS',
           data: dadosGrafico.valores,
-          backgroundColor: [COLORS.info + 'CC', COLORS.secondary + 'CC', COLORS.primary + 'CC'],
-          borderColor: [COLORS.info, COLORS.secondary, COLORS.primary],
+          backgroundColor: dadosGrafico.cores.map((cor) => cor + 'CC'),
+          borderColor: dadosGrafico.cores,
           borderWidth: 2,
-          borderRadius: 8
-        }]
+          borderRadius: 6,
+        }],
       },
       options: {
         responsive: true,
@@ -309,29 +479,29 @@ export const FGTSUltimos3MesesChart = ({ dados }) => {
             padding: 16,
             cornerRadius: 12,
             callbacks: {
-              label: (context) => `FGTS: ${formatCurrency(context.raw)}`
-            }
-          }
+              label: (context) => `${context.label}: ${formatCurrency(context.raw)}`,
+            },
+          },
         },
         scales: {
           x: {
             grid: { display: false },
             ticks: {
               color: isDarkMode ? '#94a3b8' : '#64748b',
-              font: { weight: '600' }
-            }
+              font: { weight: '600' },
+            },
           },
           y: {
             grid: {
-              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)'
+              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)',
             },
             ticks: {
               color: isDarkMode ? '#94a3b8' : '#64748b',
-              callback: (value) => formatCurrency(value)
-            }
-          }
-        }
-      }
+              callback: (value) => formatCurrency(value),
+            },
+          },
+        },
+      },
     });
 
     return () => {
@@ -345,7 +515,7 @@ export const FGTSUltimos3MesesChart = ({ dados }) => {
     return (
       <div className="h-[250px] flex items-center justify-center">
         <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-          Sem dados dos últimos meses
+          Sem dados de FGTS para o período selecionado
         </p>
       </div>
     );
@@ -691,28 +861,27 @@ export const INSSPorTipoGuiaChart = ({ dados }) => {
 };
 
 /**
- * 7. Gráfico de Barras Verticais - INSS Mês a Mês
+ * 7. Gráfico de Barras - INSS por Período
  */
-export const INSSMensalChart = ({ dados }) => {
+export const INSSPorPeriodoChart = ({ dados, periodFilter }) => {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
   const { isDarkMode } = useTheme();
 
   const dadosGrafico = useMemo(() => {
-    if (!dados?.competencias || !dados?.totaisPorCompetencia) {
-      return { labels: [], valores: [] };
-    }
+    const totaisPorCategoria = obterTotaisInssPorCategoria(dados, periodFilter);
+    const categorias = Object.entries(totaisPorCategoria)
+      .filter(([, valor]) => Number(valor) > 0)
+      .sort((a, b) => Number(b[1]) - Number(a[1]));
 
-    const mesesNomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    if (categorias.length === 0) return { labels: [], valores: [], cores: [] };
 
     return {
-      labels: dados.competencias.map(comp => {
-        const [mes, ano] = comp.split('/');
-        return `${mesesNomes[parseInt(mes) - 1]}/${ano.slice(-2)}`;
-      }),
-      valores: dados.competencias.map(comp => dados.totaisPorCompetencia[comp]?.valorINSS || 0)
+      labels: categorias.map(([categoria]) => categoria),
+      valores: categorias.map(([, valor]) => Number(valor || 0)),
+      cores: categorias.map((_, index) => CHART_COLORS[index % CHART_COLORS.length]),
     };
-  }, [dados]);
+  }, [dados, periodFilter]);
 
   useEffect(() => {
     if (!chartRef.current) return;
@@ -728,10 +897,10 @@ export const INSSMensalChart = ({ dados }) => {
       data: {
         labels: dadosGrafico.labels,
         datasets: [{
-          label: 'INSS Mensal',
+          label: 'INSS',
           data: dadosGrafico.valores,
-          backgroundColor: COLORS.secondary + 'CC',
-          borderColor: COLORS.secondary,
+          backgroundColor: dadosGrafico.cores.map((cor) => cor + 'CC'),
+          borderColor: dadosGrafico.cores,
           borderWidth: 2,
           borderRadius: 6
         }]
@@ -750,9 +919,9 @@ export const INSSMensalChart = ({ dados }) => {
             padding: 16,
             cornerRadius: 12,
             callbacks: {
-              label: (context) => `INSS: ${formatCurrency(context.raw)}`
-            }
-          }
+              label: (context) => `${context.label}: ${formatCurrency(context.raw)}`,
+            },
+          },
         },
         scales: {
           x: {
@@ -760,20 +929,19 @@ export const INSSMensalChart = ({ dados }) => {
             ticks: {
               color: isDarkMode ? '#94a3b8' : '#64748b',
               font: { weight: '600', size: 10 },
-              maxRotation: 45
-            }
+            },
           },
           y: {
             grid: {
-              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)'
+              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)',
             },
             ticks: {
               color: isDarkMode ? '#94a3b8' : '#64748b',
-              callback: (value) => formatCurrency(value)
-            }
-          }
-        }
-      }
+              callback: (value) => formatCurrency(value),
+            },
+          },
+        },
+      },
     });
 
     return () => {
@@ -787,7 +955,7 @@ export const INSSMensalChart = ({ dados }) => {
     return (
       <div className="h-[300px] flex items-center justify-center">
         <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-          Sem dados mensais de INSS
+          Sem dados de INSS para o período selecionado
         </p>
       </div>
     );
@@ -807,7 +975,7 @@ export const INSSMensalChart = ({ dados }) => {
 /**
  * 8. Gráfico de Barras - Admissões e Demissões
  */
-export const AdmissoesDemissoesChart = ({ dados }) => {
+export const AdmissoesDemissoesChart = ({ dados, periodFilter }) => {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
   const { isDarkMode } = useTheme();
@@ -817,29 +985,28 @@ export const AdmissoesDemissoesChart = ({ dados }) => {
       return { labels: [], admissoes: [], demissoes: [] };
     }
 
-    const mesesNomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-
     // Combinar todas as competências
     const todasCompetencias = new Set([
       ...(dados.competenciasAdmissao || []),
       ...(dados.competenciasDemissao || [])
     ]);
 
-    const competenciasOrdenadas = Array.from(todasCompetencias).sort((a, b) => {
-      const [mesA, anoA] = a.split('/').map(Number);
-      const [mesB, anoB] = b.split('/').map(Number);
-      return anoA !== anoB ? anoA - anoB : mesA - mesB;
-    }).slice(-12); // Últimos 12 meses
+    let competenciasOrdenadas = ordenarCompetencias(Array.from(todasCompetencias));
+
+    if (periodFilter) {
+      competenciasOrdenadas = competenciasOrdenadas.filter((comp) =>
+        competenciaNoPeriodo(comp, periodFilter)
+      );
+    } else {
+      competenciasOrdenadas = competenciasOrdenadas.slice(-12);
+    }
 
     return {
-      labels: competenciasOrdenadas.map(comp => {
-        const [mes, ano] = comp.split('/');
-        return `${mesesNomes[parseInt(mes) - 1]}/${ano.slice(-2)}`;
-      }),
-      admissoes: competenciasOrdenadas.map(comp => dados.admissoesPorMes?.[comp] || 0),
-      demissoes: competenciasOrdenadas.map(comp => dados.demissoesPorMes?.[comp] || 0)
+      labels: competenciasOrdenadas.map((comp) => formatarLabelCompetencia(comp)),
+      admissoes: competenciasOrdenadas.map((comp) => dados.admissoesPorMes?.[comp] || 0),
+      demissoes: competenciasOrdenadas.map((comp) => dados.demissoesPorMes?.[comp] || 0),
     };
-  }, [dados]);
+  }, [dados, periodFilter]);
 
   useEffect(() => {
     if (!chartRef.current) return;
@@ -946,30 +1113,56 @@ export const AdmissoesDemissoesChart = ({ dados }) => {
 /**
  * 9. Gráfico de Rosca - Empregados por Situação
  */
-export const EmpregadosPorSituacaoChart = ({ dados }) => {
+export const EmpregadosPorSituacaoChart = ({ dados, periodFilter }) => {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
   const { isDarkMode } = useTheme();
 
   const dadosGrafico = useMemo(() => {
-    if (!dados?.empregadosPorSituacao) return { labels: [], valores: [], cores: [] };
-
     const situacaoCores = {
-      'Ativo': COLORS.success,
-      'Demitido': COLORS.danger,
-      'Afastado': COLORS.warning
+      Ativo: COLORS.success,
+      Demitido: COLORS.danger,
+      Afastado: COLORS.warning,
     };
 
-    const situacoes = Object.entries(dados.empregadosPorSituacao)
+    let situacaoContador = null;
+
+    if (Array.isArray(dados?.empregados) && dados.empregados.length > 0) {
+      situacaoContador = {};
+
+      dados.empregados.forEach((empregado) => {
+        const situacao = empregado?.situacao || 'Nao informado';
+        const dataReferencia =
+          situacao === 'Ativo' ? empregado?.dataAdmissao : empregado?.dataSituacao || empregado?.dataAdmissao;
+        const competencia = dataReferencia
+          ? competenciaFromMesAno(
+              Number(String(dataReferencia).split('/')[1]),
+              Number(String(dataReferencia).split('/')[2])
+            )
+          : null;
+
+        if (periodFilter && !competenciaNoPeriodo(competencia, periodFilter)) return;
+
+        situacaoContador[situacao] = Number(situacaoContador[situacao] || 0) + 1;
+      });
+    }
+
+    if (!situacaoContador && dados?.empregadosPorSituacao) {
+      situacaoContador = { ...dados.empregadosPorSituacao };
+    }
+
+    if (!situacaoContador) return { labels: [], valores: [], cores: [] };
+
+    const situacoes = Object.entries(situacaoContador)
       .filter(([, val]) => val > 0)
       .sort((a, b) => b[1] - a[1]);
 
     return {
-      labels: situacoes.map(([sit]) => sit),
+      labels: situacoes.map(([sit]) => sit === 'Nao informado' ? 'Nao informado' : sit),
       valores: situacoes.map(([, val]) => val),
-      cores: situacoes.map(([sit]) => situacaoCores[sit] || COLORS.info)
+      cores: situacoes.map(([sit]) => situacaoCores[sit] || COLORS.info),
     };
-  }, [dados]);
+  }, [dados, periodFilter]);
 
   useEffect(() => {
     if (!chartRef.current) return;
@@ -1034,11 +1227,11 @@ export const EmpregadosPorSituacaoChart = ({ dados }) => {
     };
   }, [dadosGrafico, isDarkMode]);
 
-  if (!dados?.empregadosPorSituacao || dadosGrafico.valores.length === 0) {
+  if (dadosGrafico.valores.length === 0) {
     return (
       <div className="h-[250px] flex items-center justify-center">
         <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-          Sem dados de Situação
+          Sem dados de situacao para o periodo selecionado
         </p>
       </div>
     );
@@ -1267,11 +1460,15 @@ export const TabelaFerias = ({ dados }) => {
  */
 export const CardsMetricasPessoal = ({ dadosFGTS, dadosINSS, dadosEmpregados, dadosSalario }) => {
   const metricas = useMemo(() => {
+    const folhaViaEmpregados = Array.isArray(dadosEmpregados?.empregados)
+      ? dadosEmpregados.empregados.reduce((acc, empregado) => acc + Number(empregado?.salario || 0), 0)
+      : 0;
+
     return {
       totalFGTS: dadosFGTS?.totalGeral?.valorFGTS || 0,
       totalINSS: dadosINSS?.totalGeral?.valorINSS || 0,
       totalEmpregados: dadosEmpregados?.estatisticas?.ativos || 0,
-      folhaSalarial: dadosSalario?.estatisticas?.totalSalarios || 0
+      folhaSalarial: dadosSalario?.estatisticas?.totalSalarios || folhaViaEmpregados || 0,
     };
   }, [dadosFGTS, dadosINSS, dadosEmpregados, dadosSalario]);
 
@@ -1323,11 +1520,11 @@ export const CardsMetricasPessoal = ({ dadosFGTS, dadosINSS, dadosEmpregados, da
 export default {
   FGTSPorTipoChart,
   FGTSPorAnoChart,
-  FGTSUltimos3MesesChart,
+  FGTSPorPeriodoChart,
   FGTSMensalChart,
   INSSPorEmpresaChart,
   INSSPorTipoGuiaChart,
-  INSSMensalChart,
+  INSSPorPeriodoChart,
   AdmissoesDemissoesChart,
   EmpregadosPorSituacaoChart,
   SalarioPorCargoChart,
