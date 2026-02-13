@@ -2064,7 +2064,10 @@ const Dashboard = () => {
                     Entradas, Serviços e Saídas
                   </p>
                   {temDadosFiscais ? (
-                    <FaturamentoPorCategoriaChart dados={dadosFiscaisImportados?.demonstrativoMensal || dadosFiscaisImportados?.resumoAcumulador} />
+                    <FaturamentoPorCategoriaChart
+                      dados={resumoAcumuladorFiltrado || dadosFiscaisImportados?.demonstrativoMensal || dadosFiscaisImportados?.resumoAcumulador}
+                      year={periodFilter?.year}
+                    />
                   ) : (
                     <div className="h-[300px] flex items-center justify-center">
                       <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Importe Demonstrativo Mensal</p>
@@ -2111,7 +2114,11 @@ const Dashboard = () => {
                     </div>
                   </div>
                   {temDadosFiscais && dadosFiscaisImportados?.demonstrativoMensal ? (
-                    <FaturamentoPorTrimestreChart dados={dadosFiscaisImportados.demonstrativoMensal} trimestre={fiscalTrimestre} />
+                    <FaturamentoPorTrimestreChart
+                      dados={dadosFiscaisImportados.demonstrativoMensal}
+                      trimestre={fiscalTrimestre}
+                      year={periodFilter?.year}
+                    />
                   ) : (
                     <div className="h-[350px] flex items-center justify-center">
                       <FaturamentoChart />

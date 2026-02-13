@@ -1764,7 +1764,7 @@ const Configuracoes = () => {
                   {/* Preview Resumo por Acumulador */}
                   {importPreview.isDominioFormat && importPreview.tipoRelatorio === 'resumoAcumulador' && importPreview.dadosParsed && (
                     <div className="space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                         <div className="bg-emerald-700 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Total Entradas</p>
                           <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.totais?.entradas || 0)}</p>
@@ -1776,6 +1776,10 @@ const Configuracoes = () => {
                         <div className="bg-slate-700 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Compra Comercializacao</p>
                           <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.categorias?.compraComercializacao || 0)}</p>
+                        </div>
+                        <div className="bg-cyan-700 p-4 rounded-xl text-white">
+                          <p className="text-sm opacity-80 mb-1">Servicos</p>
+                          <p className="text-2xl font-bold">{formatCurrency(importPreview.dadosParsed.categorias?.servicos || 0)}</p>
                         </div>
                         <div className="bg-slate-700 p-4 rounded-xl text-white">
                           <p className="text-sm opacity-80 mb-1">Venda Mercadoria</p>
@@ -1790,13 +1794,13 @@ const Configuracoes = () => {
                             <p className="font-bold text-amber-800 dark:text-amber-200">{formatCurrency(importPreview.dadosParsed.categorias?.esperado380 || 0)}</p>
                           </div>
                           <div>
-                            <p className="text-amber-600 dark:text-amber-400">Vendido</p>
-                            <p className="font-bold text-amber-800 dark:text-amber-200">{formatCurrency(importPreview.dadosParsed.categorias?.vendaMercadoria || 0)}</p>
+                            <p className="text-amber-600 dark:text-amber-400">Vendido (Vendas + Servicos)</p>
+                            <p className="font-bold text-amber-800 dark:text-amber-200">{formatCurrency(importPreview.dadosParsed.categorias?.totalVendas380 || 0)}</p>
                           </div>
                           <div>
                             <p className="text-amber-600 dark:text-amber-400">Situacao</p>
-                            <p className={`font-bold ${(importPreview.dadosParsed.categorias?.vendaMercadoria || 0) >= (importPreview.dadosParsed.categorias?.esperado380 || 0) ? 'text-green-600' : 'text-red-600'}`}>
-                              {(importPreview.dadosParsed.categorias?.vendaMercadoria || 0) >= (importPreview.dadosParsed.categorias?.esperado380 || 0) ? 'OK' : 'Pendente'}
+                            <p className={`font-bold ${(importPreview.dadosParsed.categorias?.totalVendas380 || 0) >= (importPreview.dadosParsed.categorias?.esperado380 || 0) ? 'text-green-600' : 'text-red-600'}`}>
+                              {(importPreview.dadosParsed.categorias?.totalVendas380 || 0) >= (importPreview.dadosParsed.categorias?.esperado380 || 0) ? 'OK' : 'Pendente'}
                             </p>
                           </div>
                         </div>

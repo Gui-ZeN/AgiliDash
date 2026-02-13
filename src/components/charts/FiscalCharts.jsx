@@ -37,6 +37,55 @@ const CHART_COLORS = [
   COLORS.teal
 ];
 
+const normalizeAccumulatorDescription = (text = '') =>
+  String(text)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const getEntradaMergeGroup = (descricao = '') => {
+  const normalized = normalizeAccumulatorDescription(descricao);
+  if (normalized.includes('COMPRA P/ INDUSTRIALIZA')) {
+    return 'COMPRA P/ INDUSTRIALIZACAO';
+  }
+  if (normalized.includes('COMPRA P/ COMERCIALIZA')) {
+    return 'COMPRA P/ COMERCIALIZACAO';
+  }
+  return null;
+};
+
+const mergeEntradasForTable = (lista = []) => {
+  const grouped = new Map();
+
+  lista.forEach((item) => {
+    const mergeGroup = getEntradaMergeGroup(item?.descricao || '');
+    const normalized = normalizeAccumulatorDescription(item?.descricao || '');
+    const key = mergeGroup
+      ? `grupo::${mergeGroup}`
+      : `${item?.codigo || ''}::${normalized}`;
+
+    if (!grouped.has(key)) {
+      grouped.set(key, {
+        ...item,
+        descricao: mergeGroup || item?.descricao || ''
+      });
+      return;
+    }
+
+    const current = grouped.get(key);
+    Object.entries(item || {}).forEach(([field, value]) => {
+      if (typeof value === 'number' && Number.isFinite(value)) {
+        current[field] = Number(current[field] || 0) + value;
+      }
+    });
+    grouped.set(key, current);
+  });
+
+  return Array.from(grouped.values());
+};
+
 // ============================================
 // GRÁFICOS DE FATURAMENTO
 // ============================================
@@ -45,7 +94,7 @@ const CHART_COLORS = [
  * 1. Gráfico de Rosca - Faturamento por Categoria
  * Mostra Entradas, Serviços e Saídas (totais anuais)
  */
-export const FaturamentoPorCategoriaChart = ({ dados }) => {
+export const FaturamentoPorCategoriaChart = ({ dados, year }) => {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
   const { isDarkMode } = useTheme();
@@ -55,24 +104,31 @@ export const FaturamentoPorCategoriaChart = ({ dados }) => {
 
     // Se for dados do Resumo por Acumulador
     if (dados.totais) {
+      const servicosResumo = Number(dados.totais?.servicos || 0) || Number(dados.categorias?.servicos || 0);
       return {
-        entradas: dados.totais.entradas || 0,
-        servicos: 0, // Serviços vêm separado
-        saidas: dados.totais.saidas || 0
+        entradas: Number(dados.totais.entradas || 0),
+        servicos: servicosResumo,
+        saidas: Number(dados.totais.saidas || 0)
       };
     }
 
     // Se for dados do Demonstrativo Mensal
     if (dados.totais2025) {
+      const anoSelecionado = Number(year || 0);
+      const totaisAnoSelecionado = anoSelecionado && dados.totaisPorAno?.[anoSelecionado]
+        ? dados.totaisPorAno[anoSelecionado]
+        : null;
+      const origemTotais = totaisAnoSelecionado || dados.totais2025;
+      const servicosMensal = Number(dados.totais2025.servicos || 0) || Number(dados.categorias?.servicos || 0);
       return {
-        entradas: dados.totais2025.entradas || 0,
-        servicos: dados.totais2025.servicos || 0,
-        saidas: dados.totais2025.saidas || 0
+        entradas: Number(origemTotais?.entradas || 0),
+        servicos: Number(origemTotais?.servicos || servicosMensal || 0),
+        saidas: Number(origemTotais?.saidas || 0)
       };
     }
 
     return { entradas: 0, servicos: 0, saidas: 0 };
-  }, [dados]);
+  }, [dados, year]);
 
   useEffect(() => {
     if (!chartRef.current) return;
@@ -164,38 +220,55 @@ export const FaturamentoPorCategoriaChart = ({ dados }) => {
  * 2. Gráfico de Barras Verticais - Faturamento por Trimestre
  * Mostra Entradas, Serviços e Saídas por mês agrupados por trimestre
  */
-export const FaturamentoPorTrimestreChart = ({ dados, trimestre = null }) => {
+export const FaturamentoPorTrimestreChart = ({ dados, trimestre = null, year }) => {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
   const { isDarkMode } = useTheme();
 
   const dadosTrimestre = useMemo(() => {
-    if (!dados?.movimentacao2025) return { meses: [], entradas: [], saidas: [], servicos: [] };
+    if (!dados) return { meses: [], entradas: [], saidas: [], servicos: [] };
 
-    const movimentacao = dados.movimentacao2025;
+    const anoSelecionado = Number(year || 0);
+    let movimentacao = [];
+
+    if (anoSelecionado && Array.isArray(dados.movimentacaoPorAno?.[anoSelecionado])) {
+      movimentacao = dados.movimentacaoPorAno[anoSelecionado];
+    } else if (Array.isArray(dados.movimentacao2025) && dados.movimentacao2025.length) {
+      movimentacao = dados.movimentacao2025;
+    } else if (Array.isArray(dados.movimentacao) && dados.movimentacao.length) {
+      if (anoSelecionado) {
+        movimentacao = dados.movimentacao.filter((m) => Number(m?.ano || 0) === anoSelecionado);
+      }
+      if (!movimentacao.length) {
+        movimentacao = dados.movimentacao;
+      }
+    }
+
+    if (!movimentacao.length) return { meses: [], entradas: [], saidas: [], servicos: [] };
+
     const mesesNomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
     let dadosFiltrados = movimentacao;
 
     // Filtrar por trimestre se especificado
     if (trimestre) {
-      const trimestreRanges = {
-        1: [0, 3],  // Jan-Mar
-        2: [3, 6],  // Abr-Jun
-        3: [6, 9],  // Jul-Set
-        4: [9, 12]  // Out-Dez
+      const trimestreMeses = {
+        1: [1, 2, 3],
+        2: [4, 5, 6],
+        3: [7, 8, 9],
+        4: [10, 11, 12]
       };
-      const [start, end] = trimestreRanges[trimestre];
-      dadosFiltrados = movimentacao.slice(start, end);
+      const mesesPermitidos = trimestreMeses[trimestre] || [];
+      dadosFiltrados = movimentacao.filter((m) => mesesPermitidos.includes(Number(m?.mesIndex || 0)));
     }
 
     return {
-      meses: dadosFiltrados.map((m, i) => trimestre ? mesesNomes[(trimestre - 1) * 3 + i] : mesesNomes[i]),
+      meses: dadosFiltrados.map((m) => mesesNomes[Math.max(0, Number(m?.mesIndex || 1) - 1)] || m?.mes || ''),
       entradas: dadosFiltrados.map(m => m.entradas),
       saidas: dadosFiltrados.map(m => m.saidas),
       servicos: dadosFiltrados.map(m => m.servicos)
     };
-  }, [dados, trimestre]);
+  }, [dados, trimestre, year]);
 
   useEffect(() => {
     if (!chartRef.current) return;
@@ -305,7 +378,8 @@ export const TabelaAcumuladores = ({ dados, tipo = 'entradas' }) => {
   const itens = useMemo(() => {
     if (!dados) return [];
 
-    const lista = tipo === 'entradas' ? dados.entradas : dados.saidas;
+    const listaOriginal = tipo === 'entradas' ? dados.entradas : dados.saidas;
+    const lista = tipo === 'entradas' ? mergeEntradasForTable(listaOriginal || []) : (listaOriginal || []);
     if (!lista) return [];
 
     const total = lista.reduce((acc, item) => acc + item.vlrContabil, 0);
@@ -1725,3 +1799,4 @@ export default {
   Tabela380,
   CardsMetricasFiscais
 };
+
