@@ -48,8 +48,8 @@ const DashboardPessoalTab = ({
       <DashboardSectionTitle
         icon={Users}
         badge="Departamento Pessoal"
-        title="An\u00e1lise de Folha de Pagamento"
-        subtitle="Recursos humanos e obriga\u00e7\u00f5es sociais."
+        title="Análise de Folha de Pagamento"
+        subtitle="Recursos humanos e obrigações sociais."
         tone="teal"
         className={`transition-all duration-500 ${cardAnimation}`}
       />

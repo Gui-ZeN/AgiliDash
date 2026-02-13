@@ -56,8 +56,8 @@ const DashboardContabilTab = ({
       {/* Header da seção */}
       <DashboardSectionTitle
         icon={Calculator}
-        badge="Departamento Cont\u00e1bil"
-        title="An\u00e1lise Financeira"
+        badge="Departamento Contábil"
+        title="Análise Financeira"
         subtitle="Demonstrativo de receitas, despesas, estoque e saldos."
         tone="emerald"
         className={`transition-all duration-500 ${cardAnimation}`}

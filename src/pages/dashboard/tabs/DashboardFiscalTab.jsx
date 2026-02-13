@@ -55,8 +55,8 @@ const DashboardFiscalTab = ({
       <DashboardSectionTitle
         icon={FileSpreadsheet}
         badge="Departamento Fiscal"
-        title="An\u00e1lise Tribut\u00e1ria"
-        subtitle="Apura\u00e7\u00e3o trimestral sobre Lucro Real com dados importados do Sistema Dom\u00ednio."
+        title="Análise Tributária"
+        subtitle="Apuração trimestral sobre Lucro Real com dados importados do Sistema Domínio."
         tone="slate"
         className={`transition-all duration-500 ${cardAnimation}`}
       />
@@ -332,10 +332,10 @@ const DashboardFiscalTab = ({
           >
             <div className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
               <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                {'Faturamento por Per\u00edodo'}
+              {'Faturamento por Período'}
               </h3>
               <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                {'Total do faturamento no recorte de m\u00eas, trimestre ou ano'}
+                {'Total do faturamento no recorte de mês, trimestre ou ano'}
               </p>
             </div>
             <TabelaFaturamentoPeriodo
@@ -404,7 +404,7 @@ const DashboardFiscalTab = ({
               <Receipt className={`w-5 h-5 ${isDarkMode ? 'text-slate-500' : 'text-slate-700'}`} />
             </div>
             <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-              {'Situa\u00e7\u00e3o Fiscal'}
+              {'Situação Fiscal'}
             </h2>
           </div>
 
@@ -419,10 +419,10 @@ const DashboardFiscalTab = ({
                     <h3
                       className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
                     >
-                      {'IRPJ por Per\u00edodo'}
+                      {'IRPJ por Período'}
                     </h3>
                     <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                      {'Composi\u00e7\u00e3o do IRPJ apurado'}
+                      {'Composição do IRPJ apurado'}
                     </p>
                   </div>
                   <div className="flex gap-1">
@@ -479,7 +479,7 @@ const DashboardFiscalTab = ({
                   Resumo dos Impostos
                 </h3>
                 <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                  {'Distribui\u00e7\u00e3o dos impostos no per\u00edodo'}
+                  {'Distribuição dos impostos no período'}
                 </p>
                 <ResumoImpostosRoscaChart dados={resumoImpostosFiltrado} />
               </div>
@@ -493,10 +493,10 @@ const DashboardFiscalTab = ({
                 <h3
                   className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
                 >
-                  {'CSLL por Per\u00edodo'}
+                  {'CSLL por Período'}
                 </h3>
                 <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                  {'Composi\u00e7\u00e3o do CSLL'}
+                  {'Composição do CSLL'}
                 </p>
                 <CSLLPorPeriodoChart
                   dados={dadosFiscaisImportados?.csll || []}

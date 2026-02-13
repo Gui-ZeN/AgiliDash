@@ -38,7 +38,7 @@ const DashboardAdministrativoTab = ({
       <DashboardSectionTitle
         icon={Briefcase}
         badge="Setor Administrativo"
-        title="Gest\u00e3o Administrativa"
+        title="Gestão Administrativa"
         subtitle="Contratos, despesas e documentos da empresa."
         tone="amber"
         className={`transition-all duration-500 ${cardAnimation}`}
