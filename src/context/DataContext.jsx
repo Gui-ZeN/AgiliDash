@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+﻿import { createContext, useContext, useState, useEffect } from 'react';
 import {
   parseBalancete,
   parseAnaliseHorizontal,
@@ -16,7 +16,7 @@ import {
   parseFolhaINSS,
   parseRelacaoEmpregados,
   parseSalarioBase,
-  parseProgramacaoFerias
+  parseProgramacaoFerias,
 } from '../utils/dominioParser';
 
 const DataContext = createContext();
@@ -32,9 +32,9 @@ const initialGrupos = [
     responsavelPadrao: {
       nome: 'Responsavel Grupo',
       cargo: 'Socio-Administrador',
-      whatsapp: '(85) 99999-0000'
-    }
-  }
+      whatsapp: '(85) 99999-0000',
+    },
+  },
 ];
 
 const initialCnpjs = [
@@ -51,10 +51,10 @@ const initialCnpjs = [
     responsavel: {
       nome: 'Responsavel CNPJ',
       cargo: 'Diretor',
-      whatsapp: '(85) 99999-0001'
+      whatsapp: '(85) 99999-0001',
     },
-    status: 'Ativo'
-  }
+    status: 'Ativo',
+  },
 ];
 
 const initialUsuarios = [
@@ -66,11 +66,11 @@ const initialUsuarios = [
     grupoId: 'grupo_001',
     setoresAcesso: ['contabil', 'fiscal', 'pessoal', 'administrativo'],
     status: 'Ativo',
-    criadoEm: '2024-01-15'
-  }
+    criadoEm: '2024-01-15',
+  },
 ];
 
-// Estrutura inicial para dados contábeis
+// Estrutura inicial para dados contÃ¡beis
 const initialDadosContabeis = {
   // cnpjId -> { balancetes: [], analiseHorizontal: null, dreComparativa: null, dreMensal: null }
 };
@@ -104,7 +104,7 @@ export const DataProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : initialUsuarios;
   });
 
-  // Estado para dados contábeis por CNPJ
+  // Estado para dados contÃ¡beis por CNPJ
   const [dadosContabeis, setDadosContabeis] = useState(() => {
     const saved = localStorage.getItem('agili_dados_contabeis');
     return saved ? JSON.parse(saved) : initialDadosContabeis;
@@ -153,23 +153,23 @@ export const DataProvider = ({ children }) => {
       ...grupo,
       id: `grupo_${Date.now()}`,
       status: 'Ativo',
-      criadoEm: new Date().toISOString().split('T')[0]
+      criadoEm: new Date().toISOString().split('T')[0],
     };
-    setGrupos(prev => [...prev, newGrupo]);
+    setGrupos((prev) => [...prev, newGrupo]);
     return newGrupo;
   };
 
   const updateGrupo = (id, data) => {
-    setGrupos(prev => prev.map(g => g.id === id ? { ...g, ...data } : g));
+    setGrupos((prev) => prev.map((g) => (g.id === id ? { ...g, ...data } : g)));
   };
 
   const deleteGrupo = (id) => {
     // Excluir CNPJs do grupo
-    setCnpjs(prev => prev.filter(c => c.grupoId !== id));
+    setCnpjs((prev) => prev.filter((c) => c.grupoId !== id));
     // Excluir usuarios do grupo
-    setUsuarios(prev => prev.filter(u => u.grupoId !== id));
+    setUsuarios((prev) => prev.filter((u) => u.grupoId !== id));
     // Excluir grupo
-    setGrupos(prev => prev.filter(g => g.id !== id));
+    setGrupos((prev) => prev.filter((g) => g.id !== id));
   };
 
   // ===== CRUD CNPJs =====
@@ -177,22 +177,22 @@ export const DataProvider = ({ children }) => {
     const newCnpj = {
       ...cnpj,
       id: `cnpj_${Date.now()}`,
-      status: 'Ativo'
+      status: 'Ativo',
     };
-    setCnpjs(prev => [...prev, newCnpj]);
+    setCnpjs((prev) => [...prev, newCnpj]);
     return newCnpj;
   };
 
   const updateCnpj = (id, data) => {
-    setCnpjs(prev => prev.map(c => c.id === id ? { ...c, ...data } : c));
+    setCnpjs((prev) => prev.map((c) => (c.id === id ? { ...c, ...data } : c)));
   };
 
   const deleteCnpj = (id) => {
-    setCnpjs(prev => prev.filter(c => c.id !== id));
+    setCnpjs((prev) => prev.filter((c) => c.id !== id));
   };
 
   const getCnpjsByGrupo = (grupoId) => {
-    return cnpjs.filter(c => c.grupoId === grupoId);
+    return cnpjs.filter((c) => c.grupoId === grupoId);
   };
 
   // ===== CRUD USUARIOS =====
@@ -201,22 +201,22 @@ export const DataProvider = ({ children }) => {
       ...usuario,
       id: `user_${Date.now()}`,
       status: 'Ativo',
-      criadoEm: new Date().toISOString().split('T')[0]
+      criadoEm: new Date().toISOString().split('T')[0],
     };
-    setUsuarios(prev => [...prev, newUsuario]);
+    setUsuarios((prev) => [...prev, newUsuario]);
     return newUsuario;
   };
 
   const updateUsuario = (id, data) => {
-    setUsuarios(prev => prev.map(u => u.id === id ? { ...u, ...data } : u));
+    setUsuarios((prev) => prev.map((u) => (u.id === id ? { ...u, ...data } : u)));
   };
 
   const deleteUsuario = (id) => {
-    setUsuarios(prev => prev.filter(u => u.id !== id));
+    setUsuarios((prev) => prev.filter((u) => u.id !== id));
   };
 
   const getUsuariosByGrupo = (grupoId) => {
-    return usuarios.filter(u => u.grupoId === grupoId);
+    return usuarios.filter((u) => u.grupoId === grupoId);
   };
 
   // ===== DADOS CONTABEIS =====
@@ -238,54 +238,54 @@ export const DataProvider = ({ children }) => {
           dadosParsed = parseDREMensal(csvContent);
           break;
         default:
-          throw new Error(`Tipo de relatório desconhecido: ${tipoRelatorio}`);
+          throw new Error(`Tipo de relatÃ³rio desconhecido: ${tipoRelatorio}`);
       }
 
-      setDadosContabeis(prev => {
+      setDadosContabeis((prev) => {
         const cnpjData = prev[cnpjId] || {
           balancetes: [],
           analiseHorizontal: null,
           dreComparativa: null,
           dreMensal: null,
-          balancetesConsolidados: null
+          balancetesConsolidados: null,
         };
 
         if (tipoRelatorio === 'balancete') {
-          // Adicionar ao array de balancetes (máximo 12 para série mensal)
+          // Adicionar ao array de balancetes (mÃ¡ximo 12 para sÃ©rie mensal)
           const newBalancetes = [...cnpjData.balancetes, dadosParsed].slice(-12);
           return {
             ...prev,
             [cnpjId]: {
               ...cnpjData,
               balancetes: newBalancetes,
-              balancetesConsolidados: consolidarBalancetesMensais(newBalancetes)
-            }
+              balancetesConsolidados: consolidarBalancetesMensais(newBalancetes),
+            },
           };
         } else if (tipoRelatorio === 'analiseHorizontal') {
-          // MESCLAR dados por competência - suporta múltiplos anos
+          // MESCLAR dados por competÃªncia - suporta mÃºltiplos anos
           const existingData = cnpjData.analiseHorizontal || {};
           const existingCompetencias = existingData.dadosPorCompetencia || {};
 
-          // Mesclar competências existentes com novas
+          // Mesclar competÃªncias existentes com novas
           const mergedCompetencias = {
             ...existingCompetencias,
-            ...dadosParsed.dadosPorCompetencia
+            ...dadosParsed.dadosPorCompetencia,
           };
 
-          // Ordenar competências cronologicamente
+          // Ordenar competÃªncias cronologicamente
           const competenciasOrdenadas = Object.keys(mergedCompetencias).sort((a, b) => {
             const [mesA, anoA] = a.split('/').map(Number);
             const [mesB, anoB] = b.split('/').map(Number);
             return anoA !== anoB ? anoA - anoB : mesA - mesB;
           });
 
-          // Reconstruir arrays ordenados para gráficos
-          const mesesLabels = competenciasOrdenadas.map(c => {
+          // Reconstruir arrays ordenados para grÃ¡ficos
+          const mesesLabels = competenciasOrdenadas.map((c) => {
             const dados = mergedCompetencias[c];
             return `${dados.mesNome}/${String(dados.ano).slice(-2)}`;
           });
-          const receitasMensais = competenciasOrdenadas.map(c => mergedCompetencias[c].receita);
-          const despesasMensais = competenciasOrdenadas.map(c => mergedCompetencias[c].despesa);
+          const receitasMensais = competenciasOrdenadas.map((c) => mergedCompetencias[c].receita);
+          const despesasMensais = competenciasOrdenadas.map((c) => mergedCompetencias[c].despesa);
 
           // Calcular totais
           const totalReceitas = receitasMensais.reduce((a, b) => a + b, 0);
@@ -305,25 +305,25 @@ export const DataProvider = ({ children }) => {
                 totais: {
                   ...dadosParsed.totais,
                   totalReceitas,
-                  totalDespesas
-                }
-              }
-            }
+                  totalDespesas,
+                },
+              },
+            },
           };
         } else {
           return {
             ...prev,
             [cnpjId]: {
               ...cnpjData,
-              [tipoRelatorio]: dadosParsed
-            }
+              [tipoRelatorio]: dadosParsed,
+            },
           };
         }
       });
 
       return { success: true, dados: dadosParsed };
     } catch (error) {
-      console.error('Erro ao importar relatório:', error);
+      console.error('Erro ao importar relatÃ³rio:', error);
       return { success: false, error: error.message };
     }
   };
@@ -333,7 +333,7 @@ export const DataProvider = ({ children }) => {
   };
 
   const limparDadosContabeis = (cnpjId) => {
-    setDadosContabeis(prev => {
+    setDadosContabeis((prev) => {
       const newData = { ...prev };
       delete newData[cnpjId];
       return newData;
@@ -360,7 +360,7 @@ export const DataProvider = ({ children }) => {
       SETEMBRO: 9,
       OUTUBRO: 10,
       NOVEMBRO: 11,
-      DEZEMBRO: 12
+      DEZEMBRO: 12,
     };
     return mapaMeses[normalizarTexto(mesNome)] || null;
   };
@@ -374,8 +374,12 @@ export const DataProvider = ({ children }) => {
   };
 
   const ordenarCompetencia = (a, b) => {
-    const [mesA, anoA] = String(a || '').split('/').map(Number);
-    const [mesB, anoB] = String(b || '').split('/').map(Number);
+    const [mesA, anoA] = String(a || '')
+      .split('/')
+      .map(Number);
+    const [mesB, anoB] = String(b || '')
+      .split('/')
+      .map(Number);
     if (anoA !== anoB) return anoA - anoB;
     return mesA - mesB;
   };
@@ -391,7 +395,7 @@ export const DataProvider = ({ children }) => {
       vendaExterior: 0,
       servicos: 0,
       totalVendas380: 0,
-      esperado380: 0
+      esperado380: 0,
     };
 
     const normalizarDescricao = (texto = '') =>
@@ -450,7 +454,12 @@ export const DataProvider = ({ children }) => {
 
     const detalhesVendas = saidas.filter((s) => {
       const desc = normalizarDescricao(s.descricao || '');
-      return desc.startsWith('VENDA') && !desc.includes('ATIVO') && !desc.includes('IMOBILIZADO') && !desc.includes('CANCEL');
+      return (
+        desc.startsWith('VENDA') &&
+        !desc.includes('ATIVO') &&
+        !desc.includes('IMOBILIZADO') &&
+        !desc.includes('CANCEL')
+      );
     });
 
     return {
@@ -458,19 +467,25 @@ export const DataProvider = ({ children }) => {
       saidas,
       totais: {
         entradas: entradas.reduce((acc, e) => acc + Number(e.vlrContabil || 0), 0),
-        saidas: saidas.reduce((acc, s) => acc + Number(s.vlrContabil || 0), 0)
+        saidas: saidas.reduce((acc, s) => acc + Number(s.vlrContabil || 0), 0),
       },
       categorias,
       detalhes380: {
-        compras: entradas.filter(e => normalizarDescricao(e.descricao || '').includes('COMPRA P/ COMERCIALIZA')),
+        compras: entradas.filter((e) =>
+          normalizarDescricao(e.descricao || '').includes('COMPRA P/ COMERCIALIZA')
+        ),
         vendasMercadoria: detalhesVendas,
-        vendasProduto: detalhesVendas.filter(s => normalizarDescricao(s.descricao || '').includes('PRODUTO')),
-        vendasExterior: detalhesVendas.filter(s => normalizarDescricao(s.descricao || '').includes('EXTERIOR')),
-        servicos: entradas.filter(e => isServicoRelacionado(e.descricao || ''))
+        vendasProduto: detalhesVendas.filter((s) =>
+          normalizarDescricao(s.descricao || '').includes('PRODUTO')
+        ),
+        vendasExterior: detalhesVendas.filter((s) =>
+          normalizarDescricao(s.descricao || '').includes('EXTERIOR')
+        ),
+        servicos: entradas.filter((e) => isServicoRelacionado(e.descricao || '')),
       },
       porCompetencia,
       competencias,
-      tipo: 'resumoAcumulador'
+      tipo: 'resumoAcumulador',
     };
   };
 
@@ -487,27 +502,30 @@ export const DataProvider = ({ children }) => {
         saidas: Number(item.saidas || 0),
         servicos: Number(item.servicos || 0),
         outros: Number(item.outros || 0),
-        total: Number(item.total || item.saidas || 0)
+        total: Number(item.total || item.saidas || 0),
       };
     });
 
-    const totais = faturamento.reduce((acc, item) => {
-      acc.saidas += Number(item.saidas || 0);
-      acc.servicos += Number(item.servicos || 0);
-      acc.outros += Number(item.outros || 0);
-      acc.total += Number(item.total || 0);
-      return acc;
-    }, { saidas: 0, servicos: 0, outros: 0, total: 0 });
+    const totais = faturamento.reduce(
+      (acc, item) => {
+        acc.saidas += Number(item.saidas || 0);
+        acc.servicos += Number(item.servicos || 0);
+        acc.outros += Number(item.outros || 0);
+        acc.total += Number(item.total || 0);
+        return acc;
+      },
+      { saidas: 0, servicos: 0, outros: 0, total: 0 }
+    );
 
     return {
       empresaInfo,
       faturamento,
-      faturamento2024: faturamento.filter(f => f.ano === 2024),
-      faturamento2025: faturamento.filter(f => f.ano === 2025),
+      faturamento2024: faturamento.filter((f) => f.ano === 2024),
+      faturamento2025: faturamento.filter((f) => f.ano === 2025),
       totais,
       porCompetencia,
       competencias,
-      tipo: 'faturamento'
+      tipo: 'faturamento',
     };
   };
 
@@ -536,7 +554,7 @@ export const DataProvider = ({ children }) => {
           dadosParsed = parseResumoPorAcumulador(csvContent);
           break;
         default:
-          throw new Error(`Tipo de relatório fiscal desconhecido: ${tipoRelatorio}`);
+          throw new Error(`Tipo de relatÃ³rio fiscal desconhecido: ${tipoRelatorio}`);
       }
 
       // Para CSLL e IRPJ, usar trimestre selecionado manualmente
@@ -545,37 +563,37 @@ export const DataProvider = ({ children }) => {
         dadosParsed.trimestreLabel = `${opcoes.trimestre}o Trimestre`;
       }
 
-      setDadosFiscais(prev => {
+      setDadosFiscais((prev) => {
         const cnpjData = prev[cnpjId] || {
           csll: [],
           irpj: [],
           faturamento: null,
           demonstrativoMensal: null,
           resumoImpostos: null,
-          resumoAcumulador: null
+          resumoAcumulador: null,
         };
 
-        // CSLL e IRPJ são trimestrais, guardar por número do trimestre
+        // CSLL e IRPJ sÃ£o trimestrais, guardar por nÃºmero do trimestre
         if (tipoRelatorio === 'csll') {
           // Substituir se ja existir trimestre igual, senao adicionar
           const trimNum = dadosParsed.trimestreNumero || cnpjData.csll.length + 1;
-          let newCsll = cnpjData.csll.filter(c => c.trimestreNumero !== trimNum);
+          let newCsll = cnpjData.csll.filter((c) => c.trimestreNumero !== trimNum);
           newCsll.push(dadosParsed);
           newCsll = newCsll.sort((a, b) => (a.trimestreNumero || 0) - (b.trimestreNumero || 0));
           return {
             ...prev,
-            [cnpjId]: { ...cnpjData, csll: newCsll }
+            [cnpjId]: { ...cnpjData, csll: newCsll },
           };
         }
 
         if (tipoRelatorio === 'irpj') {
           const trimNum = dadosParsed.trimestreNumero || cnpjData.irpj.length + 1;
-          let newIrpj = cnpjData.irpj.filter(i => i.trimestreNumero !== trimNum);
+          let newIrpj = cnpjData.irpj.filter((i) => i.trimestreNumero !== trimNum);
           newIrpj.push(dadosParsed);
           newIrpj = newIrpj.sort((a, b) => (a.trimestreNumero || 0) - (b.trimestreNumero || 0));
           return {
             ...prev,
-            [cnpjId]: { ...cnpjData, irpj: newIrpj }
+            [cnpjId]: { ...cnpjData, irpj: newIrpj },
           };
         }
 
@@ -595,7 +613,7 @@ export const DataProvider = ({ children }) => {
               saidas: 0,
               servicos: 0,
               outros: 0,
-              total: 0
+              total: 0,
             };
 
             mergedPorCompetencia[competencia] = {
@@ -605,7 +623,7 @@ export const DataProvider = ({ children }) => {
               saidas: Number(atual.saidas || 0) + Number(item.saidas || 0),
               servicos: Number(atual.servicos || 0) + Number(item.servicos || 0),
               outros: Number(atual.outros || 0) + Number(item.outros || 0),
-              total: Number(atual.total || 0) + Number(item.total || item.saidas || 0)
+              total: Number(atual.total || 0) + Number(item.total || item.saidas || 0),
             };
           });
 
@@ -616,38 +634,41 @@ export const DataProvider = ({ children }) => {
 
           return {
             ...prev,
-            [cnpjId]: { ...cnpjData, faturamento: faturamentoConsolidado }
+            [cnpjId]: { ...cnpjData, faturamento: faturamentoConsolidado },
           };
         }
 
         if (tipoRelatorio === 'resumoAcumulador') {
           const existingPorCompetencia = cnpjData.resumoAcumulador?.porCompetencia || {};
-          const competenciaRaw = dadosParsed?.competenciaReferencia || dadosParsed?.competenciaFim || dadosParsed?.competenciaInicio;
+          const competenciaRaw =
+            dadosParsed?.competenciaReferencia ||
+            dadosParsed?.competenciaFim ||
+            dadosParsed?.competenciaInicio;
           const competencia = normalizarCompetencia(competenciaRaw) || `import_${Date.now()}`;
           const mergedPorCompetencia = {
             ...existingPorCompetencia,
             [competencia]: {
               ...dadosParsed,
-              competenciaReferencia: competencia
-            }
+              competenciaReferencia: competencia,
+            },
           };
           const resumoConsolidado = consolidarResumoAcumulador(mergedPorCompetencia);
 
           return {
             ...prev,
-            [cnpjId]: { ...cnpjData, resumoAcumulador: resumoConsolidado }
+            [cnpjId]: { ...cnpjData, resumoAcumulador: resumoConsolidado },
           };
         }
 
         return {
           ...prev,
-          [cnpjId]: { ...cnpjData, [tipoRelatorio]: dadosParsed }
+          [cnpjId]: { ...cnpjData, [tipoRelatorio]: dadosParsed },
         };
       });
 
       return { success: true, dados: dadosParsed };
     } catch (error) {
-      console.error('Erro ao importar relatório fiscal:', error);
+      console.error('Erro ao importar relatÃ³rio fiscal:', error);
       return { success: false, error: error.message };
     }
   };
@@ -657,7 +678,7 @@ export const DataProvider = ({ children }) => {
   };
 
   const limparDadosFiscais = (cnpjId) => {
-    setDadosFiscais(prev => {
+    setDadosFiscais((prev) => {
       const newData = { ...prev };
       delete newData[cnpjId];
       return newData;
@@ -686,30 +707,30 @@ export const DataProvider = ({ children }) => {
           dadosParsed = parseProgramacaoFerias(csvContent);
           break;
         default:
-          throw new Error(`Tipo de relatório pessoal desconhecido: ${tipoRelatorio}`);
+          throw new Error(`Tipo de relatÃ³rio pessoal desconhecido: ${tipoRelatorio}`);
       }
 
-      setDadosPessoal(prev => {
+      setDadosPessoal((prev) => {
         const cnpjData = prev[cnpjId] || {
           fgts: null,
           inss: null,
           empregados: null,
           salarioBase: null,
-          ferias: null
+          ferias: null,
         };
 
         return {
           ...prev,
           [cnpjId]: {
             ...cnpjData,
-            [tipoRelatorio]: dadosParsed
-          }
+            [tipoRelatorio]: dadosParsed,
+          },
         };
       });
 
       return { success: true, dados: dadosParsed };
     } catch (error) {
-      console.error('Erro ao importar relatório pessoal:', error);
+      console.error('Erro ao importar relatÃ³rio pessoal:', error);
       return { success: false, error: error.message };
     }
   };
@@ -719,7 +740,7 @@ export const DataProvider = ({ children }) => {
   };
 
   const limparDadosPessoal = (cnpjId) => {
-    setDadosPessoal(prev => {
+    setDadosPessoal((prev) => {
       const newData = { ...prev };
       delete newData[cnpjId];
       return newData;
@@ -731,9 +752,9 @@ export const DataProvider = ({ children }) => {
     totalGrupos: grupos.length,
     totalCnpjs: cnpjs.length,
     totalUsuarios: usuarios.length,
-    gruposAtivos: grupos.filter(g => g.status === 'Ativo').length,
-    cnpjsAtivos: cnpjs.filter(c => c.status === 'Ativo').length,
-    usuariosAtivos: usuarios.filter(u => u.status === 'Ativo').length
+    gruposAtivos: grupos.filter((g) => g.status === 'Ativo').length,
+    cnpjsAtivos: cnpjs.filter((c) => c.status === 'Ativo').length,
+    usuariosAtivos: usuarios.filter((u) => u.status === 'Ativo').length,
   });
 
   // Setores disponiveis
@@ -741,8 +762,25 @@ export const DataProvider = ({ children }) => {
     { id: 'contabil', nome: 'Contabil', descricao: 'Acesso ao setor contabil' },
     { id: 'fiscal', nome: 'Fiscal', descricao: 'Acesso ao setor fiscal' },
     { id: 'pessoal', nome: 'Pessoal', descricao: 'Acesso ao setor de pessoal/RH' },
-    { id: 'administrativo', nome: 'Administrativo', descricao: 'Acesso ao setor administrativo' }
+    { id: 'administrativo', nome: 'Administrativo', descricao: 'Acesso ao setor administrativo' },
   ];
+
+  const getVisibilidadeStorageConfig = (cnpjId) => {
+    if (!cnpjId) return null;
+
+    const saved = localStorage.getItem(`agili_visibilidade_${cnpjId}`);
+    if (!saved) return null;
+
+    try {
+      const parsed = JSON.parse(saved);
+      if (parsed && typeof parsed === 'object' && parsed.config) {
+        return parsed.config;
+      }
+      return parsed;
+    } catch {
+      return null;
+    }
+  };
 
   const value = {
     // Grupos
@@ -789,34 +827,23 @@ export const DataProvider = ({ children }) => {
 
     // Visibilidade de Dashboards
     getVisibilidadeConfig: (cnpjId) => {
-      const saved = localStorage.getItem(`agili_visibilidade_${cnpjId}`);
-      if (saved) {
-        return JSON.parse(saved);
-      }
-      // Retorna tudo visível por padrão
-      return null;
+      return getVisibilidadeStorageConfig(cnpjId);
     },
 
     isSecaoVisivel: (cnpjId, secaoId) => {
-      const saved = localStorage.getItem(`agili_visibilidade_${cnpjId}`);
-      if (!saved) return true; // Por padrão tudo visível
-      const config = JSON.parse(saved);
+      const config = getVisibilidadeStorageConfig(cnpjId);
+      if (!config) return true; // Por padrão tudo visível
       return config[secaoId]?.visivel !== false;
     },
 
     isItemVisivel: (cnpjId, secaoId, itemId) => {
-      const saved = localStorage.getItem(`agili_visibilidade_${cnpjId}`);
-      if (!saved) return true; // Por padrão tudo visível
-      const config = JSON.parse(saved);
+      const config = getVisibilidadeStorageConfig(cnpjId);
+      if (!config) return true; // Por padrão tudo visível
       return config[secaoId]?.itens?.[itemId] !== false;
-    }
+    },
   };
 
-  return (
-    <DataContext.Provider value={value}>
-      {children}
-    </DataContext.Provider>
-  );
+  return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 };
 
 export const useData = () => {
@@ -828,4 +855,3 @@ export const useData = () => {
 };
 
 export default DataContext;
-

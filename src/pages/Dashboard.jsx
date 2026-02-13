@@ -1,122 +1,20 @@
 ﻿import { useState, useEffect, useMemo } from 'react';
-import {
-  User,
-  ShieldCheck,
-  Calculator,
-  FileSpreadsheet,
-  Users,
-  Scale,
-  Coins,
-  TrendingUp,
-  TrendingDown,
-  PieChart,
-  BarChart2,
-  BarChartBig,
-  Wallet,
-  BarChartHorizontal,
-  AlertCircle,
-  UserCheck,
-  Building2,
-  Phone,
-  Mail,
-  MapPin,
-  Calendar,
-  Clock,
-  ArrowUpRight,
-  ArrowDownRight,
-  DollarSign,
-  Target,
-  Activity,
-  Briefcase,
-  Award,
-  FileText,
-  CircleDollarSign,
-  Receipt,
-  Percent,
-  Download,
-  FileDown,
-  Layers,
-  UserPlus,
-  BadgeCheck,
-  Banknote,
-  ClipboardList,
-  FileCheck,
-  AlertTriangle,
-  CheckCircle,
-  XCircle,
-  ScrollText,
-  Home,
-  Zap,
-  Shield,
-  Package,
-  Wrench,
-  MoreHorizontal,
-  Upload
-} from 'lucide-react';
+import { Layers } from 'lucide-react';
 import Header from '../components/layout/Header';
-import Card, { PrimaryCard, AlertCard, InfoCard, MetricCard, TeamCard } from '../components/common/Card';
-import { ButtonGroup } from '../components/common/Button';
-import DREChart from '../components/charts/DREChart';
-import MovimentacaoChart from '../components/charts/MovimentacaoChart';
-import LucroComparativoChart from '../components/charts/LucroComparativoChart';
-import ReceitaPizzaChart from '../components/charts/ReceitaPizzaChart';
-import CustosPizzaChart from '../components/charts/CustosPizzaChart';
-import {
-  ComparativoReceitaDespesaChart,
-  VariacaoLucroChart,
-  ReceitaCustoEstoqueChart,
-  MovimentacaoBancariaChart,
-  AplicacoesFinanceirasChart,
-  TabelaComparativoMensal,
-  CardsMetricasContabil
-} from '../components/charts/ContabilCharts';
-import {
-  FaturamentoPorCategoriaChart,
-  FaturamentoPorTrimestreChart,
-  TabelaAcumuladores,
-  TabelaFaturamentoPeriodo,
-  IRPJPorPeriodoChart,
-  CSLLPorPeriodoChart,
-  ResumoImpostosRoscaChart,
-  CompraVendaChart,
-  Detalhamento380Chart,
-  Situacao380Chart,
-  Tabela380,
-  CardsMetricasFiscais
-} from '../components/charts/FiscalCharts';
-import {
-  FGTSPorTipoChart,
-  FGTSPorAnoChart,
-  FGTSUltimos3MesesChart,
-  FGTSMensalChart,
-  INSSPorEmpresaChart,
-  INSSPorTipoGuiaChart,
-  INSSMensalChart,
-  AdmissoesDemissoesChart,
-  EmpregadosPorSituacaoChart,
-  SalarioPorCargoChart,
-  TabelaFerias,
-  CardsMetricasPessoal
-} from '../components/charts/PessoalCharts';
 import { useData } from '../context/DataContext';
-import FaturamentoChart from '../components/charts/FaturamentoChart';
-import FluxoFiscalChart from '../components/charts/FluxoFiscalChart';
-import DistribuicaoChart from '../components/charts/DistribuicaoChart';
-import FolhaPagamentoChart from '../components/charts/FolhaPagamentoChart';
-import { DepartamentoPizzaChart, ContratoPizzaChart } from '../components/charts/FuncionariosPizzaChart';
-import { DespesasMensaisChart, DespesasCategoriaChart } from '../components/charts/DespesasAdminChart';
 import { formatCurrency, sumArray } from '../utils/formatters';
 import { useEmpresa } from '../context/EmpresaContext';
 import { useTheme } from '../context/ThemeContext';
 import Breadcrumb from '../components/ui/Breadcrumb';
 import PeriodFilter from '../components/ui/PeriodFilter';
 import ExportButton from '../components/ui/ExportButton';
-import Sparkline from '../components/ui/Sparkline';
 import CnpjFilter from '../components/ui/CnpjFilter';
-import {
-  equipeTecnica,
-  meses
-} from '../data/mockData';
+import DashboardGeraisTab from './dashboard/tabs/DashboardGeraisTab';
+import DashboardContabilTab from './dashboard/tabs/DashboardContabilTab';
+import DashboardFiscalTab from './dashboard/tabs/DashboardFiscalTab';
+import DashboardPessoalTab from './dashboard/tabs/DashboardPessoalTab';
+import DashboardAdministrativoTab from './dashboard/tabs/DashboardAdministrativoTab';
+import { equipeTecnica, meses } from '../data/mockData';
 
 /**
  * Dashboard Principal - Design Aprimorado
@@ -129,17 +27,17 @@ const Dashboard = () => {
     return savedTab || 'gerais';
   });
   const [selectedYear, setSelectedYear] = useState(2025);
-  const [fiscalData, setFiscalData] = useState(null);
   const [animateCards, setAnimateCards] = useState(false);
   const [periodFilter, setPeriodFilter] = useState({ type: 'year', year: 2025 });
-  // Seletores de perÃ­odo para grÃ¡ficos fiscais
-  const [fiscalViewMode, setFiscalViewMode] = useState('ano'); // 'ano' | 'trimestre'
   const [fiscalTrimestre, setFiscalTrimestre] = useState(null); // 1, 2, 3, 4 ou null (ano todo)
-  const [mesesSelecionados, setMesesSelecionados] = useState([]); // Para seleÃ§Ã£o de meses especÃ­ficos
 
   const ordenarCompetencia = (a, b) => {
-    const [mesA, anoA] = String(a || '').split('/').map(Number);
-    const [mesB, anoB] = String(b || '').split('/').map(Number);
+    const [mesA, anoA] = String(a || '')
+      .split('/')
+      .map(Number);
+    const [mesB, anoB] = String(b || '')
+      .split('/')
+      .map(Number);
     if (anoA !== anoB) return anoA - anoB;
     return mesA - mesB;
   };
@@ -152,7 +50,7 @@ const Dashboard = () => {
       'outrasReceitasOperacionais',
       'outrasDespesasReceitas',
       'provisaoCSLL',
-      'provisaoIRPJ'
+      'provisaoIRPJ',
     ];
 
     const somaDespesas = camposDespesas.reduce((acc, campo) => {
@@ -191,7 +89,8 @@ const Dashboard = () => {
     }
 
     if (Array.isArray(target) && Array.isArray(source)) {
-      const arrayNumerico = target.every(v => typeof v === 'number') && source.every(v => typeof v === 'number');
+      const arrayNumerico =
+        target.every((v) => typeof v === 'number') && source.every((v) => typeof v === 'number');
       if (arrayNumerico) {
         const max = Math.max(target.length, source.length);
         return Array.from({ length: max }, (_, i) => (target[i] || 0) + (source[i] || 0));
@@ -234,10 +133,9 @@ const Dashboard = () => {
     modoVisualizacao,
     grupoAtual,
     empresaAtual,
-    modoLabel,
     listaCnpjs,
     todosCnpjs,
-    todasEmpresas
+    todasEmpresas,
   } = useEmpresa();
   const { isDarkMode } = useTheme();
   const {
@@ -247,7 +145,7 @@ const Dashboard = () => {
     isSecaoVisivel,
     isItemVisivel,
     cnpjs: cnpjsAdmin,
-    grupos: gruposAdmin
+    grupos: gruposAdmin,
   } = useData();
 
   const itemVisivel = (secaoId, itemId) => isItemVisivel(cnpjInfo?.id, secaoId, itemId);
@@ -257,38 +155,50 @@ const Dashboard = () => {
     if (!isConsolidado) return [cnpjInfo?.id].filter(Boolean);
 
     if (modoVisualizacao === 'empresa') {
-      return [...new Set(listaCnpjs.map(c => c.id))];
+      return [...new Set(listaCnpjs.map((c) => c.id))];
     }
 
     if (modoVisualizacao === 'grupo') {
       const empresasDoGrupo = todasEmpresas
-        .filter(e => e.grupoId === grupoAtual?.id)
-        .map(e => e.id);
-      return [...new Set(todosCnpjs.filter(c => empresasDoGrupo.includes(c.empresaId)).map(c => c.id))];
+        .filter((e) => e.grupoId === grupoAtual?.id)
+        .map((e) => e.id);
+      return [
+        ...new Set(
+          todosCnpjs.filter((c) => empresasDoGrupo.includes(c.empresaId)).map((c) => c.id)
+        ),
+      ];
     }
 
     if (modoVisualizacao === 'todos') {
-      return [...new Set(todosCnpjs.map(c => c.id))];
+      return [...new Set(todosCnpjs.map((c) => c.id))];
     }
 
     return [cnpjInfo?.id].filter(Boolean);
-  }, [isConsolidado, cnpjInfo?.id, modoVisualizacao, listaCnpjs, grupoAtual?.id, todosCnpjs, todasEmpresas]);
+  }, [
+    isConsolidado,
+    cnpjInfo?.id,
+    modoVisualizacao,
+    listaCnpjs,
+    grupoAtual?.id,
+    todosCnpjs,
+    todasEmpresas,
+  ]);
 
   const tabsDisponiveis = useMemo(() => {
     const tabs = ['gerais', 'contabil', 'fiscal', 'pessoal', 'administrativo'];
-    return tabs.filter(tab => isSecaoVisivel(cnpjInfo?.id, tab));
+    return tabs.filter((tab) => isSecaoVisivel(cnpjInfo?.id, tab));
   }, [cnpjInfo?.id, isSecaoVisivel]);
 
   const dadosContabeisEscopo = useMemo(
-    () => cnpjIdsEscopo.map(id => getDadosContabeis(id)).filter(Boolean),
+    () => cnpjIdsEscopo.map((id) => getDadosContabeis(id)).filter(Boolean),
     [cnpjIdsEscopo, getDadosContabeis]
   );
   const dadosFiscaisEscopo = useMemo(
-    () => cnpjIdsEscopo.map(id => getDadosFiscais(id)).filter(Boolean),
+    () => cnpjIdsEscopo.map((id) => getDadosFiscais(id)).filter(Boolean),
     [cnpjIdsEscopo, getDadosFiscais]
   );
   const dadosPessoalEscopo = useMemo(
-    () => cnpjIdsEscopo.map(id => getDadosPessoal(id)).filter(Boolean),
+    () => cnpjIdsEscopo.map((id) => getDadosPessoal(id)).filter(Boolean),
     [cnpjIdsEscopo, getDadosPessoal]
   );
 
@@ -298,16 +208,19 @@ const Dashboard = () => {
 
   const responsavelInfo = useMemo(() => {
     const responsavelVazio = { nome: 'Nao informado', cargo: 'Nao informado', whatsapp: '' };
-    const cnpjAdmin = cnpjsAdmin.find(c => c.id === cnpjInfo?.id);
-    const grupoAdmin = gruposAdmin.find(g => g.id === (cnpjAdmin?.grupoId || grupoAtual?.id));
-    const candidato = [cnpjAdmin?.responsavel, grupoAdmin?.responsavelPadrao, cnpjInfo?.responsavel]
-      .find(r => r && (r.nome || r.cargo || r.whatsapp));
+    const cnpjAdmin = cnpjsAdmin.find((c) => c.id === cnpjInfo?.id);
+    const grupoAdmin = gruposAdmin.find((g) => g.id === (cnpjAdmin?.grupoId || grupoAtual?.id));
+    const candidato = [
+      cnpjAdmin?.responsavel,
+      grupoAdmin?.responsavelPadrao,
+      cnpjInfo?.responsavel,
+    ].find((r) => r && (r.nome || r.cargo || r.whatsapp));
 
     if (!candidato) return responsavelVazio;
     return {
       nome: candidato.nome || responsavelVazio.nome,
       cargo: candidato.cargo || responsavelVazio.cargo,
-      whatsapp: candidato.whatsapp || ''
+      whatsapp: candidato.whatsapp || '',
     };
   }, [cnpjsAdmin, gruposAdmin, cnpjInfo?.id, cnpjInfo?.responsavel, grupoAtual?.id]);
 
@@ -344,10 +257,16 @@ const Dashboard = () => {
         if (item?.mesNome && item?.ano) return `${item.mesNome}/${String(item.ano).slice(-2)}`;
         return comp;
       });
-      const receitasMensais = competenciasOrdenadas.map(comp => obterReceitaCompetencia(competenciasMap[comp]));
-      const despesasMensais = competenciasOrdenadas.map(comp => obterDespesaCompetencia(competenciasMap[comp]));
+      const receitasMensais = competenciasOrdenadas.map((comp) =>
+        obterReceitaCompetencia(competenciasMap[comp])
+      );
+      const despesasMensais = competenciasOrdenadas.map((comp) =>
+        obterDespesaCompetencia(competenciasMap[comp])
+      );
       const lucroLiquidoMensal = receitasMensais.map((rec, i) => rec - (despesasMensais[i] || 0));
-      const anoExercicio = Number(competenciasMap[competenciasOrdenadas[competenciasOrdenadas.length - 1]]?.ano) || selectedYear;
+      const anoExercicio =
+        Number(competenciasMap[competenciasOrdenadas[competenciasOrdenadas.length - 1]]?.ano) ||
+        selectedYear;
       const totalReceitas = receitasMensais.reduce((acc, val) => acc + val, 0);
       const totalDespesas = despesasMensais.reduce((acc, val) => acc + val, 0);
 
@@ -360,44 +279,88 @@ const Dashboard = () => {
         despesasMensais,
         lucroLiquidoMensal,
         dados: {
-          receitaBruta: competenciasOrdenadas.map(comp => Number(competenciasMap[comp]?.receitaBruta || 0)),
-          cmv: competenciasOrdenadas.map(comp => Number(competenciasMap[comp]?.cmv || 0)),
-          despesasOperacionais: competenciasOrdenadas.map(comp => Number(competenciasMap[comp]?.despesasOperacionais || 0)),
-          resultadoFinanceiro: competenciasOrdenadas.map(comp => Number(competenciasMap[comp]?.resultadoFinanceiro || 0)),
-          outrasReceitasOperacionais: competenciasOrdenadas.map(comp => Number(competenciasMap[comp]?.outrasReceitasOperacionais || 0)),
-          outrasDespesasReceitas: competenciasOrdenadas.map(comp => Number(competenciasMap[comp]?.outrasDespesasReceitas || 0)),
-          provisaoCSLL: competenciasOrdenadas.map(comp => Number(competenciasMap[comp]?.provisaoCSLL || 0)),
-          provisaoIRPJ: competenciasOrdenadas.map(comp => Number(competenciasMap[comp]?.provisaoIRPJ || 0)),
-          lucroAntesIR: competenciasOrdenadas.map(comp => Number(competenciasMap[comp]?.lucroAntesIR || 0))
+          receitaBruta: competenciasOrdenadas.map((comp) =>
+            Number(competenciasMap[comp]?.receitaBruta || 0)
+          ),
+          cmv: competenciasOrdenadas.map((comp) => Number(competenciasMap[comp]?.cmv || 0)),
+          despesasOperacionais: competenciasOrdenadas.map((comp) =>
+            Number(competenciasMap[comp]?.despesasOperacionais || 0)
+          ),
+          resultadoFinanceiro: competenciasOrdenadas.map((comp) =>
+            Number(competenciasMap[comp]?.resultadoFinanceiro || 0)
+          ),
+          outrasReceitasOperacionais: competenciasOrdenadas.map((comp) =>
+            Number(competenciasMap[comp]?.outrasReceitasOperacionais || 0)
+          ),
+          outrasDespesasReceitas: competenciasOrdenadas.map((comp) =>
+            Number(competenciasMap[comp]?.outrasDespesasReceitas || 0)
+          ),
+          provisaoCSLL: competenciasOrdenadas.map((comp) =>
+            Number(competenciasMap[comp]?.provisaoCSLL || 0)
+          ),
+          provisaoIRPJ: competenciasOrdenadas.map((comp) =>
+            Number(competenciasMap[comp]?.provisaoIRPJ || 0)
+          ),
+          lucroAntesIR: competenciasOrdenadas.map((comp) =>
+            Number(competenciasMap[comp]?.lucroAntesIR || 0)
+          ),
         },
         totais: {
           totalReceitas,
           totalDespesas,
-          lucroLiquido: totalReceitas - totalDespesas
-        }
+          lucroLiquido: totalReceitas - totalDespesas,
+        },
       };
     }
 
     const balancetesEscopo = dadosContabeisEscopo
-      .map(item => item?.balancetesConsolidados)
+      .map((item) => item?.balancetesConsolidados)
       .filter(Boolean);
     let balancetesConsolidados = null;
     if (balancetesEscopo.length > 0) {
-      const mesesPadrao = balancetesEscopo[0]?.meses || ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+      const mesesPadrao = balancetesEscopo[0]?.meses || [
+        'Jan',
+        'Fev',
+        'Mar',
+        'Abr',
+        'Mai',
+        'Jun',
+        'Jul',
+        'Ago',
+        'Set',
+        'Out',
+        'Nov',
+        'Dez',
+      ];
       const tamanho = mesesPadrao.length;
       const series = {
-        bancosMovimento: somarArrayNumerico(balancetesEscopo.map(b => b?.series?.bancosMovimento || []), tamanho),
-        aplicacoesFinanceiras: somarArrayNumerico(balancetesEscopo.map(b => b?.series?.aplicacoesFinanceiras || []), tamanho),
-        estoque: somarArrayNumerico(balancetesEscopo.map(b => b?.series?.estoque || []), tamanho),
-        receita: somarArrayNumerico(balancetesEscopo.map(b => b?.series?.receita || []), tamanho),
-        custo: somarArrayNumerico(balancetesEscopo.map(b => b?.series?.custo || []), tamanho)
+        bancosMovimento: somarArrayNumerico(
+          balancetesEscopo.map((b) => b?.series?.bancosMovimento || []),
+          tamanho
+        ),
+        aplicacoesFinanceiras: somarArrayNumerico(
+          balancetesEscopo.map((b) => b?.series?.aplicacoesFinanceiras || []),
+          tamanho
+        ),
+        estoque: somarArrayNumerico(
+          balancetesEscopo.map((b) => b?.series?.estoque || []),
+          tamanho
+        ),
+        receita: somarArrayNumerico(
+          balancetesEscopo.map((b) => b?.series?.receita || []),
+          tamanho
+        ),
+        custo: somarArrayNumerico(
+          balancetesEscopo.map((b) => b?.series?.custo || []),
+          tamanho
+        ),
       };
       balancetesConsolidados = { meses: mesesPadrao, series };
     }
 
     return {
       analiseHorizontal,
-      balancetesConsolidados
+      balancetesConsolidados,
     };
   }, [isConsolidado, dadosContabeisEscopo, selectedYear]);
 
@@ -413,20 +376,24 @@ const Dashboard = () => {
         if (!mapa[tri]) {
           mapa[tri] = {
             ...item,
-            dados: { ...item.dados }
+            dados: { ...item.dados },
           };
         } else {
           mapa[tri] = mergeDeep(mapa[tri], item);
         }
       });
-      return Object.values(mapa).sort((a, b) => (a.trimestreNumero || 0) - (b.trimestreNumero || 0));
+      return Object.values(mapa).sort(
+        (a, b) => (a.trimestreNumero || 0) - (b.trimestreNumero || 0)
+      );
     };
 
     const movimentoMap = {};
     dadosFiscaisEscopo.forEach((item) => {
       const movimentacao = item?.demonstrativoMensal?.movimentacao || [];
       movimentacao.forEach((mov) => {
-        const competencia = mov.competencia || `${String(mov.mesIndex || 1).padStart(2, '0')}/${mov.ano || selectedYear}`;
+        const competencia =
+          mov.competencia ||
+          `${String(mov.mesIndex || 1).padStart(2, '0')}/${mov.ano || selectedYear}`;
         if (!movimentoMap[competencia]) {
           movimentoMap[competencia] = {
             mes: mov.mes,
@@ -435,7 +402,7 @@ const Dashboard = () => {
             competencia,
             entradas: 0,
             saidas: 0,
-            servicos: 0
+            servicos: 0,
           };
         }
         movimentoMap[competencia].entradas += Number(mov.entradas || 0);
@@ -449,16 +416,16 @@ const Dashboard = () => {
     });
     let demonstrativoMensal = null;
     if (movimentacaoConsolidada.length > 0) {
-      const anosUnicos = [...new Set(movimentacaoConsolidada.map(m => m.ano))].sort();
+      const anosUnicos = [...new Set(movimentacaoConsolidada.map((m) => m.ano))].sort();
       const movimentacaoPorAno = {};
       const totaisPorAno = {};
       anosUnicos.forEach((ano) => {
-        const lista = movimentacaoConsolidada.filter(m => m.ano === ano);
+        const lista = movimentacaoConsolidada.filter((m) => m.ano === ano);
         movimentacaoPorAno[ano] = lista;
         totaisPorAno[ano] = {
           entradas: lista.reduce((acc, m) => acc + (m.entradas || 0), 0),
           saidas: lista.reduce((acc, m) => acc + (m.saidas || 0), 0),
-          servicos: lista.reduce((acc, m) => acc + (m.servicos || 0), 0)
+          servicos: lista.reduce((acc, m) => acc + (m.servicos || 0), 0),
         };
       });
       demonstrativoMensal = {
@@ -468,14 +435,14 @@ const Dashboard = () => {
         totaisGerais: {
           entradas: movimentacaoConsolidada.reduce((acc, m) => acc + (m.entradas || 0), 0),
           saidas: movimentacaoConsolidada.reduce((acc, m) => acc + (m.saidas || 0), 0),
-          servicos: movimentacaoConsolidada.reduce((acc, m) => acc + (m.servicos || 0), 0)
+          servicos: movimentacaoConsolidada.reduce((acc, m) => acc + (m.servicos || 0), 0),
         },
         anosUnicos,
         movimentacao2024: movimentacaoPorAno[2024] || [],
         movimentacao2025: movimentacaoPorAno[2025] || [],
         totais2024: totaisPorAno[2024] || { entradas: 0, saidas: 0, servicos: 0 },
         totais2025: totaisPorAno[2025] || { entradas: 0, saidas: 0, servicos: 0 },
-        tipo: 'demonstrativoMensal'
+        tipo: 'demonstrativoMensal',
       };
     }
 
@@ -487,13 +454,16 @@ const Dashboard = () => {
           impostosPorMes[competencia] = { impostos: [], totalRecolher: 0, totalCredor: 0 };
         }
 
-        const impostos = Array.isArray(dadosMes) ? dadosMes : (dadosMes?.impostos || []);
+        const impostos = Array.isArray(dadosMes) ? dadosMes : dadosMes?.impostos || [];
         impostos.forEach((imp) => {
-          const idx = impostosPorMes[competencia].impostos.findIndex(i => i.nome === imp.nome);
+          const idx = impostosPorMes[competencia].impostos.findIndex((i) => i.nome === imp.nome);
           if (idx === -1) {
             impostosPorMes[competencia].impostos.push({ ...imp });
           } else {
-            impostosPorMes[competencia].impostos[idx] = mergeDeep(impostosPorMes[competencia].impostos[idx], imp);
+            impostosPorMes[competencia].impostos[idx] = mergeDeep(
+              impostosPorMes[competencia].impostos[idx],
+              imp
+            );
           }
         });
 
@@ -528,10 +498,16 @@ const Dashboard = () => {
         impostosPorMes,
         totaisPorImposto,
         competencias: Object.keys(impostosPorMes).sort(ordenarCompetencia),
-        totalRecolher: Object.values(impostosPorMes).reduce((acc, mes) => acc + Number(mes.totalRecolher || 0), 0),
-        totalCredor: Object.values(impostosPorMes).reduce((acc, mes) => acc + Number(mes.totalCredor || 0), 0),
+        totalRecolher: Object.values(impostosPorMes).reduce(
+          (acc, mes) => acc + Number(mes.totalRecolher || 0),
+          0
+        ),
+        totalCredor: Object.values(impostosPorMes).reduce(
+          (acc, mes) => acc + Number(mes.totalCredor || 0),
+          0
+        ),
         periodosImportados: Object.keys(impostosPorMes).length,
-        tipo: 'resumoImpostos'
+        tipo: 'resumoImpostos',
       };
     }
 
@@ -553,7 +529,7 @@ const Dashboard = () => {
       SETEMBRO: 9,
       OUTUBRO: 10,
       NOVEMBRO: 11,
-      DEZEMBRO: 12
+      DEZEMBRO: 12,
     };
     const getMesIndexByNome = (mesNome = '') => mesIndexPorNome[normalizarTexto(mesNome)] || null;
 
@@ -587,7 +563,7 @@ const Dashboard = () => {
         vendaExterior: 0,
         servicos: 0,
         totalVendas380: 0,
-        esperado380: 0
+        esperado380: 0,
       };
 
       const normalizarDescricao = (texto = '') =>
@@ -625,7 +601,12 @@ const Dashboard = () => {
       const saidas = Array.from(saidasMap.values());
       const detalhesVendas = saidas.filter((s) => {
         const desc = normalizarDescricao(s.descricao || '');
-        return desc.startsWith('VENDA') && !desc.includes('ATIVO') && !desc.includes('IMOBILIZADO') && !desc.includes('CANCEL');
+        return (
+          desc.startsWith('VENDA') &&
+          !desc.includes('ATIVO') &&
+          !desc.includes('IMOBILIZADO') &&
+          !desc.includes('CANCEL')
+        );
       });
 
       return {
@@ -633,17 +614,23 @@ const Dashboard = () => {
         saidas,
         totais: {
           entradas: entradas.reduce((acc, e) => acc + Number(e.vlrContabil || 0), 0),
-          saidas: saidas.reduce((acc, s) => acc + Number(s.vlrContabil || 0), 0)
+          saidas: saidas.reduce((acc, s) => acc + Number(s.vlrContabil || 0), 0),
         },
         categorias,
         detalhes380: {
-          compras: entradas.filter(e => normalizarDescricao(e.descricao || '').includes('COMPRA P/ COMERCIALIZA')),
+          compras: entradas.filter((e) =>
+            normalizarDescricao(e.descricao || '').includes('COMPRA P/ COMERCIALIZA')
+          ),
           vendasMercadoria: detalhesVendas,
-          vendasProduto: detalhesVendas.filter(s => normalizarDescricao(s.descricao || '').includes('PRODUTO')),
-          vendasExterior: detalhesVendas.filter(s => normalizarDescricao(s.descricao || '').includes('EXTERIOR')),
-          servicos: entradas.filter(e => isServicoRelacionado(e.descricao || ''))
+          vendasProduto: detalhesVendas.filter((s) =>
+            normalizarDescricao(s.descricao || '').includes('PRODUTO')
+          ),
+          vendasExterior: detalhesVendas.filter((s) =>
+            normalizarDescricao(s.descricao || '').includes('EXTERIOR')
+          ),
+          servicos: entradas.filter((e) => isServicoRelacionado(e.descricao || '')),
         },
-        tipo: 'resumoAcumulador'
+        tipo: 'resumoAcumulador',
       };
     };
 
@@ -661,8 +648,13 @@ const Dashboard = () => {
         return;
       }
 
-      const fallbackCompetencia = resumo?.competenciaReferencia || resumo?.competenciaFim || resumo?.competenciaInicio || `${selectedYear}`;
-      if (!resumoListaPorCompetencia[fallbackCompetencia]) resumoListaPorCompetencia[fallbackCompetencia] = [];
+      const fallbackCompetencia =
+        resumo?.competenciaReferencia ||
+        resumo?.competenciaFim ||
+        resumo?.competenciaInicio ||
+        `${selectedYear}`;
+      if (!resumoListaPorCompetencia[fallbackCompetencia])
+        resumoListaPorCompetencia[fallbackCompetencia] = [];
       resumoListaPorCompetencia[fallbackCompetencia].push(resumo);
     });
 
@@ -677,7 +669,7 @@ const Dashboard = () => {
       resumoAcumulador = {
         ...consolidarResumoAcumuladorLista(Object.values(resumoPorCompetencia)),
         porCompetencia: resumoPorCompetencia,
-        competencias
+        competencias,
       };
     }
 
@@ -696,13 +688,17 @@ const Dashboard = () => {
               saidas: 0,
               servicos: 0,
               outros: 0,
-              total: 0
+              total: 0,
             };
           }
           faturamentoPorCompetencia[competencia].saidas += Number(dadosCompetencia?.saidas || 0);
-          faturamentoPorCompetencia[competencia].servicos += Number(dadosCompetencia?.servicos || 0);
+          faturamentoPorCompetencia[competencia].servicos += Number(
+            dadosCompetencia?.servicos || 0
+          );
           faturamentoPorCompetencia[competencia].outros += Number(dadosCompetencia?.outros || 0);
-          faturamentoPorCompetencia[competencia].total += Number(dadosCompetencia?.total || dadosCompetencia?.saidas || 0);
+          faturamentoPorCompetencia[competencia].total += Number(
+            dadosCompetencia?.total || dadosCompetencia?.saidas || 0
+          );
         });
         return;
       }
@@ -719,13 +715,15 @@ const Dashboard = () => {
             saidas: 0,
             servicos: 0,
             outros: 0,
-            total: 0
+            total: 0,
           };
         }
         faturamentoPorCompetencia[competencia].saidas += Number(registro?.saidas || 0);
         faturamentoPorCompetencia[competencia].servicos += Number(registro?.servicos || 0);
         faturamentoPorCompetencia[competencia].outros += Number(registro?.outros || 0);
-        faturamentoPorCompetencia[competencia].total += Number(registro?.total || registro?.saidas || 0);
+        faturamentoPorCompetencia[competencia].total += Number(
+          registro?.total || registro?.saidas || 0
+        );
       });
     });
 
@@ -743,32 +741,32 @@ const Dashboard = () => {
           saidas: Number(item.saidas || 0),
           servicos: Number(item.servicos || 0),
           outros: Number(item.outros || 0),
-          total: Number(item.total || 0)
+          total: Number(item.total || 0),
         };
       });
       faturamento = {
         faturamento: registros,
-        faturamento2024: registros.filter(r => r.ano === 2024),
-        faturamento2025: registros.filter(r => r.ano === 2025),
+        faturamento2024: registros.filter((r) => r.ano === 2024),
+        faturamento2025: registros.filter((r) => r.ano === 2025),
         totais: {
           saidas: registros.reduce((acc, r) => acc + Number(r.saidas || 0), 0),
           servicos: registros.reduce((acc, r) => acc + Number(r.servicos || 0), 0),
           outros: registros.reduce((acc, r) => acc + Number(r.outros || 0), 0),
-          total: registros.reduce((acc, r) => acc + Number(r.total || 0), 0)
+          total: registros.reduce((acc, r) => acc + Number(r.total || 0), 0),
         },
         porCompetencia: faturamentoPorCompetencia,
         competencias,
-        tipo: 'faturamento'
+        tipo: 'faturamento',
       };
     }
 
     return {
-      csll: mergeTrimestres(dadosFiscaisEscopo.map(item => item?.csll || [])),
-      irpj: mergeTrimestres(dadosFiscaisEscopo.map(item => item?.irpj || [])),
+      csll: mergeTrimestres(dadosFiscaisEscopo.map((item) => item?.csll || [])),
+      irpj: mergeTrimestres(dadosFiscaisEscopo.map((item) => item?.irpj || [])),
       demonstrativoMensal,
       faturamento,
       resumoImpostos,
-      resumoAcumulador
+      resumoAcumulador,
     };
   }, [isConsolidado, dadosFiscaisEscopo, selectedYear]);
 
@@ -776,47 +774,65 @@ const Dashboard = () => {
     if (!isConsolidado) return null;
 
     const fgts = dadosPessoalEscopo
-      .map(item => item?.fgts)
+      .map((item) => item?.fgts)
       .filter(Boolean)
       .reduce((acc, atual) => mergeDeep(acc, atual), null);
     const inss = dadosPessoalEscopo
-      .map(item => item?.inss)
+      .map((item) => item?.inss)
       .filter(Boolean)
       .reduce((acc, atual) => mergeDeep(acc, atual), null);
     const empregados = dadosPessoalEscopo
-      .map(item => item?.empregados)
+      .map((item) => item?.empregados)
       .filter(Boolean)
       .reduce((acc, atual) => mergeDeep(acc, atual), null);
     const salarioBase = dadosPessoalEscopo
-      .map(item => item?.salarioBase)
+      .map((item) => item?.salarioBase)
       .filter(Boolean)
       .reduce((acc, atual) => mergeDeep(acc, atual), null);
     const ferias = dadosPessoalEscopo
-      .map(item => item?.ferias)
+      .map((item) => item?.ferias)
       .filter(Boolean)
       .reduce((acc, atual) => mergeDeep(acc, atual), null);
 
     if (fgts?.totaisPorCompetencia) {
       fgts.competencias = Object.keys(fgts.totaisPorCompetencia).sort(ordenarCompetencia);
       fgts.ultimos3Meses = fgts.competencias.slice(-3);
-      fgts.anos = Object.keys(fgts.totaisPorAno || {}).map(Number).sort();
+      fgts.anos = Object.keys(fgts.totaisPorAno || {})
+        .map(Number)
+        .sort();
       fgts.totalGeral = {
-        base: Object.values(fgts.totaisPorCompetencia).reduce((acc, item) => acc + Number(item.base || 0), 0),
-        valorFGTS: Object.values(fgts.totaisPorCompetencia).reduce((acc, item) => acc + Number(item.valorFGTS || 0), 0)
+        base: Object.values(fgts.totaisPorCompetencia).reduce(
+          (acc, item) => acc + Number(item.base || 0),
+          0
+        ),
+        valorFGTS: Object.values(fgts.totaisPorCompetencia).reduce(
+          (acc, item) => acc + Number(item.valorFGTS || 0),
+          0
+        ),
       };
     }
 
     if (inss?.totaisPorCompetencia) {
       inss.competencias = Object.keys(inss.totaisPorCompetencia).sort(ordenarCompetencia);
       inss.totalGeral = {
-        baseCalculo: Object.values(inss.totaisPorCompetencia).reduce((acc, item) => acc + Number(item.baseCalculo || 0), 0),
-        valorINSS: Object.values(inss.totaisPorCompetencia).reduce((acc, item) => acc + Number(item.valorINSS || 0), 0)
+        baseCalculo: Object.values(inss.totaisPorCompetencia).reduce(
+          (acc, item) => acc + Number(item.baseCalculo || 0),
+          0
+        ),
+        valorINSS: Object.values(inss.totaisPorCompetencia).reduce(
+          (acc, item) => acc + Number(item.valorINSS || 0),
+          0
+        ),
       };
     }
 
     if (empregados?.admissoesPorMes) {
-      empregados.competenciasAdmissao = Object.keys(empregados.admissoesPorMes).sort(ordenarCompetencia);
-      empregados.competenciasDemissao = Object.keys(empregados.demissoesPorMes || {}).sort(ordenarCompetencia);
+      empregados.competenciasAdmissao = Object.keys(empregados.admissoesPorMes).sort(
+        ordenarCompetencia
+      );
+      empregados.competenciasDemissao = Object.keys(empregados.demissoesPorMes || {}).sort(
+        ordenarCompetencia
+      );
       const ativos = Number(empregados.empregadosPorSituacao?.Ativo || 0);
       const demitidos = Number(empregados.empregadosPorSituacao?.Demitido || 0);
       const afastados = Number(empregados.empregadosPorSituacao?.Afastado || 0);
@@ -824,25 +840,27 @@ const Dashboard = () => {
         total: Number(empregados.empregados?.length || 0),
         ativos,
         demitidos,
-        afastados
+        afastados,
       };
     }
 
     if (salarioBase?.salariosPorCargo) {
-      const cargosOrdenados = Object.entries(salarioBase.salariosPorCargo).map(([cargo, dados]) => {
-        const quantidade = Number(dados.quantidade || 0);
-        const salarioTotal = Number(dados.salarioTotal || 0);
-        const salarioMin = Number.isFinite(dados.salarioMin) ? Number(dados.salarioMin) : 0;
-        const salarioMax = Number(dados.salarioMax || 0);
-        return {
-          cargo,
-          quantidade,
-          salarioTotal,
-          salarioMedio: quantidade > 0 ? salarioTotal / quantidade : 0,
-          salarioMin,
-          salarioMax
-        };
-      }).sort((a, b) => b.salarioMedio - a.salarioMedio);
+      const cargosOrdenados = Object.entries(salarioBase.salariosPorCargo)
+        .map(([cargo, dados]) => {
+          const quantidade = Number(dados.quantidade || 0);
+          const salarioTotal = Number(dados.salarioTotal || 0);
+          const salarioMin = Number.isFinite(dados.salarioMin) ? Number(dados.salarioMin) : 0;
+          const salarioMax = Number(dados.salarioMax || 0);
+          return {
+            cargo,
+            quantidade,
+            salarioTotal,
+            salarioMedio: quantidade > 0 ? salarioTotal / quantidade : 0,
+            salarioMin,
+            salarioMax,
+          };
+        })
+        .sort((a, b) => b.salarioMedio - a.salarioMedio);
 
       salarioBase.cargosOrdenados = cargosOrdenados;
       const totalSalarios = cargosOrdenados.reduce((acc, item) => acc + item.salarioTotal, 0);
@@ -851,7 +869,7 @@ const Dashboard = () => {
         totalEmpregados,
         totalSalarios,
         salarioMedioGeral: totalEmpregados > 0 ? totalSalarios / totalEmpregados : 0,
-        quantidadeCargos: cargosOrdenados.length
+        quantidadeCargos: cargosOrdenados.length,
       };
     }
 
@@ -859,27 +877,40 @@ const Dashboard = () => {
       ferias.mesesOrdenados = Object.keys(ferias.feriasPorMes).sort(ordenarCompetencia);
       ferias.estatisticas = {
         totalRegistros: Number(ferias.ferias?.length || 0),
-        diasTotalProgramados: (ferias.ferias || []).reduce((acc, item) => acc + Number(item.diasDireito || 0), 0),
-        diasTotalGozados: (ferias.ferias || []).reduce((acc, item) => acc + Number(item.diasGozados || 0), 0),
-        diasRestantes: (ferias.ferias || []).reduce((acc, item) => acc + Number(item.diasRestantes || 0), 0)
+        diasTotalProgramados: (ferias.ferias || []).reduce(
+          (acc, item) => acc + Number(item.diasDireito || 0),
+          0
+        ),
+        diasTotalGozados: (ferias.ferias || []).reduce(
+          (acc, item) => acc + Number(item.diasGozados || 0),
+          0
+        ),
+        diasRestantes: (ferias.ferias || []).reduce(
+          (acc, item) => acc + Number(item.diasRestantes || 0),
+          0
+        ),
       };
     }
 
     return { fgts, inss, empregados, salarioBase, ferias };
   }, [isConsolidado, dadosPessoalEscopo]);
 
-  const dadosContabeisImportados = isConsolidado ? dadosContabeisConsolidados : dadosContabeisSelecionado;
+  const dadosContabeisImportados = isConsolidado
+    ? dadosContabeisConsolidados
+    : dadosContabeisSelecionado;
   const dadosFiscaisImportados = isConsolidado ? dadosFiscaisConsolidados : dadosFiscaisSelecionado;
   const dadosPessoalImportados = isConsolidado ? dadosPessoalConsolidados : dadosPessoalSelecionado;
 
-  const temDadosContabeis = Boolean(dadosContabeisImportados?.analiseHorizontal || dadosContabeisImportados?.balancetesConsolidados);
+  const temDadosContabeis = Boolean(
+    dadosContabeisImportados?.analiseHorizontal || dadosContabeisImportados?.balancetesConsolidados
+  );
   const temDadosFiscais = Boolean(
     dadosFiscaisImportados?.resumoAcumulador ||
     dadosFiscaisImportados?.faturamento ||
     dadosFiscaisImportados?.demonstrativoMensal ||
     dadosFiscaisImportados?.resumoImpostos ||
-    (dadosFiscaisImportados?.csll?.length > 0) ||
-    (dadosFiscaisImportados?.irpj?.length > 0)
+    dadosFiscaisImportados?.csll?.length > 0 ||
+    dadosFiscaisImportados?.irpj?.length > 0
   );
   const temDadosPessoal = Boolean(
     dadosPessoalImportados?.fgts ||
@@ -905,9 +936,11 @@ const Dashboard = () => {
         1: [1, 2, 3],
         2: [4, 5, 6],
         3: [7, 8, 9],
-        4: [10, 11, 12]
+        4: [10, 11, 12],
       };
-      return (mesesTrimestre[trimestre] || []).map((mes) => `${String(mes).padStart(2, '0')}/${ano}`);
+      return (mesesTrimestre[trimestre] || []).map(
+        (mes) => `${String(mes).padStart(2, '0')}/${ano}`
+      );
     }
 
     return Array.from({ length: 12 }, (_, idx) => `${String(idx + 1).padStart(2, '0')}/${ano}`);
@@ -924,7 +957,7 @@ const Dashboard = () => {
       vendaExterior: 0,
       servicos: 0,
       totalVendas380: 0,
-      esperado380: 0
+      esperado380: 0,
     };
 
     const normalizarDescricao = (texto = '') =>
@@ -981,7 +1014,12 @@ const Dashboard = () => {
     const saidas = Array.from(saidasMap.values());
     const detalhesVendas = saidas.filter((s) => {
       const desc = normalizarDescricao(s.descricao || '');
-      return desc.startsWith('VENDA') && !desc.includes('ATIVO') && !desc.includes('IMOBILIZADO') && !desc.includes('CANCEL');
+      return (
+        desc.startsWith('VENDA') &&
+        !desc.includes('ATIVO') &&
+        !desc.includes('IMOBILIZADO') &&
+        !desc.includes('CANCEL')
+      );
     });
 
     return {
@@ -989,17 +1027,23 @@ const Dashboard = () => {
       saidas,
       totais: {
         entradas: entradas.reduce((acc, e) => acc + Number(e.vlrContabil || 0), 0),
-        saidas: saidas.reduce((acc, s) => acc + Number(s.vlrContabil || 0), 0)
+        saidas: saidas.reduce((acc, s) => acc + Number(s.vlrContabil || 0), 0),
       },
       categorias,
       detalhes380: {
-        compras: entradas.filter(e => normalizarDescricao(e.descricao || '').includes('COMPRA P/ COMERCIALIZA')),
+        compras: entradas.filter((e) =>
+          normalizarDescricao(e.descricao || '').includes('COMPRA P/ COMERCIALIZA')
+        ),
         vendasMercadoria: detalhesVendas,
-        vendasProduto: detalhesVendas.filter(s => normalizarDescricao(s.descricao || '').includes('PRODUTO')),
-        vendasExterior: detalhesVendas.filter(s => normalizarDescricao(s.descricao || '').includes('EXTERIOR')),
-        servicos: entradas.filter(e => isServicoRelacionado(e.descricao || ''))
+        vendasProduto: detalhesVendas.filter((s) =>
+          normalizarDescricao(s.descricao || '').includes('PRODUTO')
+        ),
+        vendasExterior: detalhesVendas.filter((s) =>
+          normalizarDescricao(s.descricao || '').includes('EXTERIOR')
+        ),
+        servicos: entradas.filter((e) => isServicoRelacionado(e.descricao || '')),
       },
-      tipo: 'resumoAcumulador'
+      tipo: 'resumoAcumulador',
     };
   };
 
@@ -1032,18 +1076,24 @@ const Dashboard = () => {
           vendaExterior: 0,
           servicos: 0,
           totalVendas380: 0,
-          esperado380: 0
+          esperado380: 0,
         },
-        detalhes380: { compras: [], vendasMercadoria: [], vendasProduto: [], vendasExterior: [], servicos: [] },
+        detalhes380: {
+          compras: [],
+          vendasMercadoria: [],
+          vendasProduto: [],
+          vendasExterior: [],
+          servicos: [],
+        },
         porCompetencia: {},
-        competencias: []
+        competencias: [],
       };
     }
 
     return {
       ...consolidarResumoAcumuladorLista(Object.values(filtrado)),
       porCompetencia: filtrado,
-      competencias: Object.keys(filtrado).sort(ordenarCompetencia)
+      competencias: Object.keys(filtrado).sort(ordenarCompetencia),
     };
   }, [dadosFiscaisImportados?.resumoAcumulador, competenciasFiltroFiscal]);
 
@@ -1091,7 +1141,7 @@ const Dashboard = () => {
         totaisPorImposto: {},
         totalRecolher: 0,
         totalCredor: 0,
-        competencias: []
+        competencias: [],
       };
     }
 
@@ -1120,7 +1170,7 @@ const Dashboard = () => {
       totaisPorImposto,
       totalRecolher,
       totalCredor,
-      competencias: Object.keys(impostosPorMes).sort(ordenarCompetencia)
+      competencias: Object.keys(impostosPorMes).sort(ordenarCompetencia),
     };
   }, [dadosFiscaisImportados?.resumoImpostos, competenciasFiltroFiscal]);
 
@@ -1157,46 +1207,67 @@ const Dashboard = () => {
   // Se em modo consolidado, usa totaisConsolidados; senÃ£o, prioriza dados importados (AnÃ¡lise Horizontal)
   const analiseHorizontal = dadosContabeisImportados?.analiseHorizontal;
 
-  const totalReceita = isConsolidado && totaisConsolidados
-    ? totaisConsolidados.receita
-    : (analiseHorizontal?.totais?.totalReceitas
-      || (analiseHorizontal?.receitasMensais ? analiseHorizontal.receitasMensais.reduce((a, b) => a + b, 0) : sumArray(dreData.receita)));
+  const totalReceita =
+    isConsolidado && totaisConsolidados
+      ? totaisConsolidados.receita
+      : analiseHorizontal?.totais?.totalReceitas ||
+        (analiseHorizontal?.receitasMensais
+          ? analiseHorizontal.receitasMensais.reduce((a, b) => a + b, 0)
+          : sumArray(dreData.receita));
 
-  const totalDespesa = isConsolidado && totaisConsolidados
-    ? totaisConsolidados.despesa
-    : (analiseHorizontal?.totais?.totalDespesas
-      || (analiseHorizontal?.despesasMensais ? analiseHorizontal.despesasMensais.reduce((a, b) => a + b, 0) : sumArray(dreData.despesa)));
+  const totalDespesa =
+    isConsolidado && totaisConsolidados
+      ? totaisConsolidados.despesa
+      : analiseHorizontal?.totais?.totalDespesas ||
+        (analiseHorizontal?.despesasMensais
+          ? analiseHorizontal.despesasMensais.reduce((a, b) => a + b, 0)
+          : sumArray(dreData.despesa));
 
-  const totalLucro = isConsolidado && totaisConsolidados
-    ? totaisConsolidados.lucro
-    : totalReceita - totalDespesa;
+  const totalLucro =
+    isConsolidado && totaisConsolidados ? totaisConsolidados.lucro : totalReceita - totalDespesa;
 
   const margemLucro = totalReceita > 0 ? ((totalLucro / totalReceita) * 100).toFixed(1) : '0.0';
 
   // Dados consolidados extras (funcionÃ¡rios, folha, tributos)
-  const totalFuncionarios = isConsolidado && totaisConsolidados ? totaisConsolidados.funcionarios : (pessoalData?.totalFuncionarios || 0);
-  const totalFolhaMensal = isConsolidado && totaisConsolidados ? totaisConsolidados.folhaMensal : (pessoalData?.folhaPagamento || 0);
-  const totalIRPJ = isConsolidado && totaisConsolidados ? totaisConsolidados.irpj : (totaisFiscais?.irpj || 0);
-  const totalCSLL = isConsolidado && totaisConsolidados ? totaisConsolidados.csll : (totaisFiscais?.csll || 0);
+  const totalFuncionarios =
+    isConsolidado && totaisConsolidados
+      ? totaisConsolidados.funcionarios
+      : pessoalData?.totalFuncionarios || 0;
   const qtdCnpjsConsolidado = isConsolidado && totaisConsolidados ? totaisConsolidados.qtdCnpjs : 1;
 
   // ComparaÃ§Ã£o com ano anterior
   const totalReceita2024 = sumArray(dreData2024.receita);
-  const variacaoReceita = isConsolidado ? 0 : (((totalReceita - totalReceita2024) / totalReceita2024) * 100).toFixed(1);
+  const variacaoReceita = isConsolidado
+    ? 0
+    : (((totalReceita - totalReceita2024) / totalReceita2024) * 100).toFixed(1);
 
   // Dados combinados para grÃ¡fico Receita x Custo x Estoque
   // Custo vem do CMV/CPV da DRE Horizontal, Estoque vem do Balancete
   const dadosReceitaCustoEstoque = useMemo(() => {
     const balancetes = dadosContabeisImportados?.balancetesConsolidados;
-    const meses = balancetes?.meses || ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    const meses = balancetes?.meses || [
+      'Jan',
+      'Fev',
+      'Mar',
+      'Abr',
+      'Mai',
+      'Jun',
+      'Jul',
+      'Ago',
+      'Set',
+      'Out',
+      'Nov',
+      'Dez',
+    ];
 
     // Receita: prioriza DRE Horizontal, fallback para Balancete
-    const receita = analiseHorizontal?.receitasMensais || balancetes?.series?.receita || new Array(12).fill(0);
+    const receita =
+      analiseHorizontal?.receitasMensais || balancetes?.series?.receita || new Array(12).fill(0);
 
     // Custo: usa CMV/CPV da DRE Horizontal (valor absoluto)
     const custo = analiseHorizontal?.dados?.cmv
-      ? analiseHorizontal.dados.cmv.map(v => Math.abs(v))
-      : (balancetes?.series?.custo || new Array(12).fill(0));
+      ? analiseHorizontal.dados.cmv.map((v) => Math.abs(v))
+      : balancetes?.series?.custo || new Array(12).fill(0);
 
     // Estoque: usa dados do Balancete
     const estoque = balancetes?.series?.estoque || new Array(12).fill(0);
@@ -1206,8 +1277,8 @@ const Dashboard = () => {
       series: {
         receita,
         custo,
-        estoque
-      }
+        estoque,
+      },
     };
   }, [dadosContabeisImportados, analiseHorizontal]);
 
@@ -1221,19 +1292,21 @@ const Dashboard = () => {
         anoAtual: anoBase,
         anoAnterior: anoBase - 1,
         dadosAtual: analiseHorizontal || null,
-        dadosAnterior: null
+        dadosAnterior: null,
       };
     }
 
-    const anosDisponiveis = [...new Set(
-      Object.values(competencias)
-        .map((item) => Number(item.ano))
-        .filter((ano) => Number.isFinite(ano))
-    )].sort((a, b) => b - a);
+    const anosDisponiveis = [
+      ...new Set(
+        Object.values(competencias)
+          .map((item) => Number(item.ano))
+          .filter((ano) => Number.isFinite(ano))
+      ),
+    ].sort((a, b) => b - a);
 
     const anoAtual = anosDisponiveis[0] || analiseHorizontal?.anoExercicio || selectedYear;
     const temAnoAnterior = anosDisponiveis.length > 1;
-    const anoAnterior = temAnoAnterior ? anosDisponiveis[1] : (anoAtual - 1);
+    const anoAnterior = temAnoAnterior ? anosDisponiveis[1] : anoAtual - 1;
 
     const montarSerieAno = (ano) => {
       if (!ano) return null;
@@ -1246,20 +1319,19 @@ const Dashboard = () => {
         const mesIndex = Number(competencia.mes) - 1;
         if (mesIndex < 0 || mesIndex > 11) return;
 
-        const lucroAntesIrValor = typeof competencia.lucroAntesIR === 'number'
-          ? competencia.lucroAntesIR
-          : (
-            Number(competencia.resultadoLiquidoOriginal || competencia.lucroLiquido || 0) +
-            Math.abs(Number(competencia.provisaoCSLL || 0)) +
-            Math.abs(Number(competencia.provisaoIRPJ || 0))
-          );
+        const lucroAntesIrValor =
+          typeof competencia.lucroAntesIR === 'number'
+            ? competencia.lucroAntesIR
+            : Number(competencia.resultadoLiquidoOriginal || competencia.lucroLiquido || 0) +
+              Math.abs(Number(competencia.provisaoCSLL || 0)) +
+              Math.abs(Number(competencia.provisaoIRPJ || 0));
 
         lucroAntesIR[mesIndex] = lucroAntesIrValor;
       });
 
       return {
         anoExercicio: ano,
-        dados: { lucroAntesIR }
+        dados: { lucroAntesIR },
       };
     };
 
@@ -1267,53 +1339,47 @@ const Dashboard = () => {
       anoAtual,
       anoAnterior,
       dadosAtual: montarSerieAno(anoAtual) || analiseHorizontal || null,
-      dadosAnterior: temAnoAnterior ? montarSerieAno(anoAnterior) : null
+      dadosAnterior: temAnoAnterior ? montarSerieAno(anoAnterior) : null,
     };
   }, [analiseHorizontal, selectedYear]);
 
   // Callback para receber dados do grÃ¡fico de distribuiÃ§Ã£o
-  const handleFiscalDataCalculated = (data) => {
-    setFiscalData(data);
-  };
-
-  // Ãcones para a equipe tÃ©cnica
-  const iconMap = {
-    calculator: Calculator,
-    'file-spreadsheet': FileSpreadsheet,
-    users: Users,
-    briefcase: Briefcase
-  };
+  const handleFiscalDataCalculated = () => {};
 
   // Classe de animaÃ§Ã£o
-  const cardAnimation = animateCards
-    ? 'opacity-100 translate-y-0'
-    : 'opacity-0 translate-y-4';
+  const cardAnimation = animateCards ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4';
 
   // FunÃ§Ã£o para exportar relatÃ³rio (mock)
   const handleExportReport = (type) => {
-    alert(`ExportaÃ§Ã£o de relatÃ³rio ${type.toUpperCase()} serÃ¡ implementada com integraÃ§Ã£o Firebase.`);
+    alert(
+      `ExportaÃ§Ã£o de relatÃ³rio ${type.toUpperCase()} serÃ¡ implementada com integraÃ§Ã£o Firebase.`
+    );
   };
 
   // Dados para sparklines (mock - Ãºltimos 12 meses)
   const receitaSparkline = cnpjDados?.dreData2025?.receita || [0];
-  const lucroSparkline = cnpjDados?.dreData2025?.receita?.map((r, i) => r - (cnpjDados?.dreData2025?.despesa?.[i] || 0)) || [0];
+  const lucroSparkline = cnpjDados?.dreData2025?.receita?.map(
+    (r, i) => r - (cnpjDados?.dreData2025?.despesa?.[i] || 0)
+  ) || [0];
 
   // Dados para exportaÃ§Ã£o
   const exportColumns = [
     { key: 'mes', label: 'MÃªs' },
     { key: 'receita', label: 'Receita' },
     { key: 'despesa', label: 'Despesa' },
-    { key: 'lucro', label: 'Lucro' }
+    { key: 'lucro', label: 'Lucro' },
   ];
   const exportData = meses.map((mes, i) => ({
     mes,
     receita: dreData?.receita?.[i] || 0,
     despesa: dreData?.despesa?.[i] || 0,
-    lucro: (dreData?.receita?.[i] || 0) - (dreData?.despesa?.[i] || 0)
+    lucro: (dreData?.receita?.[i] || 0) - (dreData?.despesa?.[i] || 0),
   }));
 
   return (
-    <div className={`min-h-screen ${isDarkMode ? 'dark bg-slate-900' : 'bg-slate-100'} text-slate-800 dark:text-slate-200`}>
+    <div
+      className={`min-h-screen ${isDarkMode ? 'dark bg-slate-900' : 'bg-slate-100'} text-slate-800 dark:text-slate-200`}
+    >
       <Header activeTab={activeTab} onTabChange={setActiveTab} />
 
       <main className="w-full px-4 lg:px-6 xl:px-8 py-6 lg:py-8">
@@ -1344,7 +1410,8 @@ const Dashboard = () => {
                   {modoVisualizacao === 'empresa' && `Consolidado: ${empresaAtual?.nomeFantasia}`}
                 </span>
                 <span className="text-sm text-white/70">
-                  {qtdCnpjsConsolidado} CNPJ(s) â€¢ Receita: {formatCurrency(totalReceita)} â€¢ Lucro: {formatCurrency(totalLucro)}
+                  {qtdCnpjsConsolidado} CNPJ(s) â€¢ Receita: {formatCurrency(totalReceita)} â€¢
+                  Lucro: {formatCurrency(totalLucro)}
                 </span>
               </div>
             </div>
@@ -1361,1848 +1428,92 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* ===== TAB: INFORMAÃ‡Ã•ES GERAIS ===== */}
+        {/* ===== TAB: INFORMAÇÕES GERAIS ===== */}
         {activeTab === 'gerais' && (
-          <div className="space-y-8">
-            {/* Header da seÃ§Ã£o com badge */}
-            {itemVisivel('gerais', 'header_empresa') && (
-            <section className={`transition-all duration-500 ${cardAnimation}`}>
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-[#0e4f6d] rounded-lg">
-                  <Building2 className="w-5 h-5 text-white" />
-                </div>
-                <span className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-teal-400' : 'text-[#0e4f6d]'}`}>
-                  VisÃ£o Geral
-                </span>
-              </div>
-              <h1 className={`text-4xl font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-[#1e293b]'}`}>
-                InformaÃ§Ãµes Gerais
-              </h1>
-              <p className="text-lg text-slate-400 font-medium">
-                Dados cadastrais e equipe tÃ©cnica responsÃ¡vel pela conta.
-              </p>
-            </section>
-            )}
-
-            {/* Cards de estatÃ­sticas rÃ¡pidas com Sparklines */}
-            {itemVisivel('gerais', 'cards_resumo') && (
-            <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 transition-all duration-500 delay-100 ${cardAnimation}`}>
-              <div className="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 bg-green-50 dark:bg-green-900/30 rounded-lg">
-                    <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
-                  </div>
-                  <span className="text-xs font-bold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-2 py-1 rounded-full">
-                    +{variacaoReceita}%
-                  </span>
-                </div>
-                <div className="flex items-end justify-between">
-                  <div>
-                    <p className="text-2xl font-bold text-slate-800 dark:text-white">{formatCurrency(totalReceita)}</p>
-                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Receita {selectedYear}</p>
-                  </div>
-                  <Sparkline data={receitaSparkline} color="#10b981" height={32} width={60} />
-                </div>
-              </div>
-
-              <div className="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
-                    <DollarSign className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                  </div>
-                </div>
-                <div className="flex items-end justify-between">
-                  <div>
-                    <p className="text-2xl font-bold text-slate-800 dark:text-white">{formatCurrency(totalLucro)}</p>
-                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Lucro LÃ­quido</p>
-                  </div>
-                  <Sparkline data={lucroSparkline} color="#3b82f6" height={32} width={60} />
-                </div>
-              </div>
-
-              <div className="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 bg-slate-50 dark:bg-slate-700 rounded-lg">
-                    <Percent className="w-5 h-5 text-slate-700 dark:text-slate-300" />
-                  </div>
-                </div>
-                <p className="text-2xl font-bold text-slate-800 dark:text-white">{margemLucro}%</p>
-                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Margem de Lucro</p>
-              </div>
-
-              <div className="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="p-2 bg-amber-50 dark:bg-amber-900/30 rounded-lg">
-                    <Calendar className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                  </div>
-                </div>
-                <p className="text-2xl font-bold text-slate-800 dark:text-white">12</p>
-                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Meses Analisados</p>
-              </div>
-            </div>
-            )}
-
-            {/* Card Principal de Dados Cadastrais - Redesenhado */}
-            {(itemVisivel('gerais', 'header_empresa') || itemVisivel('gerais', 'responsavel')) && (
-            <div className={`bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-md overflow-hidden transition-all duration-500 delay-200 ${cardAnimation}`}>
-              {itemVisivel('gerais', 'header_empresa') && (
-              <div className="bg-[#0e4f6d] p-8 text-white">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                      <span className="text-xs font-medium text-white/70 uppercase tracking-wider">
-                        Cliente Ativo â€¢ {cnpjInfo.tipo}
-                      </span>
-                    </div>
-                    <h2 className="text-3xl font-bold mb-2">
-                      {cnpjInfo.razaoSocial}
-                    </h2>
-                    <div className="flex flex-wrap items-center gap-4 text-white/80">
-                      <span className="flex items-center gap-2">
-                        <FileText className="w-4 h-4" />
-                        CNPJ: {cnpjInfo.cnpj}
-                      </span>
-                      <span className="flex items-center gap-2">
-                        <Target className="w-4 h-4" />
-                        CÃ³d: {cnpjInfo.codigoCliente}
-                      </span>
-                      <span className="flex items-center gap-2">
-                        <MapPin className="w-4 h-4" />
-                        {cnpjInfo.endereco.cidade}/{cnpjInfo.endereco.estado}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <div className="bg-white/20 backdrop-blur-sm px-6 py-3 rounded-xl">
-                      <p className="text-xs font-medium text-white/70 uppercase tracking-wider mb-1">
-                        Regime TributÃ¡rio
-                      </p>
-                      <p className="text-xl font-bold">{cnpjInfo.regimeTributario}</p>
-                    </div>
-                    <span className="text-xs text-white/60">
-                      ExercÃ­cio {cnpjInfo.exercicio}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              )}
-
-              {itemVisivel('gerais', 'responsavel') && (
-              <div className="p-8 dark:bg-slate-800">
-                <div className="flex items-center gap-6">
-                  <a
-                    href={responsavelWhatsappLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-20 h-20 rounded-xl bg-[#0e4f6d] hover:bg-[#0c4058] flex items-center justify-center shadow-md transition-colors cursor-pointer group"
-                    title={responsavelInfo.whatsapp ? 'Abrir WhatsApp' : 'WhatsApp nÃ£o cadastrado'}
-                  >
-                    <User className="w-10 h-10 text-white group-hover:scale-110 transition-transform" />
-                  </a>
-                  <div>
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
-                      ResponsÃ¡vel Legal
-                    </p>
-                    <h3 className={`text-2xl font-bold mb-1 ${isDarkMode ? 'text-teal-400' : 'text-[#0e4f6d]'}`}>
-                      {responsavelInfo.nome}
-                    </h3>
-                    <div className="flex items-center gap-4">
-                      <span className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                        <Briefcase className="w-4 h-4" />
-                        {responsavelInfo.cargo}
-                      </span>
-                      {responsavelInfo.whatsapp && (
-                        <a
-                          href={responsavelWhatsappLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 flex items-center gap-1 transition-colors"
-                        >
-                          <Phone className="w-4 h-4" />
-                          {responsavelInfo.whatsapp}
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              )}
-            </div>
-            )}
-
-            {/* Equipe TÃ©cnica ResponsÃ¡vel - Redesenhada */}
-            {itemVisivel('gerais', 'equipe_tecnica') && (
-            <section className={`pt-4 transition-all duration-500 delay-300 ${cardAnimation}`}>
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-teal-900/30' : 'bg-[#0e4f6d]/10'}`}>
-                    <ShieldCheck className={`w-5 h-5 ${isDarkMode ? 'text-teal-400' : 'text-[#0e4f6d]'}`} />
-                  </div>
-                  <h2 className={`text-xl font-bold uppercase tracking-wide ${isDarkMode ? 'text-white' : 'text-[#1e293b]'}`}>
-                    Equipe TÃ©cnica
-                  </h2>
-                </div>
-                <span className="text-xs text-slate-400 font-medium">
-                  {equipeTecnica.length} profissionais
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {equipeTecnica.map((membro, index) => {
-                  const Icon = iconMap[membro.icon];
-                  const colors = [
-                    { bg: 'bg-teal-700', light: 'bg-slate-50' },
-                    { bg: 'bg-slate-700', light: 'bg-blue-50' },
-                    { bg: 'bg-teal-600', light: 'bg-teal-50' }
-                  ];
-                  const color = colors[index % colors.length];
-
-                  return (
-                    <div
-                      key={membro.id}
-                      className="group bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1"
-                    >
-                      <div className="flex items-start justify-between mb-4">
-                        <div className={`p-4 rounded-xl ${color.bg} shadow-md`}>
-                          <Icon className="w-6 h-6 text-white" />
-                        </div>
-                        <div className="w-2 h-2 bg-green-400 rounded-full" />
-                      </div>
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
-                        {membro.setor}
-                      </p>
-                      <h4 className="text-xl font-bold text-slate-800 dark:text-white mb-3">{membro.nome}</h4>
-                      <div className="flex items-center gap-2 text-sm text-slate-400">
-                        <Mail className="w-4 h-4" />
-                        <span className="truncate">{membro.nome.toLowerCase().split(' ')[0]}@agili.com.br</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-            )}
-
-            {/* Card de contato */}
-            {itemVisivel('gerais', 'analise_geral') && (
-            <div className={`bg-[#0e4f6d] p-8 rounded-xl text-white transition-all duration-500 delay-400 ${cardAnimation}`}>
-              <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-                <div className="flex items-center gap-6">
-                  <div className="p-4 bg-white/10 rounded-xl backdrop-blur-sm">
-                    <Phone className="w-8 h-8" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold mb-1">Precisa de suporte?</h3>
-                    <p className="text-white/70">Nossa equipe estÃ¡ disponÃ­vel para ajudÃ¡-lo.</p>
-                  </div>
-                </div>
-                <button className="bg-white text-[#0e4f6d] px-8 py-4 rounded-xl font-bold hover:bg-white/90 transition-colors shadow-md">
-                  Entrar em Contato
-                </button>
-              </div>
-            </div>
-            )}
-          </div>
+          <DashboardGeraisTab
+            cardAnimation={cardAnimation}
+            cnpjInfo={cnpjInfo}
+            equipeTecnica={equipeTecnica}
+            isDarkMode={isDarkMode}
+            itemVisivel={itemVisivel}
+            margemLucro={margemLucro}
+            lucroSparkline={lucroSparkline}
+            receitaSparkline={receitaSparkline}
+            responsavelInfo={responsavelInfo}
+            responsavelWhatsappLink={responsavelWhatsappLink}
+            selectedYear={selectedYear}
+            totalLucro={totalLucro}
+            totalReceita={totalReceita}
+            variacaoReceita={variacaoReceita}
+          />
         )}
-
-        {/* ===== TAB: CONTÃBIL ===== */}
+        {/* ===== TAB: CONTÁBIL ===== */}
         {activeTab === 'contabil' && (
-          <div className="space-y-8">
-            {/* Header da seÃ§Ã£o */}
-            <section className={`flex flex-col lg:flex-row items-start justify-between gap-4 transition-all duration-500 ${cardAnimation}`}>
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-emerald-700 rounded-lg">
-                    <Calculator className="w-5 h-5 text-white" />
-                  </div>
-                  <span className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-emerald-700' : 'text-emerald-700'}`}>
-                    Departamento ContÃ¡bil
-                  </span>
-                </div>
-                <h1 className={`text-4xl font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-[#1e293b]'}`}>
-                  AnÃ¡lise Financeira
-                </h1>
-                <p className={`text-lg font-medium ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                  Demonstrativo de receitas, despesas, estoque e saldos.
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleExportReport('pdf')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${isDarkMode ? 'bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
-                >
-                  <FileDown className="w-4 h-4" />
-                  PDF
-                </button>
-                <button
-                  onClick={() => handleExportReport('excel')}
-                  className="flex items-center gap-2 px-4 py-2 bg-emerald-700 text-white rounded-lg hover:bg-emerald-700 transition-colors"
-                >
-                  <Download className="w-4 h-4" />
-                  Excel
-                </button>
-              </div>
-            </section>
-
-            {/* Banner de status de dados importados */}
-            {!temDadosContabeis && (
-              <div className={`p-4 rounded-xl flex items-center gap-3 ${isDarkMode ? 'bg-amber-900/30 border border-amber-700/50' : 'bg-amber-50 border border-amber-200'}`}>
-                <AlertCircle className={`w-5 h-5 ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`} />
-                <span className={isDarkMode ? 'text-amber-300' : 'text-amber-800'}>
-                  Nenhum relatÃ³rio importado. Acesse <strong>ConfiguraÃ§Ãµes</strong> para importar dados do DomÃ­nio.
-                </span>
-              </div>
-            )}
-
-            {/* Cards de mÃ©tricas - usando dados importados ou mock */}
-            {itemVisivel('contabil', 'cards_metricas') && (temDadosContabeis ? (
-              <div className={`transition-all duration-500 delay-100 ${cardAnimation}`}>
-                <CardsMetricasContabil dados={dadosContabeisImportados?.analiseHorizontal} />
-              </div>
-            ) : (
-              <div className={`grid grid-cols-1 md:grid-cols-4 gap-4 transition-all duration-500 delay-100 ${cardAnimation}`}>
-                <div className="bg-emerald-700 p-6 rounded-xl text-white shadow-md">
-                  <div className="flex items-center justify-between mb-4">
-                    <TrendingUp className="w-8 h-8 opacity-80" />
-                    <span className="text-xs font-bold bg-white/20 px-3 py-1 rounded-full">
-                      +{variacaoReceita}%
-                    </span>
-                  </div>
-                  <p className="text-3xl font-bold">{formatCurrency(totalReceita)}</p>
-                  <p className="text-white/70 text-sm mt-1">Receita Total {selectedYear}</p>
-                </div>
-
-                <div className="bg-red-600 p-6 rounded-xl text-white shadow-md">
-                  <div className="flex items-center justify-between mb-4">
-                    <TrendingDown className="w-8 h-8 opacity-80" />
-                  </div>
-                  <p className="text-3xl font-bold">{formatCurrency(totalDespesa)}</p>
-                  <p className="text-white/70 text-sm mt-1">Despesas Total {selectedYear}</p>
-                </div>
-
-                <div className="bg-[#0e4f6d] p-6 rounded-xl text-white shadow-md">
-                  <div className="flex items-center justify-between mb-4">
-                    <Coins className="w-8 h-8 opacity-80" />
-                  </div>
-                  <p className="text-3xl font-bold">{formatCurrency(totalLucro)}</p>
-                  <p className="text-white/70 text-sm mt-1">Lucro LÃ­quido</p>
-                </div>
-
-                <div className="bg-slate-700 p-6 rounded-xl text-white shadow-md">
-                  <div className="flex items-center justify-between mb-4">
-                    <Activity className="w-8 h-8 opacity-80" />
-                  </div>
-                  <p className="text-3xl font-bold">{margemLucro}%</p>
-                  <p className="text-white/70 text-sm mt-1">Margem de Lucro</p>
-                </div>
-              </div>
-            ))}
-
-            {/* SeÃ§Ã£o 1: Resultado LÃ­quido */}
-            {(itemVisivel('contabil', 'grafico_receita_despesa') || itemVisivel('contabil', 'card_resumo_exercicio')) && (
-            <section className={`transition-all duration-500 delay-200 ${cardAnimation}`}>
-              <div className="flex items-center gap-3 mb-6">
-                <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
-                  <BarChart2 className={`w-5 h-5 ${isDarkMode ? 'text-emerald-700' : 'text-emerald-700'}`} />
-                </div>
-                <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                  Resultado LÃ­quido
-                </h2>
-              </div>
-
-              {/* Grid: GrÃ¡fico de Barras + Cards Resumo */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* GrÃ¡fico de Barras - Receita x Despesa */}
-                {itemVisivel('contabil', 'grafico_receita_despesa') && (
-                <div className={`lg:col-span-2 p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
-                  <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-                    <div>
-                      <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                        Receita x Despesas/Custo
-                      </h3>
-                      <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                        VariaÃ§Ã£o comparativa
-                      </p>
-                    </div>
-                    <ButtonGroup
-                      options={[
-                        { value: 2024, label: '2024' },
-                        { value: 2025, label: '2025' }
-                      ]}
-                      activeValue={selectedYear}
-                      onChange={setSelectedYear}
-                    />
-                  </div>
-                  {temDadosContabeis ? (
-                    <ComparativoReceitaDespesaChart dados={dadosContabeisImportados?.analiseHorizontal} />
-                  ) : (
-                    <DREChart data={dreData} />
-                  )}
-                </div>
-                )}
-
-                {/* Card Lateral de Resumo */}
-                {itemVisivel('contabil', 'card_resumo_exercicio') && (
-                <div className={`p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
-                  <h3 className={`text-lg font-bold mb-6 pb-4 border-b ${isDarkMode ? 'text-white border-slate-700' : 'text-slate-800 border-slate-100'}`}>
-                    Resumo do ExercÃ­cio
-                  </h3>
-
-                  <div className="space-y-4">
-                    <div className={`p-4 rounded-xl ${isDarkMode ? 'bg-green-900/30' : 'bg-green-50'}`}>
-                      <div className="flex items-center gap-2 mb-2">
-                        <ArrowUpRight className={`w-5 h-5 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`} />
-                        <p className={`text-sm font-medium ${isDarkMode ? 'text-green-400' : 'text-green-700'}`}>Receita Anual</p>
-                      </div>
-                      <p className={`text-2xl font-bold ${isDarkMode ? 'text-green-300' : 'text-green-700'}`}>
-                        {formatCurrency(totalReceita)}
-                      </p>
-                    </div>
-
-                    <div className={`p-4 rounded-xl ${isDarkMode ? 'bg-red-900/30' : 'bg-red-50'}`}>
-                      <div className="flex items-center gap-2 mb-2">
-                        <ArrowDownRight className={`w-5 h-5 ${isDarkMode ? 'text-red-400' : 'text-red-600'}`} />
-                        <p className={`text-sm font-medium ${isDarkMode ? 'text-red-400' : 'text-red-700'}`}>Despesa Anual</p>
-                      </div>
-                      <p className={`text-2xl font-bold ${isDarkMode ? 'text-red-300' : 'text-red-600'}`}>
-                        {formatCurrency(totalDespesa)}
-                      </p>
-                    </div>
-
-                    <div className={`p-4 rounded-xl ${isDarkMode ? 'bg-[#0e4f6d]/40' : 'bg-[#0e4f6d]/10'}`}>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Coins className={`w-5 h-5 ${isDarkMode ? 'text-teal-500' : 'text-[#0e4f6d]'}`} />
-                        <p className={`text-sm font-medium ${isDarkMode ? 'text-teal-500' : 'text-[#0e4f6d]'}`}>Lucro LÃ­quido</p>
-                      </div>
-                      <p className={`text-2xl font-bold ${isDarkMode ? 'text-slate-300' : 'text-[#0e4f6d]'}`}>
-                        {formatCurrency(totalLucro)}
-                      </p>
-                      <p className={`text-xs mt-2 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                        Margem: {margemLucro}%
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                )}
-              </div>
-            </section>
-            )}
-
-            {/* Tabela Comparativo Mensal */}
-            {itemVisivel('contabil', 'tabela_comparativo_mensal') && (
-            <div className={`rounded-xl shadow-sm overflow-hidden transition-all duration-500 delay-300 ${cardAnimation} ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
-              <div className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
-                <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Detalhamento Mensal</h3>
-                <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>MÃªs ReferÃªncia | Entradas | SaÃ­das/Custos | Lucro LÃ­quido</p>
-              </div>
-              {temDadosContabeis ? (
-                <TabelaComparativoMensal dados={dadosContabeisImportados?.analiseHorizontal} />
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className={isDarkMode ? 'bg-slate-700/50' : 'bg-slate-50'}>
-                      <tr>
-                        <th className={`px-6 py-4 text-left text-xs font-bold uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>MÃªs</th>
-                        <th className={`px-6 py-4 text-right text-xs font-bold uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Entradas</th>
-                        <th className={`px-6 py-4 text-right text-xs font-bold uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>SaÃ­das/Custos</th>
-                        <th className={`px-6 py-4 text-right text-xs font-bold uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Saldo</th>
-                      </tr>
-                    </thead>
-                    <tbody className={`divide-y ${isDarkMode ? 'divide-slate-700' : 'divide-slate-100'}`}>
-                      {meses.map((mes, i) => (
-                        <tr key={mes} className={`transition-colors ${isDarkMode ? 'hover:bg-slate-700/30' : 'hover:bg-slate-50'}`}>
-                          <td className={`px-6 py-4 font-semibold ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{mes}/2025</td>
-                          <td className={`px-6 py-4 text-right ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}>{formatCurrency(entradasData[i])}</td>
-                          <td className={`px-6 py-4 text-right ${isDarkMode ? 'text-red-400' : 'text-red-500'}`}>{formatCurrency(saidasData[i])}</td>
-                          <td className={`px-6 py-4 text-right font-bold ${isDarkMode ? 'text-teal-500' : 'text-[#0e4f6d]'}`}>
-                            {formatCurrency(entradasData[i] - saidasData[i])}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-            )}
-
-            {/* GrÃ¡fico de VariaÃ§Ã£o do Lucro */}
-            {itemVisivel('contabil', 'grafico_variacao_lucro') && (
-            <div className={`p-6 rounded-xl shadow-sm transition-all duration-500 delay-400 ${cardAnimation} ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>VariaÃ§Ã£o do Lucro</h3>
-                  <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Lucro antes do IRPJ e CSLL</p>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span className={`flex items-center gap-2 text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                    <div className="w-3 h-3 rounded-full bg-[#0e4f6d]" /> {dadosComparativoLucro.anoAtual}
-                  </span>
-                  {dadosComparativoLucro.dadosAnterior && (
-                    <span className={`flex items-center gap-2 text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                      <div className="w-3 h-3 rounded-full bg-[#58a3a4] border-2 border-dashed border-[#58a3a4]" /> {dadosComparativoLucro.anoAnterior}
-                    </span>
-                  )}
-                </div>
-              </div>
-              {temDadosContabeis ? (
-                <VariacaoLucroChart
-                  dadosAtual={dadosComparativoLucro.dadosAtual}
-                  dadosAnterior={dadosComparativoLucro.dadosAnterior}
-                />
-              ) : (
-                <LucroComparativoChart />
-              )}
-            </div>
-            )}
-
-            {/* SeÃ§Ã£o 2: VariaÃ§Ã£o de Estoque e Saldos BancÃ¡rios */}
-            {(itemVisivel('contabil', 'grafico_receita_custo_estoque') || itemVisivel('contabil', 'grafico_movimentacao_bancaria')) && (
-            <section className={`transition-all duration-500 delay-500 ${cardAnimation}`}>
-              <div className="flex items-center gap-3 mb-6">
-                <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-blue-900/50' : 'bg-blue-100'}`}>
-                  <Wallet className={`w-5 h-5 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
-                </div>
-                <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                  VariaÃ§Ã£o de Estoque e Saldos BancÃ¡rios
-                </h2>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* GrÃ¡fico de Receita x Custo x Estoque */}
-                {itemVisivel('contabil', 'grafico_receita_custo_estoque') && (
-                <div className={`p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
-                  <div className="flex items-center justify-between mb-6">
-                    <div>
-                      <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Receita x Custo x Estoque</h3>
-                      <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Ãšltimos 12 meses</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className={`flex items-center gap-1 text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                        <div className="w-2 h-2 rounded-full bg-emerald-700" /> Receita
-                      </span>
-                      <span className={`flex items-center gap-1 text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                        <div className="w-2 h-2 rounded-full bg-red-500" /> Custo
-                      </span>
-                      <span className={`flex items-center gap-1 text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                        <div className="w-2 h-2 rounded-full bg-blue-500" /> Estoque
-                      </span>
-                    </div>
-                  </div>
-                  {temDadosContabeis ? (
-                    <ReceitaCustoEstoqueChart dados={dadosReceitaCustoEstoque} />
-                  ) : (
-                    <MovimentacaoChart />
-                  )}
-                </div>
-                )}
-
-                {/* GrÃ¡fico de MovimentaÃ§Ã£o BancÃ¡ria */}
-                {itemVisivel('contabil', 'grafico_movimentacao_bancaria') && (
-                <div className={`p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
-                  <div className="flex items-center justify-between mb-6">
-                    <div>
-                      <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>MovimentaÃ§Ã£o BancÃ¡ria</h3>
-                      <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Saldo em Bancos Conta Movimento</p>
-                    </div>
-                    <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-[#0e4f6d]/30' : 'bg-[#0e4f6d]/10'}`}>
-                      <Banknote className={`w-5 h-5 ${isDarkMode ? 'text-teal-500' : 'text-[#0e4f6d]'}`} />
-                    </div>
-                  </div>
-                  {temDadosContabeis ? (
-                    <MovimentacaoBancariaChart dados={dadosContabeisImportados?.balancetesConsolidados} />
-                  ) : (
-                    <div className="h-[280px] md:h-[320px] flex items-center justify-center">
-                      <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Importe Balancetes para visualizar</p>
-                    </div>
-                  )}
-                </div>
-                )}
-              </div>
-            </section>
-            )}
-
-            {/* GrÃ¡fico de AplicaÃ§Ãµes Financeiras */}
-            {itemVisivel('contabil', 'grafico_aplicacoes_financeiras') && (
-            <div className={`p-6 rounded-xl shadow-sm transition-all duration-500 delay-600 ${cardAnimation} ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>AplicaÃ§Ãµes Financeiras</h3>
-                  <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>AplicaÃ§Ãµes Financeiras de Liquidez Imediata</p>
-                </div>
-                <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-[#58a3a4]/30' : 'bg-[#58a3a4]/10'}`}>
-                  <TrendingUp className={`w-5 h-5 ${isDarkMode ? 'text-teal-400' : 'text-[#58a3a4]'}`} />
-                </div>
-              </div>
-              {temDadosContabeis ? (
-                <AplicacoesFinanceirasChart dados={dadosContabeisImportados?.balancetesConsolidados} />
-              ) : (
-                <div className="h-[280px] md:h-[320px] flex items-center justify-center">
-                  <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Importe Balancetes para visualizar</p>
-                </div>
-              )}
-            </div>
-            )}
-
-            {/* Card de anÃ¡lise */}
-            {itemVisivel('contabil', 'analise_contabil') && (
-            <div className={`bg-[#0e4f6d] p-8 rounded-xl text-white shadow-md transition-all duration-500 delay-700 ${cardAnimation}`}>
-              <div className="flex items-start gap-6">
-                <div className="p-4 bg-white/10 rounded-xl backdrop-blur-sm">
-                  <Award className="w-8 h-8" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold mb-3">AnÃ¡lise de Performance 2025</h3>
-                  <p className="text-white/80 leading-relaxed">
-                    {temDadosContabeis ? (
-                      <>
-                        Dados importados do Sistema DomÃ­nio. Os relatÃ³rios mostram a evoluÃ§Ã£o financeira
-                        da empresa ao longo do exercÃ­cio, permitindo acompanhar receitas, despesas,
-                        movimentaÃ§Ã£o bancÃ¡ria e aplicaÃ§Ãµes financeiras mÃªs a mÃªs.
-                      </>
-                    ) : (
-                      <>
-                        O exercÃ­cio de 2025 demonstra crescimento de receita com estabilidade
-                        nos primeiros trimestres. Para visualizar dados reais, importe os relatÃ³rios
-                        do Sistema DomÃ­nio (Balancete, AnÃ¡lise Horizontal, DRE) na Ã¡rea de ConfiguraÃ§Ãµes.
-                      </>
-                    )}
-                  </p>
-                </div>
-              </div>
-            </div>
-            )}
-          </div>
+          <DashboardContabilTab
+            cardAnimation={cardAnimation}
+            dadosComparativoLucro={dadosComparativoLucro}
+            dadosContabeisImportados={dadosContabeisImportados}
+            dadosReceitaCustoEstoque={dadosReceitaCustoEstoque}
+            dreData={dreData}
+            entradasData={entradasData}
+            handleExportReport={handleExportReport}
+            isDarkMode={isDarkMode}
+            itemVisivel={itemVisivel}
+            margemLucro={margemLucro}
+            meses={meses}
+            saidasData={saidasData}
+            selectedYear={selectedYear}
+            setSelectedYear={setSelectedYear}
+            temDadosContabeis={temDadosContabeis}
+            totalDespesa={totalDespesa}
+            totalLucro={totalLucro}
+            totalReceita={totalReceita}
+            variacaoReceita={variacaoReceita}
+          />
         )}
 
         {/* ===== TAB: FISCAL ===== */}
         {activeTab === 'fiscal' && (
-          <div className="space-y-8">
-            {/* Header */}
-            <section className={`flex flex-col lg:flex-row items-start justify-between gap-4 transition-all duration-500 ${cardAnimation}`}>
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-slate-700 rounded-lg">
-                    <FileSpreadsheet className="w-5 h-5 text-white" />
-                  </div>
-                  <span className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-700'}`}>
-                    Departamento Fiscal
-                  </span>
-                </div>
-                <h1 className={`text-4xl font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-[#1e293b]'}`}>
-                  AnÃ¡lise TributÃ¡ria
-                </h1>
-                <p className={`text-lg font-medium ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                  ApuraÃ§Ã£o trimestral sobre Lucro Real - Dados importados do Sistema DomÃ­nio.
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleExportReport('pdf')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${isDarkMode ? 'bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
-                >
-                  <FileDown className="w-4 h-4" />
-                  PDF
-                </button>
-                <button
-                  onClick={() => handleExportReport('excel')}
-                  className="flex items-center gap-2 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors"
-                >
-                  <Download className="w-4 h-4" />
-                  Excel
-                </button>
-              </div>
-            </section>
-
-            {/* Banner de status de dados importados */}
-            {!temDadosFiscais && (
-              <div className={`p-4 rounded-xl flex items-center gap-3 ${isDarkMode ? 'bg-amber-900/30 border border-amber-700/50' : 'bg-amber-50 border border-amber-200'}`}>
-                <AlertCircle className={`w-5 h-5 ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`} />
-                <span className={isDarkMode ? 'text-amber-300' : 'text-amber-800'}>
-                  Nenhum relatÃ³rio fiscal importado. Acesse <strong>ConfiguraÃ§Ãµes</strong> para importar dados do DomÃ­nio (Resumo por Acumulador, Demonstrativo Mensal, Resumo dos Impostos).
-                </span>
-              </div>
-            )}
-
-            {/* Cards de mÃ©tricas - usando dados importados ou mock */}
-            {itemVisivel('fiscal', 'cards_metricas') && (temDadosFiscais ? (
-              <div className={`transition-all duration-500 delay-100 ${cardAnimation}`}>
-                <CardsMetricasFiscais
-                  dados={resumoAcumuladorFiltrado || dadosFiscaisImportados?.resumoAcumulador}
-                  totalFaturamento={totalFaturamentoFiltrado}
-                />
-              </div>
-            ) : (
-              <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 transition-all duration-500 delay-100 ${cardAnimation}`}>
-                <div className={`p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-red-900/30' : 'bg-red-50'}`}>
-                      <Receipt className={`w-6 h-6 ${isDarkMode ? 'text-red-400' : 'text-red-600'}`} />
-                    </div>
-                    <div>
-                      <p className={`text-xs font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Total IRPJ</p>
-                      <p className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{formatCurrency(totaisFiscais.irpj)}</p>
-                    </div>
-                  </div>
-                  <div className={`h-1 rounded-full overflow-hidden ${isDarkMode ? 'bg-slate-700' : 'bg-slate-100'}`}>
-                    <div className="h-full bg-red-500 rounded-full" style={{ width: '70%' }} />
-                  </div>
-                </div>
-
-                <div className={`p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-slate-900/30' : 'bg-slate-50'}`}>
-                      <CircleDollarSign className={`w-6 h-6 ${isDarkMode ? 'text-teal-500' : 'text-teal-700'}`} />
-                    </div>
-                    <div>
-                      <p className={`text-xs font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Total CSLL</p>
-                      <p className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{formatCurrency(totaisFiscais.csll)}</p>
-                    </div>
-                  </div>
-                  <div className={`h-1 rounded-full overflow-hidden ${isDarkMode ? 'bg-slate-700' : 'bg-slate-100'}`}>
-                    <div className="h-full bg-slate-500 rounded-full" style={{ width: '30%' }} />
-                  </div>
-                </div>
-
-                <div className="bg-[#0e4f6d] p-6 rounded-xl text-white shadow-md">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="p-3 bg-white/10 rounded-xl">
-                      <Wallet className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-white/60 uppercase">Carga Total</p>
-                      <p className="text-2xl font-bold">{formatCurrency(totaisFiscais.cargaTributariaTotal)}</p>
-                    </div>
-                  </div>
-                  <p className="text-sm text-white/70">Carga tributÃ¡ria do exercÃ­cio</p>
-                </div>
-              </div>
-            ))}
-
-            {/* ===== SEÃ‡ÃƒO FATURAMENTO ===== */}
-            <section className={`transition-all duration-500 delay-200 ${cardAnimation}`}>
-              <div className="flex items-center gap-3 mb-6">
-                <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-green-900/50' : 'bg-green-100'}`}>
-                  <BarChartBig className={`w-5 h-5 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`} />
-                </div>
-                <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                  Faturamento
-                </h2>
-              </div>
-
-              {(itemVisivel('fiscal', 'faturamento_categoria') || itemVisivel('fiscal', 'faturamento_evolucao')) && (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  {/* Gráfico de Rosca - Faturamento por Categoria */}
-                  {itemVisivel('fiscal', 'faturamento_categoria') && (
-                  <div className={`p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
-                    <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                      Por Categoria
-                    </h3>
-                    <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                      Entradas, Serviços e Saídas
-                    </p>
-                    {temDadosFiscais ? (
-                      <FaturamentoPorCategoriaChart
-                        dados={resumoAcumuladorFiltrado || dadosFiscaisImportados?.demonstrativoMensal || dadosFiscaisImportados?.resumoAcumulador}
-                        year={periodFilter?.year}
-                      />
-                    ) : (
-                      <div className="h-[300px] flex items-center justify-center">
-                        <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Importe Demonstrativo Mensal</p>
-                      </div>
-                    )}
-                  </div>
-                  )}
-
-                  {/* Gráfico de Barras - Faturamento por Trimestre */}
-                  {itemVisivel('fiscal', 'faturamento_evolucao') && (
-                  <div className={`p-6 rounded-xl shadow-sm ${itemVisivel('fiscal', 'faturamento_categoria') ? 'lg:col-span-2' : 'lg:col-span-3'} ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
-                    <div className="flex items-center justify-between mb-6">
-                      <div>
-                        <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                          Evolução Mensal
-                        </h3>
-                        <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                          Entradas vs Saídas por mês
-                        </p>
-                      </div>
-                      {/* Seletor de Período */}
-                      <div className="flex gap-1">
-                        <button
-                          onClick={() => setFiscalTrimestre(null)}
-                          className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                            fiscalTrimestre === null
-                              ? 'bg-[#0e4f6d] text-white'
-                              : isDarkMode ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                          }`}
-                        >
-                          Ano
-                        </button>
-                        {[1, 2, 3, 4].map(t => (
-                          <button
-                            key={t}
-                            onClick={() => setFiscalTrimestre(t)}
-                            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                              fiscalTrimestre === t
-                                ? 'bg-[#0e4f6d] text-white'
-                                : isDarkMode ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                            }`}
-                          >
-                            {t}T
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    {temDadosFiscais && dadosFiscaisImportados?.demonstrativoMensal ? (
-                      <FaturamentoPorTrimestreChart
-                        dados={dadosFiscaisImportados.demonstrativoMensal}
-                        trimestre={fiscalTrimestre}
-                        year={periodFilter?.year}
-                      />
-                    ) : (
-                      <div className="h-[350px] flex items-center justify-center">
-                        <FaturamentoChart />
-                      </div>
-                    )}
-                  </div>
-                  )}
-                </div>
-              )}
-
-              {/* Tabelas de Acumuladores */}
-              {temDadosFiscais && resumoAcumuladorFiltrado && (itemVisivel('fiscal', 'acumuladores_entradas') || itemVisivel('fiscal', 'acumuladores_saidas')) && (
-                <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {itemVisivel('fiscal', 'acumuladores_entradas') && (
-                  <div className={`rounded-xl shadow-sm overflow-hidden ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
-                    <div className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
-                      <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                        Principais Acumuladores - Entradas
-                      </h3>
-                      <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                        Categorias com maior valor contábil
-                      </p>
-                    </div>
-                    <TabelaAcumuladores dados={resumoAcumuladorFiltrado} tipo="entradas" />
-                  </div>
-                  )}
-
-                  {itemVisivel('fiscal', 'acumuladores_saidas') && (
-                  <div className={`rounded-xl shadow-sm overflow-hidden ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
-                    <div className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
-                      <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                        Principais Acumuladores - Saídas
-                      </h3>
-                      <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                        Categorias com maior valor contábil
-                      </p>
-                    </div>
-                    <TabelaAcumuladores dados={resumoAcumuladorFiltrado} tipo="saidas" />
-                  </div>
-                  )}
-                </div>
-              )}
-
-              {/* Tabela de Faturamento por Periodo */}
-              {temDadosFiscais && dadosFiscaisImportados?.faturamento && itemVisivel('fiscal', 'faturamento_periodo') && (
-                <div className={`mt-6 rounded-xl shadow-sm overflow-hidden ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
-                  <div className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
-                    <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                      {"Faturamento por Per\u00edodo"}
-                    </h3>
-                    <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                      {"Total do faturamento no recorte de m\u00eas, trimestre ou ano"}
-                    </p>
-                  </div>
-                  <TabelaFaturamentoPeriodo
-                    dadosFaturamento={dadosFiscaisImportados.faturamento}
-                    periodFilter={periodFilter}
-                  />
-                </div>
-              )}
-
-              {(itemVisivel('fiscal', 'compra_vs_venda') || itemVisivel('fiscal', 'categoria_380')) && (
-              <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {itemVisivel('fiscal', 'compra_vs_venda') && (
-                <div className={`p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
-                  <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                    Compra vs Venda
-                  </h3>
-                  <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                    {"Compra p/ Comercialização, Vendas e Serviços"}
-                  </p>
-                  {temDadosFiscais && dadosFiscaisImportados?.resumoAcumulador ? (
-                    <CompraVendaChart dados={dadosFiscaisImportados.resumoAcumulador} />
-                  ) : (
-                    <div className="h-[300px] flex items-center justify-center">
-                      <DistribuicaoChart onDataCalculated={handleFiscalDataCalculated} />
-                    </div>
-                  )}
-                </div>
-                )}
-
-                {itemVisivel('fiscal', 'categoria_380') && (
-                <div className={`p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
-                  <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                    Por Categoria
-                  </h3>
-                  <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                    {"Vendas, Compra p/ Comercialização e Serviços"}
-                  </p>
-                  {temDadosFiscais && dadosFiscaisImportados?.resumoAcumulador ? (
-                    <Detalhamento380Chart dados={dadosFiscaisImportados.resumoAcumulador} />
-                  ) : (
-                    <div className="h-[250px] flex items-center justify-center">
-                      <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Importe Resumo por Acumulador</p>
-                    </div>
-                  )}
-                </div>
-                )}
-              </div>
-              )}
-            </section>
-
-            {/* ===== SEÃ‡ÃƒO SITUAÃ‡ÃƒO FISCAL ===== */}
-            {(itemVisivel('fiscal', 'irpj_periodo') || itemVisivel('fiscal', 'resumo_impostos') || itemVisivel('fiscal', 'csll_periodo')) && (
-            <section className={`transition-all duration-500 delay-300 ${cardAnimation}`}>
-              <div className="flex items-center gap-3 mb-6">
-                <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-slate-900/50' : 'bg-slate-100'}`}>
-                  <Receipt className={`w-5 h-5 ${isDarkMode ? 'text-slate-500' : 'text-slate-700'}`} />
-                </div>
-                <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                  {"Situa\u00e7\u00e3o Fiscal"}
-                </h2>
-              </div>
-
-              <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                {/* Grafico - IRPJ por Periodo */}
-                {itemVisivel('fiscal', 'irpj_periodo') && (
-                <div className={`xl:col-span-2 p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                        {"IRPJ por Per\u00edodo"}
-                      </h3>
-                      <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                        {"Composi\u00e7\u00e3o do IRPJ apurado"}
-                      </p>
-                    </div>
-                    <div className="flex gap-1">
-                      <button
-                        onClick={() => setFiscalTrimestre(null)}
-                        className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                          fiscalTrimestre === null
-                            ? 'bg-[#0e4f6d] text-white'
-                            : isDarkMode ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                        }`}
-                      >
-                        Ano
-                      </button>
-                      {[1, 2, 3, 4].map(t => (
-                        <button
-                          key={t}
-                          onClick={() => setFiscalTrimestre(t)}
-                          className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                            fiscalTrimestre === t
-                              ? 'bg-[#0e4f6d] text-white'
-                              : isDarkMode ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                          }`}
-                        >
-                          {t}T
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <IRPJPorPeriodoChart
-                    dados={dadosFiscaisImportados?.irpj || []}
-                    trimestre={fiscalTrimestre}
-                    year={periodFilter?.year}
-                  />
-                </div>
-                )}
-
-                {/* GrÃ¡fico de Rosca - Resumo dos Impostos */}
-                {itemVisivel('fiscal', 'resumo_impostos') && Object.keys(resumoImpostosFiltrado?.totaisPorImposto || {}).length > 0 && (
-                  <div className={`p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
-                    <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                      Resumo dos Impostos
-                    </h3>
-                    <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                      {"Distribui\u00e7\u00e3o dos impostos no per\u00edodo"}
-                    </p>
-                    <ResumoImpostosRoscaChart dados={resumoImpostosFiltrado} />
-                  </div>
-                )}
-
-                {/* Grafico - CSLL por Periodo */}
-                {itemVisivel('fiscal', 'csll_periodo') && (
-                <div className={`xl:col-span-3 p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
-                  <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                    {"CSLL por Per\u00edodo"}
-                  </h3>
-                  <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                    {"Composi\u00e7\u00e3o do CSLL"}
-                  </p>
-                  <CSLLPorPeriodoChart
-                    dados={dadosFiscaisImportados?.csll || []}
-                    trimestre={fiscalTrimestre}
-                    year={periodFilter?.year}
-                  />
-                </div>
-                )}
-              </div>
-            </section>
-            )}
-
-            {/* ===== SEÃ‡ÃƒO COMPARATIVO 380 ===== */}
-            {(itemVisivel('fiscal', 'tabela_380') || itemVisivel('fiscal', 'situacao_380')) && (
-            <section className={`transition-all duration-500 delay-400 ${cardAnimation}`}>
-              <div className="flex items-center gap-3 mb-6">
-                <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-slate-900/50' : 'bg-slate-100'}`}>
-                  <Scale className={`w-5 h-5 ${isDarkMode ? 'text-slate-500' : 'text-slate-700'}`} />
-                </div>
-                <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                  Comparativo 380
-                </h2>
-              </div>
-              {/* Tabela 380 */}
-              {itemVisivel('fiscal', 'tabela_380') && temDadosFiscais && dadosFiscaisImportados?.resumoAcumulador && (
-                <div className={`mt-6 rounded-xl shadow-sm overflow-hidden ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
-                  <div className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
-                    <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                      CÃ¡lculo 380
-                    </h3>
-                    <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                      PerÃ­odo | Compra | Venda | Esperado | Receita Complementar | SituaÃ§Ã£o
-                    </p>
-                  </div>
-                  <Tabela380
-                    dados={dadosFiscaisImportados.resumoAcumulador}
-                    dadosMensais={dadosFiscaisImportados.demonstrativoMensal}
-                  />
-                </div>
-              )}
-
-              {/* GrÃ¡fico de Rosca - SituaÃ§Ã£o 380 */}
-              {itemVisivel('fiscal', 'situacao_380') && (
-              <div className={`mt-6 p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
-                <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                  SituaÃ§Ã£o 380
-                </h3>
-                <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                  Vendido vs Falta Vender (Esperado = Compra x 1.25)
-                </p>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
-                  <div className="flex justify-center">
-                    {temDadosFiscais && dadosFiscaisImportados?.resumoAcumulador ? (
-                      <Situacao380Chart dados={dadosFiscaisImportados.resumoAcumulador} />
-                    ) : (
-                      <div className="h-[300px] flex items-center justify-center">
-                        <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Importe Resumo por Acumulador</p>
-                      </div>
-                    )}
-                  </div>
-                  {temDadosFiscais && dadosFiscaisImportados?.resumoAcumulador && (
-                    <div className={`p-6 rounded-xl ${isDarkMode ? 'bg-slate-700/50' : 'bg-slate-50'}`}>
-                      <h4 className={`text-sm font-bold mb-4 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>Resumo da SituaÃ§Ã£o</h4>
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-center">
-                          <span className={isDarkMode ? 'text-slate-400' : 'text-slate-500'}>Compra p/ ComercializaÃ§Ã£o</span>
-                          <span className={`font-bold ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
-                            {formatCurrency(dadosFiscaisImportados.resumoAcumulador?.categorias?.compraComercializacao || 0)}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className={isDarkMode ? 'text-slate-400' : 'text-slate-500'}>Esperado (Compra + 25%)</span>
-                          <span className={`font-bold ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`}>
-                            {formatCurrency(dadosFiscaisImportados.resumoAcumulador?.categorias?.esperado380 || 0)}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className={isDarkMode ? 'text-slate-400' : 'text-slate-500'}>Total Vendido</span>
-                          <span className={`font-bold ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}>
-                            {formatCurrency(dadosFiscaisImportados.resumoAcumulador?.categorias?.totalVendas380 || 0)}
-                          </span>
-                        </div>
-                        <div className={`pt-3 mt-3 border-t ${isDarkMode ? 'border-slate-600' : 'border-slate-200'}`}>
-                          <div className="flex justify-between items-center">
-                            <span className={`font-semibold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>SituaÃ§Ã£o</span>
-                            <span className={`px-3 py-1 rounded-full text-sm font-bold ${
-                              (dadosFiscaisImportados.resumoAcumulador?.categorias?.totalVendas380 || 0) >= (dadosFiscaisImportados.resumoAcumulador?.categorias?.esperado380 || 0)
-                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                            }`}>
-                              {(dadosFiscaisImportados.resumoAcumulador?.categorias?.totalVendas380 || 0) >= (dadosFiscaisImportados.resumoAcumulador?.categorias?.esperado380 || 0) ? 'OK' : 'Pendente'}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-              )}
-            </section>
-            )}
-
-            {/* Fluxo Fiscal - mantido para compatibilidade */}
-            {!temDadosFiscais && itemVisivel('fiscal', 'faturamento_evolucao') && (
-              <div className={`p-8 rounded-xl shadow-sm transition-all duration-500 delay-500 ${cardAnimation} ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}>
-                <div className="flex items-center justify-between mb-8">
-                  <div>
-                    <h3 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>OperaÃ§Ãµes Mensais</h3>
-                    <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Entradas vs SaÃ­das por mÃªs</p>
-                  </div>
-                  <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-slate-700' : 'bg-slate-100'}`}>
-                    <BarChartHorizontal className={`w-6 h-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`} />
-                  </div>
-                </div>
-                <FluxoFiscalChart />
-              </div>
-            )}
-
-            {/* Card de anÃ¡lise */}
-            {itemVisivel('fiscal', 'analise_fiscal') && (
-            <div className={`bg-slate-700 p-8 rounded-xl text-white shadow-md transition-all duration-500 delay-600 ${cardAnimation}`}>
-              <div className="flex items-start gap-6">
-                <div className="p-4 bg-white/10 rounded-xl backdrop-blur-sm">
-                  <Award className="w-8 h-8" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold mb-3">AnÃ¡lise Fiscal {selectedYear}</h3>
-                  <p className="text-white/80 leading-relaxed">
-                    {temDadosFiscais ? (
-                      <>
-                        Dados importados do Sistema DomÃ­nio. Os relatÃ³rios fiscais mostram a movimentaÃ§Ã£o
-                        de entradas e saÃ­das, impostos a recolher e situaÃ§Ã£o do 380 (comercializaÃ§Ã£o de mercadorias).
-                        Acompanhe mensalmente para garantir conformidade tributÃ¡ria.
-                      </>
-                    ) : (
-                      <>
-                        Para visualizar dados reais, importe os relatÃ³rios do Sistema DomÃ­nio
-                        (Resumo por Acumulador, Demonstrativo Mensal, Resumo dos Impostos) na Ã¡rea de ConfiguraÃ§Ãµes.
-                        Volume de entradas superior a <strong>R$ 45 milhÃµes</strong> contra saÃ­das de
-                        <strong> R$ 15,6 milhÃµes</strong> sugere formaÃ§Ã£o de estoque ou aquisiÃ§Ã£o de insumos.
-                      </>
-                    )}
-                  </p>
-                </div>
-              </div>
-            </div>
-            )}
-          </div>
+          <DashboardFiscalTab
+            cardAnimation={cardAnimation}
+            dadosFiscaisImportados={dadosFiscaisImportados}
+            fiscalTrimestre={fiscalTrimestre}
+            handleExportReport={handleExportReport}
+            handleFiscalDataCalculated={handleFiscalDataCalculated}
+            isDarkMode={isDarkMode}
+            itemVisivel={itemVisivel}
+            periodFilter={periodFilter}
+            resumoAcumuladorFiltrado={resumoAcumuladorFiltrado}
+            resumoImpostosFiltrado={resumoImpostosFiltrado}
+            selectedYear={selectedYear}
+            setFiscalTrimestre={setFiscalTrimestre}
+            temDadosFiscais={temDadosFiscais}
+            totalFaturamentoFiltrado={totalFaturamentoFiltrado}
+            totaisFiscais={totaisFiscais}
+          />
         )}
 
         {/* ===== TAB: PESSOAL ===== */}
         {activeTab === 'pessoal' && (
-          <div className="space-y-8">
-            {/* Header */}
-            <section className={`flex items-start justify-between transition-all duration-500 ${cardAnimation}`}>
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <div className={`p-2 ${isDarkMode ? 'bg-teal-600' : 'bg-teal-600'} rounded-lg`}>
-                    <Users className="w-5 h-5 text-white" />
-                  </div>
-                  <span className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-teal-400' : 'text-teal-600'}`}>
-                    Departamento Pessoal
-                  </span>
-                </div>
-                <h1 className={`text-4xl font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-[#1e293b]'}`}>
-                  GestÃ£o de Pessoas
-                </h1>
-                <p className={`text-lg font-medium ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>
-                  Recursos humanos e obrigaÃ§Ãµes sociais
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleExportReport('pdf')}
-                  className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
-                >
-                  <FileDown className="w-4 h-4" />
-                  PDF
-                </button>
-                <button
-                  onClick={() => handleExportReport('excel')}
-                  className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
-                >
-                  <Download className="w-4 h-4" />
-                  Excel
-                </button>
-              </div>
-            </section>
-
-            {/* ===== DADOS IMPORTADOS (PRINCIPAL) ===== */}
-            {temDadosPessoal ? (
-              <>
-                {/* Cards de metricas importadas */}
-                {itemVisivel('pessoal', 'cards_metricas') && (
-                <div className={`transition-all duration-500 delay-100 ${cardAnimation}`}>
-                  <CardsMetricasPessoal
-                    dadosFGTS={dadosPessoalImportados?.fgts}
-                    dadosINSS={dadosPessoalImportados?.inss}
-                    dadosEmpregados={dadosPessoalImportados?.empregados}
-                    dadosSalario={dadosPessoalImportados?.salarioBase}
-                  />
-                </div>
-                )}
-
-                {/* Graficos FGTS */}
-                {dadosPessoalImportados?.fgts && (itemVisivel('pessoal', 'fgts_tipo') || itemVisivel('pessoal', 'fgts_3_meses')) && (
-                  <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 transition-all duration-500 delay-200 ${cardAnimation}`}>
-                    {itemVisivel('pessoal', 'fgts_tipo') && (
-                    <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}>
-                      <div className="flex items-center justify-between mb-6">
-                        <div>
-                          <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>FGTS por Tipo</h3>
-                          <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Mensal, 13o, Rescisao</p>
-                        </div>
-                        <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-blue-900/30' : 'bg-blue-50'}`}>
-                          <PieChart className={`w-6 h-6 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
-                        </div>
-                      </div>
-                      <FGTSPorTipoChart dados={dadosPessoalImportados.fgts} />
-                    </div>
-                    )}
-
-                    {itemVisivel('pessoal', 'fgts_3_meses') && (
-                    <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}>
-                      <div className="flex items-center justify-between mb-6">
-                        <div>
-                          <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>FGTS Ãšltimos 3 Meses</h3>
-                          <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Comparativo recente</p>
-                        </div>
-                        <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-teal-900/30' : 'bg-teal-50'}`}>
-                          <BarChart2 className={`w-6 h-6 ${isDarkMode ? 'text-teal-400' : 'text-teal-600'}`} />
-                        </div>
-                      </div>
-                      <FGTSUltimos3MesesChart dados={dadosPessoalImportados.fgts} />
-                    </div>
-                    )}
-                  </div>
-                )}
-
-                {/* FGTS Mensal + Por Ano */}
-                {dadosPessoalImportados?.fgts && (itemVisivel('pessoal', 'fgts_mensal') || itemVisivel('pessoal', 'fgts_ano')) && (
-                  <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 transition-all duration-500 delay-300 ${cardAnimation}`}>
-                    {itemVisivel('pessoal', 'fgts_mensal') && (
-                    <div className={`${itemVisivel('pessoal', 'fgts_ano') ? 'md:col-span-2 ' : 'md:col-span-3 '}${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}>
-                      <div className="flex items-center justify-between mb-6">
-                        <div>
-                          <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>FGTS MÃªs a MÃªs</h3>
-                          <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Evolucao mensal do FGTS</p>
-                        </div>
-                      </div>
-                      <FGTSMensalChart dados={dadosPessoalImportados.fgts} />
-                    </div>
-                    )}
-
-                    {itemVisivel('pessoal', 'fgts_ano') && (
-                    <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}>
-                      <div className="flex items-center justify-between mb-6">
-                        <div>
-                          <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>FGTS por Ano</h3>
-                          <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Acumulado anual</p>
-                        </div>
-                      </div>
-                      <FGTSPorAnoChart dados={dadosPessoalImportados.fgts} />
-                    </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Graficos INSS */}
-                {dadosPessoalImportados?.inss && (itemVisivel('pessoal', 'inss_empresa') || itemVisivel('pessoal', 'inss_tipo_guia')) && (
-                  <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 transition-all duration-500 delay-400 ${cardAnimation}`}>
-                    {itemVisivel('pessoal', 'inss_empresa') && (
-                    <div className={`${itemVisivel('pessoal', 'inss_tipo_guia') ? 'md:col-span-2 ' : 'md:col-span-3 '}${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}>
-                      <div className="flex items-center justify-between mb-6">
-                        <div>
-                          <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>INSS por Empresa</h3>
-                          <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Distribuicao por empresa</p>
-                        </div>
-                        <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-slate-900/30' : 'bg-slate-50'}`}>
-                          <BarChartHorizontal className={`w-6 h-6 ${isDarkMode ? 'text-slate-500' : 'text-slate-700'}`} />
-                        </div>
-                      </div>
-                      <INSSPorEmpresaChart dados={dadosPessoalImportados.inss} />
-                    </div>
-                    )}
-
-                    {itemVisivel('pessoal', 'inss_tipo_guia') && (
-                    <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}>
-                      <div className="flex items-center justify-between mb-6">
-                        <div>
-                          <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Tipo de Guia</h3>
-                          <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Original vs Retificador</p>
-                        </div>
-                      </div>
-                      <INSSPorTipoGuiaChart dados={dadosPessoalImportados.inss} />
-                    </div>
-                    )}
-                  </div>
-                )}
-
-                {/* INSS Mensal */}
-                {dadosPessoalImportados?.inss && itemVisivel('pessoal', 'inss_mensal') && (
-                  <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm transition-all duration-500 delay-500 ${cardAnimation}`}>
-                    <div className="flex items-center justify-between mb-6">
-                      <div>
-                        <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>INSS MÃªs a MÃªs</h3>
-                        <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>EvoluÃ§Ã£o mensal do INSS</p>
-                      </div>
-                    </div>
-                    <INSSMensalChart dados={dadosPessoalImportados.inss} />
-                  </div>
-                )}
-
-                {/* Graficos de Empregados */}
-                {(dadosPessoalImportados?.empregados || dadosPessoalImportados?.salarioBase) && (itemVisivel('pessoal', 'admissoes_demissoes') || itemVisivel('pessoal', 'empregados_situacao')) && (
-                  <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 transition-all duration-500 delay-600 ${cardAnimation}`}>
-                    {dadosPessoalImportados?.empregados && itemVisivel('pessoal', 'admissoes_demissoes') && (
-                      <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}>
-                        <div className="flex items-center justify-between mb-6">
-                          <div>
-                            <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>AdmissÃµes e DemissÃµes</h3>
-                            <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>MovimentaÃ§Ã£o de pessoal</p>
-                          </div>
-                          <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-green-900/30' : 'bg-green-50'}`}>
-                            <UserPlus className={`w-6 h-6 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`} />
-                          </div>
-                        </div>
-                        <AdmissoesDemissoesChart dados={dadosPessoalImportados.empregados} />
-                      </div>
-                    )}
-
-                    {dadosPessoalImportados?.empregados && itemVisivel('pessoal', 'empregados_situacao') && (
-                      <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}>
-                        <div className="flex items-center justify-between mb-6">
-                          <div>
-                            <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Por SituaÃ§Ã£o</h3>
-                            <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Ativos, Demitidos, Afastados</p>
-                          </div>
-                          <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-amber-900/30' : 'bg-amber-50'}`}>
-                            <PieChart className={`w-6 h-6 ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`} />
-                          </div>
-                        </div>
-                        <EmpregadosPorSituacaoChart dados={dadosPessoalImportados.empregados} />
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Salario por Cargo */}
-                {dadosPessoalImportados?.salarioBase && itemVisivel('pessoal', 'salario_cargo') && (
-                  <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm transition-all duration-500 delay-700 ${cardAnimation}`}>
-                    <div className="flex items-center justify-between mb-6">
-                      <div>
-                        <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>SalÃ¡rio MÃ©dio por Cargo</h3>
-                        <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Top 10 cargos por salÃ¡rio</p>
-                      </div>
-                      <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-emerald-900/30' : 'bg-emerald-50'}`}>
-                        <Banknote className={`w-6 h-6 ${isDarkMode ? 'text-emerald-700' : 'text-emerald-700'}`} />
-                      </div>
-                    </div>
-                    <SalarioPorCargoChart dados={dadosPessoalImportados.salarioBase} />
-                  </div>
-                )}
-
-                {/* Tabela de Ferias */}
-                {dadosPessoalImportados?.ferias && itemVisivel('pessoal', 'tabela_ferias') && (
-                  <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} rounded-xl border shadow-sm overflow-hidden transition-all duration-500 delay-800 ${cardAnimation}`}>
-                    <div className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'} flex items-center justify-between`}>
-                      <div>
-                        <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>ProgramaÃ§Ã£o de FÃ©rias</h3>
-                        <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>PrÃ³ximas fÃ©rias programadas</p>
-                      </div>
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${isDarkMode ? 'bg-teal-900/30 text-teal-400' : 'bg-teal-50 text-teal-700'}`}>
-                        {dadosPessoalImportados.ferias?.ferias?.length || 0} registros
-                      </span>
-                    </div>
-                    <TabelaFerias dados={dadosPessoalImportados.ferias} />
-                  </div>
-                )}
-              </>
-            ) : (
-              /* ===== SEM DADOS IMPORTADOS - Mostra aviso ===== */
-              <>
-                {/* Cards de metricas vazias */}
-                {itemVisivel('pessoal', 'cards_metricas') && (
-                <div className={`grid grid-cols-1 md:grid-cols-4 gap-4 transition-all duration-500 delay-100 ${cardAnimation}`}>
-                  <div className="bg-teal-700 p-6 rounded-xl text-white shadow-md">
-                    <div className="flex items-center justify-between mb-4">
-                      <Users className="w-8 h-8 opacity-80" />
-                      <span className="text-xs font-bold bg-white/20 px-3 py-1 rounded-full">
-                        Ativos
-                      </span>
-                    </div>
-                    <p className="text-3xl font-bold">-</p>
-                    <p className="text-white/70 text-sm mt-1">Colaboradores</p>
-                  </div>
-
-                  <div className="bg-emerald-700 p-6 rounded-xl text-white shadow-md">
-                    <div className="flex items-center justify-between mb-4">
-                      <Banknote className="w-8 h-8 opacity-80" />
-                    </div>
-                    <p className="text-3xl font-bold">-</p>
-                    <p className="text-white/70 text-sm mt-1">Folha Salarial</p>
-                  </div>
-
-                  <div className="bg-slate-700 p-6 rounded-xl text-white shadow-md">
-                    <div className="flex items-center justify-between mb-4">
-                      <Receipt className="w-8 h-8 opacity-80" />
-                    </div>
-                    <p className="text-3xl font-bold">-</p>
-                    <p className="text-white/70 text-sm mt-1">Total FGTS</p>
-                  </div>
-
-                  <div className="bg-slate-700 p-6 rounded-xl text-white shadow-md">
-                    <div className="flex items-center justify-between mb-4">
-                      <Award className="w-8 h-8 opacity-80" />
-                    </div>
-                    <p className="text-3xl font-bold">-</p>
-                    <p className="text-white/70 text-sm mt-1">Total INSS</p>
-                  </div>
-                </div>
-                )}
-
-                {/* Aviso para importar dados */}
-                <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-12 rounded-xl border shadow-sm text-center transition-all duration-500 delay-200 ${cardAnimation}`}>
-                  <div className={`w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center ${isDarkMode ? 'bg-teal-900/30' : 'bg-teal-50'}`}>
-                    <Upload className={`w-10 h-10 ${isDarkMode ? 'text-teal-400' : 'text-teal-600'}`} />
-                  </div>
-                  <h3 className={`text-2xl font-bold mb-3 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                    Importe os Dados do Setor Pessoal
-                  </h3>
-                  <p className={`text-lg mb-6 max-w-xl mx-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                    Para visualizar os grÃ¡ficos de FGTS, INSS, Empregados, SalÃ¡rios e FÃ©rias,
-                    importe os arquivos CSV do Sistema DomÃ­nio.
-                  </p>
-                  <div className={`flex flex-wrap justify-center gap-3 mb-8`}>
-                    {['Demonstrativo FGTS', 'Folha de INSS', 'RelaÃ§Ã£o de Empregados', 'SalÃ¡rio Base', 'ProgramaÃ§Ã£o de FÃ©rias'].map((item) => (
-                      <span key={item} className={`px-3 py-1 rounded-full text-sm font-medium ${isDarkMode ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>
-                        {item}
-                      </span>
-                    ))}
-                  </div>
-                  <a
-                    href="/configuracoes"
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-colors font-semibold"
-                  >
-                    <Upload className="w-5 h-5" />
-                    Ir para ImportaÃ§Ã£o
-                  </a>
-                </div>
-
-                {/* Graficos placeholder */}
-                {(itemVisivel('pessoal', 'fgts_tipo') || itemVisivel('pessoal', 'inss_empresa')) && (
-                <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 transition-all duration-500 delay-300 ${cardAnimation}`}>
-                  {itemVisivel('pessoal', 'fgts_tipo') && (
-                  <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}>
-                    <div className="flex items-center justify-between mb-6">
-                      <div>
-                        <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>FGTS por Tipo</h3>
-                        <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Mensal, 13Âº, RescisÃ£o</p>
-                      </div>
-                    </div>
-                    <FGTSPorTipoChart dados={null} />
-                  </div>
-                  )}
-
-                  {itemVisivel('pessoal', 'inss_empresa') && (
-                  <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}>
-                    <div className="flex items-center justify-between mb-6">
-                      <div>
-                        <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>INSS por Empresa</h3>
-                        <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>DistribuiÃ§Ã£o por empresa</p>
-                      </div>
-                    </div>
-                    <INSSPorEmpresaChart dados={null} />
-                  </div>
-                  )}
-                </div>
-                )}
-
-                {(itemVisivel('pessoal', 'admissoes_demissoes') || itemVisivel('pessoal', 'salario_cargo')) && (
-                <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 transition-all duration-500 delay-400 ${cardAnimation}`}>
-                  {itemVisivel('pessoal', 'admissoes_demissoes') && (
-                  <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}>
-                    <div className="flex items-center justify-between mb-6">
-                      <div>
-                        <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>AdmissÃµes e DemissÃµes</h3>
-                        <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>MovimentaÃ§Ã£o de pessoal</p>
-                      </div>
-                    </div>
-                    <AdmissoesDemissoesChart dados={null} />
-                  </div>
-                  )}
-
-                  {itemVisivel('pessoal', 'salario_cargo') && (
-                  <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}>
-                    <div className="flex items-center justify-between mb-6">
-                      <div>
-                        <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>SalÃ¡rio por Cargo</h3>
-                        <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Top cargos por salÃ¡rio</p>
-                      </div>
-                    </div>
-                    <SalarioPorCargoChart dados={null} />
-                  </div>
-                  )}
-                </div>
-                )}
-              </>
-            )}
-
-            {/* Card de resumo */}
-            {itemVisivel('pessoal', 'resumo_pessoal') && (
-            <div className={`bg-teal-700 p-8 rounded-xl text-white shadow-md transition-all duration-500 delay-500 ${cardAnimation}`}>
-              <div className="flex items-start gap-6">
-                <div className="p-4 bg-white/10 rounded-xl backdrop-blur-sm">
-                  <UserCheck className="w-8 h-8" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold mb-3">Setor Pessoal</h3>
-                  <p className="text-white/80 leading-relaxed">
-                    {temDadosPessoal ? (
-                      <>
-                        Dados importados do Sistema DomÃ­nio. Visualize FGTS, INSS, relaÃ§Ã£o de empregados,
-                        salÃ¡rios por cargo e programaÃ§Ã£o de fÃ©rias. Para atualizar os dados, importe novos
-                        arquivos CSV na pÃ¡gina de ConfiguraÃ§Ãµes.
-                      </>
-                    ) : (
-                      <>
-                        Importe os relatÃ³rios do Sistema DomÃ­nio para visualizar dados de FGTS, INSS,
-                        empregados, salÃ¡rios e fÃ©rias. Acesse ConfiguraÃ§Ãµes &gt; ImportaÃ§Ã£o &gt; Setor Pessoal.
-                      </>
-                    )}
-                  </p>
-                </div>
-              </div>
-            </div>
-            )}
-          </div>
+          <DashboardPessoalTab
+            cardAnimation={cardAnimation}
+            dadosPessoalImportados={dadosPessoalImportados}
+            handleExportReport={handleExportReport}
+            isDarkMode={isDarkMode}
+            itemVisivel={itemVisivel}
+            temDadosPessoal={temDadosPessoal}
+          />
         )}
 
         {/* ===== TAB: ADMINISTRATIVO ===== */}
         {activeTab === 'administrativo' && (
-          <div className="space-y-8">
-            {/* Header */}
-            <section className={`flex items-start justify-between transition-all duration-500 ${cardAnimation}`}>
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-amber-500 rounded-lg">
-                    <Briefcase className="w-5 h-5 text-white" />
-                  </div>
-                  <span className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest">
-                    Setor Administrativo
-                  </span>
-                </div>
-                <h1 className={`text-4xl font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-[#1e293b]'}`}>
-                  GestÃ£o Administrativa
-                </h1>
-                <p className="text-lg text-slate-400 font-medium">
-                  Contratos, despesas e documentos da empresa.
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleExportReport('pdf')}
-                  className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors"
-                >
-                  <FileDown className="w-4 h-4" />
-                  PDF
-                </button>
-                <button
-                  onClick={() => handleExportReport('excel')}
-                  className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors"
-                >
-                  <Download className="w-4 h-4" />
-                  Excel
-                </button>
-              </div>
-            </section>
-
-            {/* Cards de mÃ©tricas principais */}
-            {itemVisivel('administrativo', 'cards_metricas') && (
-            <div className={`grid grid-cols-1 md:grid-cols-4 gap-4 transition-all duration-500 delay-100 ${cardAnimation}`}>
-              <div className="bg-amber-600 p-6 rounded-xl text-white shadow-md">
-                <div className="flex items-center justify-between mb-4">
-                  <ScrollText className="w-8 h-8 opacity-80" />
-                  <span className="text-xs font-bold bg-white/20 px-3 py-1 rounded-full">
-                    Vigentes
-                  </span>
-                </div>
-                <p className="text-3xl font-bold">{administrativoData.contratos.vigentes}</p>
-                <p className="text-white/70 text-sm mt-1">Contratos Ativos</p>
-              </div>
-
-              <div className="bg-slate-700 p-6 rounded-xl text-white shadow-md">
-                <div className="flex items-center justify-between mb-4">
-                  <Wallet className="w-8 h-8 opacity-80" />
-                </div>
-                <p className="text-3xl font-bold">{formatCurrency(administrativoData.indicadores.custoOperacional)}</p>
-                <p className="text-white/70 text-sm mt-1">Custo Operacional/MÃªs</p>
-              </div>
-
-              <div className="bg-emerald-700 p-6 rounded-xl text-white shadow-md">
-                <div className="flex items-center justify-between mb-4">
-                  <FileCheck className="w-8 h-8 opacity-80" />
-                </div>
-                <p className="text-3xl font-bold">{administrativoData.certidoes.filter(c => c.status === 'VÃ¡lida').length}</p>
-                <p className="text-white/70 text-sm mt-1">CertidÃµes VÃ¡lidas</p>
-              </div>
-
-              <div className="bg-red-600 p-6 rounded-xl text-white shadow-md">
-                <div className="flex items-center justify-between mb-4">
-                  <AlertTriangle className="w-8 h-8 opacity-80" />
-                </div>
-                <p className="text-3xl font-bold">{administrativoData.contratos.vencendo30dias}</p>
-                <p className="text-white/70 text-sm mt-1">Vencendo em 30 dias</p>
-              </div>
-            </div>
-            )}
-
-            {/* GrÃ¡fico de Despesas Mensais */}
-            {itemVisivel('administrativo', 'despesas_mensais') && (
-            <div className={`bg-white dark:bg-slate-800 p-8 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm transition-all duration-500 delay-200 ${cardAnimation}`}>
-              <div className="flex items-center justify-between mb-8">
-                <div>
-                  <h3 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Despesas Administrativas</h3>
-                  <p className="text-sm text-slate-400">EvoluÃ§Ã£o mensal das despesas</p>
-                </div>
-                <div className="p-3 bg-amber-50 dark:bg-amber-900/30 rounded-xl">
-                  <BarChartBig className="w-6 h-6 text-amber-600 dark:text-amber-400" />
-                </div>
-              </div>
-              <DespesasMensaisChart despesasMensais={administrativoData.despesasMensais} />
-            </div>
-            )}
-
-            {/* Grid: Despesas por Categoria e Indicadores */}
-            {(itemVisivel('administrativo', 'despesas_categoria') || itemVisivel('administrativo', 'indicadores_operacionais')) && (
-            <div className={`grid grid-cols-1 lg:grid-cols-2 gap-6 transition-all duration-500 delay-300 ${cardAnimation}`}>
-              {/* Despesas por Categoria */}
-              {itemVisivel('administrativo', 'despesas_categoria') && (
-              <div className="bg-white dark:bg-slate-800 p-8 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Despesas por Categoria</h3>
-                    <p className="text-sm text-slate-400">DistribuiÃ§Ã£o dos custos</p>
-                  </div>
-                  <div className="p-3 bg-amber-50 dark:bg-amber-900/30 rounded-xl">
-                    <PieChart className="w-6 h-6 text-amber-600 dark:text-amber-400" />
-                  </div>
-                </div>
-                <DespesasCategoriaChart despesasPorCategoria={administrativoData.despesasPorCategoria} />
-              </div>
-              )}
-
-              {/* Indicadores */}
-              {itemVisivel('administrativo', 'indicadores_operacionais') && (
-              <div className="bg-white dark:bg-slate-800 p-8 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
-                <h3 className={`text-lg font-bold mb-6 pb-4 border-b ${isDarkMode ? 'text-white border-slate-700' : 'text-slate-800 border-slate-100'}`}>
-                  Indicadores Operacionais
-                </h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                        <DollarSign className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                      </div>
-                      <span className="font-medium text-slate-700 dark:text-slate-300">Ticket MÃ©dio de Venda</span>
-                    </div>
-                    <span className="text-xl font-bold text-blue-600 dark:text-blue-400">
-                      {formatCurrency(administrativoData.indicadores.ticketMedioVenda)}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                        <Percent className="w-5 h-5 text-green-600 dark:text-green-400" />
-                      </div>
-                      <span className="font-medium text-slate-700 dark:text-slate-300">Margem Operacional</span>
-                    </div>
-                    <span className="text-xl font-bold text-green-600 dark:text-green-400">
-                      {administrativoData.indicadores.margemOperacional}%
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
-                        <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
-                      </div>
-                      <span className="font-medium text-slate-700 dark:text-slate-300">Taxa de InadimplÃªncia</span>
-                    </div>
-                    <span className="text-xl font-bold text-red-600 dark:text-red-400">
-                      {administrativoData.indicadores.inadimplencia}%
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
-                        <Wallet className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                      </div>
-                      <span className="font-medium text-slate-700 dark:text-slate-300">Custo Operacional Mensal</span>
-                    </div>
-                    <span className="text-xl font-bold text-amber-600 dark:text-amber-400">
-                      {formatCurrency(administrativoData.indicadores.custoOperacional)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              )}
-            </div>
-            )}
-
-            {/* Tabela de CertidÃµes */}
-            {itemVisivel('administrativo', 'tabela_certidoes') && (
-            <div className={`bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden transition-all duration-500 delay-400 ${cardAnimation}`}>
-              <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
-                <div>
-                  <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>CertidÃµes e Documentos</h3>
-                  <p className="text-sm text-slate-400">Status das certidÃµes da empresa</p>
-                </div>
-                <span className="px-3 py-1 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full text-sm font-medium">
-                  {administrativoData.certidoes.length} documentos
-                </span>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-slate-50 dark:bg-slate-700/50">
-                    <tr>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Documento</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Tipo</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Validade</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                    {administrativoData.certidoes.map((cert) => (
-                      <tr key={cert.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className={`p-2 rounded-lg ${cert.status === 'VÃ¡lida' ? 'bg-green-100 dark:bg-green-900/30' : 'bg-amber-100 dark:bg-amber-900/30'}`}>
-                              <FileCheck className={`w-4 h-4 ${cert.status === 'VÃ¡lida' ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'}`} />
-                            </div>
-                            <span className="font-semibold text-slate-700 dark:text-slate-300">{cert.nome}</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 rounded text-sm">
-                            {cert.tipo}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-slate-600 dark:text-slate-400">
-                          {new Date(cert.validade).toLocaleDateString('pt-BR')}
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${cert.status === 'VÃ¡lida' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'}`}>
-                            {cert.status === 'VÃ¡lida' ? <CheckCircle className="w-3 h-3" /> : <AlertTriangle className="w-3 h-3" />}
-                            {cert.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            )}
-
-            {/* Tabela de Contratos */}
-            {itemVisivel('administrativo', 'tabela_contratos') && (
-            <div className={`bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden transition-all duration-500 delay-500 ${cardAnimation}`}>
-              <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
-                <div>
-                  <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Contratos Ativos</h3>
-                  <p className="text-sm text-slate-400">Contratos vigentes com fornecedores</p>
-                </div>
-                <span className="px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full text-sm font-medium">
-                  {administrativoData.listaContratos.length} contratos
-                </span>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-slate-50 dark:bg-slate-700/50">
-                    <tr>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Fornecedor</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Tipo</th>
-                      <th className="px-6 py-4 text-right text-xs font-bold text-slate-400 uppercase">Valor Mensal</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Vencimento</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                    {administrativoData.listaContratos.map((contrato) => {
-                      const iconMap = {
-                        'Aluguel': Home,
-                        'Utilidades': Zap,
-                        'Seguro': Shield,
-                        'ServiÃ§os': Wrench
-                      };
-                      const Icon = iconMap[contrato.tipo] || Package;
-
-                      return (
-                        <tr key={contrato.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-3">
-                              <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700">
-                                <Icon className="w-4 h-4 text-slate-600 dark:text-slate-400" />
-                              </div>
-                              <span className="font-semibold text-slate-700 dark:text-slate-300">{contrato.fornecedor}</span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <span className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 rounded text-sm">
-                              {contrato.tipo}
-                            </span>
-                          </td>
-                          <td className={`px-6 py-4 text-right font-semibold ${isDarkMode ? 'text-teal-400' : 'text-[#0e4f6d]'}`}>
-                            {formatCurrency(contrato.valor)}
-                          </td>
-                          <td className="px-6 py-4 text-slate-600 dark:text-slate-400">
-                            {new Date(contrato.vencimento).toLocaleDateString('pt-BR')}
-                          </td>
-                          <td className="px-6 py-4">
-                            <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${contrato.status === 'Ativo' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'}`}>
-                              {contrato.status === 'Ativo' ? <CheckCircle className="w-3 h-3" /> : <AlertTriangle className="w-3 h-3" />}
-                              {contrato.status}
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            )}
-
-            {/* Card de informaÃ§Ã£o */}
-            <div className={`bg-amber-600 p-8 rounded-xl text-white shadow-md transition-all duration-500 delay-600 ${cardAnimation}`}>
-              <div className="flex items-start gap-6">
-                <div className="p-4 bg-white/10 rounded-xl backdrop-blur-sm">
-                  <Briefcase className="w-8 h-8" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold mb-3">GestÃ£o Administrativa</h3>
-                  <p className="text-white/80 leading-relaxed">
-                    O setor administrativo gerencia <strong>{administrativoData.contratos.total} contratos</strong> com
-                    custo operacional mensal de <strong>{formatCurrency(administrativoData.indicadores.custoOperacional)}</strong>.
-                    Todas as certidÃµes estÃ£o em dia, garantindo a regularidade fiscal e trabalhista da empresa.
-                    {administrativoData.contratos.vencendo30dias > 0 && (
-                      <strong className="block mt-2">
-                        AtenÃ§Ã£o: {administrativoData.contratos.vencendo30dias} contrato(s) vencendo nos prÃ³ximos 30 dias.
-                      </strong>
-                    )}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+          <DashboardAdministrativoTab
+            administrativoData={administrativoData}
+            cardAnimation={cardAnimation}
+            handleExportReport={handleExportReport}
+            isDarkMode={isDarkMode}
+            itemVisivel={itemVisivel}
+          />
         )}
       </main>
     </div>
@@ -3210,4 +1521,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
