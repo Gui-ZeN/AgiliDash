@@ -19,6 +19,15 @@ import {
   parseProgramacaoFerias,
 } from '../utils/dominioParser';
 import { useAuth } from './AuthContext';
+import {
+  VISIBILIDADE_PREVIEW_KEY,
+  createVisibilidadePayload,
+  getLegacyVisibilidadeCnpjKey,
+  getVisibilidadeStorageKey,
+  hasCustomVisibilityRule,
+  mergeVisibilidadeConfigs,
+  parseVisibilidadePayload,
+} from '../utils/visibilidadeConfig';
 
 const DataContext = createContext();
 
@@ -84,63 +93,6 @@ const initialDadosFiscais = {
 // Estrutura inicial para dados do setor pessoal
 const initialDadosPessoal = {
   // cnpjId -> { fgts: null, inss: null, empregados: null, salarioBase: null, ferias: null }
-};
-
-const VISIBILIDADE_STORAGE_VERSION = 3;
-const VISIBILIDADE_PREVIEW_KEY = 'agili_preview_cliente';
-const getVisibilidadeStorageKey = (scopeType, scopeId) =>
-  `agili_visibilidade_${scopeType}_${scopeId}`;
-const getLegacyVisibilidadeCnpjKey = (cnpjId) => `agili_visibilidade_${cnpjId}`;
-
-const parseVisibilidadePayload = (rawValue) => {
-  if (!rawValue) return null;
-
-  try {
-    const parsed = JSON.parse(rawValue);
-    if (parsed && typeof parsed === 'object' && parsed.config) {
-      return parsed.config;
-    }
-    return parsed && typeof parsed === 'object' ? parsed : null;
-  } catch {
-    return null;
-  }
-};
-
-const mergeVisibilidadeConfigs = (...configs) => {
-  const merged = {};
-
-  configs.forEach((config) => {
-    if (!config || typeof config !== 'object') return;
-
-    Object.entries(config).forEach(([secaoId, secaoValue]) => {
-      if (!merged[secaoId]) {
-        merged[secaoId] = { visivel: true, itens: {} };
-      }
-
-      if (typeof secaoValue?.visivel === 'boolean') {
-        merged[secaoId].visivel = secaoValue.visivel;
-      }
-
-      if (secaoValue?.itens && typeof secaoValue.itens === 'object') {
-        Object.entries(secaoValue.itens).forEach(([itemId, itemVisivel]) => {
-          if (typeof itemVisivel === 'boolean') {
-            merged[secaoId].itens[itemId] = itemVisivel;
-          }
-        });
-      }
-    });
-  });
-
-  return merged;
-};
-
-const hasCustomVisibilityRule = (config) => {
-  if (!config || typeof config !== 'object') return false;
-
-  return Object.values(config).some((secao) => {
-    if (secao?.visivel === false) return true;
-    return Object.values(secao?.itens || {}).some((itemVisivel) => itemVisivel === false);
-  });
 };
 
 export const DataProvider = ({ children }) => {
@@ -229,12 +181,7 @@ export const DataProvider = ({ children }) => {
 
       localStorage.setItem(
         scopeKey,
-        JSON.stringify({
-          version: VISIBILIDADE_STORAGE_VERSION,
-          scope: 'cnpj',
-          updatedAt: new Date().toISOString(),
-          config: legacyConfig,
-        })
+        JSON.stringify(createVisibilidadePayload('cnpj', legacyConfig))
       );
       localStorage.removeItem(legacyKey);
     });
@@ -872,15 +819,7 @@ export const DataProvider = ({ children }) => {
     if (!scopeType || !scopeId || !config) return false;
 
     const storageKey = getVisibilidadeStorageKey(scopeType, scopeId);
-    localStorage.setItem(
-      storageKey,
-      JSON.stringify({
-        version: VISIBILIDADE_STORAGE_VERSION,
-        scope: scopeType,
-        updatedAt: new Date().toISOString(),
-        config,
-      })
-    );
+    localStorage.setItem(storageKey, JSON.stringify(createVisibilidadePayload(scopeType, config)));
 
     if (scopeType === 'cnpj') {
       localStorage.removeItem(getLegacyVisibilidadeCnpjKey(scopeId));

@@ -57,6 +57,13 @@ import {
   parseProgramacaoFerias,
 } from '../utils/dominioParser';
 import { formatCurrency } from '../utils/formatters';
+import {
+  buildVisibilidadeOverrideDiff,
+  createVisibilidadeConfigFromSections,
+  hasCustomVisibilityRule,
+  normalizeVisibilidadeConfigWithSections,
+  toggleSecaoVisibilidadePreservandoItens,
+} from '../utils/visibilidadeConfig';
 
 // Definicao dos setores e seus relatorios
 const SETORES_CONFIG = {
@@ -297,11 +304,11 @@ const Configuracoes = () => {
   const [importSetor, setImportSetor] = useState(null);
   const [importRelatorio, setImportRelatorio] = useState(null);
   const [importPreview, setImportPreview] = useState(null);
-  const [importMapping, setImportMapping] = useState({});
+  const [, setImportMapping] = useState({});
   const [selectedCnpjImport, setSelectedCnpjImport] = useState('');
   const [selectedTrimestre, setSelectedTrimestre] = useState('1'); // Para CSLL/IRPJ
   const [importBatchFiles, setImportBatchFiles] = useState([]); // Para importAção em lote
-  const [importBatchProgress, setImportBatchProgress] = useState({
+  const [, setImportBatchProgress] = useState({
     current: 0,
     total: 0,
     processing: false,
@@ -542,27 +549,11 @@ const Configuracoes = () => {
     },
   };
 
-  const createDefaultVisibilidadeConfig = () => {
-    const defaultConfig = {};
-    Object.keys(DASHBOARD_SECTIONS).forEach((secao) => {
-      defaultConfig[secao] = { visivel: true, itens: {} };
-      DASHBOARD_SECTIONS[secao].itens.forEach((item) => {
-        defaultConfig[secao].itens[item.id] = true;
-      });
-    });
-    return defaultConfig;
-  };
+  const createDefaultVisibilidadeConfig = () =>
+    createVisibilidadeConfigFromSections(DASHBOARD_SECTIONS, true);
 
-  const createAllHiddenVisibilidadeConfig = () => {
-    const hiddenConfig = {};
-    Object.keys(DASHBOARD_SECTIONS).forEach((secao) => {
-      hiddenConfig[secao] = { visivel: false, itens: {} };
-      DASHBOARD_SECTIONS[secao].itens.forEach((item) => {
-        hiddenConfig[secao].itens[item.id] = false;
-      });
-    });
-    return hiddenConfig;
-  };
+  const createAllHiddenVisibilidadeConfig = () =>
+    createVisibilidadeConfigFromSections(DASHBOARD_SECTIONS, false);
 
   const normalizeText = (value) =>
     String(value || '')
@@ -571,47 +562,8 @@ const Configuracoes = () => {
       .toLowerCase()
       .trim();
 
-  const mergeVisibilidadeConfigs = (...configs) => {
-    const merged = createDefaultVisibilidadeConfig();
-
-    configs.forEach((config) => {
-      if (!config || typeof config !== 'object') return;
-
-      Object.keys(merged).forEach((secaoId) => {
-        const secaoConfig = config?.[secaoId];
-        if (!secaoConfig) return;
-
-        if (typeof secaoConfig?.visivel === 'boolean') {
-          merged[secaoId].visivel = secaoConfig.visivel;
-          if (!secaoConfig.visivel) {
-            Object.keys(merged[secaoId].itens).forEach((itemId) => {
-              merged[secaoId].itens[itemId] = false;
-            });
-          }
-        }
-
-        Object.keys(merged[secaoId].itens).forEach((itemId) => {
-          if (secaoConfig?.itens && Object.prototype.hasOwnProperty.call(secaoConfig.itens, itemId)) {
-            merged[secaoId].itens[itemId] = secaoConfig.itens[itemId] !== false;
-          }
-        });
-
-        const algumItemVisivel = Object.values(merged[secaoId].itens).some(Boolean);
-        merged[secaoId].visivel = merged[secaoId].visivel !== false && algumItemVisivel;
-      });
-    });
-
-    return merged;
-  };
-
-  const hasCustomVisibilityRule = (config) => {
-    if (!config || typeof config !== 'object') return false;
-
-    return Object.values(config).some((secao) => {
-      if (secao?.visivel === false) return true;
-      return Object.values(secao?.itens || {}).some((itemVisivel) => itemVisivel === false);
-    });
-  };
+  const mergeVisibilidadeConfigs = (...configs) =>
+    normalizeVisibilidadeConfigWithSections(DASHBOARD_SECTIONS, ...configs);
 
   const getGrupoByCnpj = (cnpjId) => cnpjs.find((cnpj) => cnpj.id === cnpjId)?.grupoId || null;
 
@@ -689,38 +641,7 @@ const Configuracoes = () => {
     const baseConfig = mergeVisibilidadeConfigs(
       grupoId ? getVisibilidadeScopeConfig('grupo', grupoId) : null
     );
-
-    const diff = {};
-
-    Object.keys(DASHBOARD_SECTIONS).forEach((secaoId) => {
-      const secaoBase = baseConfig[secaoId];
-      const secaoTarget = targetConfig?.[secaoId];
-      const secaoDiff = {};
-      const itensDiff = {};
-
-      if ((secaoTarget?.visivel !== false) !== (secaoBase?.visivel !== false)) {
-        secaoDiff.visivel = secaoTarget?.visivel !== false;
-      }
-
-      Object.keys(secaoBase?.itens || {}).forEach((itemId) => {
-        const baseItemVisivel = secaoBase?.itens?.[itemId] !== false;
-        const targetItemVisivel = secaoTarget?.itens?.[itemId] !== false;
-
-        if (baseItemVisivel !== targetItemVisivel) {
-          itensDiff[itemId] = targetItemVisivel;
-        }
-      });
-
-      if (Object.keys(itensDiff).length > 0) {
-        secaoDiff.itens = itensDiff;
-      }
-
-      if (Object.keys(secaoDiff).length > 0) {
-        diff[secaoId] = secaoDiff;
-      }
-    });
-
-    return Object.keys(diff).length > 0 ? diff : null;
+    return buildVisibilidadeOverrideDiff(baseConfig, targetConfig);
   };
 
   const resetarVisibilidadePadrao = () => {
@@ -771,19 +692,7 @@ const Configuracoes = () => {
 
   // Toggle secao inteira
   const toggleSecaoVisibilidade = (secaoId) => {
-    setVisibilidadeConfig((prev) => {
-      const novoEstado = !prev[secaoId]?.visivel;
-      const novaConfig = { ...prev };
-      novaConfig[secaoId] = {
-        ...novaConfig[secaoId],
-        visivel: novoEstado,
-        itens: {},
-      };
-      DASHBOARD_SECTIONS[secaoId].itens.forEach((item) => {
-        novaConfig[secaoId].itens[item.id] = novoEstado;
-      });
-      return novaConfig;
-    });
+    setVisibilidadeConfig((prev) => toggleSecaoVisibilidadePreservandoItens(prev, secaoId));
   };
 
   // Toggle item especifico

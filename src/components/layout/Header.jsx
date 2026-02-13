@@ -1,11 +1,27 @@
-﻿import { useState, useRef, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { LogOut, Settings, ChevronDown, Building2, Check, Layers, FolderTree, Building, Menu, X, Sun, Moon, Users, Activity, User, Search } from 'lucide-react';
+import {
+  LogOut,
+  Settings,
+  ChevronDown,
+  Building2,
+  Check,
+  Layers,
+  FolderTree,
+  Building,
+  Menu,
+  X,
+  Sun,
+  Moon,
+  User,
+  Search,
+} from 'lucide-react';
 import Logo from './Logo';
 import { useEmpresa } from '../../context/EmpresaContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
+import { shouldUseGroupVisibilityInConsolidado } from '../../utils/visibilidadeConfig';
 
 /**
  * Header do Dashboard
@@ -48,8 +64,10 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
     { id: 'administrativo', label: 'ADMIN' }
   ];
 
-  const usarVisibilidadeGrupoConsolidado =
-    isConsolidado && (modoVisualizacao === 'grupo' || modoVisualizacao === 'empresa');
+  const usarVisibilidadeGrupoConsolidado = shouldUseGroupVisibilityInConsolidado(
+    isConsolidado,
+    modoVisualizacao
+  );
 
   const configVisibilidadeGrupoConsolidado = useMemo(() => {
     if (!usarVisibilidadeGrupoConsolidado || !grupoAtual?.id) return null;

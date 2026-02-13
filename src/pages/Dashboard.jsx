@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { Eye, EyeOff, Layers } from 'lucide-react';
 import Header from '../components/layout/Header';
 import { useData } from '../context/DataContext';
@@ -10,12 +10,107 @@ import Breadcrumb from '../components/ui/Breadcrumb';
 import PeriodFilter from '../components/ui/PeriodFilter';
 import ExportButton from '../components/ui/ExportButton';
 import CnpjFilter from '../components/ui/CnpjFilter';
-import DashboardGeraisTab from './dashboard/tabs/DashboardGeraisTab';
-import DashboardContabilTab from './dashboard/tabs/DashboardContabilTab';
-import DashboardFiscalTab from './dashboard/tabs/DashboardFiscalTab';
-import DashboardPessoalTab from './dashboard/tabs/DashboardPessoalTab';
-import DashboardAdministrativoTab from './dashboard/tabs/DashboardAdministrativoTab';
 import { equipeTecnica, meses } from '../data/mockData';
+import { shouldUseGroupVisibilityInConsolidado } from '../utils/visibilidadeConfig';
+
+const DashboardGeraisTab = lazy(() => import('./dashboard/tabs/DashboardGeraisTab'));
+const DashboardContabilTab = lazy(() => import('./dashboard/tabs/DashboardContabilTab'));
+const DashboardFiscalTab = lazy(() => import('./dashboard/tabs/DashboardFiscalTab'));
+const DashboardPessoalTab = lazy(() => import('./dashboard/tabs/DashboardPessoalTab'));
+const DashboardAdministrativoTab = lazy(() => import('./dashboard/tabs/DashboardAdministrativoTab'));
+
+const ordenarCompetencia = (a, b) => {
+  const [mesA, anoA] = String(a || '')
+    .split('/')
+    .map(Number);
+  const [mesB, anoB] = String(b || '')
+    .split('/')
+    .map(Number);
+  if (anoA !== anoB) return anoA - anoB;
+  return mesA - mesB;
+};
+
+const calcularDespesasCustos = (competencia = {}) => {
+  const camposDespesas = [
+    'cmv',
+    'despesasOperacionais',
+    'resultadoFinanceiro',
+    'outrasReceitasOperacionais',
+    'outrasDespesasReceitas',
+    'provisaoCSLL',
+    'provisaoIRPJ',
+  ];
+
+  const somaDespesas = camposDespesas.reduce((acc, campo) => {
+    const valor = Number(competencia?.[campo]);
+    return acc + (Number.isFinite(valor) ? valor : 0);
+  }, 0);
+
+  return Math.abs(somaDespesas);
+};
+
+const obterReceitaCompetencia = (competencia = {}) => {
+  if (Object.prototype.hasOwnProperty.call(competencia, 'receita')) {
+    const receita = Number(competencia.receita);
+    if (Number.isFinite(receita)) return receita;
+  }
+
+  const receitaBruta = Number(competencia?.receitaBruta);
+  return Number.isFinite(receitaBruta) ? receitaBruta : 0;
+};
+
+const obterDespesaCompetencia = (competencia = {}) => {
+  if (Object.prototype.hasOwnProperty.call(competencia, 'despesa')) {
+    const despesa = Number(competencia.despesa);
+    if (Number.isFinite(despesa)) return Math.abs(despesa);
+  }
+
+  return calcularDespesasCustos(competencia);
+};
+
+const mergeDeep = (target, source) => {
+  if (source == null) return target;
+  if (target == null) return source;
+
+  if (typeof target === 'number' && typeof source === 'number') {
+    return target + source;
+  }
+
+  if (Array.isArray(target) && Array.isArray(source)) {
+    const arrayNumerico =
+      target.every((v) => typeof v === 'number') && source.every((v) => typeof v === 'number');
+    if (arrayNumerico) {
+      const max = Math.max(target.length, source.length);
+      return Array.from({ length: max }, (_, i) => (target[i] || 0) + (source[i] || 0));
+    }
+    return [...target, ...source];
+  }
+
+  if (typeof target === 'object' && typeof source === 'object') {
+    const merged = { ...target };
+    Object.keys(source).forEach((key) => {
+      if (merged[key] === undefined) {
+        merged[key] = source[key];
+      } else {
+        merged[key] = mergeDeep(merged[key], source[key]);
+      }
+    });
+    return merged;
+  }
+
+  return target ?? source;
+};
+
+const somarArrayNumerico = (arrays, tamanho = 12) => {
+  const base = new Array(tamanho).fill(0);
+  arrays.forEach((arr) => {
+    if (!Array.isArray(arr)) return;
+    for (let i = 0; i < tamanho; i += 1) {
+      base[i] += Number(arr[i] || 0);
+    }
+  });
+  return base;
+};
 
 /**
  * Dashboard Principal - Design Aprimorado
@@ -31,99 +126,6 @@ const Dashboard = () => {
   const [animateCards, setAnimateCards] = useState(false);
   const [periodFilter, setPeriodFilter] = useState({ type: 'year', year: 2025 });
   const [fiscalTrimestre, setFiscalTrimestre] = useState(null); // 1, 2, 3, 4 ou null (ano todo)
-
-  const ordenarCompetencia = (a, b) => {
-    const [mesA, anoA] = String(a || '')
-      .split('/')
-      .map(Number);
-    const [mesB, anoB] = String(b || '')
-      .split('/')
-      .map(Number);
-    if (anoA !== anoB) return anoA - anoB;
-    return mesA - mesB;
-  };
-
-  const calcularDespesasCustos = (competencia = {}) => {
-    const camposDespesas = [
-      'cmv',
-      'despesasOperacionais',
-      'resultadoFinanceiro',
-      'outrasReceitasOperacionais',
-      'outrasDespesasReceitas',
-      'provisaoCSLL',
-      'provisaoIRPJ',
-    ];
-
-    const somaDespesas = camposDespesas.reduce((acc, campo) => {
-      const valor = Number(competencia?.[campo]);
-      return acc + (Number.isFinite(valor) ? valor : 0);
-    }, 0);
-
-    return Math.abs(somaDespesas);
-  };
-
-  const obterReceitaCompetencia = (competencia = {}) => {
-    if (Object.prototype.hasOwnProperty.call(competencia, 'receita')) {
-      const receita = Number(competencia.receita);
-      if (Number.isFinite(receita)) return receita;
-    }
-
-    const receitaBruta = Number(competencia?.receitaBruta);
-    return Number.isFinite(receitaBruta) ? receitaBruta : 0;
-  };
-
-  const obterDespesaCompetencia = (competencia = {}) => {
-    if (Object.prototype.hasOwnProperty.call(competencia, 'despesa')) {
-      const despesa = Number(competencia.despesa);
-      if (Number.isFinite(despesa)) return Math.abs(despesa);
-    }
-
-    return calcularDespesasCustos(competencia);
-  };
-
-  const mergeDeep = (target, source) => {
-    if (source == null) return target;
-    if (target == null) return source;
-
-    if (typeof target === 'number' && typeof source === 'number') {
-      return target + source;
-    }
-
-    if (Array.isArray(target) && Array.isArray(source)) {
-      const arrayNumerico =
-        target.every((v) => typeof v === 'number') && source.every((v) => typeof v === 'number');
-      if (arrayNumerico) {
-        const max = Math.max(target.length, source.length);
-        return Array.from({ length: max }, (_, i) => (target[i] || 0) + (source[i] || 0));
-      }
-      return [...target, ...source];
-    }
-
-    if (typeof target === 'object' && typeof source === 'object') {
-      const merged = { ...target };
-      Object.keys(source).forEach((key) => {
-        if (merged[key] === undefined) {
-          merged[key] = source[key];
-        } else {
-          merged[key] = mergeDeep(merged[key], source[key]);
-        }
-      });
-      return merged;
-    }
-
-    return target ?? source;
-  };
-
-  const somarArrayNumerico = (arrays, tamanho = 12) => {
-    const base = new Array(tamanho).fill(0);
-    arrays.forEach((arr) => {
-      if (!Array.isArray(arr)) return;
-      for (let i = 0; i < tamanho; i += 1) {
-        base[i] += Number(arr[i] || 0);
-      }
-    });
-    return base;
-  };
 
   // Usar contexto da empresa e tema
   const {
@@ -155,8 +157,10 @@ const Dashboard = () => {
     grupos: gruposAdmin,
   } = useData();
 
-  const usarVisibilidadeGrupoConsolidado =
-    isConsolidado && (modoVisualizacao === 'grupo' || modoVisualizacao === 'empresa');
+  const usarVisibilidadeGrupoConsolidado = shouldUseGroupVisibilityInConsolidado(
+    isConsolidado,
+    modoVisualizacao
+  );
 
   const configVisibilidadeGrupoConsolidado = useMemo(() => {
     if (!usarVisibilidadeGrupoConsolidado || !grupoAtual?.id) return null;
@@ -1378,6 +1382,11 @@ const Dashboard = () => {
 
   // Classe de animação
   const cardAnimation = animateCards ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4';
+  const tabLoadingFallback = (
+    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-8 text-center text-slate-500 dark:text-slate-400">
+      Carregando painel...
+    </div>
+  );
 
   // Função para exportar relatório (mock)
   const handleExportReport = (type) => {
@@ -1489,90 +1498,100 @@ const Dashboard = () => {
 
         {/* ===== TAB: INFORMAÇÕES GERAIS ===== */}
         {activeTab === 'gerais' && (
-          <DashboardGeraisTab
-            cardAnimation={cardAnimation}
-            cnpjInfo={cnpjInfo}
-            equipeTecnica={equipeTecnica}
-            isDarkMode={isDarkMode}
-            itemVisivel={itemVisivel}
-            margemLucro={margemLucro}
-            lucroSparkline={lucroSparkline}
-            receitaSparkline={receitaSparkline}
-            responsavelInfo={responsavelInfo}
-            responsavelWhatsappLink={responsavelWhatsappLink}
-            selectedYear={selectedYear}
-            totalLucro={totalLucro}
-            totalReceita={totalReceita}
-            variacaoReceita={variacaoReceita}
-          />
+          <Suspense fallback={tabLoadingFallback}>
+            <DashboardGeraisTab
+              cardAnimation={cardAnimation}
+              cnpjInfo={cnpjInfo}
+              equipeTecnica={equipeTecnica}
+              isDarkMode={isDarkMode}
+              itemVisivel={itemVisivel}
+              margemLucro={margemLucro}
+              lucroSparkline={lucroSparkline}
+              receitaSparkline={receitaSparkline}
+              responsavelInfo={responsavelInfo}
+              responsavelWhatsappLink={responsavelWhatsappLink}
+              selectedYear={selectedYear}
+              totalLucro={totalLucro}
+              totalReceita={totalReceita}
+              variacaoReceita={variacaoReceita}
+            />
+          </Suspense>
         )}
         {/* ===== TAB: CONTÁBIL ===== */}
         {activeTab === 'contabil' && (
-          <DashboardContabilTab
-            cardAnimation={cardAnimation}
-            dadosComparativoLucro={dadosComparativoLucro}
-            dadosContabeisImportados={dadosContabeisImportados}
-            dadosReceitaCustoEstoque={dadosReceitaCustoEstoque}
-            dreData={dreData}
-            entradasData={entradasData}
-            handleExportReport={handleExportReport}
-            isDarkMode={isDarkMode}
-            itemVisivel={itemVisivel}
-            margemLucro={margemLucro}
-            meses={meses}
-            saidasData={saidasData}
-            selectedYear={selectedYear}
-            setSelectedYear={setSelectedYear}
-            temDadosContabeis={temDadosContabeis}
-            totalDespesa={totalDespesa}
-            totalLucro={totalLucro}
-            totalReceita={totalReceita}
-            variacaoReceita={variacaoReceita}
-          />
+          <Suspense fallback={tabLoadingFallback}>
+            <DashboardContabilTab
+              cardAnimation={cardAnimation}
+              dadosComparativoLucro={dadosComparativoLucro}
+              dadosContabeisImportados={dadosContabeisImportados}
+              dadosReceitaCustoEstoque={dadosReceitaCustoEstoque}
+              dreData={dreData}
+              entradasData={entradasData}
+              handleExportReport={handleExportReport}
+              isDarkMode={isDarkMode}
+              itemVisivel={itemVisivel}
+              margemLucro={margemLucro}
+              meses={meses}
+              saidasData={saidasData}
+              selectedYear={selectedYear}
+              setSelectedYear={setSelectedYear}
+              temDadosContabeis={temDadosContabeis}
+              totalDespesa={totalDespesa}
+              totalLucro={totalLucro}
+              totalReceita={totalReceita}
+              variacaoReceita={variacaoReceita}
+            />
+          </Suspense>
         )}
 
         {/* ===== TAB: FISCAL ===== */}
         {activeTab === 'fiscal' && (
-          <DashboardFiscalTab
-            cardAnimation={cardAnimation}
-            dadosFiscaisImportados={dadosFiscaisImportados}
-            fiscalTrimestre={fiscalTrimestre}
-            handleExportReport={handleExportReport}
-            handleFiscalDataCalculated={handleFiscalDataCalculated}
-            isDarkMode={isDarkMode}
-            itemVisivel={itemVisivel}
-            periodFilter={periodFilter}
-            resumoAcumuladorFiltrado={resumoAcumuladorFiltrado}
-            resumoImpostosFiltrado={resumoImpostosFiltrado}
-            selectedYear={selectedYear}
-            setFiscalTrimestre={setFiscalTrimestre}
-            temDadosFiscais={temDadosFiscais}
-            totalFaturamentoFiltrado={totalFaturamentoFiltrado}
-            totaisFiscais={totaisFiscais}
-          />
+          <Suspense fallback={tabLoadingFallback}>
+            <DashboardFiscalTab
+              cardAnimation={cardAnimation}
+              dadosFiscaisImportados={dadosFiscaisImportados}
+              fiscalTrimestre={fiscalTrimestre}
+              handleExportReport={handleExportReport}
+              handleFiscalDataCalculated={handleFiscalDataCalculated}
+              isDarkMode={isDarkMode}
+              itemVisivel={itemVisivel}
+              periodFilter={periodFilter}
+              resumoAcumuladorFiltrado={resumoAcumuladorFiltrado}
+              resumoImpostosFiltrado={resumoImpostosFiltrado}
+              selectedYear={selectedYear}
+              setFiscalTrimestre={setFiscalTrimestre}
+              temDadosFiscais={temDadosFiscais}
+              totalFaturamentoFiltrado={totalFaturamentoFiltrado}
+              totaisFiscais={totaisFiscais}
+            />
+          </Suspense>
         )}
 
         {/* ===== TAB: PESSOAL ===== */}
         {activeTab === 'pessoal' && (
-          <DashboardPessoalTab
-            cardAnimation={cardAnimation}
-            dadosPessoalImportados={dadosPessoalImportados}
-            handleExportReport={handleExportReport}
-            isDarkMode={isDarkMode}
-            itemVisivel={itemVisivel}
-            temDadosPessoal={temDadosPessoal}
-          />
+          <Suspense fallback={tabLoadingFallback}>
+            <DashboardPessoalTab
+              cardAnimation={cardAnimation}
+              dadosPessoalImportados={dadosPessoalImportados}
+              handleExportReport={handleExportReport}
+              isDarkMode={isDarkMode}
+              itemVisivel={itemVisivel}
+              temDadosPessoal={temDadosPessoal}
+            />
+          </Suspense>
         )}
 
         {/* ===== TAB: ADMINISTRATIVO ===== */}
         {activeTab === 'administrativo' && (
-          <DashboardAdministrativoTab
-            administrativoData={administrativoData}
-            cardAnimation={cardAnimation}
-            handleExportReport={handleExportReport}
-            isDarkMode={isDarkMode}
-            itemVisivel={itemVisivel}
-          />
+          <Suspense fallback={tabLoadingFallback}>
+            <DashboardAdministrativoTab
+              administrativoData={administrativoData}
+              cardAnimation={cardAnimation}
+              handleExportReport={handleExportReport}
+              isDarkMode={isDarkMode}
+              itemVisivel={itemVisivel}
+            />
+          </Suspense>
         )}
       </main>
     </div>
