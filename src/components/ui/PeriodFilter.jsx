@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Calendar, ChevronDown, Check } from 'lucide-react';
+import { Calendar, ChevronDown } from 'lucide-react';
 
 /**
  * Componente PeriodFilter - Filtro de período para análise

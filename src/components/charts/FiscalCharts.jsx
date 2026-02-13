@@ -3,7 +3,7 @@
  * Baseados nos relatórios do Sistema Domínio
  */
 
-import { useEffect, useRef, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import Chart from 'chart.js/auto';
 import { useTheme } from '../../context/ThemeContext';
 import { formatCurrency } from '../../utils/formatters';
@@ -1155,30 +1155,8 @@ export const Situacao380Chart = ({ dados }) => {
  * 8. Tabela Comparativo 380
  * Período, Compra, Venda, Esperado, Receita Complementar, 380
  */
-export const Tabela380 = ({ dados, dadosMensais }) => {
+export const Tabela380 = ({ dados }) => {
   const { isDarkMode } = useTheme();
-
-  const linhas = useMemo(() => {
-    if (!dadosMensais?.movimentacao2025) return [];
-
-    return dadosMensais.movimentacao2025.map(m => {
-      // Simplificação: usando saídas como venda e entradas como compra
-      const compra = m.entradas * 0.1; // Estimativa: 10% das entradas e comercializacao
-      const venda = m.saidas;
-      const esperado = compra * 1.25;
-      const receitaComplementar = Math.max(0, esperado - venda);
-      const sit380 = venda >= esperado ? 'OK' : 'Pendente';
-
-      return {
-        periodo: m.mes,
-        compra,
-        venda,
-        esperado,
-        receitaComplementar,
-        sit380
-      };
-    });
-  }, [dadosMensais]);
 
   // Usar dados do Resumo por Acumulador se disponível
   const resumo = useMemo(() => {

@@ -13,15 +13,12 @@ const CnpjFilter = ({ className = '' }) => {
     grupoAtual,
     empresaAtual,
     cnpjInfo,
-    listaGrupos,
-    listaEmpresas,
     listaCnpjs,
     selecionarGrupo,
     selecionarEmpresa,
     selecionarCnpj,
     cnpjSelecionado,
     modoVisualizacao,
-    isConsolidado,
     toggleModoConsolidado
   } = useEmpresa();
 

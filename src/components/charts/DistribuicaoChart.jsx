@@ -9,7 +9,7 @@ import {
 import { formatCurrency, calculatePercentage } from '../../utils/formatters';
 import { entradasData, saidasData } from '../../data/mockData';
 import { useTheme } from '../../context/ThemeContext';
-import { getChartColors, getPieChartOptions } from '../../utils/chartTheme';
+import { getPieChartOptions } from '../../utils/chartTheme';
 
 // Registrar componentes do Chart.js
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -20,7 +20,6 @@ ChartJS.register(ArcElement, Tooltip, Legend);
  */
 const DistribuicaoChart = ({ onDataCalculated }) => {
   const { isDarkMode } = useTheme();
-  const colors = getChartColors(isDarkMode);
 
   // Calcular totais com useMemo para evitar recalculos desnecessarios
   const calculatedData = useMemo(() => {
@@ -45,7 +44,7 @@ const DistribuicaoChart = ({ onDataCalculated }) => {
     if (onDataCalculated) {
       onDataCalculated(calculatedData);
     }
-  }, []);
+  }, [onDataCalculated, calculatedData]);
 
   const { totalEntradas, totalSaidas, totalServicos, totalGeral } = calculatedData;
 

@@ -23,6 +23,7 @@ const COLORS = {
 // Arrays padrão (constantes para evitar recriação em cada render)
 const DEFAULT_MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 const DEFAULT_VALORES = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+const TRIMESTRES_LABELS = ['1º Tri', '2º Tri', '3º Tri', '4º Tri'];
 const CHART_HEIGHT_PRIMARY = 'h-[300px] md:h-[360px]';
 const CHART_HEIGHT_SECONDARY = 'h-[280px] md:h-[320px]';
 
@@ -279,9 +280,6 @@ export const VariacaoLucroChart = ({ dadosAtual, dadosAnterior }) => {
   const chartInstance = useRef(null);
   const { isDarkMode } = useTheme();
 
-  // Labels trimestrais
-  const trimestres = ['1º Tri', '2º Tri', '3º Tri', '4º Tri'];
-
   // Anos dinâmicos baseados nos dados
   const anoAtual = useMemo(() => {
     return dadosAtual?.anoExercicio || new Date().getFullYear();
@@ -290,7 +288,7 @@ export const VariacaoLucroChart = ({ dadosAtual, dadosAnterior }) => {
   const anoAnterior = useMemo(() => {
     if (!dadosAnterior) return null;
     return dadosAnterior?.anoExercicio || (anoAtual - 1);
-  }, [dadosAnterior, dadosAnterior?.anoExercicio, anoAtual]);
+  }, [dadosAnterior, anoAtual]);
 
   // Função para agregar dados mensais em trimestrais
   const agregarTrimestral = (dadosMensais) => {
@@ -373,7 +371,7 @@ export const VariacaoLucroChart = ({ dadosAtual, dadosAnterior }) => {
     chartInstance.current = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: trimestres,
+          labels: TRIMESTRES_LABELS,
         datasets
       },
       options: {
@@ -415,7 +413,7 @@ export const VariacaoLucroChart = ({ dadosAtual, dadosAnterior }) => {
         chartInstance.current.destroy();
       }
     };
-  }, [trimestres, lucroAtualTrimestral, lucroAnteriorTrimestral, anoAtual, anoAnterior, isDarkMode]);
+  }, [lucroAtualTrimestral, lucroAnteriorTrimestral, anoAtual, anoAnterior, isDarkMode]);
 
   return (
     <div className={CHART_HEIGHT_PRIMARY}>
@@ -858,8 +856,6 @@ export const TabelaComparativoMensal = ({ dados }) => {
  * Cards de Métricas (Receita, Despesa, Lucro)
  */
 export const CardsMetricasContabil = ({ dados }) => {
-  const { isDarkMode } = useTheme();
-
   // Prioriza receitasMensais/despesasMensais e aplica fallback oficial quando necessário
   const receitas = useMemo(() => getReceitasSeries(dados), [dados]);
   const despesas = useMemo(() => getDespesasSeries(dados, receitas.length), [dados, receitas.length]);

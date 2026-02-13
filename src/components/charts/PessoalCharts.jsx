@@ -1266,8 +1266,6 @@ export const TabelaFerias = ({ dados }) => {
  * Cards de Métricas do Setor Pessoal
  */
 export const CardsMetricasPessoal = ({ dadosFGTS, dadosINSS, dadosEmpregados, dadosSalario }) => {
-  const { isDarkMode } = useTheme();
-
   const metricas = useMemo(() => {
     return {
       totalFGTS: dadosFGTS?.totalGeral?.valorFGTS || 0,

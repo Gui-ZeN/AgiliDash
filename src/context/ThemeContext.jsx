@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 /**
@@ -6,7 +7,7 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 const ThemeContext = createContext(null);
 
 export const ThemeProvider = ({ children }) => {
-  // Verifica preferência salva ou do sistema
+  // Verifica preferÃªncia salva ou do sistema
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = localStorage.getItem('agili-theme');
     if (saved) return saved === 'dark';
@@ -25,7 +26,7 @@ export const ThemeProvider = ({ children }) => {
     }
   }, [isDarkMode]);
 
-  // Escuta mudanças na preferência do sistema
+  // Escuta mudanÃ§as na preferÃªncia do sistema
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = (e) => {

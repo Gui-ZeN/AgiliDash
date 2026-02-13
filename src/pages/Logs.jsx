@@ -1,12 +1,12 @@
 ﻿import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  ArrowLeft, Activity, Search, Filter, Calendar, Download, Trash2,
+  ArrowLeft, Activity, Search, Calendar, Download, Trash2,
   LogIn, LogOut, Eye, Plus, Edit, Shield, Settings, RefreshCw
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import {
-  getLogs, filterLogs, clearLogs, getLogStats, formatLogTime,
+  filterLogs, clearLogs, getLogStats, formatLogTime,
   ActivityTypes, ActivityCategories
 } from '../utils/activityLog';
 

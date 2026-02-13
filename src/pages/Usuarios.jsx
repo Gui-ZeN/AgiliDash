@@ -2,7 +2,7 @@
 import { Link } from 'react-router-dom';
 import {
   ArrowLeft, Users, Plus, Search, Edit2, Trash2, Shield, Eye,
-  Check, X, Mail, Phone, Building2, FolderTree
+  Check, X, Mail, Phone, FolderTree
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useData } from '../context/DataContext';

@@ -17,10 +17,8 @@ import {
   Clock,
   CheckCircle,
   XCircle,
-  Building2,
   History,
-  FileText,
-  ChevronDown
+  FileText
 } from 'lucide-react';
 import Logo from '../components/layout/Logo';
 import Card from '../components/common/Card';

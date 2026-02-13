@@ -15,8 +15,6 @@ export const parseValorBR = (valor) => {
   if (clean.match(/^[a-zA-Z]/)) return 0;
 
   // Remove indicadores de débito/crédito (usado em balancetes)
-  const isCredit = clean.endsWith('c') || clean.endsWith('C');
-  const isDebit = clean.endsWith('d') || clean.endsWith('D');
   clean = clean.replace(/[cdCD]$/, '');
 
   // Verifica se é valor negativo (entre parênteses)
@@ -599,7 +597,6 @@ export const parseContribuicaoSocial = (csvContent) => {
     const line = lines[i];
     const cols = line.split(';').map(c => c.trim());
     // Converte para uppercase para comparação (sem tentar remover acentos)
-    const lineUpper = line.toUpperCase();
 
     // Extrair informações da empresa
     if (line.includes('C.N.P.J.:')) {
@@ -1087,7 +1084,7 @@ export const parseResumoImpostos = (csvContent) => {
 
   // Calcular totais por imposto
   const totaisPorImposto = {};
-  Object.entries(impostosPorMes).forEach(([mes, dados]) => {
+  Object.entries(impostosPorMes).forEach(([_mes, dados]) => {
     dados.impostos.forEach(imp => {
       if (!totaisPorImposto[imp.nome]) {
         totaisPorImposto[imp.nome] = {
@@ -1332,13 +1329,6 @@ export const parseResumoPorAcumulador = (csvContent) => {
   );
   const vendaExterior = itensVendaExterior.reduce((acc, s) => acc + s.vlrContabil, 0);
 
-  // Vendas de mercadoria espec?ficas (mantido para compatibilidade)
-  const itensVendaMercadoriaEspecifica = itensVendas.filter((s) =>
-    normalizarDescricao(s.descricao).includes('MERCADORIA') ||
-    normalizarDescricao(s.descricao).includes('SORVETE')
-  );
-  const vendaMercadoriaEspecifica = itensVendaMercadoriaEspecifica.reduce((acc, s) => acc + s.vlrContabil, 0);
-
   const competenciaInicio = dataParaCompetencia(periodoInicio);
   const competenciaFim = dataParaCompetencia(periodoFim);
   const competenciaReferencia = competenciaFim || competenciaInicio || '';
@@ -1575,11 +1565,11 @@ export const parseDemonstrativoFGTS = (csvContent) => {
 
     // Extrair ano e mês da competência
     let ano = new Date().getFullYear();
-    let mes = new Date().getMonth() + 1;
+    let _mes = new Date().getMonth() + 1;
     if (competenciaAtual) {
       const parts = competenciaAtual.split('/');
       if (parts.length === 2) {
-        mes = parseInt(parts[0]);
+        _mes = parseInt(parts[0]);
         ano = parseInt(parts[1]);
       }
     }
@@ -1591,7 +1581,7 @@ export const parseDemonstrativoFGTS = (csvContent) => {
       codigo,
       nome,
       competencia: competenciaAtual,
-      mes,
+      mes: _mes,
       ano,
       base,
       valorFGTS,
@@ -1630,11 +1620,11 @@ export const parseDemonstrativoFGTS = (csvContent) => {
   // Se Não encontrou registros mas tem totalizador, usar os valores do totalizador
   if (registros.length === 0 && (totalBaseSistema > 0 || totalValorSistema > 0)) {
     let ano = new Date().getFullYear();
-    let mes = new Date().getMonth() + 1;
+    let _mes = new Date().getMonth() + 1;
     if (competenciaAtual) {
       const parts = competenciaAtual.split('/');
       if (parts.length === 2) {
-        mes = parseInt(parts[0]);
+        _mes = parseInt(parts[0]);
         ano = parseInt(parts[1]);
       }
     }
@@ -2123,7 +2113,7 @@ export const parseRelacaoEmpregados = (csvContent) => {
 
     // Contabilizar admissões por mês
     if (dataAdmissao) {
-      const [dia, mes, ano] = dataAdmissao.split('/');
+      const [, mes, ano] = dataAdmissao.split('/');
       const competencia = `${mes}/${ano}`;
       if (!admissoesPorMes[competencia]) admissoesPorMes[competencia] = 0;
       admissoesPorMes[competencia]++;
@@ -2131,7 +2121,7 @@ export const parseRelacaoEmpregados = (csvContent) => {
 
     // Contabilizar demissões por mês (usar dataSituacao para demitidos)
     if (situacaoNormalizada === 'Demitido' && dataSituacao) {
-      const [dia, mes, ano] = dataSituacao.split('/');
+      const [, mes, ano] = dataSituacao.split('/');
       const competencia = `${mes}/${ano}`;
       if (!demissoesPorMes[competencia]) demissoesPorMes[competencia] = 0;
       demissoesPorMes[competencia]++;
@@ -2455,7 +2445,7 @@ export const parseProgramacaoFerias = (csvContent) => {
       // Agrupar por mês do limite de gozo (mais relevante para planejamento)
       const dataAgrupamento = limiteGozo || inicioAquisitivo;
       if (dataAgrupamento) {
-        const [dia, mes, ano] = dataAgrupamento.split('/');
+        const [, mes, ano] = dataAgrupamento.split('/');
         const competencia = `${mes}/${ano}`;
         if (!feriasPorMes[competencia]) {
           feriasPorMes[competencia] = { quantidade: 0, diasTotal: 0, empregados: [] };
