@@ -52,9 +52,9 @@ const DashboardGeraisTab = ({
       <VisibleItem show={showHeader}>
         <DashboardSectionTitle
           icon={FileSpreadsheet}
-          badge="Visao Geral"
-          title="Informacoes Gerais"
-          subtitle="Dados cadastrais e equipe tecnica responsavel pela conta."
+          badge="Vis\u00e3o Geral"
+          title="Informa\u00e7\u00f5es Gerais"
+          subtitle="Dados cadastrais e equipe t\u00e9cnica respons\u00e1vel pela conta."
           tone="blue"
           className={`transition-all duration-500 ${cardAnimation}`}
         />

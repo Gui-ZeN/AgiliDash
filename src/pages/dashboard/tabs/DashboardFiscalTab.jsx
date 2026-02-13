@@ -55,8 +55,8 @@ const DashboardFiscalTab = ({
       <DashboardSectionTitle
         icon={FileSpreadsheet}
         badge="Departamento Fiscal"
-        title="Analise Tributaria"
-        subtitle="Apuracao trimestral sobre Lucro Real com dados importados do Sistema Dominio."
+        title="An\u00e1lise Tribut\u00e1ria"
+        subtitle="Apura\u00e7\u00e3o trimestral sobre Lucro Real com dados importados do Sistema Dom\u00ednio."
         tone="slate"
         className={`transition-all duration-500 ${cardAnimation}`}
       />
