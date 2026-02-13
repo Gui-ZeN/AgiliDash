@@ -5,9 +5,7 @@
   Briefcase,
   CheckCircle,
   DollarSign,
-  Download,
   FileCheck,
-  FileDown,
   Home,
   Package,
   Percent,
@@ -28,7 +26,6 @@ import VisibleItem from '../../../components/common/VisibleItem';
 const DashboardAdministrativoTab = ({
   administrativoData,
   cardAnimation,
-  handleExportReport,
   isDarkMode,
   itemVisivel,
 }) => {
@@ -57,22 +54,6 @@ const DashboardAdministrativoTab = ({
           <p className="text-lg text-slate-400 font-medium">
             Contratos, despesas e documentos da empresa.
           </p>
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => handleExportReport('pdf')}
-            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors"
-          >
-            <FileDown className="w-4 h-4" />
-            PDF
-          </button>
-          <button
-            onClick={() => handleExportReport('excel')}
-            className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors"
-          >
-            <Download className="w-4 h-4" />
-            Excel
-          </button>
         </div>
       </section>
 

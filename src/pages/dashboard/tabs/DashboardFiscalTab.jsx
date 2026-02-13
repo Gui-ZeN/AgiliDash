@@ -4,8 +4,6 @@
   BarChartBig,
   BarChartHorizontal,
   CircleDollarSign,
-  Download,
-  FileDown,
   FileSpreadsheet,
   Receipt,
   Scale,
@@ -35,7 +33,6 @@ const DashboardFiscalTab = ({
   cardAnimation,
   dadosFiscaisImportados,
   fiscalTrimestre,
-  handleExportReport,
   handleFiscalDataCalculated,
   isDarkMode,
   itemVisivel,
@@ -75,22 +72,6 @@ const DashboardFiscalTab = ({
           <p className={`text-lg font-medium ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
             Apuração trimestral sobre Lucro Real - Dados importados do Sistema Domínio.
           </p>
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => handleExportReport('pdf')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${isDarkMode ? 'bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
-          >
-            <FileDown className="w-4 h-4" />
-            PDF
-          </button>
-          <button
-            onClick={() => handleExportReport('excel')}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors"
-          >
-            <Download className="w-4 h-4" />
-            Excel
-          </button>
         </div>
       </section>
 

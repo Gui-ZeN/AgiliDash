@@ -1387,13 +1387,6 @@ const Dashboard = () => {
     </div>
   );
 
-  // Função para exportar relatório (mock)
-  const handleExportReport = (type) => {
-    alert(
-      `Exportação de relatório ${type.toUpperCase()} será implementada com integração Firebase.`
-    );
-  };
-
   // Dados para sparklines (mock - últimos 12 meses)
   const receitaSparkline = cnpjDados?.dreData2025?.receita || [0];
   const lucroSparkline = cnpjDados?.dreData2025?.receita?.map(
@@ -1526,7 +1519,6 @@ const Dashboard = () => {
               dadosReceitaCustoEstoque={dadosReceitaCustoEstoque}
               dreData={dreData}
               entradasData={entradasData}
-              handleExportReport={handleExportReport}
               isDarkMode={isDarkMode}
               itemVisivel={itemVisivel}
               margemLucro={margemLucro}
@@ -1550,7 +1542,6 @@ const Dashboard = () => {
               cardAnimation={cardAnimation}
               dadosFiscaisImportados={dadosFiscaisImportados}
               fiscalTrimestre={fiscalTrimestre}
-              handleExportReport={handleExportReport}
               handleFiscalDataCalculated={handleFiscalDataCalculated}
               isDarkMode={isDarkMode}
               itemVisivel={itemVisivel}
@@ -1572,7 +1563,6 @@ const Dashboard = () => {
             <DashboardPessoalTab
               cardAnimation={cardAnimation}
               dadosPessoalImportados={dadosPessoalImportados}
-              handleExportReport={handleExportReport}
               isDarkMode={isDarkMode}
               itemVisivel={itemVisivel}
               periodFilter={periodFilter}
@@ -1587,7 +1577,6 @@ const Dashboard = () => {
             <DashboardAdministrativoTab
               administrativoData={administrativoData}
               cardAnimation={cardAnimation}
-              handleExportReport={handleExportReport}
               isDarkMode={isDarkMode}
               itemVisivel={itemVisivel}
             />

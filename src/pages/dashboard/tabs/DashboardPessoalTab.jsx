@@ -2,8 +2,6 @@ import {
   Award,
   BarChart2,
   BarChartHorizontal,
-  Download,
-  FileDown,
   PieChart,
   Receipt,
   Upload,
@@ -26,7 +24,6 @@ import VisibleItem from '../../../components/common/VisibleItem';
 const DashboardPessoalTab = ({
   cardAnimation,
   dadosPessoalImportados,
-  handleExportReport,
   isDarkMode,
   itemVisivel,
   periodFilter,
@@ -69,22 +66,6 @@ const DashboardPessoalTab = ({
           <p className={`text-lg font-medium ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>
             Recursos humanos e obrigações sociais
           </p>
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => handleExportReport('pdf')}
-            className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
-          >
-            <FileDown className="w-4 h-4" />
-            PDF
-          </button>
-          <button
-            onClick={() => handleExportReport('excel')}
-            className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
-          >
-            <Download className="w-4 h-4" />
-            Excel
-          </button>
         </div>
       </section>
 

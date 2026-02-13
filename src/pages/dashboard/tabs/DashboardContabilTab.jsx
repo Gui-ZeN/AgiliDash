@@ -8,8 +8,6 @@
   BarChart2,
   Calculator,
   Coins,
-  Download,
-  FileDown,
   TrendingDown,
   TrendingUp,
   Wallet,
@@ -37,7 +35,6 @@ const DashboardContabilTab = ({
   dadosReceitaCustoEstoque,
   dreData,
   entradasData,
-  handleExportReport,
   isDarkMode,
   itemVisivel,
   margemLucro,
@@ -78,22 +75,6 @@ const DashboardContabilTab = ({
           <p className={`text-lg font-medium ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
             Demonstrativo de receitas, despesas, estoque e saldos.
           </p>
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => handleExportReport('pdf')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${isDarkMode ? 'bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
-          >
-            <FileDown className="w-4 h-4" />
-            PDF
-          </button>
-          <button
-            onClick={() => handleExportReport('excel')}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-700 text-white rounded-lg hover:bg-emerald-700 transition-colors"
-          >
-            <Download className="w-4 h-4" />
-            Excel
-          </button>
         </div>
       </section>
 
