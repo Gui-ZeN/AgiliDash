@@ -136,62 +136,86 @@ const Configuracoes = () => {
   // Estrutura de dashboards disponíveis
   const DASHBOARD_SECTIONS = {
     gerais: {
-      nome: 'Informações Gerais',
-      descricao: 'Dados cadastrais e equipe técnica',
+      nome: 'Informacoes Gerais',
+      descricao: 'Dados cadastrais e equipe tecnica',
       itens: [
-        { id: 'header_empresa', nome: 'Header da Empresa', descricao: 'Informações básicas da empresa' },
+        { id: 'header_empresa', nome: 'Header da Empresa', descricao: 'Informacoes basicas da empresa' },
         { id: 'cards_resumo', nome: 'Cards de Resumo', descricao: 'Receita, Lucro, Margem, Meses Analisados' },
-        { id: 'responsavel', nome: 'Responsável', descricao: 'Card do responsável com WhatsApp' },
-        { id: 'equipe_tecnica', nome: 'Equipe Técnica', descricao: 'Cards da equipe contábil, fiscal, etc.' }
+        { id: 'responsavel', nome: 'Responsavel', descricao: 'Card do responsavel com WhatsApp' },
+        { id: 'equipe_tecnica', nome: 'Equipe Tecnica', descricao: 'Cards da equipe contabil, fiscal, etc.' },
+        { id: 'analise_geral', nome: 'Resumo Geral', descricao: 'Card final de suporte e orientacao' }
       ]
     },
     contabil: {
-      nome: 'Setor Contábil',
-      descricao: 'Gráficos e indicadores contábeis',
+      nome: 'Setor Contabil',
+      descricao: 'Graficos e indicadores contabeis',
       itens: [
-        { id: 'grafico_dre', nome: 'Gráfico DRE', descricao: 'Receitas x Despesas x Lucro' },
-        { id: 'grafico_evolucao', nome: 'Evolução Receita/Despesa', descricao: 'Gráfico de linha temporal' },
-        { id: 'indicadores_balancete', nome: 'Indicadores do Balancete', descricao: 'Saldos de contas importantes' },
-        { id: 'tabela_dre', nome: 'Tabela DRE Detalhada', descricao: 'Detalhamento mensal do DRE' }
+        { id: 'cards_metricas', nome: 'Cards de Metricas', descricao: 'Resumo numerico contabil' },
+        { id: 'grafico_receita_despesa', nome: 'Receita x Despesas/Custo', descricao: 'Grafico principal de comparacao' },
+        { id: 'card_resumo_exercicio', nome: 'Resumo do Exercicio', descricao: 'Card lateral com resumo' },
+        { id: 'tabela_comparativo_mensal', nome: 'Tabela Comparativo Mensal', descricao: 'Detalhamento mensal' },
+        { id: 'grafico_variacao_lucro', nome: 'Variacao do Lucro', descricao: 'Grafico trimestral/anual' },
+        { id: 'grafico_receita_custo_estoque', nome: 'Receita x Custo x Estoque', descricao: 'Comparacao de indicadores' },
+        { id: 'grafico_movimentacao_bancaria', nome: 'Movimentacao Bancaria', descricao: 'Saldo de bancos por periodo' },
+        { id: 'grafico_aplicacoes_financeiras', nome: 'Aplicacoes Financeiras', descricao: 'Liquidez imediata' },
+        { id: 'analise_contabil', nome: 'Resumo Contabil', descricao: 'Card final de analise' }
       ]
     },
     fiscal: {
       nome: 'Setor Fiscal',
-      descricao: 'Tributos e obrigações fiscais',
+      descricao: 'Tributos e obrigacoes fiscais',
       itens: [
-        { id: 'irpj_csll', nome: 'IRPJ e CSLL', descricao: 'Gráficos de Imposto de Renda e Contribuição Social' },
-        { id: 'faturamento', nome: 'Faturamento', descricao: 'Evolução do faturamento mensal' },
-        { id: 'distribuicao_impostos', nome: 'Distribuição de Impostos', descricao: 'Gráfico de distribuição tributária' },
-        { id: 'fluxo_fiscal', nome: 'Fluxo Fiscal', descricao: 'Entradas e saídas fiscais' }
+        { id: 'cards_metricas', nome: 'Cards de Metricas', descricao: 'Resumo fiscal principal' },
+        { id: 'faturamento_categoria', nome: 'Por Categoria', descricao: 'Entradas, servicos e saidas' },
+        { id: 'faturamento_evolucao', nome: 'Evolucao Mensal', descricao: 'Entradas x saidas por mes' },
+        { id: 'acumuladores_entradas', nome: 'Acumuladores - Entradas', descricao: 'Tabela de principais entradas' },
+        { id: 'acumuladores_saidas', nome: 'Acumuladores - Saidas', descricao: 'Tabela de principais saidas' },
+        { id: 'faturamento_periodo', nome: 'Faturamento por Periodo', descricao: 'Tabela mensal/trimestral/anual' },
+        { id: 'compra_vs_venda', nome: 'Compra vs Venda', descricao: 'Grafico de composicao 380' },
+        { id: 'categoria_380', nome: 'Por Categoria (380)', descricao: 'Barras com vendas/compras/servicos' },
+        { id: 'irpj_periodo', nome: 'IRPJ por Periodo', descricao: 'Composicao do IRPJ apurado' },
+        { id: 'resumo_impostos', nome: 'Resumo dos Impostos', descricao: 'Rosca de distribuicao dos impostos' },
+        { id: 'csll_periodo', nome: 'CSLL por Periodo', descricao: 'Composicao do CSLL' },
+        { id: 'tabela_380', nome: 'Tabela Calculo 380', descricao: 'Resumo de compra/venda esperado' },
+        { id: 'situacao_380', nome: 'Situacao 380', descricao: 'Rosca de situacao e resumo' },
+        { id: 'analise_fiscal', nome: 'Resumo Fiscal', descricao: 'Card final de analise' }
       ]
     },
     pessoal: {
       nome: 'Setor Pessoal',
       descricao: 'RH e folha de pagamento',
       itens: [
-        { id: 'funcionarios', nome: 'Funcionários', descricao: 'Quantidade e distribuição de funcionários' },
-        { id: 'folha_pagamento', nome: 'Folha de Pagamento', descricao: 'Valores da folha mensal' },
-        { id: 'encargos', nome: 'Encargos Trabalhistas', descricao: 'FGTS, INSS, etc.' },
-        { id: 'ferias', nome: 'Programação de Férias', descricao: 'Calendário de férias' }
+        { id: 'cards_metricas', nome: 'Cards de Metricas', descricao: 'Resumo do setor pessoal' },
+        { id: 'fgts_tipo', nome: 'FGTS por Tipo', descricao: 'Mensal, 13 e rescisao' },
+        { id: 'fgts_3_meses', nome: 'FGTS Ultimos 3 Meses', descricao: 'Comparativo recente' },
+        { id: 'fgts_mensal', nome: 'FGTS Mes a Mes', descricao: 'Linha mensal' },
+        { id: 'fgts_ano', nome: 'FGTS por Ano', descricao: 'Acumulado anual' },
+        { id: 'inss_empresa', nome: 'INSS por Empresa', descricao: 'Distribuicao por empresa' },
+        { id: 'inss_tipo_guia', nome: 'INSS por Tipo de Guia', descricao: 'Original vs retificador' },
+        { id: 'inss_mensal', nome: 'INSS Mes a Mes', descricao: 'Evolucao mensal' },
+        { id: 'admissoes_demissoes', nome: 'Admissoes e Demissoes', descricao: 'Movimentacao de pessoal' },
+        { id: 'empregados_situacao', nome: 'Empregados por Situacao', descricao: 'Ativos, demitidos e afastados' },
+        { id: 'salario_cargo', nome: 'Salario por Cargo', descricao: 'Top cargos por salario' },
+        { id: 'tabela_ferias', nome: 'Programacao de Ferias', descricao: 'Tabela de ferias' },
+        { id: 'resumo_pessoal', nome: 'Resumo Pessoal', descricao: 'Card final de orientacao' }
       ]
     },
     administrativo: {
       nome: 'Setor Administrativo',
       descricao: 'Indicadores administrativos',
       itens: [
-        { id: 'indicadores_admin', nome: 'Indicadores Gerais', descricao: 'KPIs administrativos' },
-        { id: 'graficos_admin', nome: 'Gráficos Administrativos', descricao: 'Análises administrativas' }
+        { id: 'cards_metricas', nome: 'Cards de Metricas', descricao: 'Indicadores principais' },
+        { id: 'despesas_mensais', nome: 'Despesas Mensais', descricao: 'Evolucao mensal' },
+        { id: 'despesas_categoria', nome: 'Despesas por Categoria', descricao: 'Distribuicao de custos' },
+        { id: 'indicadores_operacionais', nome: 'Indicadores Operacionais', descricao: 'KPIs do administrativo' },
+        { id: 'tabela_certidoes', nome: 'Tabela de Certidoes', descricao: 'Status documental' },
+        { id: 'tabela_contratos', nome: 'Tabela de Contratos', descricao: 'Contratos vigentes' }
       ]
     }
   };
 
   // Carregar configurações de visibilidade do localStorage
-  const getVisibilidadeConfig = (cnpjId) => {
-    const saved = localStorage.getItem(`agili_visibilidade_${cnpjId}`);
-    if (saved) {
-      return JSON.parse(saved);
-    }
-    // Retorna tudo visível por padrão
+  const createDefaultVisibilidadeConfig = () => {
     const defaultConfig = {};
     Object.keys(DASHBOARD_SECTIONS).forEach(secao => {
       defaultConfig[secao] = { visivel: true, itens: {} };
@@ -200,6 +224,35 @@ const Configuracoes = () => {
       });
     });
     return defaultConfig;
+  };
+
+  const getVisibilidadeConfig = (cnpjId) => {
+    const defaultConfig = createDefaultVisibilidadeConfig();
+    const saved = localStorage.getItem(`agili_visibilidade_${cnpjId}`);
+    if (!saved) return defaultConfig;
+
+    try {
+      const parsed = JSON.parse(saved);
+      const merged = { ...defaultConfig };
+
+      Object.keys(defaultConfig).forEach((secaoId) => {
+        const savedSecao = parsed?.[secaoId] || {};
+        merged[secaoId] = {
+          visivel: savedSecao?.visivel !== false,
+          itens: { ...defaultConfig[secaoId].itens }
+        };
+
+        Object.keys(defaultConfig[secaoId].itens).forEach((itemId) => {
+          if (savedSecao?.itens && Object.prototype.hasOwnProperty.call(savedSecao.itens, itemId)) {
+            merged[secaoId].itens[itemId] = savedSecao.itens[itemId] !== false;
+          }
+        });
+      });
+
+      return merged;
+    } catch {
+      return defaultConfig;
+    }
   };
 
   const [visibilidadeConfig, setVisibilidadeConfig] = useState(() => {
@@ -244,16 +297,17 @@ const Configuracoes = () => {
   const toggleItemVisibilidade = (secao, itemId) => {
     setVisibilidadeConfig(prev => {
       const novaConfig = { ...prev };
+      const itemAtualVisivel = novaConfig?.[secao]?.itens?.[itemId] !== false;
       novaConfig[secao] = {
         ...novaConfig[secao],
         itens: {
           ...novaConfig[secao]?.itens,
-          [itemId]: !novaConfig[secao]?.itens?.[itemId]
+          [itemId]: !itemAtualVisivel
         }
       };
-      // Verificar se todos os itens estão desmarcados para desmarcar a seção
+      // Verificar se todos os itens estao desmarcados para desmarcar a secao
       const todosItens = DASHBOARD_SECTIONS[secao].itens;
-      const algumVisivel = todosItens.some(item => novaConfig[secao].itens[item.id]);
+      const algumVisivel = todosItens.some(item => novaConfig[secao].itens[item.id] !== false);
       novaConfig[secao].visivel = algumVisivel;
       return novaConfig;
     });
@@ -2161,20 +2215,20 @@ const Configuracoes = () => {
                               <label
                                 key={item.id}
                                 className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-                                  visibilidadeConfig[secaoId]?.itens?.[item.id]
+                                  visibilidadeConfig[secaoId]?.itens?.[item.id] !== false
                                     ? 'bg-emerald-50 dark:bg-emerald-900/10 hover:bg-emerald-100 dark:hover:bg-emerald-900/20'
                                     : 'bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700'
                                 }`}
                               >
                                 <input
                                   type="checkbox"
-                                  checked={visibilidadeConfig[secaoId]?.itens?.[item.id] || false}
+                                  checked={visibilidadeConfig[secaoId]?.itens?.[item.id] !== false}
                                   onChange={() => toggleItemVisibilidade(secaoId, item.id)}
                                   className="w-5 h-5 rounded border-slate-300 text-[#0e4f6d] focus:ring-[#0e4f6d] dark:bg-slate-700 dark:border-slate-600"
                                 />
                                 <div className="flex-1">
                                   <p className={`font-medium ${
-                                    visibilidadeConfig[secaoId]?.itens?.[item.id]
+                                    visibilidadeConfig[secaoId]?.itens?.[item.id] !== false
                                       ? 'text-slate-800 dark:text-white'
                                       : 'text-slate-500 dark:text-slate-400'
                                   }`}>{item.nome}</p>
@@ -2429,3 +2483,4 @@ const Configuracoes = () => {
 };
 
 export default Configuracoes;
+
