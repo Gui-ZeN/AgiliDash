@@ -214,13 +214,13 @@ const obterTotaisInssPorCategoria = (dados, periodFilter = null) => {
 /**
  * 1. Gráfico de Barras - FGTS por Tipo de Recolhimento
  */
-export const FGTSPorTipoChart = ({ dados }) => {
+export const FGTSPorTipoChart = ({ dados, periodFilter }) => {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
   const { isDarkMode } = useTheme();
 
   const dadosGrafico = useMemo(() => {
-    const totais = obterTotaisFgtsPorCategoria(dados);
+    const totais = obterTotaisFgtsPorCategoria(dados, periodFilter);
     const totalGeral = Object.values(totais).reduce((acc, value) => acc + Number(value || 0), 0);
     if (totalGeral <= 0) return { labels: [], valores: [], cores: [] };
 
@@ -229,7 +229,7 @@ export const FGTSPorTipoChart = ({ dados }) => {
       valores: FGTSCATEGORIAS.map((categoria) => Number(totais[categoria.id] || 0)),
       cores: FGTSCATEGORIAS.map((categoria) => categoria.color),
     };
-  }, [dados]);
+  }, [dados, periodFilter]);
 
   useEffect(() => {
     if (!chartRef.current) return;
@@ -645,24 +645,32 @@ export const FGTSMensalChart = ({ dados }) => {
 /**
  * 5. Gráfico de Barras Horizontais - INSS por Empresa
  */
-export const INSSPorEmpresaChart = ({ dados }) => {
+export const INSSPorEmpresaChart = ({ dados, periodFilter }) => {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
   const { isDarkMode } = useTheme();
 
   const dadosGrafico = useMemo(() => {
-    if (!dados?.totaisPorEmpresa) return { labels: [], valores: [] };
-
-    const empresas = Object.entries(dados.totaisPorEmpresa)
-      .filter(([, val]) => val.valorINSS > 0)
-      .sort((a, b) => b[1].valorINSS - a[1].valorINSS)
+    let categorias = Object.entries(obterTotaisInssPorCategoria(dados, periodFilter))
+      .filter(([, valor]) => Number(valor) > 0)
+      .sort((a, b) => Number(b[1]) - Number(a[1]))
       .slice(0, 10);
 
+    if (categorias.length === 0 && dados?.totaisPorEmpresa) {
+      categorias = Object.entries(dados.totaisPorEmpresa)
+        .map(([categoria, valor]) => [categoria, Number(valor?.valorINSS || 0)])
+        .filter(([, valor]) => Number(valor) > 0)
+        .sort((a, b) => Number(b[1]) - Number(a[1]))
+        .slice(0, 10);
+    }
+
     return {
-      labels: empresas.map(([empresa]) => empresa.length > 30 ? empresa.slice(0, 30) + '...' : empresa),
-      valores: empresas.map(([, val]) => val.valorINSS)
+      labels: categorias.map(([categoria]) =>
+        categoria.length > 30 ? categoria.slice(0, 30) + '...' : categoria
+      ),
+      valores: categorias.map(([, valor]) => Number(valor || 0)),
     };
-  }, [dados]);
+  }, [dados, periodFilter]);
 
   useEffect(() => {
     if (!chartRef.current) return;
@@ -737,7 +745,7 @@ export const INSSPorEmpresaChart = ({ dados }) => {
     };
   }, [dadosGrafico, isDarkMode]);
 
-  if (!dados?.totaisPorEmpresa || dadosGrafico.valores.length === 0) {
+  if (dadosGrafico.valores.length === 0) {
     return (
       <div className="h-[300px] flex items-center justify-center">
         <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>

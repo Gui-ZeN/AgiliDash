@@ -99,7 +99,10 @@ const DashboardPessoalTab = ({
                         />
                       </div>
                     </div>
-                    <FGTSPorTipoChart dados={dadosPessoalImportados.fgts} />
+                    <FGTSPorTipoChart
+                      dados={dadosPessoalImportados.fgts}
+                      periodFilter={periodFilter}
+                    />
                   </div>
                 </VisibleItem>
 
@@ -168,7 +171,10 @@ const DashboardPessoalTab = ({
                         />
                       </div>
                     </div>
-                    <INSSPorEmpresaChart dados={dadosPessoalImportados.inss} />
+                    <INSSPorEmpresaChart
+                      dados={dadosPessoalImportados.inss}
+                      periodFilter={periodFilter}
+                    />
                   </div>
                 </VisibleItem>
 
@@ -404,7 +410,7 @@ const DashboardPessoalTab = ({
                       </p>
                     </div>
                   </div>
-                  <FGTSPorTipoChart dados={null} />
+                  <FGTSPorTipoChart dados={null} periodFilter={periodFilter} />
                 </div>
               )}
 
@@ -444,7 +450,7 @@ const DashboardPessoalTab = ({
                       </p>
                     </div>
                   </div>
-                  <INSSPorEmpresaChart dados={null} />
+                  <INSSPorEmpresaChart dados={null} periodFilter={periodFilter} />
                 </div>
               )}
 

@@ -47,6 +47,7 @@ const DashboardFiscalTab = ({
   totaisFiscais,
 }) => {
   const isVisible = (itemId) => itemVisivel('fiscal', itemId);
+  const resumoAcumuladorAtual = resumoAcumuladorFiltrado || dadosFiscaisImportados?.resumoAcumulador;
 
   return (
     <div className="space-y-7 pb-8">
@@ -79,7 +80,7 @@ const DashboardFiscalTab = ({
         {temDadosFiscais ? (
           <div className={`transition-all duration-500 delay-100 ${cardAnimation}`}>
             <CardsMetricasFiscais
-              dados={resumoAcumuladorFiltrado || dadosFiscaisImportados?.resumoAcumulador}
+              dados={resumoAcumuladorAtual}
               totalFaturamento={totalFaturamentoFiltrado}
             />
           </div>
@@ -192,7 +193,7 @@ const DashboardFiscalTab = ({
                 {temDadosFiscais ? (
                   <FaturamentoPorCategoriaChart
                     dados={
-                      resumoAcumuladorFiltrado ||
+                      resumoAcumuladorAtual ||
                       dadosFiscaisImportados?.demonstrativoMensal ||
                       dadosFiscaisImportados?.resumoAcumulador
                     }
@@ -273,7 +274,7 @@ const DashboardFiscalTab = ({
 
         {/* Tabelas de Acumuladores */}
         {temDadosFiscais &&
-          resumoAcumuladorFiltrado &&
+          resumoAcumuladorAtual &&
           (isVisible('acumuladores_entradas') || isVisible('acumuladores_saidas')) && (
             <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
               <VisibleItem show={isVisible('acumuladores_entradas')}>
@@ -292,7 +293,7 @@ const DashboardFiscalTab = ({
                       Categorias com maior valor contábil
                     </p>
                   </div>
-                  <TabelaAcumuladores dados={resumoAcumuladorFiltrado} tipo="entradas" />
+                  <TabelaAcumuladores dados={resumoAcumuladorAtual} tipo="entradas" />
                 </div>
               </VisibleItem>
 
@@ -312,7 +313,7 @@ const DashboardFiscalTab = ({
                       Categorias com maior valor contábil
                     </p>
                   </div>
-                  <TabelaAcumuladores dados={resumoAcumuladorFiltrado} tipo="saidas" />
+                  <TabelaAcumuladores dados={resumoAcumuladorAtual} tipo="saidas" />
                 </div>
               </VisibleItem>
             </div>
@@ -358,8 +359,8 @@ const DashboardFiscalTab = ({
                 <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                   {'Compra p/ comercialização, Vendas e Serviços'}
                 </p>
-                {temDadosFiscais && dadosFiscaisImportados?.resumoAcumulador ? (
-                  <CompraVendaChart dados={dadosFiscaisImportados.resumoAcumulador} />
+                {temDadosFiscais && resumoAcumuladorAtual ? (
+                  <CompraVendaChart dados={resumoAcumuladorAtual} />
                 ) : (
                   <div className="h-[300px] flex items-center justify-center">
                     <DistribuicaoChart onDataCalculated={handleFiscalDataCalculated} />
@@ -380,8 +381,8 @@ const DashboardFiscalTab = ({
                 <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                   {'Vendas, Compra p/ comercialização e Serviços'}
                 </p>
-                {temDadosFiscais && dadosFiscaisImportados?.resumoAcumulador ? (
-                  <Detalhamento380Chart dados={dadosFiscaisImportados.resumoAcumulador} />
+                {temDadosFiscais && resumoAcumuladorAtual ? (
+                  <Detalhamento380Chart dados={resumoAcumuladorAtual} />
                 ) : (
                   <div className="h-[250px] flex items-center justify-center">
                     <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
@@ -522,7 +523,7 @@ const DashboardFiscalTab = ({
           {/* Tabela 380 */}
           <VisibleItem
             show={
-              isVisible('tabela_380') && temDadosFiscais && dadosFiscaisImportados?.resumoAcumulador
+              isVisible('tabela_380') && temDadosFiscais && resumoAcumuladorAtual
             }
           >
             <div
@@ -539,8 +540,8 @@ const DashboardFiscalTab = ({
                 </p>
               </div>
               <Tabela380
-                dados={dadosFiscaisImportados.resumoAcumulador}
-                dadosMensais={dadosFiscaisImportados.demonstrativoMensal}
+                dados={resumoAcumuladorAtual}
+                periodFilter={periodFilter}
               />
             </div>
           </VisibleItem>
@@ -560,8 +561,8 @@ const DashboardFiscalTab = ({
               </p>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
                 <div className="flex justify-center">
-                  {temDadosFiscais && dadosFiscaisImportados?.resumoAcumulador ? (
-                    <Situacao380Chart dados={dadosFiscaisImportados.resumoAcumulador} />
+                  {temDadosFiscais && resumoAcumuladorAtual ? (
+                    <Situacao380Chart dados={resumoAcumuladorAtual} />
                   ) : (
                     <div className="h-[300px] flex items-center justify-center">
                       <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
@@ -570,7 +571,7 @@ const DashboardFiscalTab = ({
                     </div>
                   )}
                 </div>
-                {temDadosFiscais && dadosFiscaisImportados?.resumoAcumulador && (
+                {temDadosFiscais && resumoAcumuladorAtual && (
                   <div
                     className={`p-6 rounded-xl ${isDarkMode ? 'bg-slate-700/50' : 'bg-slate-50'}`}
                   >
@@ -588,8 +589,7 @@ const DashboardFiscalTab = ({
                           className={`font-bold ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}
                         >
                           {formatCurrency(
-                            dadosFiscaisImportados.resumoAcumulador?.categorias
-                              ?.compraComercializacao || 0
+                            resumoAcumuladorAtual?.categorias?.compraComercializacao || 0
                           )}
                         </span>
                       </div>
@@ -600,9 +600,7 @@ const DashboardFiscalTab = ({
                         <span
                           className={`font-bold ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`}
                         >
-                          {formatCurrency(
-                            dadosFiscaisImportados.resumoAcumulador?.categorias?.esperado380 || 0
-                          )}
+                          {formatCurrency(resumoAcumuladorAtual?.categorias?.esperado380 || 0)}
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
@@ -612,9 +610,7 @@ const DashboardFiscalTab = ({
                         <span
                           className={`font-bold ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}
                         >
-                          {formatCurrency(
-                            dadosFiscaisImportados.resumoAcumulador?.categorias?.totalVendas380 || 0
-                          )}
+                          {formatCurrency(resumoAcumuladorAtual?.categorias?.totalVendas380 || 0)}
                         </span>
                       </div>
                       <div
@@ -628,17 +624,14 @@ const DashboardFiscalTab = ({
                           </span>
                           <span
                             className={`px-3 py-1 rounded-full text-sm font-bold ${
-                              (dadosFiscaisImportados.resumoAcumulador?.categorias
-                                ?.totalVendas380 || 0) >=
-                              (dadosFiscaisImportados.resumoAcumulador?.categorias?.esperado380 ||
-                                0)
+                              (resumoAcumuladorAtual?.categorias?.totalVendas380 || 0) >=
+                              (resumoAcumuladorAtual?.categorias?.esperado380 || 0)
                                 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                                 : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
                             }`}
                           >
-                            {(dadosFiscaisImportados.resumoAcumulador?.categorias?.totalVendas380 ||
-                              0) >=
-                            (dadosFiscaisImportados.resumoAcumulador?.categorias?.esperado380 || 0)
+                            {(resumoAcumuladorAtual?.categorias?.totalVendas380 || 0) >=
+                            (resumoAcumuladorAtual?.categorias?.esperado380 || 0)
                               ? 'OK'
                               : 'Pendente'}
                           </span>

@@ -1155,7 +1155,7 @@ export const Situacao380Chart = ({ dados }) => {
  * 8. Tabela Comparativo 380
  * Período, Compra, Venda, Esperado, Receita Complementar, 380
  */
-export const Tabela380 = ({ dados }) => {
+export const Tabela380 = ({ dados, periodFilter }) => {
   const { isDarkMode } = useTheme();
 
   // Usar dados do Resumo por Acumulador se disponível
@@ -1177,6 +1177,23 @@ export const Tabela380 = ({ dados }) => {
       sit380
     };
   }, [dados]);
+
+  const periodoLabel = useMemo(() => {
+    const ano = Number(periodFilter?.year || 0);
+    if (!ano) return 'TOTAL ANUAL';
+
+    if (periodFilter?.type === 'month') {
+      const mes = Number(periodFilter?.month || 0);
+      return mes ? `${String(mes).padStart(2, '0')}/${ano}` : `Ano ${ano}`;
+    }
+
+    if (periodFilter?.type === 'quarter') {
+      const trimestre = Number(periodFilter?.quarter || 0);
+      return trimestre ? `${trimestre}T/${ano}` : `Ano ${ano}`;
+    }
+
+    return `Ano ${ano}`;
+  }, [periodFilter]);
 
   return (
     <div className="overflow-x-auto">
@@ -1207,7 +1224,7 @@ export const Tabela380 = ({ dados }) => {
           {resumo && (
             <tr className={`font-bold ${isDarkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
               <td className={`px-4 py-3 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                TOTAL ANUAL
+                {periodoLabel}
               </td>
               <td className={`px-4 py-3 text-right ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
                 {formatCurrency(resumo.compra)}
