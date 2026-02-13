@@ -161,7 +161,7 @@ const ExportButton = ({
   ];
 
   return (
-    <div className={`relative ${className}`} ref={dropdownRef}>
+    <div className={`relative ${isOpen ? 'z-[95]' : 'z-20'} ${className}`} ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         disabled={!!exporting}
@@ -177,7 +177,7 @@ const ExportButton = ({
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-md z-50 overflow-hidden">
+        <div className="absolute top-full right-0 z-[110] mt-2 w-48 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-md dark:border-slate-700 dark:bg-slate-800">
           {options.map((option) => (
             <button
               key={option.id}

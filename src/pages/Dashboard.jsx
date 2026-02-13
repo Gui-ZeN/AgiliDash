@@ -1415,9 +1415,9 @@ const Dashboard = () => {
 
       <main className="mx-auto w-full max-w-[1680px] px-4 py-6 lg:px-6 lg:py-8 xl:px-8">
         {/* Toolbar com Breadcrumb, Filtros e Export */}
-        <div className="mb-6 flex flex-col gap-4 rounded-2xl border border-white/70 bg-white/85 px-4 py-4 shadow-sm backdrop-blur-sm dark:border-slate-700/70 dark:bg-slate-800/70 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative z-[70] mb-6 flex flex-col gap-4 rounded-2xl border border-white/70 bg-white/85 px-4 py-4 shadow-sm backdrop-blur-sm dark:border-slate-700/70 dark:bg-slate-800/70 sm:flex-row sm:items-center sm:justify-between">
           <Breadcrumb />
-          <div className="flex flex-wrap items-center gap-3 sm:justify-end">
+          <div className="relative z-[80] flex flex-wrap items-center gap-3 sm:justify-end">
             <CnpjFilter />
             <PeriodFilter value={periodFilter} onChange={setPeriodFilter} />
             {isAdmin && (
