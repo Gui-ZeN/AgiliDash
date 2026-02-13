@@ -9,6 +9,7 @@ import {
   UserCheck,
   UserPlus,
 } from 'lucide-react';
+import DashboardSectionTitle from '../../../components/ui/DashboardSectionTitle';
 import {
   AdmissoesDemissoesChart,
   CardsMetricasPessoal,
@@ -42,32 +43,16 @@ const DashboardPessoalTab = ({
   })();
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-7 pb-8">
       {/* Header */}
-      <section
-        className={`flex items-start justify-between transition-all duration-500 ${cardAnimation}`}
-      >
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <div className={`p-2 ${isDarkMode ? 'bg-teal-600' : 'bg-teal-600'} rounded-lg`}>
-              <Users className="w-5 h-5 text-white" />
-            </div>
-            <span
-              className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-teal-400' : 'text-teal-600'}`}
-            >
-              Departamento Pessoal
-            </span>
-          </div>
-          <h1
-            className={`text-4xl font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-[#1e293b]'}`}
-          >
-            Análise de Folha de Pagamento
-          </h1>
-          <p className={`text-lg font-medium ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>
-            Recursos humanos e obrigações sociais
-          </p>
-        </div>
-      </section>
+      <DashboardSectionTitle
+        icon={Users}
+        badge="Departamento Pessoal"
+        title="Analise de Folha de Pagamento"
+        subtitle="Recursos humanos e obrigacoes sociais."
+        tone="teal"
+        className={`transition-all duration-500 ${cardAnimation}`}
+      />
 
       {/* ===== DADOS IMPORTADOS (PRINCIPAL) ===== */}
       {temDadosPessoal ? (
@@ -87,11 +72,11 @@ const DashboardPessoalTab = ({
           {dadosPessoalImportados?.fgts &&
             (isVisible('fgts_tipo') || isVisible('fgts_periodo')) && (
               <div
-                className={`grid grid-cols-1 md:grid-cols-2 gap-6 transition-all duration-500 delay-200 ${cardAnimation}`}
+                className={`grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch transition-all duration-500 delay-200 ${cardAnimation}`}
               >
                 <VisibleItem show={isVisible('fgts_tipo')}>
                   <div
-                    className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}
+                    className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} h-full p-8 rounded-xl border shadow-sm`}
                   >
                     <div className="flex items-center justify-between mb-6">
                       <div>
@@ -120,14 +105,14 @@ const DashboardPessoalTab = ({
 
                 <VisibleItem show={isVisible('fgts_periodo')}>
                   <div
-                    className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}
+                    className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} h-full p-8 rounded-xl border shadow-sm`}
                   >
                     <div className="flex items-center justify-between mb-6">
                       <div>
                         <h3
                           className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
                         >
-                          FGTS por Período
+                          FGTS por Periodo
                         </h3>
                         <p
                           className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}
@@ -156,23 +141,23 @@ const DashboardPessoalTab = ({
           {dadosPessoalImportados?.inss &&
             (isVisible('inss_empresa') || isVisible('inss_periodo')) && (
               <div
-                className={`grid grid-cols-1 md:grid-cols-2 gap-6 transition-all duration-500 delay-300 ${cardAnimation}`}
+                className={`grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch transition-all duration-500 delay-300 ${cardAnimation}`}
               >
                 <VisibleItem show={isVisible('inss_empresa')}>
                   <div
-                    className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}
+                    className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} h-full p-8 rounded-xl border shadow-sm`}
                   >
                     <div className="flex items-center justify-between mb-6">
                       <div>
                         <h3
                           className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
                         >
-                          Relação do INSS
+                          Relacao do INSS
                         </h3>
                         <p
                           className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}
                         >
-                          Distribuição por categoria
+                          Distribuicao por categoria
                         </p>
                       </div>
                       <div
@@ -189,14 +174,14 @@ const DashboardPessoalTab = ({
 
                 <VisibleItem show={isVisible('inss_periodo')}>
                   <div
-                    className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}
+                    className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} h-full p-8 rounded-xl border shadow-sm`}
                   >
                     <div className="flex items-center justify-between mb-6">
                       <div>
                         <h3
                           className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
                         >
-                          INSS por Período
+                          INSS por Periodo
                         </h3>
                         <p
                           className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}
@@ -218,23 +203,23 @@ const DashboardPessoalTab = ({
           {dadosPessoalImportados?.empregados &&
             (isVisible('admissoes_demissoes') || isVisible('empregados_situacao')) && (
               <div
-                className={`grid grid-cols-1 md:grid-cols-2 gap-6 transition-all duration-500 delay-400 ${cardAnimation}`}
+                className={`grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch transition-all duration-500 delay-400 ${cardAnimation}`}
               >
                 {dadosPessoalImportados?.empregados && isVisible('admissoes_demissoes') && (
                   <div
-                    className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}
+                    className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} h-full p-8 rounded-xl border shadow-sm`}
                   >
                     <div className="flex items-center justify-between mb-6">
                       <div>
                         <h3
                           className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
                         >
-                          Admissões e Demissões
+                          Admissoes e Demissoes
                         </h3>
                         <p
                           className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}
                         >
-                          Movimentação por período
+                          Movimentacao por periodo
                         </p>
                       </div>
                       <div
@@ -254,19 +239,19 @@ const DashboardPessoalTab = ({
 
                 {dadosPessoalImportados?.empregados && isVisible('empregados_situacao') && (
                   <div
-                    className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}
+                    className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} h-full p-8 rounded-xl border shadow-sm`}
                   >
                     <div className="flex items-center justify-between mb-6">
                       <div>
                         <h3
                           className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
                         >
-                          Por Situação
+                          Por Situacao
                         </h3>
                         <p
                           className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}
                         >
-                          Situação no período filtrado
+                          Situacao no periodo filtrado
                         </p>
                       </div>
                       <div
@@ -298,10 +283,10 @@ const DashboardPessoalTab = ({
                   <h3
                     className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
                   >
-                    Programação de Férias
+                    Programacao de Ferias
                   </h3>
                   <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>
-                    Próximas férias programadas
+                    Proximas ferias programadas
                   </p>
                 </div>
                 <span
@@ -368,15 +353,15 @@ const DashboardPessoalTab = ({
             <p
               className={`text-lg mb-6 max-w-xl mx-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
             >
-              Para visualizar os gráficos de FGTS, INSS, Empregados e Férias, importe os arquivos
-              CSV do Sistema Domínio.
+              Para visualizar os graficos de FGTS, INSS, Empregados e Ferias, importe os arquivos
+              CSV do Sistema Dominio.
             </p>
             <div className={`flex flex-wrap justify-center gap-3 mb-8`}>
               {[
                 'Demonstrativo FGTS',
                 'Folha de INSS',
-                'Relação de Empregados',
-                'Programação de Férias',
+                'Relacao de Empregados',
+                'Programacao de Ferias',
               ].map((item) => (
                 <span
                   key={item}
@@ -391,7 +376,7 @@ const DashboardPessoalTab = ({
               className="inline-flex items-center gap-2 px-6 py-3 bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-colors font-semibold"
             >
               <Upload className="w-5 h-5" />
-              Ir para Importação
+              Ir para Importacao
             </a>
           </div>
 
@@ -401,11 +386,11 @@ const DashboardPessoalTab = ({
             isVisible('inss_empresa') ||
             isVisible('inss_periodo')) && (
             <div
-              className={`grid grid-cols-1 md:grid-cols-2 gap-6 transition-all duration-500 delay-300 ${cardAnimation}`}
+              className={`grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch transition-all duration-500 delay-300 ${cardAnimation}`}
             >
               {isVisible('fgts_tipo') && (
                 <div
-                  className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}
+                  className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} h-full p-8 rounded-xl border shadow-sm`}
                 >
                   <div className="flex items-center justify-between mb-6">
                     <div>
@@ -415,7 +400,7 @@ const DashboardPessoalTab = ({
                         FGTS por Tipo
                       </h3>
                       <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>
-                        Consignado, Rescisão, Mensal e 13º
+                        Consignado, Rescisao, Mensal e 13o
                       </p>
                     </div>
                   </div>
@@ -425,14 +410,14 @@ const DashboardPessoalTab = ({
 
               {isVisible('fgts_periodo') && (
                 <div
-                  className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}
+                  className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} h-full p-8 rounded-xl border shadow-sm`}
                 >
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <h3
                         className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
                       >
-                        FGTS por Período
+                        FGTS por Periodo
                       </h3>
                       <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>
                         Filtro aplicado: {periodoLabel}
@@ -445,17 +430,17 @@ const DashboardPessoalTab = ({
 
               {isVisible('inss_empresa') && (
                 <div
-                  className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}
+                  className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} h-full p-8 rounded-xl border shadow-sm`}
                 >
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <h3
                         className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
                       >
-                        Relação do INSS
+                        Relacao do INSS
                       </h3>
                       <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>
-                        Distribuição por categoria
+                        Distribuicao por categoria
                       </p>
                     </div>
                   </div>
@@ -465,14 +450,14 @@ const DashboardPessoalTab = ({
 
               {isVisible('inss_periodo') && (
                 <div
-                  className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}
+                  className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} h-full p-8 rounded-xl border shadow-sm`}
                 >
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <h3
                         className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
                       >
-                        INSS por Período
+                        INSS por Periodo
                       </h3>
                       <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>
                         Filtro aplicado: {periodoLabel}
@@ -487,21 +472,21 @@ const DashboardPessoalTab = ({
 
           {(isVisible('admissoes_demissoes') || isVisible('empregados_situacao')) && (
             <div
-              className={`grid grid-cols-1 md:grid-cols-2 gap-6 transition-all duration-500 delay-400 ${cardAnimation}`}
+              className={`grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch transition-all duration-500 delay-400 ${cardAnimation}`}
             >
               {isVisible('admissoes_demissoes') && (
                 <div
-                  className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}
+                  className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} h-full p-8 rounded-xl border shadow-sm`}
                 >
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <h3
                         className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
                       >
-                        Admissões e Demissões
+                        Admissoes e Demissoes
                       </h3>
                       <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>
-                        Movimentação por período
+                        Movimentacao por periodo
                       </p>
                     </div>
                   </div>
@@ -511,17 +496,17 @@ const DashboardPessoalTab = ({
 
               {isVisible('empregados_situacao') && (
                 <div
-                  className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} p-8 rounded-xl border shadow-sm`}
+                  className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} h-full p-8 rounded-xl border shadow-sm`}
                 >
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <h3
                         className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
                       >
-                        Por Situação
+                        Por Situacao
                       </h3>
                       <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>
-                        Situação no período filtrado
+                        Situacao no periodo filtrado
                       </p>
                     </div>
                   </div>
@@ -547,14 +532,14 @@ const DashboardPessoalTab = ({
               <p className="text-white/80 leading-relaxed">
                 {temDadosPessoal ? (
                   <>
-                    Dados importados do Sistema Domínio. Visualize FGTS, INSS, relação de
-                    empregados e programação de férias. Para atualizar os dados, importe novos
-                    arquivos CSV na página de Configurações.
+                    Dados importados do Sistema Dominio. Visualize FGTS, INSS, relacao de
+                    empregados e programacao de ferias. Para atualizar os dados, importe novos
+                    arquivos CSV na pagina de Configuracoes.
                   </>
                 ) : (
                   <>
-                    Importe os relatórios do Sistema Domínio para visualizar dados de FGTS, INSS,
-                    empregados e férias. Acesse Configurações &gt; Importação &gt; Setor Pessoal.
+                    Importe os relatorios do Sistema Dominio para visualizar dados de FGTS, INSS,
+                    empregados e ferias. Acesse Configuracoes &gt; Importacao &gt; Setor Pessoal.
                   </>
                 )}
               </p>

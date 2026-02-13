@@ -1,4 +1,4 @@
-﻿import {
+import {
   Activity,
   AlertCircle,
   ArrowDownRight,
@@ -13,6 +13,7 @@
   Wallet,
 } from 'lucide-react';
 import { ButtonGroup } from '../../../components/common/Button';
+import DashboardSectionTitle from '../../../components/ui/DashboardSectionTitle';
 import DREChart from '../../../components/charts/DREChart';
 import MovimentacaoChart from '../../../components/charts/MovimentacaoChart';
 import LucroComparativoChart from '../../../components/charts/LucroComparativoChart';
@@ -51,32 +52,16 @@ const DashboardContabilTab = ({
   const isVisible = (itemId) => itemVisivel('contabil', itemId);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-7 pb-8">
       {/* Header da seção */}
-      <section
-        className={`flex flex-col lg:flex-row items-start justify-between gap-4 transition-all duration-500 ${cardAnimation}`}
-      >
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-emerald-700 rounded-lg">
-              <Calculator className="w-5 h-5 text-white" />
-            </div>
-            <span
-              className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-emerald-700' : 'text-emerald-700'}`}
-            >
-              Departamento Contábil
-            </span>
-          </div>
-          <h1
-            className={`text-4xl font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-[#1e293b]'}`}
-          >
-            Análise Financeira
-          </h1>
-          <p className={`text-lg font-medium ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-            Demonstrativo de receitas, despesas, estoque e saldos.
-          </p>
-        </div>
-      </section>
+      <DashboardSectionTitle
+        icon={Calculator}
+        badge="Departamento Contabil"
+        title="Analise Financeira"
+        subtitle="Demonstrativo de receitas, despesas, estoque e saldos."
+        tone="emerald"
+        className={`transition-all duration-500 ${cardAnimation}`}
+      />
 
       {/* Banner de status de dados importados */}
       {!temDadosContabeis && (
@@ -156,11 +141,11 @@ const DashboardContabilTab = ({
           </div>
 
           {/* Grid: Gráfico de Barras + Cards Resumo */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
             {/* Gráfico de Barras - Receita x Despesa */}
             <VisibleItem show={isVisible('grafico_receita_despesa')}>
               <div
-                className={`lg:col-span-2 p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
+                className={`h-full lg:col-span-2 p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
               >
                 <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
                   <div>
@@ -195,7 +180,7 @@ const DashboardContabilTab = ({
             {/* Card Lateral de Resumo */}
             <VisibleItem show={isVisible('card_resumo_exercicio')}>
               <div
-                className={`p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
+                className={`h-full p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
               >
                 <h3
                   className={`text-lg font-bold mb-6 pb-4 border-b ${isDarkMode ? 'text-white border-slate-700' : 'text-slate-800 border-slate-100'}`}

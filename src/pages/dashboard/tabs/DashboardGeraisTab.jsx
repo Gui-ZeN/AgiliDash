@@ -1,11 +1,10 @@
-﻿import {
+import {
   User,
   ShieldCheck,
   Calculator,
   FileSpreadsheet,
   Users,
   TrendingUp,
-  Building2,
   Phone,
   Mail,
   MapPin,
@@ -18,6 +17,7 @@
 } from 'lucide-react';
 import Sparkline from '../../../components/ui/Sparkline';
 import VisibleItem from '../../../components/common/VisibleItem';
+import DashboardSectionTitle from '../../../components/ui/DashboardSectionTitle';
 import { formatCurrency } from '../../../utils/formatters';
 
 const iconMap = {
@@ -48,28 +48,16 @@ const DashboardGeraisTab = ({
   const showResponsavel = isVisible('responsavel');
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-7 pb-8">
       <VisibleItem show={showHeader}>
-        <section className={`transition-all duration-500 ${cardAnimation}`}>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-[#0e4f6d] rounded-lg">
-              <Building2 className="w-5 h-5 text-white" />
-            </div>
-            <span
-              className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-teal-400' : 'text-[#0e4f6d]'}`}
-            >
-              Visão Geral
-            </span>
-          </div>
-          <h1
-            className={`text-4xl font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-[#1e293b]'}`}
-          >
-            Informações Gerais
-          </h1>
-          <p className="text-lg text-slate-400 font-medium">
-            Dados cadastrais e equipe técnica responsável pela conta.
-          </p>
-        </section>
+        <DashboardSectionTitle
+          icon={FileSpreadsheet}
+          badge="Visao Geral"
+          title="Informacoes Gerais"
+          subtitle="Dados cadastrais e equipe tecnica responsavel pela conta."
+          tone="blue"
+          className={`transition-all duration-500 ${cardAnimation}`}
+        />
       </VisibleItem>
 
       <VisibleItem show={isVisible('cards_resumo')}>

@@ -1,4 +1,4 @@
-﻿import {
+import {
   AlertCircle,
   AlertTriangle,
   BarChartBig,
@@ -16,6 +16,7 @@
   Wrench,
   Zap,
 } from 'lucide-react';
+import DashboardSectionTitle from '../../../components/ui/DashboardSectionTitle';
 import {
   DespesasMensaisChart,
   DespesasCategoriaChart,
@@ -32,30 +33,16 @@ const DashboardAdministrativoTab = ({
   const isVisible = (itemId) => itemVisivel('administrativo', itemId);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-7 pb-8">
       {/* Header */}
-      <section
-        className={`flex items-start justify-between transition-all duration-500 ${cardAnimation}`}
-      >
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-amber-500 rounded-lg">
-              <Briefcase className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest">
-              Setor Administrativo
-            </span>
-          </div>
-          <h1
-            className={`text-4xl font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-[#1e293b]'}`}
-          >
-            Gestão Administrativa
-          </h1>
-          <p className="text-lg text-slate-400 font-medium">
-            Contratos, despesas e documentos da empresa.
-          </p>
-        </div>
-      </section>
+      <DashboardSectionTitle
+        icon={Briefcase}
+        badge="Setor Administrativo"
+        title="Gestao Administrativa"
+        subtitle="Contratos, despesas e documentos da empresa."
+        tone="amber"
+        className={`transition-all duration-500 ${cardAnimation}`}
+      />
 
       {/* Cards de métricas principais */}
       <VisibleItem show={isVisible('cards_metricas')}>
@@ -124,11 +111,11 @@ const DashboardAdministrativoTab = ({
       {/* Grid: Despesas por Categoria e Indicadores */}
       {(isVisible('despesas_categoria') || isVisible('indicadores_operacionais')) && (
         <div
-          className={`grid grid-cols-1 lg:grid-cols-2 gap-6 transition-all duration-500 delay-300 ${cardAnimation}`}
+          className={`grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch transition-all duration-500 delay-300 ${cardAnimation}`}
         >
           {/* Despesas por Categoria */}
           <VisibleItem show={isVisible('despesas_categoria')}>
-            <div className="bg-white dark:bg-slate-800 p-8 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
+            <div className="h-full bg-white dark:bg-slate-800 p-8 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h3
@@ -150,7 +137,7 @@ const DashboardAdministrativoTab = ({
 
           {/* Indicadores */}
           <VisibleItem show={isVisible('indicadores_operacionais')}>
-            <div className="bg-white dark:bg-slate-800 p-8 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
+            <div className="h-full bg-white dark:bg-slate-800 p-8 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
               <h3
                 className={`text-lg font-bold mb-6 pb-4 border-b ${isDarkMode ? 'text-white border-slate-700' : 'text-slate-800 border-slate-100'}`}
               >

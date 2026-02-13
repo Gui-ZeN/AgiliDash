@@ -1413,17 +1413,17 @@ const Dashboard = () => {
     >
       <Header activeTab={activeTab} onTabChange={setActiveTab} />
 
-      <main className="w-full px-4 lg:px-6 xl:px-8 py-6 lg:py-8">
+      <main className="mx-auto w-full max-w-[1680px] px-4 py-6 lg:px-6 lg:py-8 xl:px-8">
         {/* Toolbar com Breadcrumb, Filtros e Export */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div className="mb-6 flex flex-col gap-4 rounded-2xl border border-white/70 bg-white/85 px-4 py-4 shadow-sm backdrop-blur-sm dark:border-slate-700/70 dark:bg-slate-800/70 sm:flex-row sm:items-center sm:justify-between">
           <Breadcrumb />
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3 sm:justify-end">
             <CnpjFilter />
             <PeriodFilter value={periodFilter} onChange={setPeriodFilter} />
             {isAdmin && (
               <button
                 onClick={() => setPreviewClienteAtivo((prev) => !prev)}
-                className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${
+                className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl border transition-colors ${
                   previewClienteAtivo
                     ? 'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/30 dark:border-blue-700 dark:text-blue-300'
                     : 'bg-slate-50 border-slate-200 text-slate-700 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300'
@@ -1445,7 +1445,7 @@ const Dashboard = () => {
 
         {/* Badge de modo consolidado */}
         {isConsolidado && (
-          <div className="mb-6 bg-[#0e4f6d] p-4 rounded-xl text-white flex items-center justify-between">
+          <div className="mb-6 flex flex-col gap-4 rounded-2xl border border-slate-700/60 bg-gradient-to-r from-[#0e4f6d] to-[#0b3d54] p-4 text-white shadow-sm sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <Layers className="w-5 h-5" />
               <div>
@@ -1474,7 +1474,7 @@ const Dashboard = () => {
         )}
 
         {visibilidadeMeta.modoPersonalizadoAtivo && (
-          <div className="mb-6 px-4 py-3 rounded-xl border border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-300">
+          <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-300">
             <div className="flex items-center justify-between gap-4">
               <p className="font-medium">
                 Modo personalizado ativo ({visibilidadeMeta.origem})

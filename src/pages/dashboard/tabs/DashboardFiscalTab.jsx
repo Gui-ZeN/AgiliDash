@@ -1,4 +1,4 @@
-﻿import {
+import {
   AlertCircle,
   Award,
   BarChartBig,
@@ -9,6 +9,7 @@
   Scale,
   Wallet,
 } from 'lucide-react';
+import DashboardSectionTitle from '../../../components/ui/DashboardSectionTitle';
 import {
   CardsMetricasFiscais,
   CompraVendaChart,
@@ -48,32 +49,16 @@ const DashboardFiscalTab = ({
   const isVisible = (itemId) => itemVisivel('fiscal', itemId);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-7 pb-8">
       {/* Header */}
-      <section
-        className={`flex flex-col lg:flex-row items-start justify-between gap-4 transition-all duration-500 ${cardAnimation}`}
-      >
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-slate-700 rounded-lg">
-              <FileSpreadsheet className="w-5 h-5 text-white" />
-            </div>
-            <span
-              className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-700'}`}
-            >
-              Departamento Fiscal
-            </span>
-          </div>
-          <h1
-            className={`text-4xl font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-[#1e293b]'}`}
-          >
-            Análise Tributária
-          </h1>
-          <p className={`text-lg font-medium ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-            Apuração trimestral sobre Lucro Real - Dados importados do Sistema Domínio.
-          </p>
-        </div>
-      </section>
+      <DashboardSectionTitle
+        icon={FileSpreadsheet}
+        badge="Departamento Fiscal"
+        title="Analise Tributaria"
+        subtitle="Apuracao trimestral sobre Lucro Real com dados importados do Sistema Dominio."
+        tone="slate"
+        className={`transition-all duration-500 ${cardAnimation}`}
+      />
 
       {/* Banner de status de dados importados */}
       {!temDadosFiscais && (
@@ -190,11 +175,11 @@ const DashboardFiscalTab = ({
         </div>
 
         {(isVisible('faturamento_categoria') || isVisible('faturamento_evolucao')) && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
             {/* Gráfico de Rosca - Faturamento por Categoria */}
             <VisibleItem show={isVisible('faturamento_categoria')}>
               <div
-                className={`p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
+                className={`h-full p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
               >
                 <h3
                   className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
@@ -226,7 +211,7 @@ const DashboardFiscalTab = ({
             {/* Gráfico de Barras - Faturamento por Trimestre */}
             <VisibleItem show={isVisible('faturamento_evolucao')}>
               <div
-                className={`p-6 rounded-xl shadow-sm ${isVisible('faturamento_categoria') ? 'lg:col-span-2' : 'lg:col-span-3'} ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
+                className={`h-full p-6 rounded-xl shadow-sm ${isVisible('faturamento_categoria') ? 'lg:col-span-2' : 'lg:col-span-3'} ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
               >
                 <div className="flex items-center justify-between mb-6">
                   <div>
@@ -290,10 +275,10 @@ const DashboardFiscalTab = ({
         {temDadosFiscais &&
           resumoAcumuladorFiltrado &&
           (isVisible('acumuladores_entradas') || isVisible('acumuladores_saidas')) && (
-            <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
               <VisibleItem show={isVisible('acumuladores_entradas')}>
                 <div
-                  className={`rounded-xl shadow-sm overflow-hidden ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
+                  className={`h-full rounded-xl shadow-sm overflow-hidden ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
                 >
                   <div
                     className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}
@@ -313,7 +298,7 @@ const DashboardFiscalTab = ({
 
               <VisibleItem show={isVisible('acumuladores_saidas')}>
                 <div
-                  className={`rounded-xl shadow-sm overflow-hidden ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
+                  className={`h-full rounded-xl shadow-sm overflow-hidden ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
                 >
                   <div
                     className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}
@@ -342,7 +327,7 @@ const DashboardFiscalTab = ({
           }
         >
           <div
-            className={`mt-6 rounded-xl shadow-sm overflow-hidden ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
+            className={`mt-6 h-full rounded-xl shadow-sm overflow-hidden ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
           >
             <div className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
               <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
@@ -541,7 +526,7 @@ const DashboardFiscalTab = ({
             }
           >
             <div
-              className={`mt-6 rounded-xl shadow-sm overflow-hidden ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
+              className={`mt-6 h-full rounded-xl shadow-sm overflow-hidden ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
             >
               <div
                 className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}
