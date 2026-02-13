@@ -1,7 +1,8 @@
 ﻿import { useState, useEffect, useMemo } from 'react';
-import { Layers } from 'lucide-react';
+import { Eye, EyeOff, Layers } from 'lucide-react';
 import Header from '../components/layout/Header';
 import { useData } from '../context/DataContext';
+import { useAuth } from '../context/AuthContext';
 import { formatCurrency, sumArray } from '../utils/formatters';
 import { useEmpresa } from '../context/EmpresaContext';
 import { useTheme } from '../context/ThemeContext';
@@ -138,17 +139,36 @@ const Dashboard = () => {
     todasEmpresas,
   } = useEmpresa();
   const { isDarkMode } = useTheme();
+  const { isAdmin } = useAuth();
   const {
     getDadosContabeis,
     getDadosFiscais,
     getDadosPessoal,
     isSecaoVisivel,
     isItemVisivel,
+    getVisibilidadeScopeConfig,
+    previewClienteAtivo,
+    setPreviewClienteAtivo,
+    getVisibilidadeMeta,
+    isVisibilidadeAplicada,
     cnpjs: cnpjsAdmin,
     grupos: gruposAdmin,
   } = useData();
 
-  const itemVisivel = (secaoId, itemId) => isItemVisivel(cnpjInfo?.id, secaoId, itemId);
+  const usarVisibilidadeGrupoConsolidado =
+    isConsolidado && (modoVisualizacao === 'grupo' || modoVisualizacao === 'empresa');
+
+  const configVisibilidadeGrupoConsolidado = useMemo(() => {
+    if (!usarVisibilidadeGrupoConsolidado || !grupoAtual?.id) return null;
+    return getVisibilidadeScopeConfig('grupo', grupoAtual.id);
+  }, [usarVisibilidadeGrupoConsolidado, grupoAtual?.id, getVisibilidadeScopeConfig]);
+
+  const itemVisivel = (secaoId, itemId) => {
+    if (configVisibilidadeGrupoConsolidado) {
+      return configVisibilidadeGrupoConsolidado?.[secaoId]?.itens?.[itemId] !== false;
+    }
+    return isItemVisivel(cnpjInfo?.id, secaoId, itemId);
+  };
 
   // Obter dados contábeis importados para o CNPJ selecionado
   const cnpjIdsEscopo = useMemo(() => {
@@ -186,8 +206,13 @@ const Dashboard = () => {
 
   const tabsDisponiveis = useMemo(() => {
     const tabs = ['gerais', 'contabil', 'fiscal', 'pessoal', 'administrativo'];
-    return tabs.filter((tab) => isSecaoVisivel(cnpjInfo?.id, tab));
-  }, [cnpjInfo?.id, isSecaoVisivel]);
+    return tabs.filter((tab) => {
+      if (configVisibilidadeGrupoConsolidado) {
+        return configVisibilidadeGrupoConsolidado?.[tab]?.visivel !== false;
+      }
+      return isSecaoVisivel(cnpjInfo?.id, tab);
+    });
+  }, [cnpjInfo?.id, isSecaoVisivel, configVisibilidadeGrupoConsolidado]);
 
   const dadosContabeisEscopo = useMemo(
     () => cnpjIdsEscopo.map((id) => getDadosContabeis(id)).filter(Boolean),
@@ -227,6 +252,11 @@ const Dashboard = () => {
   const responsavelWhatsappLink = responsavelInfo.whatsapp
     ? `https://wa.me/55${responsavelInfo.whatsapp.replace(/\D/g, '')}`
     : '#';
+
+  const visibilidadeMeta = useMemo(
+    () => getVisibilidadeMeta(cnpjInfo?.id),
+    [cnpjInfo?.id, getVisibilidadeMeta]
+  );
 
   const dadosContabeisConsolidados = useMemo(() => {
     if (!isConsolidado) return null;
@@ -1389,6 +1419,20 @@ const Dashboard = () => {
           <div className="flex flex-wrap items-center gap-3">
             <CnpjFilter />
             <PeriodFilter value={periodFilter} onChange={setPeriodFilter} />
+            {isAdmin && (
+              <button
+                onClick={() => setPreviewClienteAtivo((prev) => !prev)}
+                className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${
+                  previewClienteAtivo
+                    ? 'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/30 dark:border-blue-700 dark:text-blue-300'
+                    : 'bg-slate-50 border-slate-200 text-slate-700 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300'
+                }`}
+                title="Alterna entre visao administrativa completa e preview do cliente"
+              >
+                {previewClienteAtivo ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                Preview cliente {previewClienteAtivo ? 'ativo' : 'inativo'}
+              </button>
+            )}
             <ExportButton
               data={exportData}
               columns={exportColumns}
@@ -1424,6 +1468,21 @@ const Dashboard = () => {
                 <p className="text-2xl font-bold">{totalFuncionarios}</p>
                 <p className="text-xs text-white/70">Funcionários</p>
               </div>
+            </div>
+          </div>
+        )}
+
+        {visibilidadeMeta.modoPersonalizadoAtivo && (
+          <div className="mb-6 px-4 py-3 rounded-xl border border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-300">
+            <div className="flex items-center justify-between gap-4">
+              <p className="font-medium">
+                Modo personalizado ativo ({visibilidadeMeta.origem})
+              </p>
+              {isAdmin && !isVisibilidadeAplicada && (
+                <p className="text-xs">
+                  Preview cliente inativo: a visibilidade nao esta sendo aplicada agora.
+                </p>
+              )}
             </div>
           </div>
         )}

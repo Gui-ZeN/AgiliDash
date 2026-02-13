@@ -1,4 +1,4 @@
-﻿import { useState, useRef, useMemo } from 'react';
+﻿import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -25,7 +25,6 @@ import {
   Calculator,
   FileText,
   Briefcase,
-  Scale,
   ChevronLeft,
   Database,
   Table,
@@ -33,6 +32,8 @@ import {
   CheckCircle2,
   TrendingUp,
   TrendingDown,
+  Search,
+  RotateCcw,
 } from 'lucide-react';
 import Logo from '../components/layout/Logo';
 import { useTheme } from '../context/ThemeContext';
@@ -236,6 +237,10 @@ const Configuracoes = () => {
     importarRelatorioContabil,
     importarRelatorioFiscal,
     importarRelatorioPessoal,
+    getVisibilidadeScopeConfig,
+    saveVisibilidadeScopeConfig,
+    removeVisibilidadeScopeConfig,
+    getVisibilidadeMeta,
   } = useData();
 
   // Estados principais
@@ -302,8 +307,12 @@ const Configuracoes = () => {
     processing: false,
   });
 
-  // ConfiguraÇão de visibilidade de dashboards
+  // Configuracao de visibilidade de dashboards
+  const [visibilidadeEscopo, setVisibilidadeEscopo] = useState('cnpj');
+  const [selectedGrupoVisibilidade, setSelectedGrupoVisibilidade] = useState('');
   const [selectedCnpjVisibilidade, setSelectedCnpjVisibilidade] = useState('');
+  const [visibilidadeBusca, setVisibilidadeBusca] = useState('');
+  const [selectedPresetVisibilidade, setSelectedPresetVisibilidade] = useState('padrao');
 
   // Estrutura de dashboards disponíveis
   const DASHBOARD_SECTIONS = {
@@ -482,9 +491,56 @@ const Configuracoes = () => {
     },
   };
 
-  // Carregar configurações de visibilidade do localStorage
-  const VISIBILIDADE_STORAGE_VERSION = 2;
-  const getVisibilidadeStorageKey = (cnpjId) => `agili_visibilidade_${cnpjId}`;
+  const [expandedSecoesVisibilidade, setExpandedSecoesVisibilidade] = useState(() =>
+    Object.keys(DASHBOARD_SECTIONS).reduce((acc, secaoId) => {
+      acc[secaoId] = true;
+      return acc;
+    }, {})
+  );
+
+  const VISIBILIDADE_PRESETS = {
+    padrao: {
+      nome: 'Padrao Agili',
+      descricao: 'Todos os graficos e cards visiveis',
+      base: 'default',
+      overrides: {},
+    },
+    lucro_real: {
+      nome: 'Lucro Real',
+      descricao: 'Mantem todos os blocos fiscais habilitados',
+      base: 'default',
+      overrides: {},
+    },
+    lucro_presumido: {
+      nome: 'Lucro Presumido',
+      descricao: 'Oculta os blocos de calculo 380 por padrao',
+      base: 'default',
+      overrides: {
+        fiscal: {
+          itens: {
+            tabela_380: false,
+            situacao_380: false,
+          },
+        },
+      },
+    },
+    simples_nacional: {
+      nome: 'Simples Nacional',
+      descricao: 'Oculta blocos de IRPJ/CSLL e calculo 380',
+      base: 'default',
+      overrides: {
+        fiscal: {
+          itens: {
+            irpj_periodo: false,
+            csll_periodo: false,
+            resumo_impostos: false,
+            tabela_380: false,
+            situacao_380: false,
+          },
+        },
+      },
+    },
+  };
 
   const createDefaultVisibilidadeConfig = () => {
     const defaultConfig = {};
@@ -497,114 +553,311 @@ const Configuracoes = () => {
     return defaultConfig;
   };
 
-  const getVisibilidadeConfig = (cnpjId) => {
-    const defaultConfig = createDefaultVisibilidadeConfig();
-    const saved = localStorage.getItem(getVisibilidadeStorageKey(cnpjId));
-    if (!saved) return defaultConfig;
+  const createAllHiddenVisibilidadeConfig = () => {
+    const hiddenConfig = {};
+    Object.keys(DASHBOARD_SECTIONS).forEach((secao) => {
+      hiddenConfig[secao] = { visivel: false, itens: {} };
+      DASHBOARD_SECTIONS[secao].itens.forEach((item) => {
+        hiddenConfig[secao].itens[item.id] = false;
+      });
+    });
+    return hiddenConfig;
+  };
 
-    try {
-      const parsed = JSON.parse(saved);
-      const hasVersionedPayload = parsed && typeof parsed === 'object' && parsed.config;
-      const savedConfig = hasVersionedPayload ? parsed.config : parsed;
-      const merged = { ...defaultConfig };
+  const normalizeText = (value) =>
+    String(value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
 
-      Object.keys(defaultConfig).forEach((secaoId) => {
-        const savedSecao = savedConfig?.[secaoId] || {};
-        merged[secaoId] = {
-          visivel: savedSecao?.visivel !== false,
-          itens: { ...defaultConfig[secaoId].itens },
-        };
+  const mergeVisibilidadeConfigs = (...configs) => {
+    const merged = createDefaultVisibilidadeConfig();
 
-        Object.keys(defaultConfig[secaoId].itens).forEach((itemId) => {
-          if (savedSecao?.itens && Object.prototype.hasOwnProperty.call(savedSecao.itens, itemId)) {
-            merged[secaoId].itens[itemId] = savedSecao.itens[itemId] !== false;
+    configs.forEach((config) => {
+      if (!config || typeof config !== 'object') return;
+
+      Object.keys(merged).forEach((secaoId) => {
+        const secaoConfig = config?.[secaoId];
+        if (!secaoConfig) return;
+
+        if (typeof secaoConfig?.visivel === 'boolean') {
+          merged[secaoId].visivel = secaoConfig.visivel;
+          if (!secaoConfig.visivel) {
+            Object.keys(merged[secaoId].itens).forEach((itemId) => {
+              merged[secaoId].itens[itemId] = false;
+            });
+          }
+        }
+
+        Object.keys(merged[secaoId].itens).forEach((itemId) => {
+          if (secaoConfig?.itens && Object.prototype.hasOwnProperty.call(secaoConfig.itens, itemId)) {
+            merged[secaoId].itens[itemId] = secaoConfig.itens[itemId] !== false;
           }
         });
-      });
 
-      const needsMigration =
-        !hasVersionedPayload || parsed.version !== VISIBILIDADE_STORAGE_VERSION;
-      if (needsMigration) {
-        localStorage.setItem(
-          getVisibilidadeStorageKey(cnpjId),
-          JSON.stringify({
-            version: VISIBILIDADE_STORAGE_VERSION,
-            updatedAt: new Date().toISOString(),
-            config: merged,
-          })
-        );
+        const algumItemVisivel = Object.values(merged[secaoId].itens).some(Boolean);
+        merged[secaoId].visivel = merged[secaoId].visivel !== false && algumItemVisivel;
+      });
+    });
+
+    return merged;
+  };
+
+  const hasCustomVisibilityRule = (config) => {
+    if (!config || typeof config !== 'object') return false;
+
+    return Object.values(config).some((secao) => {
+      if (secao?.visivel === false) return true;
+      return Object.values(secao?.itens || {}).some((itemVisivel) => itemVisivel === false);
+    });
+  };
+
+  const getGrupoByCnpj = (cnpjId) => cnpjs.find((cnpj) => cnpj.id === cnpjId)?.grupoId || null;
+
+  const getVisibilidadeConfigForScope = (scopeType, scopeId) => {
+    if (!scopeType || !scopeId) return createDefaultVisibilidadeConfig();
+
+    if (scopeType === 'grupo') {
+      const grupoConfig = getVisibilidadeScopeConfig('grupo', scopeId);
+      return mergeVisibilidadeConfigs(grupoConfig);
+    }
+
+    const grupoId = getGrupoByCnpj(scopeId);
+    const grupoConfig = grupoId ? getVisibilidadeScopeConfig('grupo', grupoId) : null;
+    const cnpjConfig = getVisibilidadeScopeConfig('cnpj', scopeId);
+    return mergeVisibilidadeConfigs(grupoConfig, cnpjConfig);
+  };
+
+  const getCurrentVisibilidadeTarget = () => {
+    if (visibilidadeEscopo === 'grupo') {
+      return { scopeType: 'grupo', scopeId: selectedGrupoVisibilidade };
+    }
+    return { scopeType: 'cnpj', scopeId: selectedCnpjVisibilidade };
+  };
+
+  const loadCurrentVisibilidadeConfig = () => {
+    const { scopeType, scopeId } = getCurrentVisibilidadeTarget();
+    if (!scopeId) return createDefaultVisibilidadeConfig();
+    return getVisibilidadeConfigForScope(scopeType, scopeId);
+  };
+
+  const [visibilidadeConfig, setVisibilidadeConfig] = useState(() =>
+    createDefaultVisibilidadeConfig()
+  );
+
+  useEffect(() => {
+    if (!selectedGrupoVisibilidade && grupos.length > 0) {
+      setSelectedGrupoVisibilidade(grupos[0].id);
+    }
+  }, [grupos, selectedGrupoVisibilidade]);
+
+  useEffect(() => {
+    if (!selectedCnpjVisibilidade && cnpjs.length > 0) {
+      setSelectedCnpjVisibilidade(cnpjs[0].id);
+    }
+  }, [cnpjs, selectedCnpjVisibilidade]);
+
+  useEffect(() => {
+    const { scopeId } = getCurrentVisibilidadeTarget();
+    if (!scopeId) return;
+    setVisibilidadeConfig(loadCurrentVisibilidadeConfig());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibilidadeEscopo, selectedGrupoVisibilidade, selectedCnpjVisibilidade, grupos, cnpjs]);
+
+  const applyVisibilidadePreset = (presetId) => {
+    const preset = VISIBILIDADE_PRESETS[presetId];
+    if (!preset) return;
+
+    const baseConfig =
+      preset.base === 'all-hidden'
+        ? createAllHiddenVisibilidadeConfig()
+        : createDefaultVisibilidadeConfig();
+
+    setVisibilidadeConfig(mergeVisibilidadeConfigs(baseConfig, preset.overrides));
+    showSuccess(`Preset aplicado: ${preset.nome}`);
+  };
+
+  const setTodosItensVisibilidade = (visivel) => {
+    setVisibilidadeConfig(
+      visivel ? createDefaultVisibilidadeConfig() : createAllHiddenVisibilidadeConfig()
+    );
+  };
+
+  const buildCnpjOverrideConfig = (cnpjId, targetConfig) => {
+    const grupoId = getGrupoByCnpj(cnpjId);
+    const baseConfig = mergeVisibilidadeConfigs(
+      grupoId ? getVisibilidadeScopeConfig('grupo', grupoId) : null
+    );
+
+    const diff = {};
+
+    Object.keys(DASHBOARD_SECTIONS).forEach((secaoId) => {
+      const secaoBase = baseConfig[secaoId];
+      const secaoTarget = targetConfig?.[secaoId];
+      const secaoDiff = {};
+      const itensDiff = {};
+
+      if ((secaoTarget?.visivel !== false) !== (secaoBase?.visivel !== false)) {
+        secaoDiff.visivel = secaoTarget?.visivel !== false;
       }
 
-      return merged;
-    } catch {
-      return defaultConfig;
-    }
+      Object.keys(secaoBase?.itens || {}).forEach((itemId) => {
+        const baseItemVisivel = secaoBase?.itens?.[itemId] !== false;
+        const targetItemVisivel = secaoTarget?.itens?.[itemId] !== false;
+
+        if (baseItemVisivel !== targetItemVisivel) {
+          itensDiff[itemId] = targetItemVisivel;
+        }
+      });
+
+      if (Object.keys(itensDiff).length > 0) {
+        secaoDiff.itens = itensDiff;
+      }
+
+      if (Object.keys(secaoDiff).length > 0) {
+        diff[secaoId] = secaoDiff;
+      }
+    });
+
+    return Object.keys(diff).length > 0 ? diff : null;
   };
 
-  const [visibilidadeConfig, setVisibilidadeConfig] = useState(() => {
-    if (cnpjs.length > 0) {
-      return getVisibilidadeConfig(cnpjs[0].id);
-    }
-    return {};
-  });
+  const resetarVisibilidadePadrao = () => {
+    const { scopeType, scopeId } = getCurrentVisibilidadeTarget();
+    if (!scopeId) return;
 
-  // Atualizar configuração quando trocar de CNPJ
-  const handleCnpjVisibilidadeChange = (cnpjId) => {
-    setSelectedCnpjVisibilidade(cnpjId);
-    setVisibilidadeConfig(getVisibilidadeConfig(cnpjId));
+    removeVisibilidadeScopeConfig(scopeType, scopeId);
+    setVisibilidadeConfig(loadCurrentVisibilidadeConfig());
+    showSuccess('Configuracao padrao restaurada');
   };
 
-  // Salvar configuração de visibilidade
+  // Salvar configuracao de visibilidade
   const saveVisibilidadeConfig = () => {
-    if (!selectedCnpjVisibilidade) return;
-    localStorage.setItem(
-      getVisibilidadeStorageKey(selectedCnpjVisibilidade),
-      JSON.stringify({
-        version: VISIBILIDADE_STORAGE_VERSION,
-        updatedAt: new Date().toISOString(),
-        config: visibilidadeConfig,
-      })
-    );
-    showSuccess('ConfiguraÇão de visibilidade salva com sucesso!');
+    const { scopeType, scopeId } = getCurrentVisibilidadeTarget();
+    if (!scopeId) return;
+
+    if (scopeType === 'cnpj') {
+      const cnpjOverride = buildCnpjOverrideConfig(scopeId, visibilidadeConfig);
+      if (!cnpjOverride) {
+        removeVisibilidadeScopeConfig('cnpj', scopeId);
+        setVisibilidadeConfig(loadCurrentVisibilidadeConfig());
+        showSuccess('Sem diferencas no CNPJ. Herdando configuracao do grupo.');
+        return;
+      }
+
+      saveVisibilidadeScopeConfig(scopeType, scopeId, cnpjOverride);
+      showSuccess('Sobrescrita do CNPJ salva com sucesso.');
+      return;
+    }
+
+    saveVisibilidadeScopeConfig(scopeType, scopeId, visibilidadeConfig);
+    showSuccess('Configuracao de visibilidade salva com sucesso.');
   };
 
-  // Toggle Seção inteira
-  const toggleSecaoVisibilidade = (secao) => {
+  const usarHerancaDoGrupo = () => {
+    if (!selectedCnpjVisibilidade) return;
+    removeVisibilidadeScopeConfig('cnpj', selectedCnpjVisibilidade);
+    setVisibilidadeConfig(loadCurrentVisibilidadeConfig());
+    showSuccess('Sobrescrita removida. CNPJ voltou a herdar o grupo.');
+  };
+
+  const toggleExpansaoSecaoVisibilidade = (secaoId) => {
+    setExpandedSecoesVisibilidade((prev) => ({
+      ...prev,
+      [secaoId]: prev[secaoId] === false,
+    }));
+  };
+
+  // Toggle secao inteira
+  const toggleSecaoVisibilidade = (secaoId) => {
     setVisibilidadeConfig((prev) => {
-      const novoEstado = !prev[secao]?.visivel;
+      const novoEstado = !prev[secaoId]?.visivel;
       const novaConfig = { ...prev };
-      novaConfig[secao] = {
-        ...novaConfig[secao],
+      novaConfig[secaoId] = {
+        ...novaConfig[secaoId],
         visivel: novoEstado,
         itens: {},
       };
-      // Se a Seção foi habilitada, habilita todos os itens
-      DASHBOARD_SECTIONS[secao].itens.forEach((item) => {
-        novaConfig[secao].itens[item.id] = novoEstado;
+      DASHBOARD_SECTIONS[secaoId].itens.forEach((item) => {
+        novaConfig[secaoId].itens[item.id] = novoEstado;
       });
       return novaConfig;
     });
   };
 
-  // Toggle item específico
-  const toggleItemVisibilidade = (secao, itemId) => {
+  // Toggle item especifico
+  const toggleItemVisibilidade = (secaoId, itemId) => {
     setVisibilidadeConfig((prev) => {
       const novaConfig = { ...prev };
-      const itemAtualVisivel = novaConfig?.[secao]?.itens?.[itemId] !== false;
-      novaConfig[secao] = {
-        ...novaConfig[secao],
+      const itemAtualVisivel = novaConfig?.[secaoId]?.itens?.[itemId] !== false;
+      novaConfig[secaoId] = {
+        ...novaConfig[secaoId],
         itens: {
-          ...novaConfig[secao]?.itens,
+          ...novaConfig[secaoId]?.itens,
           [itemId]: !itemAtualVisivel,
         },
       };
-      // Verificar se todos os itens estao desmarcados para desmarcar a secao
-      const todosItens = DASHBOARD_SECTIONS[secao].itens;
-      const algumVisivel = todosItens.some((item) => novaConfig[secao].itens[item.id] !== false);
-      novaConfig[secao].visivel = algumVisivel;
+      const todosItens = DASHBOARD_SECTIONS[secaoId].itens;
+      const algumVisivel = todosItens.some((item) => novaConfig[secaoId].itens[item.id] !== false);
+      novaConfig[secaoId].visivel = algumVisivel;
       return novaConfig;
     });
   };
+
+  const selectedCnpjInfo = cnpjs.find((cnpj) => cnpj.id === selectedCnpjVisibilidade) || null;
+  const selectedGrupoInfo = grupos.find((grupo) => grupo.id === selectedGrupoVisibilidade) || null;
+
+  useEffect(() => {
+    if (visibilidadeEscopo !== 'cnpj') return;
+    const regime = normalizeText(selectedCnpjInfo?.regimeTributario);
+    const presetSugerido = regime.includes('simples')
+      ? 'simples_nacional'
+      : regime.includes('presumido')
+        ? 'lucro_presumido'
+        : regime.includes('real')
+          ? 'lucro_real'
+          : 'padrao';
+    setSelectedPresetVisibilidade(presetSugerido);
+  }, [visibilidadeEscopo, selectedCnpjInfo?.regimeTributario]);
+
+  useEffect(() => {
+    if (!visibilidadeBusca.trim()) return;
+    setExpandedSecoesVisibilidade((prev) =>
+      Object.keys(prev).reduce((acc, secaoId) => {
+        acc[secaoId] = true;
+        return acc;
+      }, { ...prev })
+    );
+  }, [visibilidadeBusca]);
+
+  const visibilidadeMeta =
+    visibilidadeEscopo === 'cnpj' && selectedCnpjVisibilidade
+      ? getVisibilidadeMeta(selectedCnpjVisibilidade)
+      : visibilidadeEscopo === 'grupo' && selectedGrupoVisibilidade
+        ? (() => {
+            const grupoRaw = getVisibilidadeScopeConfig('grupo', selectedGrupoVisibilidade);
+            const grupoConfig = mergeVisibilidadeConfigs(grupoRaw);
+            return {
+              origem: grupoRaw ? 'grupo' : 'padrao',
+              temConfigGrupo: !!grupoRaw,
+              temConfigCnpj: false,
+              modoPersonalizadoAtivo: hasCustomVisibilityRule(grupoConfig),
+            };
+          })()
+        : {
+            origem: 'padrao',
+            temConfigGrupo: false,
+            temConfigCnpj: false,
+            modoPersonalizadoAtivo: false,
+          };
+
+  const cnpjTemSobrescrita =
+    visibilidadeEscopo === 'cnpj' &&
+    selectedCnpjVisibilidade &&
+    !!getVisibilidadeScopeConfig('cnpj', selectedCnpjVisibilidade);
+  const visibilidadeTargetSelecionado =
+    visibilidadeEscopo === 'grupo' ? selectedGrupoVisibilidade : selectedCnpjVisibilidade;
 
   // Helpers
   const toggleGrupo = (grupoId) => {
@@ -3476,147 +3729,339 @@ const Configuracoes = () => {
                 </div>
                 <div>
                   <h2 className="text-xl font-bold text-slate-800 dark:text-white">
-                    ConfiguraÇão de Visibilidade
+                    Configuracao de Visibilidade
                   </h2>
                   <p className="text-sm text-slate-500 dark:text-slate-400">
-                    Defina quais dashboards serão visíveis para cada cliente
+                    Defina visibilidade por grupo e, se necessario, sobrescreva por CNPJ
                   </p>
                 </div>
               </div>
 
-              {/* Seleção de CNPJ */}
               <div className="mb-6 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700">
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  Selecione o CNPJ para configurar:
-                </label>
-                <select
-                  value={selectedCnpjVisibilidade}
-                  onChange={(e) => handleCnpjVisibilidadeChange(e.target.value)}
-                  className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-white outline-none focus:border-[#0e4f6d]"
-                >
-                  <option value="">Selecione um CNPJ...</option>
-                  {cnpjs.map((cnpj) => (
-                    <option key={cnpj.id} value={cnpj.id}>
-                      {cnpj.nomeFantasia || cnpj.razaoSocial} - {cnpj.cnpj}
-                    </option>
-                  ))}
-                </select>
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Escopo
+                    </label>
+                    <select
+                      value={visibilidadeEscopo}
+                      onChange={(e) => setVisibilidadeEscopo(e.target.value)}
+                      className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-white outline-none focus:border-[#0e4f6d]"
+                    >
+                      <option value="cnpj">CNPJ (sobrescrita)</option>
+                      <option value="grupo">Grupo (base)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      {visibilidadeEscopo === 'grupo' ? 'Grupo' : 'CNPJ'}
+                    </label>
+                    {visibilidadeEscopo === 'grupo' ? (
+                      <select
+                        value={selectedGrupoVisibilidade}
+                        onChange={(e) => setSelectedGrupoVisibilidade(e.target.value)}
+                        className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-white outline-none focus:border-[#0e4f6d]"
+                      >
+                        <option value="">Selecione um grupo...</option>
+                        {grupos.map((grupo) => (
+                          <option key={grupo.id} value={grupo.id}>
+                            {grupo.nome}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <select
+                        value={selectedCnpjVisibilidade}
+                        onChange={(e) => setSelectedCnpjVisibilidade(e.target.value)}
+                        className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-white outline-none focus:border-[#0e4f6d]"
+                      >
+                        <option value="">Selecione um CNPJ...</option>
+                        {cnpjs.map((cnpj) => (
+                          <option key={cnpj.id} value={cnpj.id}>
+                            {cnpj.nomeFantasia || cnpj.razaoSocial} - {cnpj.cnpj}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Buscar item
+                    </label>
+                    <div className="relative">
+                      <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <input
+                        type="text"
+                        value={visibilidadeBusca}
+                        onChange={(e) => setVisibilidadeBusca(e.target.value)}
+                        placeholder="Ex: IRPJ, estoque, FGTS..."
+                        className="w-full pl-10 pr-3 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-white outline-none focus:border-[#0e4f6d]"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Preset por regime
+                    </label>
+                    {visibilidadeEscopo === 'cnpj' && selectedCnpjInfo?.regimeTributario && (
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">
+                        Sugerido para o regime: {selectedCnpjInfo.regimeTributario}
+                      </p>
+                    )}
+                    <div className="flex gap-2">
+                      <select
+                        value={selectedPresetVisibilidade}
+                        onChange={(e) => setSelectedPresetVisibilidade(e.target.value)}
+                        className="flex-1 px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-white outline-none focus:border-[#0e4f6d]"
+                      >
+                        {Object.entries(VISIBILIDADE_PRESETS).map(([presetId, preset]) => (
+                          <option key={presetId} value={presetId}>
+                            {preset.nome}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        onClick={() => applyVisibilidadePreset(selectedPresetVisibilidade)}
+                        className="px-4 py-2 bg-[#0e4f6d] text-white rounded-lg hover:bg-[#0d4560] transition-colors"
+                      >
+                        Aplicar
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              {selectedCnpjVisibilidade && (
+              {visibilidadeTargetSelecionado && (
                 <>
-                  {/* Info do CNPJ selecionado */}
+                  {/* Info do alvo selecionado */}
                   <div className="mb-6 p-4 bg-[#0e4f6d]/10 dark:bg-[#0e4f6d]/20 rounded-xl border border-[#0e4f6d]/30">
-                    <div className="flex items-center gap-3">
-                      <Building2 className="w-5 h-5 text-[#0e4f6d] dark:text-teal-400" />
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <Building2 className="w-5 h-5 text-[#0e4f6d] dark:text-teal-400" />
+                        <div>
+                          <p className="font-medium text-[#0e4f6d] dark:text-teal-400">
+                            {visibilidadeEscopo === 'grupo'
+                              ? selectedGrupoInfo?.nome || 'Grupo'
+                              : selectedCnpjInfo?.nomeFantasia || selectedCnpjInfo?.razaoSocial}
+                          </p>
+                          <p className="text-sm text-slate-600 dark:text-slate-400">
+                            {visibilidadeEscopo === 'grupo'
+                              ? 'Configuracao base para todos os CNPJs do grupo'
+                              : `Regime: ${selectedCnpjInfo?.regimeTributario || 'Nao informado'} • Grupo: ${grupos.find((g) => g.id === selectedCnpjInfo?.grupoId)?.nome || 'Sem grupo'}`}
+                          </p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                            Origem efetiva: {visibilidadeMeta.origem} •{' '}
+                            {visibilidadeMeta.modoPersonalizadoAtivo
+                              ? 'modo personalizado ativo'
+                              : 'sem personalizacao'}
+                          </p>
+                        </div>
+                      </div>
                       <div>
-                        <p className="font-medium text-[#0e4f6d] dark:text-teal-400">
-                          {cnpjs.find((c) => c.id === selectedCnpjVisibilidade)?.nomeFantasia}
-                        </p>
-                        <p className="text-sm text-slate-600 dark:text-slate-400">
-                          Regime:{' '}
-                          {cnpjs.find((c) => c.id === selectedCnpjVisibilidade)?.regimeTributario}
-                        </p>
+                        {cnpjTemSobrescrita && (
+                          <button
+                            onClick={usarHerancaDoGrupo}
+                            className="px-3 py-2 text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 rounded-lg hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors"
+                          >
+                            Usar heranca do grupo
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
 
-                  {/* Seções de Dashboard */}
-                  <div className="space-y-4">
-                    {Object.entries(DASHBOARD_SECTIONS).map(([secaoId, secao]) => (
-                      <div
-                        key={secaoId}
-                        className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden"
-                      >
-                        {/* Header da Seção */}
-                        <div
-                          className={`p-4 flex items-center justify-between cursor-pointer transition-colors ${
-                            visibilidadeConfig[secaoId]?.visivel
-                              ? 'bg-emerald-50 dark:bg-emerald-900/20'
-                              : 'bg-slate-50 dark:bg-slate-900/50'
-                          }`}
-                          onClick={() => toggleSecaoVisibilidade(secaoId)}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div
-                              className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                                visibilidadeConfig[secaoId]?.visivel
-                                  ? 'bg-emerald-200 dark:bg-emerald-800'
-                                  : 'bg-slate-200 dark:bg-slate-700'
-                              }`}
-                            >
-                              {visibilidadeConfig[secaoId]?.visivel ? (
-                                <Check className="w-4 h-4 text-emerald-700 dark:text-emerald-300" />
-                              ) : (
-                                <X className="w-4 h-4 text-slate-500" />
-                              )}
-                            </div>
-                            <div>
-                              <p
-                                className={`font-semibold ${
-                                  visibilidadeConfig[secaoId]?.visivel
-                                    ? 'text-emerald-800 dark:text-emerald-300'
-                                    : 'text-slate-600 dark:text-slate-400'
-                                }`}
-                              >
-                                {secao.nome}
-                              </p>
-                              <p className="text-xs text-slate-500 dark:text-slate-500">
-                                {secao.descricao}
-                              </p>
-                            </div>
-                          </div>
-                          <ChevronRight
-                            className={`w-5 h-5 text-slate-400 transition-transform ${
-                              visibilidadeConfig[secaoId]?.visivel ? 'rotate-90' : ''
-                            }`}
-                          />
-                        </div>
-
-                        {/* Itens da Seção (expandido quando visível) */}
-                        {visibilidadeConfig[secaoId]?.visivel && (
-                          <div className="p-4 border-t border-slate-200 dark:border-slate-700 space-y-2">
-                            {secao.itens.map((item) => (
-                              <label
-                                key={item.id}
-                                className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-                                  visibilidadeConfig[secaoId]?.itens?.[item.id] !== false
-                                    ? 'bg-emerald-50 dark:bg-emerald-900/10 hover:bg-emerald-100 dark:hover:bg-emerald-900/20'
-                                    : 'bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700'
-                                }`}
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={visibilidadeConfig[secaoId]?.itens?.[item.id] !== false}
-                                  onChange={() => toggleItemVisibilidade(secaoId, item.id)}
-                                  className="w-5 h-5 rounded border-slate-300 text-[#0e4f6d] focus:ring-[#0e4f6d] dark:bg-slate-700 dark:border-slate-600"
-                                />
-                                <div className="flex-1">
-                                  <p
-                                    className={`font-medium ${
-                                      visibilidadeConfig[secaoId]?.itens?.[item.id] !== false
-                                        ? 'text-slate-800 dark:text-white'
-                                        : 'text-slate-500 dark:text-slate-400'
-                                    }`}
-                                  >
-                                    {item.nome}
-                                  </p>
-                                  <p className="text-xs text-slate-500">{item.descricao}</p>
-                                </div>
-                              </label>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                  <div className="mb-6 flex flex-wrap items-center gap-2">
+                    <button
+                      onClick={() => setTodosItensVisibilidade(true)}
+                      className="px-3 py-2 text-sm bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300 rounded-lg hover:bg-emerald-200 dark:hover:bg-emerald-900/40 transition-colors"
+                    >
+                      Marcar todos
+                    </button>
+                    <button
+                      onClick={() => setTodosItensVisibilidade(false)}
+                      className="px-3 py-2 text-sm bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                    >
+                      Desmarcar todos
+                    </button>
+                    <button
+                      onClick={resetarVisibilidadePadrao}
+                      className="flex items-center gap-2 px-3 py-2 text-sm bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300 rounded-lg hover:bg-amber-200 dark:hover:bg-amber-900/40 transition-colors"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                      Resetar padrao
+                    </button>
                   </div>
 
-                  {/* Botão Salvar */}
+                  <div className="space-y-4">
+                    {Object.entries(DASHBOARD_SECTIONS)
+                      .filter(([, secao]) => {
+                        if (!visibilidadeBusca.trim()) return true;
+
+                        const termo = normalizeText(visibilidadeBusca);
+                        const secaoMatch =
+                          normalizeText(secao.nome).includes(termo) ||
+                          normalizeText(secao.descricao).includes(termo) ||
+                          secao.itens.some(
+                            (item) =>
+                              normalizeText(item.nome).includes(termo) ||
+                              normalizeText(item.descricao).includes(termo)
+                          );
+
+                        return secaoMatch;
+                      })
+                      .map(([secaoId, secao]) => {
+                        const termo = normalizeText(visibilidadeBusca);
+                        const itensFiltrados = secao.itens.filter((item) => {
+                          if (!termo) return true;
+                          return (
+                            normalizeText(item.nome).includes(termo) ||
+                            normalizeText(item.descricao).includes(termo)
+                          );
+                        });
+
+                        const totalItens = secao.itens.length;
+                        const itensVisiveis = secao.itens.filter(
+                          (item) => visibilidadeConfig[secaoId]?.itens?.[item.id] !== false
+                        ).length;
+                        const secaoExpandida = expandedSecoesVisibilidade[secaoId] !== false;
+
+                        return (
+                          <div
+                            key={secaoId}
+                            className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden"
+                          >
+                            <div
+                              className={`p-4 flex items-center justify-between cursor-pointer transition-colors ${
+                                visibilidadeConfig[secaoId]?.visivel
+                                  ? 'bg-emerald-50 dark:bg-emerald-900/20'
+                                  : 'bg-slate-50 dark:bg-slate-900/50'
+                              }`}
+                              onClick={() => toggleExpansaoSecaoVisibilidade(secaoId)}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div
+                                  className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                                    visibilidadeConfig[secaoId]?.visivel
+                                      ? 'bg-emerald-200 dark:bg-emerald-800'
+                                      : 'bg-slate-200 dark:bg-slate-700'
+                                  }`}
+                                >
+                                  {visibilidadeConfig[secaoId]?.visivel ? (
+                                    <Check className="w-4 h-4 text-emerald-700 dark:text-emerald-300" />
+                                  ) : (
+                                    <X className="w-4 h-4 text-slate-500" />
+                                  )}
+                                </div>
+                                <div>
+                                  <p
+                                    className={`font-semibold ${
+                                      visibilidadeConfig[secaoId]?.visivel
+                                        ? 'text-emerald-800 dark:text-emerald-300'
+                                        : 'text-slate-600 dark:text-slate-400'
+                                    }`}
+                                  >
+                                    {secao.nome}
+                                  </p>
+                                  <p className="text-xs text-slate-500 dark:text-slate-500">
+                                    {secao.descricao}
+                                  </p>
+                                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                                    {itensVisiveis}/{totalItens} itens visiveis
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleSecaoVisibilidade(secaoId);
+                                  }}
+                                  className={`px-3 py-1.5 text-xs rounded-lg transition-colors ${
+                                    visibilidadeConfig[secaoId]?.visivel
+                                      ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
+                                      : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300'
+                                  }`}
+                                >
+                                  {visibilidadeConfig[secaoId]?.visivel ? 'Ocultar secao' : 'Mostrar secao'}
+                                </button>
+                                <ChevronRight
+                                  className={`w-5 h-5 text-slate-400 transition-transform ${
+                                    secaoExpandida ? 'rotate-90' : ''
+                                  }`}
+                                />
+                              </div>
+                            </div>
+
+                            {secaoExpandida && (
+                              <div className="p-4 border-t border-slate-200 dark:border-slate-700 space-y-2">
+                                {itensFiltrados.length === 0 && (
+                                  <p className="text-sm text-slate-500 dark:text-slate-400 px-2">
+                                    Nenhum item encontrado nesta secao.
+                                  </p>
+                                )}
+
+                                {itensFiltrados.map((item) => (
+                                  <label
+                                    key={item.id}
+                                    className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
+                                      visibilidadeConfig[secaoId]?.itens?.[item.id] !== false
+                                        ? 'bg-emerald-50 dark:bg-emerald-900/10 hover:bg-emerald-100 dark:hover:bg-emerald-900/20'
+                                        : 'bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700'
+                                    }`}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={visibilidadeConfig[secaoId]?.itens?.[item.id] !== false}
+                                      onChange={() => toggleItemVisibilidade(secaoId, item.id)}
+                                      className="w-5 h-5 rounded border-slate-300 text-[#0e4f6d] focus:ring-[#0e4f6d] dark:bg-slate-700 dark:border-slate-600"
+                                    />
+                                    <div className="flex-1">
+                                      <p
+                                        className={`font-medium ${
+                                          visibilidadeConfig[secaoId]?.itens?.[item.id] !== false
+                                            ? 'text-slate-800 dark:text-white'
+                                            : 'text-slate-500 dark:text-slate-400'
+                                        }`}
+                                      >
+                                        {item.nome}
+                                      </p>
+                                      <p className="text-xs text-slate-500">{item.descricao}</p>
+                                    </div>
+                                  </label>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                  </div>
+
+                  {Object.entries(DASHBOARD_SECTIONS).filter(([, secao]) => {
+                    if (!visibilidadeBusca.trim()) return false;
+                    const termo = normalizeText(visibilidadeBusca);
+                    return (
+                      normalizeText(secao.nome).includes(termo) ||
+                      normalizeText(secao.descricao).includes(termo) ||
+                      secao.itens.some(
+                        (item) =>
+                          normalizeText(item.nome).includes(termo) ||
+                          normalizeText(item.descricao).includes(termo)
+                      )
+                    );
+                  }).length === 0 && (
+                    <div className="text-center py-10 text-slate-400">
+                      Nenhum item encontrado para a busca atual.
+                    </div>
+                  )}
+
                   <div className="mt-6 flex justify-end gap-3">
                     <button
                       onClick={() => {
-                        setVisibilidadeConfig(getVisibilidadeConfig(selectedCnpjVisibilidade));
-                        showSuccess('Alterações descartadas');
+                        setVisibilidadeConfig(loadCurrentVisibilidadeConfig());
+                        showSuccess('Alteracoes descartadas');
                       }}
                       className="px-4 py-2 text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
                     >
@@ -3627,16 +4072,19 @@ const Configuracoes = () => {
                       className="flex items-center gap-2 px-6 py-2 bg-[#0e4f6d] text-white rounded-lg hover:bg-[#0d4560] transition-colors"
                     >
                       <Save className="w-4 h-4" />
-                      Salvar ConfiguraÇão
+                      Salvar configuracao
                     </button>
                   </div>
                 </>
               )}
 
-              {!selectedCnpjVisibilidade && (
+              {!visibilidadeTargetSelecionado && (
                 <div className="text-center py-12 text-slate-400">
                   <Eye className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>Selecione um CNPJ para configurar a visibilidade dos dashboards</p>
+                  <p>
+                    Selecione {visibilidadeEscopo === 'grupo' ? 'um grupo' : 'um CNPJ'} para
+                    configurar a visibilidade
+                  </p>
                 </div>
               )}
             </div>

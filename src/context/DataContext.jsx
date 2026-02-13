@@ -18,6 +18,7 @@ import {
   parseSalarioBase,
   parseProgramacaoFerias,
 } from '../utils/dominioParser';
+import { useAuth } from './AuthContext';
 
 const DataContext = createContext();
 
@@ -85,7 +86,66 @@ const initialDadosPessoal = {
   // cnpjId -> { fgts: null, inss: null, empregados: null, salarioBase: null, ferias: null }
 };
 
+const VISIBILIDADE_STORAGE_VERSION = 3;
+const VISIBILIDADE_PREVIEW_KEY = 'agili_preview_cliente';
+const getVisibilidadeStorageKey = (scopeType, scopeId) =>
+  `agili_visibilidade_${scopeType}_${scopeId}`;
+const getLegacyVisibilidadeCnpjKey = (cnpjId) => `agili_visibilidade_${cnpjId}`;
+
+const parseVisibilidadePayload = (rawValue) => {
+  if (!rawValue) return null;
+
+  try {
+    const parsed = JSON.parse(rawValue);
+    if (parsed && typeof parsed === 'object' && parsed.config) {
+      return parsed.config;
+    }
+    return parsed && typeof parsed === 'object' ? parsed : null;
+  } catch {
+    return null;
+  }
+};
+
+const mergeVisibilidadeConfigs = (...configs) => {
+  const merged = {};
+
+  configs.forEach((config) => {
+    if (!config || typeof config !== 'object') return;
+
+    Object.entries(config).forEach(([secaoId, secaoValue]) => {
+      if (!merged[secaoId]) {
+        merged[secaoId] = { visivel: true, itens: {} };
+      }
+
+      if (typeof secaoValue?.visivel === 'boolean') {
+        merged[secaoId].visivel = secaoValue.visivel;
+      }
+
+      if (secaoValue?.itens && typeof secaoValue.itens === 'object') {
+        Object.entries(secaoValue.itens).forEach(([itemId, itemVisivel]) => {
+          if (typeof itemVisivel === 'boolean') {
+            merged[secaoId].itens[itemId] = itemVisivel;
+          }
+        });
+      }
+    });
+  });
+
+  return merged;
+};
+
+const hasCustomVisibilityRule = (config) => {
+  if (!config || typeof config !== 'object') return false;
+
+  return Object.values(config).some((secao) => {
+    if (secao?.visivel === false) return true;
+    return Object.values(secao?.itens || {}).some((itemVisivel) => itemVisivel === false);
+  });
+};
+
 export const DataProvider = ({ children }) => {
+  const { isAdmin } = useAuth();
+
   // Estado para Grupos
   const [grupos, setGrupos] = useState(() => {
     const saved = localStorage.getItem('agili_grupos');
@@ -122,6 +182,12 @@ export const DataProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : initialDadosPessoal;
   });
 
+  const [previewClienteAtivo, setPreviewClienteAtivo] = useState(() => {
+    const saved = localStorage.getItem(VISIBILIDADE_PREVIEW_KEY);
+    if (saved === null) return true;
+    return saved === 'true';
+  });
+
   // Persistir no localStorage
   useEffect(() => {
     localStorage.setItem('agili_grupos', JSON.stringify(grupos));
@@ -146,6 +212,33 @@ export const DataProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('agili_dados_pessoal', JSON.stringify(dadosPessoal));
   }, [dadosPessoal]);
+
+  useEffect(() => {
+    localStorage.setItem(VISIBILIDADE_PREVIEW_KEY, String(previewClienteAtivo));
+  }, [previewClienteAtivo]);
+
+  // Migra chave legada agili_visibilidade_{cnpjId} para formato versionado por escopo.
+  useEffect(() => {
+    cnpjs.forEach((cnpj) => {
+      const scopeKey = getVisibilidadeStorageKey('cnpj', cnpj.id);
+      if (localStorage.getItem(scopeKey)) return;
+
+      const legacyKey = getLegacyVisibilidadeCnpjKey(cnpj.id);
+      const legacyConfig = parseVisibilidadePayload(localStorage.getItem(legacyKey));
+      if (!legacyConfig) return;
+
+      localStorage.setItem(
+        scopeKey,
+        JSON.stringify({
+          version: VISIBILIDADE_STORAGE_VERSION,
+          scope: 'cnpj',
+          updatedAt: new Date().toISOString(),
+          config: legacyConfig,
+        })
+      );
+      localStorage.removeItem(legacyKey);
+    });
+  }, [cnpjs]);
 
   // ===== CRUD GRUPOS =====
   const addGrupo = (grupo) => {
@@ -765,22 +858,83 @@ export const DataProvider = ({ children }) => {
     { id: 'administrativo', nome: 'Administrativo', descricao: 'Acesso ao setor administrativo' },
   ];
 
-  const getVisibilidadeStorageConfig = (cnpjId) => {
+  const getVisibilidadeScopeConfig = (scopeType, scopeId) => {
+    if (!scopeType || !scopeId) return null;
+
+    const storageKey = getVisibilidadeStorageKey(scopeType, scopeId);
+    const configAtual = parseVisibilidadePayload(localStorage.getItem(storageKey));
+    if (configAtual) return configAtual;
+
+    return null;
+  };
+
+  const saveVisibilidadeScopeConfig = (scopeType, scopeId, config) => {
+    if (!scopeType || !scopeId || !config) return false;
+
+    const storageKey = getVisibilidadeStorageKey(scopeType, scopeId);
+    localStorage.setItem(
+      storageKey,
+      JSON.stringify({
+        version: VISIBILIDADE_STORAGE_VERSION,
+        scope: scopeType,
+        updatedAt: new Date().toISOString(),
+        config,
+      })
+    );
+
+    if (scopeType === 'cnpj') {
+      localStorage.removeItem(getLegacyVisibilidadeCnpjKey(scopeId));
+    }
+
+    return true;
+  };
+
+  const removeVisibilidadeScopeConfig = (scopeType, scopeId) => {
+    if (!scopeType || !scopeId) return false;
+
+    localStorage.removeItem(getVisibilidadeStorageKey(scopeType, scopeId));
+    if (scopeType === 'cnpj') {
+      localStorage.removeItem(getLegacyVisibilidadeCnpjKey(scopeId));
+    }
+    return true;
+  };
+
+  const getGrupoIdByCnpj = (cnpjId) => cnpjs.find((cnpj) => cnpj.id === cnpjId)?.grupoId || null;
+
+  const getVisibilidadeConfig = (cnpjId) => {
     if (!cnpjId) return null;
 
-    const saved = localStorage.getItem(`agili_visibilidade_${cnpjId}`);
-    if (!saved) return null;
+    const grupoId = getGrupoIdByCnpj(cnpjId);
+    const configGrupo = grupoId ? getVisibilidadeScopeConfig('grupo', grupoId) : null;
+    const configCnpj = getVisibilidadeScopeConfig('cnpj', cnpjId);
 
-    try {
-      const parsed = JSON.parse(saved);
-      if (parsed && typeof parsed === 'object' && parsed.config) {
-        return parsed.config;
-      }
-      return parsed;
-    } catch {
-      return null;
-    }
+    return mergeVisibilidadeConfigs(configGrupo, configCnpj);
   };
+
+  const getVisibilidadeMeta = (cnpjId) => {
+    if (!cnpjId) {
+      return {
+        origem: 'padrao',
+        temConfigGrupo: false,
+        temConfigCnpj: false,
+        modoPersonalizadoAtivo: false,
+      };
+    }
+
+    const grupoId = getGrupoIdByCnpj(cnpjId);
+    const configGrupo = grupoId ? getVisibilidadeScopeConfig('grupo', grupoId) : null;
+    const configCnpj = getVisibilidadeScopeConfig('cnpj', cnpjId);
+    const configEfetiva = mergeVisibilidadeConfigs(configGrupo, configCnpj);
+
+    return {
+      origem: configCnpj ? 'cnpj' : configGrupo ? 'grupo' : 'padrao',
+      temConfigGrupo: !!configGrupo,
+      temConfigCnpj: !!configCnpj,
+      modoPersonalizadoAtivo: hasCustomVisibilityRule(configEfetiva),
+    };
+  };
+
+  const visibilidadeAplicada = !isAdmin || previewClienteAtivo;
 
   const value = {
     // Grupos
@@ -826,19 +980,26 @@ export const DataProvider = ({ children }) => {
     setoresDisponiveis,
 
     // Visibilidade de Dashboards
-    getVisibilidadeConfig: (cnpjId) => {
-      return getVisibilidadeStorageConfig(cnpjId);
-    },
+    previewClienteAtivo,
+    setPreviewClienteAtivo,
+    getVisibilidadeScopeConfig,
+    saveVisibilidadeScopeConfig,
+    removeVisibilidadeScopeConfig,
+    getVisibilidadeMeta,
+    getVisibilidadeConfig,
+    isVisibilidadeAplicada: visibilidadeAplicada,
 
     isSecaoVisivel: (cnpjId, secaoId) => {
-      const config = getVisibilidadeStorageConfig(cnpjId);
-      if (!config) return true; // Por padrão tudo visível
+      if (!visibilidadeAplicada) return true;
+      const config = getVisibilidadeConfig(cnpjId);
+      if (!config) return true;
       return config[secaoId]?.visivel !== false;
     },
 
     isItemVisivel: (cnpjId, secaoId, itemId) => {
-      const config = getVisibilidadeStorageConfig(cnpjId);
-      if (!config) return true; // Por padrão tudo visível
+      if (!visibilidadeAplicada) return true;
+      const config = getVisibilidadeConfig(cnpjId);
+      if (!config) return true;
       return config[secaoId]?.itens?.[itemId] !== false;
     },
   };

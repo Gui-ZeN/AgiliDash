@@ -1,4 +1,4 @@
-﻿import { useState, useRef, useEffect } from 'react';
+﻿import { useState, useRef, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { LogOut, Settings, ChevronDown, Building2, Check, Layers, FolderTree, Building, Menu, X, Sun, Moon, Users, Activity, User, Search } from 'lucide-react';
 import Logo from './Logo';
@@ -15,7 +15,7 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
   const navigate = useNavigate();
   const { isDarkMode, toggleTheme } = useTheme();
   const { user, isAdmin, logout } = useAuth();
-  const { isSecaoVisivel } = useData();
+  const { isSecaoVisivel, getVisibilidadeScopeConfig } = useData();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchGrupo, setSearchGrupo] = useState('');
@@ -48,7 +48,20 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
     { id: 'administrativo', label: 'ADMIN' }
   ];
 
-  const tabsVisiveis = tabs.filter(tab => isSecaoVisivel(cnpjInfo?.id, tab.id));
+  const usarVisibilidadeGrupoConsolidado =
+    isConsolidado && (modoVisualizacao === 'grupo' || modoVisualizacao === 'empresa');
+
+  const configVisibilidadeGrupoConsolidado = useMemo(() => {
+    if (!usarVisibilidadeGrupoConsolidado || !grupoAtual?.id) return null;
+    return getVisibilidadeScopeConfig('grupo', grupoAtual.id);
+  }, [usarVisibilidadeGrupoConsolidado, grupoAtual?.id, getVisibilidadeScopeConfig]);
+
+  const tabsVisiveis = tabs.filter((tab) => {
+    if (configVisibilidadeGrupoConsolidado) {
+      return configVisibilidadeGrupoConsolidado?.[tab.id]?.visivel !== false;
+    }
+    return isSecaoVisivel(cnpjInfo?.id, tab.id);
+  });
 
   const handleLogout = () => {
     logout();
@@ -523,3 +536,4 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
 };
 
 export default Header;
+
