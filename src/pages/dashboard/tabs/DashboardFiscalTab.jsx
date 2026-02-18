@@ -339,7 +339,7 @@ const DashboardFiscalTab = ({
               </p>
             </div>
             <TabelaFaturamentoPeriodo
-              dadosFaturamento={dadosFiscaisImportados.faturamento}
+              dadosFaturamento={dadosFiscaisImportados?.faturamento}
               periodFilter={periodFilter}
             />
           </div>
