@@ -221,6 +221,7 @@ export const FaturamentoPorCategoriaChart = ({ dados, year }) => {
  * Mostra Entradas, Serviços e Saídas por mês agrupados por trimestre
  */
 export const FaturamentoPorTrimestreChart = ({ dados, trimestre = null, year }) => {
+  const containerRef = useRef(null);
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
   const { isDarkMode } = useTheme();
@@ -271,7 +272,7 @@ export const FaturamentoPorTrimestreChart = ({ dados, trimestre = null, year }) 
   }, [dados, trimestre, year]);
 
   useEffect(() => {
-    if (!chartRef.current) return;
+    if (!chartRef.current || !containerRef.current) return;
 
     if (chartInstance.current) {
       chartInstance.current.destroy();
@@ -354,7 +355,28 @@ export const FaturamentoPorTrimestreChart = ({ dados, trimestre = null, year }) 
       }
     });
 
+    const resizeChart = () => {
+      chartInstance.current?.resize();
+    };
+
+    const rafId = window.requestAnimationFrame(resizeChart);
+    const timeoutId = window.setTimeout(resizeChart, 250);
+
+    let resizeObserver = null;
+    if (typeof window !== 'undefined' && 'ResizeObserver' in window) {
+      resizeObserver = new window.ResizeObserver(() => {
+        resizeChart();
+      });
+      resizeObserver.observe(containerRef.current);
+    }
+
+    window.addEventListener('resize', resizeChart);
+
     return () => {
+      window.cancelAnimationFrame(rafId);
+      window.clearTimeout(timeoutId);
+      window.removeEventListener('resize', resizeChart);
+      resizeObserver?.disconnect();
       if (chartInstance.current) {
         chartInstance.current.destroy();
       }
@@ -362,8 +384,8 @@ export const FaturamentoPorTrimestreChart = ({ dados, trimestre = null, year }) 
   }, [dadosTrimestre, isDarkMode]);
 
   return (
-    <div className="h-[350px]">
-      <canvas ref={chartRef} />
+    <div ref={containerRef} className="relative h-[350px] w-full min-w-0">
+      <canvas ref={chartRef} style={{ width: '100%', height: '100%' }} />
     </div>
   );
 };
@@ -1794,4 +1816,3 @@ export default {
   Tabela380,
   CardsMetricasFiscais
 };
-
