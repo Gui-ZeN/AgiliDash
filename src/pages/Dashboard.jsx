@@ -212,12 +212,15 @@ const Dashboard = () => {
   const tabsDisponiveisBase = useMemo(() => {
     const tabs = ['gerais', 'contabil', 'fiscal', 'pessoal', 'administrativo'];
     return tabs.filter((tab) => {
+      if (tab === 'administrativo') {
+        return isAdmin;
+      }
       if (configVisibilidadeGrupoConsolidado) {
         return configVisibilidadeGrupoConsolidado?.[tab]?.visivel !== false;
       }
       return isSecaoVisivel(cnpjInfo?.id, tab);
     });
-  }, [cnpjInfo?.id, isSecaoVisivel, configVisibilidadeGrupoConsolidado]);
+  }, [cnpjInfo?.id, isSecaoVisivel, configVisibilidadeGrupoConsolidado, isAdmin]);
 
   const dadosContabeisEscopo = useMemo(
     () => cnpjIdsEscopo.map((id) => getDadosContabeis(id)).filter(Boolean),
@@ -1129,10 +1132,8 @@ const Dashboard = () => {
   const temDadosAdministrativo = Boolean(dadosAdministrativoImportados?.totalRegistros > 0);
 
   const tabsDisponiveis = useMemo(() => {
-    return tabsDisponiveisBase.filter(
-      (tab) => tab !== 'administrativo' || (isAdmin && temDadosAdministrativo)
-    );
-  }, [tabsDisponiveisBase, isAdmin, temDadosAdministrativo]);
+    return tabsDisponiveisBase;
+  }, [tabsDisponiveisBase]);
 
   const competenciasFiltroFiscal = useMemo(() => {
     const ano = Number(periodFilter?.year);

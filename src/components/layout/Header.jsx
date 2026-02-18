@@ -80,12 +80,12 @@ const Header = ({ activeTab, onTabChange, showTabs = true, tabsPermitidas = null
   }, [usarVisibilidadeGrupoConsolidado, grupoAtual?.id, getVisibilidadeScopeConfig]);
 
   const tabsVisiveis = tabs.filter((tab) => {
-    if (tab.id === 'administrativo' && !isAdmin) {
-      return false;
+    if (tab.id === 'administrativo') {
+      if (!isAdmin) return false;
+      if (tabsPermitidasSet && !tabsPermitidasSet.has(tab.id)) return false;
+      return true;
     }
-    if (tabsPermitidasSet && !tabsPermitidasSet.has(tab.id)) {
-      return false;
-    }
+    if (tabsPermitidasSet && !tabsPermitidasSet.has(tab.id)) return false;
     if (configVisibilidadeGrupoConsolidado) {
       return configVisibilidadeGrupoConsolidado?.[tab.id]?.visivel !== false;
     }
