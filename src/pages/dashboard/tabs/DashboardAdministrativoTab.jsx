@@ -25,12 +25,46 @@ import { formatCurrency } from '../../../utils/formatters';
 import VisibleItem from '../../../components/common/VisibleItem';
 
 const DashboardAdministrativoTab = ({
-  administrativoData,
+  administrativoData: administrativoDataProp,
   cardAnimation,
   isDarkMode,
   itemVisivel,
+  temDadosAdministrativo = false,
 }) => {
   const isVisible = (itemId) => itemVisivel('administrativo', itemId);
+  const administrativoData = administrativoDataProp || {
+    contratos: { total: 0, vigentes: 0, vencendo30dias: 0 },
+    indicadores: { custoOperacional: 0, ticketMedioVenda: 0, margemOperacional: 0, inadimplencia: 0 },
+    certidoes: [],
+    listaContratos: [],
+    despesasMensais: new Array(12).fill(0),
+    despesasPorCategoria: { labels: [], data: [] },
+  };
+
+  if (!temDadosAdministrativo) {
+    return (
+      <div className="space-y-7 pb-8">
+        <DashboardSectionTitle
+          icon={Briefcase}
+          badge="Setor Administrativo"
+          title="Gestão Administrativa"
+          subtitle="Contratos, despesas e documentos da empresa."
+          tone="amber"
+          className={`transition-all duration-500 ${cardAnimation}`}
+        />
+
+        <div
+          className={`p-4 rounded-xl flex items-center gap-3 ${isDarkMode ? 'bg-amber-900/30 border border-amber-700/50' : 'bg-amber-50 border border-amber-200'}`}
+        >
+          <AlertCircle className={`w-5 h-5 ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`} />
+          <span className={isDarkMode ? 'text-amber-300' : 'text-amber-800'}>
+            Nenhum relatório administrativo importado. Acesse <strong>Configurações</strong> para
+            importar contratos, despesas, patrimônio ou fornecedores.
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-7 pb-8">
@@ -398,8 +432,7 @@ const DashboardAdministrativoTab = ({
               <strong>{administrativoData.contratos.total} contratos</strong> com custo operacional
               mensal de{' '}
               <strong>{formatCurrency(administrativoData.indicadores.custoOperacional)}</strong>.
-              Todas as certidões estão em dia, garantindo a regularidade fiscal e trabalhista da
-              empresa.
+              {administrativoData.certidoes.length > 0 ? ' Consulte periodicamente os documentos e contratos para manter a regularidade da empresa.' : ' Importe relatórios adicionais para ampliar os indicadores administrativos.'}
               {administrativoData.contratos.vencendo30dias > 0 && (
                 <strong className="block mt-2">
                   Atenção: {administrativoData.contratos.vencendo30dias} contrato(s) vencendo nos
@@ -415,3 +448,4 @@ const DashboardAdministrativoTab = ({
 };
 
 export default DashboardAdministrativoTab;
+

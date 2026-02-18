@@ -2,7 +2,6 @@ import {
   AlertCircle,
   Award,
   BarChartBig,
-  BarChartHorizontal,
   CircleDollarSign,
   FileSpreadsheet,
   Receipt,
@@ -24,9 +23,6 @@ import {
   TabelaAcumuladores,
   TabelaFaturamentoPeriodo,
 } from '../../../components/charts/FiscalCharts';
-import FaturamentoChart from '../../../components/charts/FaturamentoChart';
-import FluxoFiscalChart from '../../../components/charts/FluxoFiscalChart';
-import DistribuicaoChart from '../../../components/charts/DistribuicaoChart';
 import { formatCurrency } from '../../../utils/formatters';
 import VisibleItem from '../../../components/common/VisibleItem';
 
@@ -34,7 +30,6 @@ const DashboardFiscalTab = ({
   cardAnimation,
   dadosFiscaisImportados,
   fiscalTrimestre,
-  handleFiscalDataCalculated,
   isDarkMode,
   itemVisivel,
   periodFilter,
@@ -44,7 +39,6 @@ const DashboardFiscalTab = ({
   setFiscalTrimestre,
   temDadosFiscais,
   totalFaturamentoFiltrado,
-  totaisFiscais,
 }) => {
   const isVisible = (itemId) => itemVisivel('fiscal', itemId);
   const resumoAcumuladorAtual = resumoAcumuladorFiltrado || dadosFiscaisImportados?.resumoAcumulador;
@@ -75,7 +69,7 @@ const DashboardFiscalTab = ({
         </div>
       )}
 
-      {/* Cards de métricas - usando dados importados ou mock */}
+      {/* Cards de métricas */}
       <VisibleItem show={isVisible('cards_metricas')}>
         {temDadosFiscais ? (
           <div className={`transition-all duration-500 delay-100 ${cardAnimation}`}>
@@ -104,14 +98,14 @@ const DashboardFiscalTab = ({
                   <p
                     className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
                   >
-                    {formatCurrency(totaisFiscais.irpj)}
+                    -
                   </p>
                 </div>
               </div>
               <div
                 className={`h-1 rounded-full overflow-hidden ${isDarkMode ? 'bg-slate-700' : 'bg-slate-100'}`}
               >
-                <div className="h-full bg-red-500 rounded-full" style={{ width: '70%' }} />
+                <div className="h-full bg-red-500 rounded-full" style={{ width: '0%' }} />
               </div>
             </div>
 
@@ -133,14 +127,14 @@ const DashboardFiscalTab = ({
                   <p
                     className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
                   >
-                    {formatCurrency(totaisFiscais.csll)}
+                    -
                   </p>
                 </div>
               </div>
               <div
                 className={`h-1 rounded-full overflow-hidden ${isDarkMode ? 'bg-slate-700' : 'bg-slate-100'}`}
               >
-                <div className="h-full bg-slate-500 rounded-full" style={{ width: '30%' }} />
+                <div className="h-full bg-slate-500 rounded-full" style={{ width: '0%' }} />
               </div>
             </div>
 
@@ -151,12 +145,10 @@ const DashboardFiscalTab = ({
                 </div>
                 <div>
                   <p className="text-xs font-bold text-white/60 uppercase">Carga Total</p>
-                  <p className="text-2xl font-bold">
-                    {formatCurrency(totaisFiscais.cargaTributariaTotal)}
-                  </p>
+                  <p className="text-2xl font-bold">-</p>
                 </div>
               </div>
-              <p className="text-sm text-white/70">Carga tributária do exercício</p>
+              <p className="text-sm text-white/70">Importe os relatórios fiscais para calcular</p>
             </div>
           </div>
         )}
@@ -264,7 +256,9 @@ const DashboardFiscalTab = ({
                   />
                 ) : (
                   <div className="h-[350px] flex items-center justify-center">
-                    <FaturamentoChart />
+                    <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                      Importe Demonstrativo Mensal para exibir a evolução
+                    </p>
                   </div>
                 )}
               </div>
@@ -363,7 +357,9 @@ const DashboardFiscalTab = ({
                   <CompraVendaChart dados={resumoAcumuladorAtual} />
                 ) : (
                   <div className="h-[300px] flex items-center justify-center">
-                    <DistribuicaoChart onDataCalculated={handleFiscalDataCalculated} />
+                    <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                      Importe Resumo por Acumulador
+                    </p>
                   </div>
                 )}
               </div>
@@ -646,30 +642,6 @@ const DashboardFiscalTab = ({
         </section>
       )}
 
-      {/* Fluxo Fiscal - mantido para compatibilidade */}
-      {!temDadosFiscais && isVisible('faturamento_evolucao') && (
-        <div
-          className={`p-8 rounded-xl shadow-sm transition-all duration-500 delay-500 ${cardAnimation} ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
-        >
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h3 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                Operações Mensais
-              </h3>
-              <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                Entradas vs Saídas por mês
-              </p>
-            </div>
-            <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-slate-700' : 'bg-slate-100'}`}>
-              <BarChartHorizontal
-                className={`w-6 h-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}
-              />
-            </div>
-          </div>
-          <FluxoFiscalChart />
-        </div>
-      )}
-
       {/* Card de análise */}
       <VisibleItem show={isVisible('analise_fiscal')}>
         <div
@@ -692,11 +664,8 @@ const DashboardFiscalTab = ({
                 ) : (
                   <>
                     Para visualizar dados reais, importe os relatórios do Sistema Domínio (Resumo
-                    por Acumulador, Demonstrativo Mensal, Resumo dos Impostos) na área de
-                    Configurações. Volume de entradas superior a <strong>R$ 45 milhões</strong>{' '}
-                    contra saídas de
-                    <strong> R$ 15,6 milhões</strong> sugere formação de estoque ou aquisição
-                    de insumos.
+                    por Acumulador, Demonstrativo Mensal e Resumo dos Impostos) na área de
+                    Configurações para liberar os gráficos e métricas fiscais.
                   </>
                 )}
               </p>

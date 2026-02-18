@@ -27,7 +27,7 @@ import { shouldUseGroupVisibilityInConsolidado } from '../../utils/visibilidadeC
  * Header do Dashboard
  * Contém logo, navegação por tabs, seletor hierárquico (Grupo/Empresa/CNPJ), dark mode e informações do cliente
  */
-const Header = ({ activeTab, onTabChange, showTabs = true }) => {
+const Header = ({ activeTab, onTabChange, showTabs = true, tabsPermitidas = null }) => {
   const navigate = useNavigate();
   const { isDarkMode, toggleTheme } = useTheme();
   const { user, isAdmin, logout } = useAuth();
@@ -64,6 +64,11 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
     { id: 'administrativo', label: 'ADMIN' }
   ];
 
+  const tabsPermitidasSet = useMemo(() => {
+    if (!Array.isArray(tabsPermitidas) || tabsPermitidas.length === 0) return null;
+    return new Set(tabsPermitidas);
+  }, [tabsPermitidas]);
+
   const usarVisibilidadeGrupoConsolidado = shouldUseGroupVisibilityInConsolidado(
     isConsolidado,
     modoVisualizacao
@@ -75,6 +80,9 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
   }, [usarVisibilidadeGrupoConsolidado, grupoAtual?.id, getVisibilidadeScopeConfig]);
 
   const tabsVisiveis = tabs.filter((tab) => {
+    if (tabsPermitidasSet && !tabsPermitidasSet.has(tab.id)) {
+      return false;
+    }
     if (configVisibilidadeGrupoConsolidado) {
       return configVisibilidadeGrupoConsolidado?.[tab.id]?.visivel !== false;
     }
@@ -554,4 +562,3 @@ const Header = ({ activeTab, onTabChange, showTabs = true }) => {
 };
 
 export default Header;
-

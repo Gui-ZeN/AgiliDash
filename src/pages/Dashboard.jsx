@@ -208,7 +208,7 @@ const Dashboard = () => {
     todasEmpresas,
   ]);
 
-  const tabsDisponiveis = useMemo(() => {
+  const tabsDisponiveisBase = useMemo(() => {
     const tabs = ['gerais', 'contabil', 'fiscal', 'pessoal', 'administrativo'];
     return tabs.filter((tab) => {
       if (configVisibilidadeGrupoConsolidado) {
@@ -953,6 +953,185 @@ const Dashboard = () => {
     dadosPessoalImportados?.ferias
   );
 
+  const dadosAdministrativoImportados = useMemo(() => {
+    if (typeof window === 'undefined') return null;
+
+    const cnpjIds = cnpjIdsEscopo?.length ? cnpjIdsEscopo : [cnpjInfo?.id].filter(Boolean);
+    if (!cnpjIds.length) return null;
+
+    const parseNumero = (valor) => {
+      if (typeof valor === 'number' && Number.isFinite(valor)) return valor;
+      if (valor == null) return 0;
+      const texto = String(valor).trim();
+      if (!texto) return 0;
+
+      if (texto.includes(',') && texto.includes('.')) {
+        const normalizado = texto.replace(/\./g, '').replace(',', '.').replace(/[^\d.-]/g, '');
+        const numero = Number(normalizado);
+        return Number.isFinite(numero) ? numero : 0;
+      }
+
+      const normalizado = texto.replace(',', '.').replace(/[^\d.-]/g, '');
+      const numero = Number(normalizado);
+      return Number.isFinite(numero) ? numero : 0;
+    };
+
+    const parseData = (valor) => {
+      if (!valor) return null;
+      if (valor instanceof Date && !Number.isNaN(valor.getTime())) return valor;
+
+      const texto = String(valor).trim();
+      if (!texto) return null;
+
+      const ddmmyyyy = texto.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
+      if (ddmmyyyy) {
+        const dia = Number(ddmmyyyy[1]);
+        const mes = Number(ddmmyyyy[2]) - 1;
+        const ano = Number(ddmmyyyy[3]);
+        const data = new Date(ano, mes, dia);
+        return Number.isNaN(data.getTime()) ? null : data;
+      }
+
+      const data = new Date(texto);
+      return Number.isNaN(data.getTime()) ? null : data;
+    };
+
+    const carregarRelatorio = (relatorioId) =>
+      cnpjIds.flatMap((id) => {
+        const key = `agili_import_administrativo_${relatorioId}_${id}`;
+        try {
+          const parsed = JSON.parse(localStorage.getItem(key) || '[]');
+          return Array.isArray(parsed) ? parsed : [];
+        } catch {
+          return [];
+        }
+      });
+
+    const contratosRaw = carregarRelatorio('contratos');
+    const despesasRaw = carregarRelatorio('despesas');
+    const patrimonioRaw = carregarRelatorio('patrimonio');
+    const fornecedoresRaw = carregarRelatorio('fornecedores');
+
+    const totalRegistros =
+      contratosRaw.length + despesasRaw.length + patrimonioRaw.length + fornecedoresRaw.length;
+    if (!totalRegistros) return null;
+
+    const inicioHoje = new Date();
+    inicioHoje.setHours(0, 0, 0, 0);
+    const limite30dias = new Date(inicioHoje);
+    limite30dias.setDate(limite30dias.getDate() + 30);
+
+    const listaContratos = contratosRaw.map((item = {}, idx) => {
+      const vencimentoDate =
+        parseData(item.dataFim) || parseData(item.vencimento) || parseData(item.data_fim);
+      const status = String(item.status || '').trim() || 'Sem status';
+      return {
+        id: item.id || item.numero || `contrato-${idx + 1}`,
+        fornecedor: item.fornecedor || item.nomeFornecedor || 'Nao informado',
+        tipo: item.tipo || item.objeto || 'Contrato',
+        valor: parseNumero(item.valor),
+        vencimento:
+          item.dataFim ||
+          item.vencimento ||
+          item.data_fim ||
+          (vencimentoDate ? vencimentoDate.toISOString().slice(0, 10) : ''),
+        status,
+      };
+    });
+
+    const contratosVigentes = listaContratos.filter((item) => {
+      const status = String(item.status || '').toLowerCase();
+      if (
+        status.includes('ativo') ||
+        status.includes('vigente') ||
+        status.includes('valido') ||
+        status.includes('válido')
+      ) {
+        return true;
+      }
+      const vencimentoDate = parseData(item.vencimento);
+      return vencimentoDate ? vencimentoDate >= inicioHoje : false;
+    }).length;
+
+    const contratosVencendo30dias = listaContratos.filter((item) => {
+      const vencimentoDate = parseData(item.vencimento);
+      if (!vencimentoDate) return false;
+      return vencimentoDate >= inicioHoje && vencimentoDate <= limite30dias;
+    }).length;
+
+    const despesasNormalizadas = despesasRaw.map((item = {}, idx) => ({
+      id: item.id || `despesa-${idx + 1}`,
+      data: parseData(item.data),
+      categoria: String(item.categoria || 'Outros').trim() || 'Outros',
+      descricao: item.descricao || '',
+      fornecedor: item.fornecedor || '',
+      centroCusto: item.centroCusto || item.centro_custo || '',
+      valor: parseNumero(item.valor),
+    }));
+
+    const despesasMensais = new Array(12).fill(0);
+    const categoriasMap = {};
+    const totalDespesas = despesasNormalizadas.reduce((acc, item) => {
+      const valor = Number(item.valor || 0);
+      const categoria = item.categoria || 'Outros';
+      categoriasMap[categoria] = Number(categoriasMap[categoria] || 0) + valor;
+
+      if (item.data && Number(item.data.getFullYear()) === Number(selectedYear)) {
+        const mes = item.data.getMonth();
+        if (mes >= 0 && mes <= 11) {
+          despesasMensais[mes] += valor;
+        }
+      }
+
+      return acc + valor;
+    }, 0);
+
+    const categoriasOrdenadas = Object.entries(categoriasMap)
+      .sort((a, b) => Number(b[1] || 0) - Number(a[1] || 0))
+      .slice(0, 8);
+
+    const despesasPorCategoria = {
+      labels: categoriasOrdenadas.map(([label]) => label),
+      data: categoriasOrdenadas.map(([, valor]) => Number(valor || 0)),
+    };
+
+    const mesesComDespesa = despesasMensais.filter((valor) => Number(valor) > 0).length;
+    const custoOperacionalMedio = mesesComDespesa
+      ? despesasMensais.reduce((acc, valor) => acc + Number(valor || 0), 0) / mesesComDespesa
+      : 0;
+
+    return {
+      contratos: {
+        total: listaContratos.length,
+        vigentes: contratosVigentes,
+        vencendo30dias: contratosVencendo30dias,
+      },
+      indicadores: {
+        custoOperacional: custoOperacionalMedio,
+        ticketMedioVenda: 0,
+        margemOperacional: 0,
+        inadimplencia: 0,
+      },
+      certidoes: [],
+      listaContratos,
+      despesasMensais,
+      despesasPorCategoria,
+      despesas: despesasNormalizadas,
+      patrimonio: patrimonioRaw,
+      fornecedores: fornecedoresRaw,
+      totalDespesas,
+      totalRegistros,
+    };
+  }, [cnpjIdsEscopo, cnpjInfo?.id, selectedYear]);
+
+  const temDadosAdministrativo = Boolean(dadosAdministrativoImportados?.totalRegistros > 0);
+
+  const tabsDisponiveis = useMemo(() => {
+    return tabsDisponiveisBase.filter(
+      (tab) => tab !== 'administrativo' || temDadosAdministrativo
+    );
+  }, [tabsDisponiveisBase, temDadosAdministrativo]);
+
   const competenciasFiltroFiscal = useMemo(() => {
     const ano = Number(periodFilter?.year);
     if (!ano) return [];
@@ -1212,9 +1391,7 @@ const Dashboard = () => {
   const dreData2024 = cnpjDados.dreData2024;
   const entradasData = cnpjDados.entradasData;
   const saidasData = cnpjDados.saidasData;
-  const totaisFiscais = cnpjDados.totaisFiscais;
   const pessoalData = cnpjDados.pessoalData;
-  const administrativoData = cnpjDados.administrativoData;
 
   // Animação ao trocar de tab ou CNPJ
   useEffect(() => {
@@ -1376,9 +1553,6 @@ const Dashboard = () => {
     };
   }, [analiseHorizontal, selectedYear]);
 
-  // Callback para receber dados do gráfico de distribuição
-  const handleFiscalDataCalculated = () => {};
-
   // Classe de animação
   const cardAnimation = animateCards ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4';
   const tabLoadingFallback = (
@@ -1411,7 +1585,7 @@ const Dashboard = () => {
     <div
       className={`min-h-screen ${isDarkMode ? 'dark bg-slate-900' : 'bg-slate-100'} text-slate-800 dark:text-slate-200`}
     >
-      <Header activeTab={activeTab} onTabChange={setActiveTab} />
+      <Header activeTab={activeTab} onTabChange={setActiveTab} tabsPermitidas={tabsDisponiveis} />
 
       <main className="mx-auto w-full max-w-[1680px] px-4 py-6 lg:px-6 lg:py-8 xl:px-8">
         {/* Toolbar com Breadcrumb, Filtros e Export */}
@@ -1542,7 +1716,6 @@ const Dashboard = () => {
               cardAnimation={cardAnimation}
               dadosFiscaisImportados={dadosFiscaisImportados}
               fiscalTrimestre={fiscalTrimestre}
-              handleFiscalDataCalculated={handleFiscalDataCalculated}
               isDarkMode={isDarkMode}
               itemVisivel={itemVisivel}
               periodFilter={periodFilter}
@@ -1552,7 +1725,6 @@ const Dashboard = () => {
               setFiscalTrimestre={setFiscalTrimestre}
               temDadosFiscais={temDadosFiscais}
               totalFaturamentoFiltrado={totalFaturamentoFiltrado}
-              totaisFiscais={totaisFiscais}
             />
           </Suspense>
         )}
@@ -1575,10 +1747,11 @@ const Dashboard = () => {
         {activeTab === 'administrativo' && (
           <Suspense fallback={tabLoadingFallback}>
             <DashboardAdministrativoTab
-              administrativoData={administrativoData}
+              administrativoData={dadosAdministrativoImportados}
               cardAnimation={cardAnimation}
               isDarkMode={isDarkMode}
               itemVisivel={itemVisivel}
+              temDadosAdministrativo={temDadosAdministrativo}
             />
           </Suspense>
         )}
