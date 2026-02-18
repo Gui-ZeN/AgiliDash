@@ -3,14 +3,13 @@ import { Eye, EyeOff, Layers } from 'lucide-react';
 import Header from '../components/layout/Header';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
-import { formatCurrency, sumArray } from '../utils/formatters';
+import { formatCurrency } from '../utils/formatters';
 import { useEmpresa } from '../context/EmpresaContext';
 import { useTheme } from '../context/ThemeContext';
 import Breadcrumb from '../components/ui/Breadcrumb';
 import PeriodFilter from '../components/ui/PeriodFilter';
 import ExportButton from '../components/ui/ExportButton';
 import CnpjFilter from '../components/ui/CnpjFilter';
-import { equipeTecnica, meses } from '../data/mockData';
 import { shouldUseGroupVisibilityInConsolidado } from '../utils/visibilidadeConfig';
 
 const DashboardGeraisTab = lazy(() => import('./dashboard/tabs/DashboardGeraisTab'));
@@ -111,6 +110,8 @@ const somarArrayNumerico = (arrays, tamanho = 12) => {
   });
   return base;
 };
+
+const MESES_LABELS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
 /**
  * Dashboard Principal - Design Aprimorado
@@ -256,6 +257,7 @@ const Dashboard = () => {
   const responsavelWhatsappLink = responsavelInfo.whatsapp
     ? `https://wa.me/55${responsavelInfo.whatsapp.replace(/\D/g, '')}`
     : '#';
+  const equipeTecnicaData = Array.isArray(cnpjInfo?.equipeTecnica) ? cnpjInfo.equipeTecnica : [];
 
   const visibilidadeMeta = useMemo(
     () => getVisibilidadeMeta(cnpjInfo?.id),
@@ -1128,9 +1130,9 @@ const Dashboard = () => {
 
   const tabsDisponiveis = useMemo(() => {
     return tabsDisponiveisBase.filter(
-      (tab) => tab !== 'administrativo' || temDadosAdministrativo
+      (tab) => tab !== 'administrativo' || (isAdmin && temDadosAdministrativo)
     );
-  }, [tabsDisponiveisBase, temDadosAdministrativo]);
+  }, [tabsDisponiveisBase, isAdmin, temDadosAdministrativo]);
 
   const competenciasFiltroFiscal = useMemo(() => {
     const ano = Number(periodFilter?.year);
@@ -1387,10 +1389,6 @@ const Dashboard = () => {
   }, [dadosFiscaisImportados?.resumoImpostos, competenciasFiltroFiscal]);
 
   // Dados do CNPJ selecionado
-  const dreData = selectedYear === 2025 ? cnpjDados.dreData2025 : cnpjDados.dreData2024;
-  const dreData2024 = cnpjDados.dreData2024;
-  const entradasData = cnpjDados.entradasData;
-  const saidasData = cnpjDados.saidasData;
   const pessoalData = cnpjDados.pessoalData;
 
   // Animação ao trocar de tab ou CNPJ
@@ -1417,21 +1415,23 @@ const Dashboard = () => {
   // Se em modo consolidado, usa totaisConsolidados; senão, prioriza dados importados (Análise Horizontal)
   const analiseHorizontal = dadosContabeisImportados?.analiseHorizontal;
 
-  const totalReceita =
-    isConsolidado && totaisConsolidados
+  const totalReceita = !temDadosContabeis
+    ? 0
+    : isConsolidado && totaisConsolidados
       ? totaisConsolidados.receita
       : analiseHorizontal?.totais?.totalReceitas ||
         (analiseHorizontal?.receitasMensais
           ? analiseHorizontal.receitasMensais.reduce((a, b) => a + b, 0)
-          : sumArray(dreData.receita));
+          : 0);
 
-  const totalDespesa =
-    isConsolidado && totaisConsolidados
+  const totalDespesa = !temDadosContabeis
+    ? 0
+    : isConsolidado && totaisConsolidados
       ? totaisConsolidados.despesa
       : analiseHorizontal?.totais?.totalDespesas ||
         (analiseHorizontal?.despesasMensais
           ? analiseHorizontal.despesasMensais.reduce((a, b) => a + b, 0)
-          : sumArray(dreData.despesa));
+          : 0);
 
   const totalLucro =
     isConsolidado && totaisConsolidados ? totaisConsolidados.lucro : totalReceita - totalDespesa;
@@ -1446,10 +1446,7 @@ const Dashboard = () => {
   const qtdCnpjsConsolidado = isConsolidado && totaisConsolidados ? totaisConsolidados.qtdCnpjs : 1;
 
   // Comparação com ano anterior
-  const totalReceita2024 = sumArray(dreData2024.receita);
-  const variacaoReceita = isConsolidado
-    ? 0
-    : (((totalReceita - totalReceita2024) / totalReceita2024) * 100).toFixed(1);
+  const variacaoReceita = '0.0';
 
   // Dados combinados para gráfico Receita x Custo x Estoque
   // Custo vem do CMV/CPV da DRE Horizontal, Estoque vem do Balancete
@@ -1561,11 +1558,19 @@ const Dashboard = () => {
     </div>
   );
 
-  // Dados para sparklines (mock - últimos 12 meses)
-  const receitaSparkline = cnpjDados?.dreData2025?.receita || [0];
-  const lucroSparkline = cnpjDados?.dreData2025?.receita?.map(
-    (r, i) => r - (cnpjDados?.dreData2025?.despesa?.[i] || 0)
-  ) || [0];
+  // Dados para sparklines (somente importados)
+  const receitaSparkline =
+    temDadosContabeis && Array.isArray(analiseHorizontal?.receitasMensais)
+      ? analiseHorizontal.receitasMensais
+      : [0];
+  const lucroSparkline =
+    temDadosContabeis &&
+    Array.isArray(analiseHorizontal?.receitasMensais) &&
+    Array.isArray(analiseHorizontal?.despesasMensais)
+      ? analiseHorizontal.receitasMensais.map(
+          (r, i) => Number(r || 0) - Number(analiseHorizontal?.despesasMensais?.[i] || 0)
+        )
+      : [0];
 
   // Dados para exportação
   const exportColumns = [
@@ -1574,11 +1579,13 @@ const Dashboard = () => {
     { key: 'despesa', label: 'Despesa' },
     { key: 'lucro', label: 'Lucro' },
   ];
-  const exportData = meses.map((mes, i) => ({
+  const exportData = MESES_LABELS.map((mes, i) => ({
     mes,
-    receita: dreData?.receita?.[i] || 0,
-    despesa: dreData?.despesa?.[i] || 0,
-    lucro: (dreData?.receita?.[i] || 0) - (dreData?.despesa?.[i] || 0),
+    receita: analiseHorizontal?.receitasMensais?.[i] || 0,
+    despesa: analiseHorizontal?.despesasMensais?.[i] || 0,
+    lucro:
+      Number(analiseHorizontal?.receitasMensais?.[i] || 0) -
+      Number(analiseHorizontal?.despesasMensais?.[i] || 0),
   }));
 
   return (
@@ -1668,7 +1675,7 @@ const Dashboard = () => {
             <DashboardGeraisTab
               cardAnimation={cardAnimation}
               cnpjInfo={cnpjInfo}
-              equipeTecnica={equipeTecnica}
+              equipeTecnica={equipeTecnicaData}
               isDarkMode={isDarkMode}
               itemVisivel={itemVisivel}
               margemLucro={margemLucro}
@@ -1691,20 +1698,15 @@ const Dashboard = () => {
               dadosComparativoLucro={dadosComparativoLucro}
               dadosContabeisImportados={dadosContabeisImportados}
               dadosReceitaCustoEstoque={dadosReceitaCustoEstoque}
-              dreData={dreData}
-              entradasData={entradasData}
               isDarkMode={isDarkMode}
               itemVisivel={itemVisivel}
               margemLucro={margemLucro}
-              meses={meses}
-              saidasData={saidasData}
               selectedYear={selectedYear}
               setSelectedYear={setSelectedYear}
               temDadosContabeis={temDadosContabeis}
               totalDespesa={totalDespesa}
               totalLucro={totalLucro}
               totalReceita={totalReceita}
-              variacaoReceita={variacaoReceita}
             />
           </Suspense>
         )}
@@ -1744,7 +1746,7 @@ const Dashboard = () => {
         )}
 
         {/* ===== TAB: ADMINISTRATIVO ===== */}
-        {activeTab === 'administrativo' && (
+        {isAdmin && activeTab === 'administrativo' && (
           <Suspense fallback={tabLoadingFallback}>
             <DashboardAdministrativoTab
               administrativoData={dadosAdministrativoImportados}

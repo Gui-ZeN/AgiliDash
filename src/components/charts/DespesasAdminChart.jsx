@@ -9,10 +9,11 @@ import {
   Tooltip,
   Legend
 } from 'chart.js';
-import { meses } from '../../data/mockData';
 import { formatCurrency } from '../../utils/formatters';
 import { useTheme } from '../../context/ThemeContext';
 import { getChartColors, getChartOptions, getPieChartOptions } from '../../utils/chartTheme';
+
+const MESES_LABELS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
 ChartJS.register(
   CategoryScale,
@@ -32,7 +33,7 @@ export const DespesasMensaisChart = ({ despesasMensais }) => {
   const colors = getChartColors(isDarkMode);
 
   const data = {
-    labels: meses,
+    labels: MESES_LABELS,
     datasets: [
       {
         label: 'Despesas Administrativas',

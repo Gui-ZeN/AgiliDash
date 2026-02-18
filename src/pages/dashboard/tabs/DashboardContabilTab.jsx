@@ -14,9 +14,6 @@ import {
 } from 'lucide-react';
 import { ButtonGroup } from '../../../components/common/Button';
 import DashboardSectionTitle from '../../../components/ui/DashboardSectionTitle';
-import DREChart from '../../../components/charts/DREChart';
-import MovimentacaoChart from '../../../components/charts/MovimentacaoChart';
-import LucroComparativoChart from '../../../components/charts/LucroComparativoChart';
 import {
   AplicacoesFinanceirasChart,
   CardsMetricasContabil,
@@ -34,20 +31,15 @@ const DashboardContabilTab = ({
   dadosComparativoLucro,
   dadosContabeisImportados,
   dadosReceitaCustoEstoque,
-  dreData,
-  entradasData,
   isDarkMode,
   itemVisivel,
   margemLucro,
-  meses,
-  saidasData,
   selectedYear,
   setSelectedYear,
   temDadosContabeis,
   totalDespesa,
   totalLucro,
   totalReceita,
-  variacaoReceita,
 }) => {
   const isVisible = (itemId) => itemVisivel('contabil', itemId);
 
@@ -90,10 +82,10 @@ const DashboardContabilTab = ({
               <div className="flex items-center justify-between mb-4">
                 <TrendingUp className="w-8 h-8 opacity-80" />
                 <span className="text-xs font-bold bg-white/20 px-3 py-1 rounded-full">
-                  +{variacaoReceita}%
+                  -
                 </span>
               </div>
-              <p className="text-3xl font-bold">{formatCurrency(totalReceita)}</p>
+              <p className="text-3xl font-bold">-</p>
               <p className="text-white/70 text-sm mt-1">Receita Total {selectedYear}</p>
             </div>
 
@@ -101,7 +93,7 @@ const DashboardContabilTab = ({
               <div className="flex items-center justify-between mb-4">
                 <TrendingDown className="w-8 h-8 opacity-80" />
               </div>
-              <p className="text-3xl font-bold">{formatCurrency(totalDespesa)}</p>
+              <p className="text-3xl font-bold">-</p>
               <p className="text-white/70 text-sm mt-1">Despesas Total {selectedYear}</p>
             </div>
 
@@ -109,7 +101,7 @@ const DashboardContabilTab = ({
               <div className="flex items-center justify-between mb-4">
                 <Coins className="w-8 h-8 opacity-80" />
               </div>
-              <p className="text-3xl font-bold">{formatCurrency(totalLucro)}</p>
+              <p className="text-3xl font-bold">-</p>
               <p className="text-white/70 text-sm mt-1">Lucro Líquido</p>
             </div>
 
@@ -117,7 +109,7 @@ const DashboardContabilTab = ({
               <div className="flex items-center justify-between mb-4">
                 <Activity className="w-8 h-8 opacity-80" />
               </div>
-              <p className="text-3xl font-bold">{margemLucro}%</p>
+              <p className="text-3xl font-bold">-</p>
               <p className="text-white/70 text-sm mt-1">Margem de Lucro</p>
             </div>
           </div>
@@ -172,7 +164,11 @@ const DashboardContabilTab = ({
                     dados={dadosContabeisImportados?.analiseHorizontal}
                   />
                 ) : (
-                  <DREChart data={dreData} />
+                  <div className="h-[280px] md:h-[320px] flex items-center justify-center">
+                    <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                      Importe Análise Horizontal para visualizar
+                    </p>
+                  </div>
                 )}
               </div>
             </VisibleItem>
@@ -205,7 +201,7 @@ const DashboardContabilTab = ({
                     <p
                       className={`text-2xl font-bold ${isDarkMode ? 'text-green-300' : 'text-green-700'}`}
                     >
-                      {formatCurrency(totalReceita)}
+                      {temDadosContabeis ? formatCurrency(totalReceita) : '-'}
                     </p>
                   </div>
 
@@ -223,7 +219,7 @@ const DashboardContabilTab = ({
                     <p
                       className={`text-2xl font-bold ${isDarkMode ? 'text-red-300' : 'text-red-600'}`}
                     >
-                      {formatCurrency(totalDespesa)}
+                      {temDadosContabeis ? formatCurrency(totalDespesa) : '-'}
                     </p>
                   </div>
 
@@ -243,12 +239,12 @@ const DashboardContabilTab = ({
                     <p
                       className={`text-2xl font-bold ${isDarkMode ? 'text-slate-300' : 'text-[#0e4f6d]'}`}
                     >
-                      {formatCurrency(totalLucro)}
+                      {temDadosContabeis ? formatCurrency(totalLucro) : '-'}
                     </p>
                     <p
                       className={`text-xs mt-2 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}
                     >
-                      Margem: {margemLucro}%
+                      Margem: {temDadosContabeis ? `${margemLucro}%` : '-'}
                     </p>
                   </div>
                 </div>
@@ -274,64 +270,10 @@ const DashboardContabilTab = ({
           {temDadosContabeis ? (
             <TabelaComparativoMensal dados={dadosContabeisImportados?.analiseHorizontal} />
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className={isDarkMode ? 'bg-slate-700/50' : 'bg-slate-50'}>
-                  <tr>
-                    <th
-                      className={`px-6 py-4 text-left text-xs font-bold uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
-                    >
-                      Mês
-                    </th>
-                    <th
-                      className={`px-6 py-4 text-right text-xs font-bold uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
-                    >
-                      Entradas
-                    </th>
-                    <th
-                      className={`px-6 py-4 text-right text-xs font-bold uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
-                    >
-                      Saídas/Custos
-                    </th>
-                    <th
-                      className={`px-6 py-4 text-right text-xs font-bold uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
-                    >
-                      Saldo
-                    </th>
-                  </tr>
-                </thead>
-                <tbody
-                  className={`divide-y ${isDarkMode ? 'divide-slate-700' : 'divide-slate-100'}`}
-                >
-                  {meses.map((mes, i) => (
-                    <tr
-                      key={mes}
-                      className={`transition-colors ${isDarkMode ? 'hover:bg-slate-700/30' : 'hover:bg-slate-50'}`}
-                    >
-                      <td
-                        className={`px-6 py-4 font-semibold ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}
-                      >
-                        {mes}/2025
-                      </td>
-                      <td
-                        className={`px-6 py-4 text-right ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}
-                      >
-                        {formatCurrency(entradasData[i])}
-                      </td>
-                      <td
-                        className={`px-6 py-4 text-right ${isDarkMode ? 'text-red-400' : 'text-red-500'}`}
-                      >
-                        {formatCurrency(saidasData[i])}
-                      </td>
-                      <td
-                        className={`px-6 py-4 text-right font-bold ${isDarkMode ? 'text-teal-500' : 'text-[#0e4f6d]'}`}
-                      >
-                        {formatCurrency(entradasData[i] - saidasData[i])}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="h-[220px] flex items-center justify-center">
+              <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                Importe relatórios contábeis para visualizar a tabela
+              </p>
             </div>
           )}
         </div>
@@ -374,7 +316,11 @@ const DashboardContabilTab = ({
               dadosAnterior={dadosComparativoLucro.dadosAnterior}
             />
           ) : (
-            <LucroComparativoChart />
+            <div className="h-[260px] flex items-center justify-center">
+              <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                Importe Análise Horizontal para visualizar
+              </p>
+            </div>
           )}
         </div>
       </VisibleItem>
@@ -430,7 +376,11 @@ const DashboardContabilTab = ({
                 {temDadosContabeis ? (
                   <ReceitaCustoEstoqueChart dados={dadosReceitaCustoEstoque} />
                 ) : (
-                  <MovimentacaoChart />
+                  <div className="h-[280px] md:h-[320px] flex items-center justify-center">
+                    <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                      Importe Balancetes e DRE para visualizar
+                    </p>
+                  </div>
                 )}
               </div>
             </VisibleItem>
@@ -528,10 +478,7 @@ const DashboardContabilTab = ({
                   </>
                 ) : (
                   <>
-                    O exercício de 2025 demonstra crescimento de receita com estabilidade nos
-                    primeiros trimestres. Para visualizar dados reais, importe os relatórios do
-                    Sistema Domínio (Balancete, Análise Horizontal, DRE) na área de
-                    Configurações.
+                    Para visualizar dados reais, importe os relatórios do Sistema Domínio (Balancete, Análise Horizontal e DRE) na área de Configurações.
                   </>
                 )}
               </p>
@@ -544,3 +491,4 @@ const DashboardContabilTab = ({
 };
 
 export default DashboardContabilTab;
+

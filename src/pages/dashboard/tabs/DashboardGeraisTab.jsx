@@ -236,41 +236,49 @@ const DashboardGeraisTab = ({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {equipeTecnica.map((membro, index) => {
-              const Icon = iconMap[membro.icon];
-              const colors = [
-                { bg: 'bg-teal-700', light: 'bg-slate-50' },
-                { bg: 'bg-slate-700', light: 'bg-blue-50' },
-                { bg: 'bg-teal-600', light: 'bg-teal-50' },
-              ];
-              const color = colors[index % colors.length];
+            {equipeTecnica.length > 0 ? (
+              equipeTecnica.map((membro, index) => {
+                const Icon = iconMap[membro.icon];
+                const colors = [
+                  { bg: 'bg-teal-700', light: 'bg-slate-50' },
+                  { bg: 'bg-slate-700', light: 'bg-blue-50' },
+                  { bg: 'bg-teal-600', light: 'bg-teal-50' },
+                ];
+                const color = colors[index % colors.length];
 
-              return (
-                <div
-                  key={membro.id}
-                  className="group bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className={`p-4 rounded-xl ${color.bg} shadow-md`}>
-                      <Icon className="w-6 h-6 text-white" />
+                return (
+                  <div
+                    key={membro.id}
+                    className="group bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className={`p-4 rounded-xl ${color.bg} shadow-md`}>
+                        <Icon className="w-6 h-6 text-white" />
+                      </div>
+                      <div className="w-2 h-2 bg-green-400 rounded-full" />
                     </div>
-                    <div className="w-2 h-2 bg-green-400 rounded-full" />
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
+                      {membro.setor}
+                    </p>
+                    <h4 className="text-xl font-bold text-slate-800 dark:text-white mb-3">
+                      {membro.nome}
+                    </h4>
+                    <div className="flex items-center gap-2 text-sm text-slate-400">
+                      <Mail className="w-4 h-4" />
+                      <span className="truncate">
+                        {membro.nome.toLowerCase().split(' ')[0]}@agili.com.br
+                      </span>
+                    </div>
                   </div>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
-                    {membro.setor}
-                  </p>
-                  <h4 className="text-xl font-bold text-slate-800 dark:text-white mb-3">
-                    {membro.nome}
-                  </h4>
-                  <div className="flex items-center gap-2 text-sm text-slate-400">
-                    <Mail className="w-4 h-4" />
-                    <span className="truncate">
-                      {membro.nome.toLowerCase().split(' ')[0]}@agili.com.br
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })
+            ) : (
+              <div className="md:col-span-3 p-8 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-center">
+                <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                  Sem equipe tÃ©cnica cadastrada para este cliente.
+                </p>
+              </div>
+            )}
           </div>
         </section>
       </VisibleItem>
