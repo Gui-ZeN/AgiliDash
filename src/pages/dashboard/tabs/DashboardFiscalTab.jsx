@@ -258,7 +258,7 @@ const DashboardFiscalTab = ({
                 </div>
                 {temDadosFiscais && dadosFiscaisImportados?.demonstrativoMensal ? (
                   <FaturamentoPorTrimestreChart
-                    dados={dadosFiscaisImportados.demonstrativoMensal}
+                    dados={dadosFiscaisImportados?.demonstrativoMensal}
                     trimestre={fiscalTrimestre}
                     year={periodFilter?.year}
                   />
