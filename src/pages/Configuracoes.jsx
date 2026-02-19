@@ -1315,7 +1315,13 @@ const Configuracoes = () => {
   };
 
   return (
-    <div className={`min-h-screen ${isDarkMode ? 'dark bg-slate-900' : 'bg-slate-50'}`}>
+    <div
+      className={`min-h-screen ${
+        isDarkMode
+          ? 'dark bg-slate-900 dark:[&_.text-slate-500]:text-slate-300 dark:[&_.text-slate-400]:text-slate-300'
+          : 'bg-slate-50'
+      }`}
+    >
       {/* Header */}
       <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-40">
         <div className="w-full px-4 lg:px-6 h-16 flex items-center justify-between">
