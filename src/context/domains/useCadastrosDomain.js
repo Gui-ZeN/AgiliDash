@@ -8,8 +8,8 @@ const initialGrupos = [
     status: 'Ativo',
     criadoEm: '2024-01-15',
     responsavelPadrao: {
-      nome: 'Responsavel Grupo',
-      cargo: 'Socio-Administrador',
+      nome: 'Responsável Grupo',
+      cargo: 'Sócio-Administrador',
       whatsapp: '(85) 99999-0000',
     },
   },
@@ -20,14 +20,14 @@ const initialCnpjs = [
     id: 'cnpj_001',
     grupoId: 'grupo_001',
     cnpj: '12.345.678/0001-90',
-    razaoSocial: 'EJP Comercio e Servicos Ltda',
+    razaoSocial: 'EJP Comércio e Serviços Ltda',
     nomeFantasia: 'EJP Matriz',
     tipo: 'Matriz',
     regimeTributario: 'Lucro Real',
-    cidade: 'Sao Paulo',
+    cidade: 'São Paulo',
     estado: 'SP',
     responsavel: {
-      nome: 'Responsavel CNPJ',
+      nome: 'Responsável CNPJ',
       cargo: 'Diretor',
       whatsapp: '(85) 99999-0001',
     },
@@ -49,7 +49,7 @@ const initialUsuarios = [
 ];
 
 const setoresDisponiveis = [
-  { id: 'contabil', nome: 'Contabil', descricao: 'Acesso ao setor contabil' },
+  { id: 'contabil', nome: 'Contábil', descricao: 'Acesso ao setor contábil' },
   { id: 'fiscal', nome: 'Fiscal', descricao: 'Acesso ao setor fiscal' },
   { id: 'pessoal', nome: 'Pessoal', descricao: 'Acesso ao setor de pessoal/RH' },
   { id: 'administrativo', nome: 'Administrativo', descricao: 'Acesso ao setor administrativo' },

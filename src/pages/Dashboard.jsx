@@ -240,7 +240,7 @@ const Dashboard = () => {
   const dadosPessoalSelecionado = getDadosPessoal(cnpjInfo?.id);
 
   const responsavelInfo = useMemo(() => {
-    const responsavelVazio = { nome: 'Nao informado', cargo: 'Nao informado', whatsapp: '' };
+    const responsavelVazio = { nome: 'Não informado', cargo: 'Não informado', whatsapp: '' };
     const cnpjAdmin = cnpjsAdmin.find((c) => c.id === cnpjInfo?.id);
     const grupoAdmin = gruposAdmin.find((g) => g.id === (cnpjAdmin?.grupoId || grupoAtual?.id));
     const candidato = [
@@ -1032,7 +1032,7 @@ const Dashboard = () => {
       const status = String(item.status || '').trim() || 'Sem status';
       return {
         id: item.id || item.numero || `contrato-${idx + 1}`,
-        fornecedor: item.fornecedor || item.nomeFornecedor || 'Nao informado',
+        fornecedor: item.fornecedor || item.nomeFornecedor || 'Não informado',
         tipo: item.tipo || item.objeto || 'Contrato',
         valor: parseNumero(item.valor),
         vencimento:
@@ -1663,7 +1663,7 @@ const Dashboard = () => {
               </p>
               {isAdmin && !isVisibilidadeAplicada && (
                 <p className="text-xs">
-                  Preview cliente inativo: a visibilidade nao esta sendo aplicada agora.
+                  Preview cliente inativo: a visibilidade não está sendo aplicada agora.
                 </p>
               )}
             </div>

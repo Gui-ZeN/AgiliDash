@@ -64,36 +64,36 @@ import {
 } from '../utils/visibilidadeConfig';
 import VisibilidadeTab from './configuracoes/VisibilidadeTab';
 
-// Definicao dos setores e seus relatorios
+// Definição dos setores e seus relatórios
 const SETORES_CONFIG = {
   contabil: {
     id: 'contabil',
-    nome: 'Contabil',
+    nome: 'Contábil',
     icon: Calculator,
     cor: 'emerald',
     relatorios: [
       {
         id: 'balancete',
         nome: 'Balancete Mensal',
-        descricao: 'Exportar do Dominio: Relatorios > Contabil > Balancete',
+        descricao: 'Exportar do Domínio: Relatórios > Contábil > Balancete',
         formato: 'dominio',
       },
       {
         id: 'analiseHorizontal',
-        nome: 'Analise Horizontal (DRE)',
-        descricao: 'Exportar do Dominio: Relatorios > Contabil > Analise Horizontal do DRE',
+        nome: 'Análise Horizontal (DRE)',
+        descricao: 'Exportar do Domínio: Relatórios > Contábil > Análise Horizontal do DRE',
         formato: 'dominio',
       },
       {
         id: 'dreComparativa',
         nome: 'DRE Comparativa',
-        descricao: 'Exportar do Dominio: Relatorios > Contabil > DRE Comparativa (Anual)',
+        descricao: 'Exportar do Domínio: Relatórios > Contábil > DRE Comparativa (Anual)',
         formato: 'dominio',
       },
       {
         id: 'dreMensal',
         nome: 'DRE Mensal',
-        descricao: 'Exportar do Dominio: Relatorios > Contabil > DRE do Periodo',
+        descricao: 'Exportar do Domínio: Relatórios > Contábil > DRE do Período',
         formato: 'dominio',
       },
     ],
@@ -106,42 +106,42 @@ const SETORES_CONFIG = {
     relatorios: [
       {
         id: 'csll',
-        nome: 'Contribuicao Social (CSLL)',
+        nome: 'Contribuição Social (CSLL)',
         descricao:
-          'Exportar do Dominio: Relatorios > Fiscal > Livro de Apuracao do Lucro Real > Contribuicao Social (trimestral)',
+          'Exportar do Domínio: Relatórios > Fiscal > Livro de Apuração do Lucro Real > Contribuição Social (trimestral)',
         formato: 'dominio',
       },
       {
         id: 'irpj',
         nome: 'Imposto de Renda (IRPJ)',
         descricao:
-          'Exportar do Dominio: Relatorios > Fiscal > Livro de Apuracao do Lucro Real > Imposto de Renda (trimestral)',
+          'Exportar do Domínio: Relatórios > Fiscal > Livro de Apuração do Lucro Real > Imposto de Renda (trimestral)',
         formato: 'dominio',
       },
       {
         id: 'faturamento',
         nome: 'Demonstrativo Financeiro',
         descricao:
-          'Exportar do Dominio: Relatorios > Fiscal > Faturamento > Demonstrativo Financeiro',
+          'Exportar do Domínio: Relatórios > Fiscal > Faturamento > Demonstrativo Financeiro',
         formato: 'dominio',
       },
       {
         id: 'demonstrativoMensal',
         nome: 'Demonstrativo Mensal',
         descricao:
-          'Exportar do Dominio: Relatorios > Fiscal > Demonstrativo Mensal de Entradas e Saidas',
+          'Exportar do Domínio: Relatórios > Fiscal > Demonstrativo Mensal de Entradas e Saídas',
         formato: 'dominio',
       },
       {
         id: 'resumoImpostos',
         nome: 'Resumo dos Impostos',
-        descricao: 'Exportar do Dominio: Relatorios > Fiscal > Resumo dos Impostos por Periodo',
+        descricao: 'Exportar do Domínio: Relatórios > Fiscal > Resumo dos Impostos por Período',
         formato: 'dominio',
       },
       {
         id: 'resumoAcumulador',
         nome: 'Resumo por Acumulador',
-        descricao: 'Exportar do Dominio: Relatorios > Fiscal > Resumo por Acumulador',
+        descricao: 'Exportar do Domínio: Relatórios > Fiscal > Resumo por Acumulador',
         formato: 'dominio',
       },
     ],
@@ -156,25 +156,25 @@ const SETORES_CONFIG = {
         id: 'fgts',
         nome: 'Demonstrativo FGTS',
         descricao:
-          'Exportar do Dominio: Relatorios > Pessoal > Demonstrativo FGTS Folha e e-Social',
+          'Exportar do Domínio: Relatórios > Pessoal > Demonstrativo FGTS Folha e e-Social',
         formato: 'dominio',
       },
       {
         id: 'inss',
         nome: 'Folha de INSS',
-        descricao: 'Exportar do Dominio: Relatorios > Pessoal > Folha de INSS',
+        descricao: 'Exportar do Domínio: Relatórios > Pessoal > Folha de INSS',
         formato: 'dominio',
       },
       {
         id: 'empregados',
-        nome: 'Relacao de Empregados',
-        descricao: 'Exportar do Dominio: Relatorios > Pessoal > Relacao de Empregados',
+        nome: 'Relação de Empregados',
+        descricao: 'Exportar do Domínio: Relatórios > Pessoal > Relação de Empregados',
         formato: 'dominio',
       },
       {
         id: 'ferias',
-        nome: 'Programacao de Ferias',
-        descricao: 'Exportar do Dominio: Relatorios > Pessoal > Programacao de Ferias',
+        nome: 'Programação de Férias',
+        descricao: 'Exportar do Domínio: Relatórios > Pessoal > Programação de Férias',
         formato: 'dominio',
       },
     ],
@@ -197,7 +197,7 @@ const SETORES_CONFIG = {
       },
       {
         id: 'patrimonio',
-        nome: 'Patrimonio/Ativos',
+        nome: 'Patrimônio/Ativos',
         campos: [
           'codigo',
           'descricao',
@@ -259,7 +259,7 @@ const Configuracoes = () => {
   const [modalUsuario, setModalUsuario] = useState({ open: false, mode: 'add', data: null });
   const [modalDelete, setModalDelete] = useState({ open: false, type: null, item: null });
 
-  // Estados de formularios
+  // Estados de formulários
   const [formGrupo, setFormGrupo] = useState({
     nome: '',
     descricao: '',
@@ -289,9 +289,9 @@ const Configuracoes = () => {
     setoresAcesso: [],
   });
 
-  // Estados de importacao
+  // Estados de importação
   const fileInputRef = useRef(null);
-  const [importStep, setImportStep] = useState(1); // 1: Selecao, 2: Upload, 3: Preview, 4: Confirmacao
+  const [importStep, setImportStep] = useState(1); // 1: Seleção, 2: Upload, 3: Preview, 4: Confirmação
   const [importCategory, setImportCategory] = useState('cadastros'); // 'cadastros' ou 'setores'
   const [importType, setImportType] = useState('grupos');
   const [importSetor, setImportSetor] = useState(null);
@@ -300,14 +300,14 @@ const Configuracoes = () => {
   const [, setImportMapping] = useState({});
   const [selectedCnpjImport, setSelectedCnpjImport] = useState('');
   const [selectedTrimestre, setSelectedTrimestre] = useState('1'); // Para CSLL/IRPJ
-  const [importBatchFiles, setImportBatchFiles] = useState([]); // Para importAção em lote
+  const [importBatchFiles, setImportBatchFiles] = useState([]); // Para importação em lote
   const [, setImportBatchProgress] = useState({
     current: 0,
     total: 0,
     processing: false,
   });
 
-  // Configuracao de visibilidade de dashboards
+  // Configuração de visibilidade de dashboards
   const [visibilidadeEscopo, setVisibilidadeEscopo] = useState('cnpj');
   const [selectedGrupoVisibilidade, setSelectedGrupoVisibilidade] = useState('');
   const [selectedCnpjVisibilidade, setSelectedCnpjVisibilidade] = useState('');
@@ -317,45 +317,45 @@ const Configuracoes = () => {
   // Estrutura de dashboards disponíveis
   const DASHBOARD_SECTIONS = {
     gerais: {
-      nome: 'Informacoes Gerais',
-      descricao: 'Dados cadastrais e equipe tecnica',
+      nome: 'Informações Gerais',
+      descricao: 'Dados cadastrais e equipe técnica',
       itens: [
         {
           id: 'header_empresa',
           nome: 'Header da Empresa',
-          descricao: 'Informacoes basicas da empresa',
+          descricao: 'Informações básicas da empresa',
         },
         {
           id: 'cards_resumo',
           nome: 'Cards de Resumo',
           descricao: 'Receita, Lucro, Margem, Meses Analisados',
         },
-        { id: 'responsavel', nome: 'Responsavel', descricao: 'Card do responsavel com WhatsApp' },
+        { id: 'responsavel', nome: 'Responsável', descricao: 'Card do responsável com WhatsApp' },
         {
           id: 'equipe_tecnica',
-          nome: 'Equipe Tecnica',
-          descricao: 'Cards da equipe contabil, fiscal, etc.',
+          nome: 'Equipe Técnica',
+          descricao: 'Cards da equipe contábil, fiscal, etc.',
         },
         {
           id: 'analise_geral',
           nome: 'Resumo Geral',
-          descricao: 'Card final de suporte e orientacao',
+          descricao: 'Card final de suporte e orientação',
         },
       ],
     },
     contabil: {
-      nome: 'Setor Contabil',
-      descricao: 'Graficos e indicadores contabeis',
+      nome: 'Setor Contábil',
+      descricao: 'Gráficos e indicadores contábeis',
       itens: [
-        { id: 'cards_metricas', nome: 'Cards de Metricas', descricao: 'Resumo numerico contabil' },
+        { id: 'cards_metricas', nome: 'Cards de Métricas', descricao: 'Resumo numérico contábil' },
         {
           id: 'grafico_receita_despesa',
           nome: 'Receita x Despesas/Custo',
-          descricao: 'Grafico principal de comparacao',
+          descricao: 'Gráfico principal de comparação',
         },
         {
           id: 'card_resumo_exercicio',
-          nome: 'Resumo do Exercicio',
+          nome: 'Resumo do Exercício',
           descricao: 'Card lateral com resumo',
         },
         {
@@ -365,41 +365,41 @@ const Configuracoes = () => {
         },
         {
           id: 'grafico_variacao_lucro',
-          nome: 'Variacao do Lucro',
-          descricao: 'Grafico trimestral/anual',
+          nome: 'Variação do Lucro',
+          descricao: 'Gráfico trimestral/anual',
         },
         {
           id: 'grafico_receita_custo_estoque',
           nome: 'Receita x Custo x Estoque',
-          descricao: 'Comparacao de indicadores',
+          descricao: 'Comparação de indicadores',
         },
         {
           id: 'grafico_movimentacao_bancaria',
-          nome: 'Movimentacao Bancaria',
-          descricao: 'Saldo de bancos por periodo',
+          nome: 'Movimentação Bancária',
+          descricao: 'Saldo de bancos por período',
         },
         {
           id: 'grafico_aplicacoes_financeiras',
-          nome: 'Aplicacoes Financeiras',
+          nome: 'Aplicações Financeiras',
           descricao: 'Liquidez imediata',
         },
-        { id: 'analise_contabil', nome: 'Resumo Contabil', descricao: 'Card final de analise' },
+        { id: 'analise_contabil', nome: 'Resumo Contábil', descricao: 'Card final de análise' },
       ],
     },
     fiscal: {
       nome: 'Setor Fiscal',
-      descricao: 'Tributos e obrigacoes fiscais',
+      descricao: 'Tributos e obrigações fiscais',
       itens: [
-        { id: 'cards_metricas', nome: 'Cards de Metricas', descricao: 'Resumo fiscal principal' },
+        { id: 'cards_metricas', nome: 'Cards de Métricas', descricao: 'Resumo fiscal principal' },
         {
           id: 'faturamento_categoria',
           nome: 'Por Categoria',
-          descricao: 'Entradas, servicos e saidas',
+          descricao: 'Entradas, serviços e saídas',
         },
         {
           id: 'faturamento_evolucao',
-          nome: 'Evolucao Mensal',
-          descricao: 'Entradas x saidas por mes',
+          nome: 'Evolução Mensal',
+          descricao: 'Entradas x saídas por mês',
         },
         {
           id: 'acumuladores_entradas',
@@ -408,84 +408,84 @@ const Configuracoes = () => {
         },
         {
           id: 'acumuladores_saidas',
-          nome: 'Acumuladores - Saidas',
-          descricao: 'Tabela de principais saidas',
+          nome: 'Acumuladores - Saídas',
+          descricao: 'Tabela de principais saídas',
         },
         {
           id: 'faturamento_periodo',
-          nome: 'Faturamento por Periodo',
+          nome: 'Faturamento por Período',
           descricao: 'Tabela mensal/trimestral/anual',
         },
-        { id: 'compra_vs_venda', nome: 'Compra vs Venda', descricao: 'Grafico de composicao 380' },
+        { id: 'compra_vs_venda', nome: 'Compra vs Venda', descricao: 'Gráfico de composição 380' },
         {
           id: 'categoria_380',
           nome: 'Por Categoria (380)',
-          descricao: 'Barras com vendas/compras/servicos',
+          descricao: 'Barras com vendas/compras/serviços',
         },
-        { id: 'irpj_periodo', nome: 'IRPJ por Periodo', descricao: 'Composicao do IRPJ apurado' },
+        { id: 'irpj_periodo', nome: 'IRPJ por Período', descricao: 'Composição do IRPJ apurado' },
         {
           id: 'resumo_impostos',
           nome: 'Resumo dos Impostos',
-          descricao: 'Rosca de distribuicao dos impostos',
+          descricao: 'Rosca de distribuição dos impostos',
         },
-        { id: 'csll_periodo', nome: 'CSLL por Periodo', descricao: 'Composicao do CSLL' },
+        { id: 'csll_periodo', nome: 'CSLL por Período', descricao: 'Composição do CSLL' },
         {
           id: 'tabela_380',
-          nome: 'Tabela Calculo 380',
+          nome: 'Tabela Cálculo 380',
           descricao: 'Resumo de compra/venda esperado',
         },
-        { id: 'situacao_380', nome: 'Situacao 380', descricao: 'Rosca de situacao e resumo' },
-        { id: 'analise_fiscal', nome: 'Resumo Fiscal', descricao: 'Card final de analise' },
+        { id: 'situacao_380', nome: 'Situação 380', descricao: 'Rosca de situação e resumo' },
+        { id: 'analise_fiscal', nome: 'Resumo Fiscal', descricao: 'Card final de análise' },
       ],
     },
     pessoal: {
       nome: 'Setor Pessoal',
       descricao: 'RH e folha de pagamento',
       itens: [
-        { id: 'cards_metricas', nome: 'Cards de Metricas', descricao: 'Resumo do setor pessoal' },
-        { id: 'fgts_tipo', nome: 'FGTS por Tipo', descricao: 'Consignado, rescisao, mensal e 13o' },
+        { id: 'cards_metricas', nome: 'Cards de Métricas', descricao: 'Resumo do setor pessoal' },
+        { id: 'fgts_tipo', nome: 'FGTS por Tipo', descricao: 'Consignado, rescisão, mensal e 13º' },
         {
           id: 'fgts_periodo',
-          nome: 'FGTS por Periodo',
-          descricao: 'Barras por mes, trimestre ou ano',
+          nome: 'FGTS por Período',
+          descricao: 'Barras por mês, trimestre ou ano',
         },
         {
           id: 'inss_empresa',
-          nome: 'Relacao do INSS',
-          descricao: 'Distribuicao por categoria',
+          nome: 'Relação do INSS',
+          descricao: 'Distribuição por categoria',
         },
-        { id: 'inss_periodo', nome: 'INSS por Periodo', descricao: 'Evolucao por periodo' },
+        { id: 'inss_periodo', nome: 'INSS por Período', descricao: 'Evolução por período' },
         {
           id: 'admissoes_demissoes',
-          nome: 'Admissoes e Demissoes',
-          descricao: 'Movimentacao de pessoal',
+          nome: 'Admissões e Demissões',
+          descricao: 'Movimentação de pessoal',
         },
         {
           id: 'empregados_situacao',
-          nome: 'Empregados por Situacao',
+          nome: 'Empregados por Situação',
           descricao: 'Ativos, demitidos e afastados',
         },
-        { id: 'tabela_ferias', nome: 'Programacao de Ferias', descricao: 'Tabela de ferias' },
-        { id: 'resumo_pessoal', nome: 'Resumo Pessoal', descricao: 'Card final de orientacao' },
+        { id: 'tabela_ferias', nome: 'Programação de Férias', descricao: 'Tabela de férias' },
+        { id: 'resumo_pessoal', nome: 'Resumo Pessoal', descricao: 'Card final de orientação' },
       ],
     },
     administrativo: {
       nome: 'Setor Administrativo',
       descricao: 'Indicadores administrativos',
       itens: [
-        { id: 'cards_metricas', nome: 'Cards de Metricas', descricao: 'Indicadores principais' },
-        { id: 'despesas_mensais', nome: 'Despesas Mensais', descricao: 'Evolucao mensal' },
+        { id: 'cards_metricas', nome: 'Cards de Métricas', descricao: 'Indicadores principais' },
+        { id: 'despesas_mensais', nome: 'Despesas Mensais', descricao: 'Evolução mensal' },
         {
           id: 'despesas_categoria',
           nome: 'Despesas por Categoria',
-          descricao: 'Distribuicao de custos',
+          descricao: 'Distribuição de custos',
         },
         {
           id: 'indicadores_operacionais',
           nome: 'Indicadores Operacionais',
           descricao: 'KPIs do administrativo',
         },
-        { id: 'tabela_certidoes', nome: 'Tabela de Certidoes', descricao: 'Status documental' },
+        { id: 'tabela_certidoes', nome: 'Tabela de Certidões', descricao: 'Status documental' },
         { id: 'tabela_contratos', nome: 'Tabela de Contratos', descricao: 'Contratos vigentes' },
       ],
     },
@@ -500,8 +500,8 @@ const Configuracoes = () => {
 
   const VISIBILIDADE_PRESETS = {
     padrao: {
-      nome: 'Padrao Agili',
-      descricao: 'Todos os graficos e cards visiveis',
+      nome: 'Padrão Agili',
+      descricao: 'Todos os gráficos e cards visíveis',
       base: 'default',
       overrides: {},
     },
@@ -513,7 +513,7 @@ const Configuracoes = () => {
     },
     lucro_presumido: {
       nome: 'Lucro Presumido',
-      descricao: 'Oculta os blocos de calculo 380 por padrao',
+      descricao: 'Oculta os blocos de cálculo 380 por padrão',
       base: 'default',
       overrides: {
         fiscal: {
@@ -643,7 +643,7 @@ const Configuracoes = () => {
 
     removeVisibilidadeScopeConfig(scopeType, scopeId);
     setVisibilidadeConfig(loadCurrentVisibilidadeConfig());
-    showSuccess('Configuracao padrao restaurada');
+    showSuccess('Configuração padrão restaurada');
   };
 
   // Salvar configuracao de visibilidade
@@ -656,7 +656,7 @@ const Configuracoes = () => {
       if (!cnpjOverride) {
         removeVisibilidadeScopeConfig('cnpj', scopeId);
         setVisibilidadeConfig(loadCurrentVisibilidadeConfig());
-        showSuccess('Sem diferencas no CNPJ. Herdando configuracao do grupo.');
+        showSuccess('Sem diferenças no CNPJ. Herdando configuração do grupo.');
         return;
       }
 
@@ -666,7 +666,7 @@ const Configuracoes = () => {
     }
 
     saveVisibilidadeScopeConfig(scopeType, scopeId, visibilidadeConfig);
-    showSuccess('Configuracao de visibilidade salva com sucesso.');
+    showSuccess('Configuração de visibilidade salva com sucesso.');
   };
 
   const usarHerancaDoGrupo = () => {
@@ -951,7 +951,7 @@ const Configuracoes = () => {
     setModalDelete({ open: false, type: null, item: null });
   };
 
-  // Handlers Importacao
+  // Handlers Importação
   const resetImport = () => {
     setImportStep(1);
     setImportCategory('cadastros');
@@ -965,7 +965,7 @@ const Configuracoes = () => {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  // Verificar se relatorio eh trimestral (CSLL ou IRPJ)
+  // Verificar se relatório é trimestral (CSLL ou IRPJ)
   const isRelatorioTrimestral = importRelatorio === 'csll' || importRelatorio === 'irpj';
 
   // Função auxiliar para processar um único arquivo
@@ -998,7 +998,7 @@ const Configuracoes = () => {
                   dadosParsed = parseDREMensal(text);
                   break;
                 default:
-                  parseError = 'Tipo de relatorio contabil nao reconhecido';
+                  parseError = 'Tipo de relatório contábil não reconhecido';
               }
             } else if (importSetor === 'fiscal') {
               switch (importRelatorio) {
@@ -1021,7 +1021,7 @@ const Configuracoes = () => {
                   dadosParsed = parseResumoPorAcumulador(text);
                   break;
                 default:
-                  parseError = 'Tipo de relatorio fiscal nao reconhecido';
+                  parseError = 'Tipo de relatório fiscal não reconhecido';
               }
             } else if (importSetor === 'pessoal') {
               switch (importRelatorio) {
@@ -1041,7 +1041,7 @@ const Configuracoes = () => {
                   dadosParsed = parseProgramacaoFerias(text);
                   break;
                 default:
-                  parseError = 'Tipo de relatorio pessoal nao reconhecido';
+                  parseError = 'Tipo de relatório pessoal não reconhecido';
               }
             }
           } catch (err) {
@@ -1180,7 +1180,7 @@ const Configuracoes = () => {
         });
       }
     } else if (importCategory === 'setores' && importPreview.isDominioFormat) {
-      // Usar parser especifico do Dominio para setor contabil, fiscal ou pessoal
+      // Usar parser específico do Domínio para setor contábil, fiscal ou pessoal
       let result;
 
       if (importSetor === 'contabil') {
@@ -1218,7 +1218,7 @@ const Configuracoes = () => {
           importRelatorio === 'csll' || importRelatorio === 'irpj'
             ? ` (${selectedTrimestre}o Trimestre)`
             : '';
-        showSuccess(`Relatorio ${relatorioNome}${trimestreMsg} importado com sucesso!`);
+        showSuccess(`Relatório ${relatorioNome}${trimestreMsg} importado com sucesso!`);
       } else {
         errorMsg = result?.error || 'Erro ao processar arquivo';
       }
@@ -1315,7 +1315,7 @@ const Configuracoes = () => {
         filename = 'template_grupos.csv';
       } else if (importType === 'cnpjs') {
         content =
-          'cnpj,razaoSocial,nomeFantasia,tipo,regimeTributario,cidade,estado,grupoId\n12.345.678/0001-90,Empresa Ltda,Empresa,Matriz,Lucro Real,Sao Paulo,SP,';
+          'cnpj,razaoSocial,nomeFantasia,tipo,regimeTributario,cidade,estado,grupoId\n12.345.678/0001-90,Empresa Ltda,Empresa,Matriz,Lucro Real,São Paulo,SP,';
         filename = 'template_cnpjs.csv';
       } else {
         content =
@@ -1358,7 +1358,7 @@ const Configuracoes = () => {
   const tabs = [
     { id: 'grupos', label: 'Grupos e CNPJs', icon: FolderTree },
     { id: 'usuarios', label: 'Usuarios', icon: Users },
-    { id: 'importacao', label: 'Importacao', icon: Upload },
+    { id: 'importacao', label: 'Importação', icon: Upload },
     { id: 'visibilidade', label: 'Visibilidade', icon: Eye },
     { id: 'logs', label: 'Logs', icon: Activity, isLink: true },
   ];
@@ -1752,7 +1752,7 @@ const Configuracoes = () => {
                           Setores
                         </th>
                         <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase">
-                          Acoes
+                          Ações
                         </th>
                       </tr>
                     </thead>
@@ -1846,7 +1846,7 @@ const Configuracoes = () => {
             </div>
           )}
 
-          {/* Tab: Importacao */}
+          {/* Tab: Importação */}
           {activeTab === 'importacao' && (
             <div className="p-6">
               {/* Progress Steps */}
@@ -1868,10 +1868,10 @@ const Configuracoes = () => {
               </div>
               <div className="text-center mb-6">
                 <p className="text-sm text-slate-500">
-                  {importStep === 1 && 'Selecione o tipo de importacao'}
+                  {importStep === 1 && 'Selecione o tipo de importação'}
                   {importStep === 2 && 'Faca upload do arquivo CSV'}
                   {importStep === 3 && 'Confira os dados antes de importar'}
-                  {importStep === 4 && 'Importacao concluida!'}
+                  {importStep === 4 && 'Importação concluída!'}
                 </p>
               </div>
 
@@ -1918,7 +1918,7 @@ const Configuracoes = () => {
                           Dados dos Setores
                         </h3>
                         <p className="text-sm text-slate-500">
-                          Contabil, Fiscal, Pessoal, Administrativo
+                          Contábil, Fiscal, Pessoal, Administrativo
                         </p>
                       </button>
                     </div>
@@ -1993,7 +1993,7 @@ const Configuracoes = () => {
                       {importSetor && (
                         <div className="mb-8">
                           <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">
-                            Selecione o tipo de relatorio
+                            Selecione o tipo de relatório
                           </label>
                           <div className="grid grid-cols-2 gap-3">
                             {SETORES_CONFIG[importSetor].relatorios.map((rel) => (
@@ -2088,7 +2088,7 @@ const Configuracoes = () => {
                   {isRelatorioTrimestral && (
                     <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl">
                       <label className="block text-sm font-semibold text-blue-800 dark:text-blue-300 mb-3">
-                        Selecione o Trimestre do Relatorio
+                        Selecione o Trimestre do Relatório
                       </label>
                       <div className="grid grid-cols-4 gap-3">
                         {[
@@ -2120,7 +2120,7 @@ const Configuracoes = () => {
                         ))}
                       </div>
                       <p className="text-xs text-blue-600 dark:text-blue-400 mt-3">
-                        O Dominio exporta mes sequencial (jan, fev, mar, abr). Selecione o trimestre
+                        O Domínio exporta mês sequencial (jan, fev, mar, abr). Selecione o trimestre
                         correto manualmente.
                       </p>
                     </div>
@@ -2720,12 +2720,12 @@ const Configuracoes = () => {
                           </p>
                           <p className="text-xs text-blue-600 dark:text-blue-400">
                             Arquivo indica:{' '}
-                            {importPreview.dadosParsed.trimestre || 'Nao identificado'}
+                            {importPreview.dadosParsed.trimestre || 'Não identificado'}
                           </p>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <div className="bg-slate-700 p-4 rounded-xl text-white">
-                            <p className="text-sm opacity-80 mb-1">Base de Calculo</p>
+                            <p className="text-sm opacity-80 mb-1">Base de Cálculo</p>
                             <p className="text-2xl font-bold">
                               {formatCurrency(importPreview.dadosParsed.dados?.baseCalculo || 0)}
                             </p>
@@ -2758,7 +2758,7 @@ const Configuracoes = () => {
                               </tr>
                               <tr>
                                 <td className="px-4 py-2 text-slate-600 dark:text-slate-400">
-                                  (-) Compensacao
+                                  (-) Compensação
                                 </td>
                                 <td className="px-4 py-2 text-right font-medium text-red-600">
                                   {formatCurrency(
@@ -2768,7 +2768,7 @@ const Configuracoes = () => {
                               </tr>
                               <tr>
                                 <td className="px-4 py-2 text-slate-600 dark:text-slate-400">
-                                  Valor a compensar proximo periodo
+                                  Valor a compensar próximo período
                                 </td>
                                 <td className="px-4 py-2 text-right font-medium text-slate-800 dark:text-white">
                                   {formatCurrency(
@@ -2793,12 +2793,12 @@ const Configuracoes = () => {
                           </p>
                           <p className="text-xs text-blue-600 dark:text-blue-400">
                             Arquivo indica:{' '}
-                            {importPreview.dadosParsed.trimestre || 'Nao identificado'}
+                            {importPreview.dadosParsed.trimestre || 'Não identificado'}
                           </p>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                           <div className="bg-slate-700 p-4 rounded-xl text-white">
-                            <p className="text-sm opacity-80 mb-1">Base de Calculo</p>
+                            <p className="text-sm opacity-80 mb-1">Base de Cálculo</p>
                             <p className="text-2xl font-bold">
                               {formatCurrency(importPreview.dadosParsed.dados?.baseCalculo || 0)}
                             </p>
@@ -2855,7 +2855,7 @@ const Configuracoes = () => {
                             </p>
                           </div>
                           <div className="bg-slate-700 p-4 rounded-xl text-white">
-                            <p className="text-sm opacity-80 mb-1">Periodos</p>
+                            <p className="text-sm opacity-80 mb-1">Períodos</p>
                             <p className="text-2xl font-bold">
                               {importPreview.dadosParsed.movimentacao?.length || 0} meses
                             </p>
@@ -2907,11 +2907,11 @@ const Configuracoes = () => {
                           </div>
                         )}
 
-                        {/* Tabela de Movimentacao */}
+                        {/* Tabela de Movimentação */}
                         <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
                           <div className="p-4 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
                             <h3 className="font-semibold text-slate-800 dark:text-white">
-                              Movimentacao Mensal Completa
+                              Movimentação Mensal Completa
                             </h3>
                           </div>
                           <div className="overflow-x-auto max-h-72">
@@ -2997,7 +2997,7 @@ const Configuracoes = () => {
                             </p>
                           </div>
                           <div className="bg-slate-700 p-4 rounded-xl text-white">
-                            <p className="text-sm opacity-80 mb-1">Periodos Importados</p>
+                            <p className="text-sm opacity-80 mb-1">Períodos Importados</p>
                             <p className="text-2xl font-bold">
                               {importPreview.dadosParsed.periodosImportados ||
                                 Object.keys(importPreview.dadosParsed.impostosPorMes || {})
@@ -3158,7 +3158,7 @@ const Configuracoes = () => {
                             </p>
                           </div>
                           <div className="bg-slate-700 p-4 rounded-xl text-white">
-                            <p className="text-sm opacity-80 mb-1">Compra Comercializacao</p>
+                            <p className="text-sm opacity-80 mb-1">Compra Comercialização</p>
                             <p className="text-2xl font-bold">
                               {formatCurrency(
                                 importPreview.dadosParsed.categorias?.compraComercializacao || 0
@@ -3182,7 +3182,7 @@ const Configuracoes = () => {
                         </div>
                         <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl">
                           <p className="text-sm font-semibold text-amber-800 dark:text-amber-300 mb-2">
-                            Calculo 380
+                            Cálculo 380
                           </p>
                           <div className="grid grid-cols-3 gap-4 text-sm">
                             <div>
@@ -3206,7 +3206,7 @@ const Configuracoes = () => {
                               </p>
                             </div>
                             <div>
-                              <p className="text-amber-600 dark:text-amber-400">Situacao</p>
+                              <p className="text-amber-600 dark:text-amber-400">Situação</p>
                               <p
                                 className={`font-bold ${(importPreview.dadosParsed.categorias?.totalVendas380 || 0) >= (importPreview.dadosParsed.categorias?.esperado380 || 0) ? 'text-green-600' : 'text-red-600'}`}
                               >
@@ -3238,7 +3238,7 @@ const Configuracoes = () => {
                             </p>
                           </div>
                           <div className="bg-emerald-700 p-4 rounded-xl text-white">
-                            <p className="text-sm opacity-80 mb-1">Base de Calculo</p>
+                            <p className="text-sm opacity-80 mb-1">Base de Cálculo</p>
                             <p className="text-2xl font-bold">
                               {formatCurrency(importPreview.dadosParsed.totalGeral?.base || 0)}
                             </p>
@@ -3297,7 +3297,7 @@ const Configuracoes = () => {
                             </p>
                           </div>
                           <div className="bg-emerald-700 p-4 rounded-xl text-white">
-                            <p className="text-sm opacity-80 mb-1">Base de Calculo</p>
+                            <p className="text-sm opacity-80 mb-1">Base de Cálculo</p>
                             <p className="text-2xl font-bold">
                               {formatCurrency(
                                 importPreview.dadosParsed.totalGeral?.baseCalculo || 0
@@ -3330,7 +3330,7 @@ const Configuracoes = () => {
                       </div>
                     )}
 
-                  {/* Preview Relacao de Empregados */}
+                  {/* Preview Relação de Empregados */}
                   {importPreview.isDominioFormat &&
                     importPreview.tipoRelatorio === 'empregados' &&
                     importPreview.dadosParsed && (
@@ -3455,7 +3455,7 @@ const Configuracoes = () => {
                       </div>
                     )}
 
-                  {/* Preview Programacao de Ferias */}
+                  {/* Preview Programação de Férias */}
                   {importPreview.isDominioFormat &&
                     importPreview.tipoRelatorio === 'ferias' &&
                     importPreview.dadosParsed && (
@@ -3488,7 +3488,7 @@ const Configuracoes = () => {
                         </div>
                         <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl">
                           <p className="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-2">
-                            Status das Ferias
+                            Status das Férias
                           </p>
                           <div className="grid grid-cols-4 gap-4 text-sm">
                             <div>
@@ -3606,7 +3606,7 @@ const Configuracoes = () => {
                     <CheckCircle2 className="w-10 h-10 text-emerald-700" />
                   </div>
                   <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">
-                    Importacao Concluida!
+                    Importação Concluída!
                   </h2>
                   <p className="text-slate-500 dark:text-slate-400 mb-8">
                     Os dados foram importados com sucesso para o sistema.
@@ -3615,7 +3615,7 @@ const Configuracoes = () => {
                     onClick={resetImport}
                     className="px-6 py-3 bg-[#0e4f6d] text-white rounded-lg hover:bg-[#0d4560]"
                   >
-                    Nova Importacao
+                    Nova Importação
                   </button>
                 </div>
               )}
@@ -3716,7 +3716,7 @@ const Configuracoes = () => {
               </div>
               <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
                 <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
-                  Responsavel padrao do grupo (opcional)
+                  Responsável padrão do grupo (opcional)
                 </p>
                 <div className="space-y-3">
                   <div>
@@ -3729,7 +3729,7 @@ const Configuracoes = () => {
                       onChange={(e) =>
                         setFormGrupo({ ...formGrupo, responsavelPadraoNome: e.target.value })
                       }
-                      placeholder="Nome do responsavel"
+                      placeholder="Nome do responsável"
                       className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white outline-none"
                     />
                   </div>
@@ -3868,7 +3868,7 @@ const Configuracoes = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  Regime Tributario
+                  Regime Tributário
                 </label>
                 <select
                   value={formCnpj.regimeTributario}
@@ -3938,7 +3938,7 @@ const Configuracoes = () => {
               </div>
               <div className="col-span-2 mt-2 pt-4 border-t border-slate-200 dark:border-slate-700">
                 <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
-                  Responsavel legal (opcional)
+                  Responsável legal (opcional)
                 </p>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -3951,7 +3951,7 @@ const Configuracoes = () => {
                       onChange={(e) =>
                         setFormCnpj({ ...formCnpj, responsavelNome: e.target.value })
                       }
-                      placeholder="Nome do responsavel"
+                      placeholder="Nome do responsável"
                       className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white outline-none"
                     />
                   </div>
@@ -4083,7 +4083,7 @@ const Configuracoes = () => {
                 <div className="grid grid-cols-2 gap-4">
                   {[
                     { v: 'Admin', l: 'Administrador', d: 'Acesso total', i: Shield },
-                    { v: 'Visualizador', l: 'Visualizador', d: 'Apenas visualizacao', i: Eye },
+                    { v: 'Visualizador', l: 'Visualizador', d: 'Apenas visualização', i: Eye },
                   ].map((p) => (
                     <button
                       key={p.v}
@@ -4155,7 +4155,7 @@ const Configuracoes = () => {
                   <h2 className="text-lg font-bold text-slate-800 dark:text-white">
                     Confirmar Exclusao
                   </h2>
-                  <p className="text-sm text-slate-500">Esta acao nao pode ser desfeita.</p>
+                  <p className="text-sm text-slate-500">Esta ação não pode ser desfeita.</p>
                 </div>
               </div>
               <div className="mt-4 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg">

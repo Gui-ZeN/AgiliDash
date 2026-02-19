@@ -42,15 +42,15 @@ const DashboardFiscalTab = ({
   const resumoAcumuladorAtual =
     resumoAcumuladorFiltrado || dadosFiscaisImportados?.resumoAcumulador;
   const importHint =
-    'Dados fiscais ainda nao disponiveis. Importe os relatorios do Sistema Dominio em Configuracoes > Importar Dados para liberar este painel.';
+    'Dados fiscais ainda não disponíveis. Importe os relatórios do Sistema Domínio em Configurações > Importar Dados para liberar este painel.';
 
   return (
     <div className="space-y-7 pb-8">
       <DashboardSectionTitle
         icon={FileSpreadsheet}
         badge="Departamento Fiscal"
-        title="Analise Tributaria"
-        subtitle="Apuracao trimestral sobre Lucro Real com dados importados do Sistema Dominio."
+        title="Análise Tributária"
+        subtitle="Apuração trimestral sobre Lucro Real com dados importados do Sistema Domínio."
         tone="slate"
         className={`transition-all duration-500 ${cardAnimation}`}
       />
@@ -101,7 +101,7 @@ const DashboardFiscalTab = ({
                   Por Categoria
                 </h3>
                 <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                  Entradas, Servicos e Saidas
+                  Entradas, Serviços e Saídas
                 </p>
                 {temDadosFiscais ? (
                   <FaturamentoPorCategoriaChart
@@ -127,10 +127,10 @@ const DashboardFiscalTab = ({
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                      Evolucao Mensal
+                      Evolução Mensal
                     </h3>
                     <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                      Entradas vs Saidas por mes
+                      Entradas vs Saídas por mês
                     </p>
                   </div>
                   <div className="flex gap-1">
@@ -193,7 +193,7 @@ const DashboardFiscalTab = ({
                       Principais Acumuladores - Entradas
                     </h3>
                     <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                      Categorias com maior valor contabil
+                      Categorias com maior valor contábil
                     </p>
                   </div>
                   <TabelaAcumuladores dados={resumoAcumuladorAtual} tipo="entradas" />
@@ -206,10 +206,10 @@ const DashboardFiscalTab = ({
                 >
                   <div className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
                     <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                      Principais Acumuladores - Saidas
+                      Principais Acumuladores - Saídas
                     </h3>
                     <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                      Categorias com maior valor contabil
+                      Categorias com maior valor contábil
                     </p>
                   </div>
                   <TabelaAcumuladores dados={resumoAcumuladorAtual} tipo="saidas" />
@@ -230,10 +230,10 @@ const DashboardFiscalTab = ({
           >
             <div className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
               <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                Faturamento por Periodo
+                Faturamento por Período
               </h3>
               <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                Total do faturamento no recorte de mes, trimestre ou ano
+                Total do faturamento no recorte de mês, trimestre ou ano
               </p>
             </div>
             <TabelaFaturamentoPeriodo
@@ -253,7 +253,7 @@ const DashboardFiscalTab = ({
                   Compra vs Venda
                 </h3>
                 <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                  Compra p/ comercializacao, Vendas e Servicos
+                  Compra p/ comercialização, Vendas e Serviços
                 </p>
                 {temDadosFiscais && resumoAcumuladorAtual ? (
                   <CompraVendaChart dados={resumoAcumuladorAtual} />
@@ -273,7 +273,7 @@ const DashboardFiscalTab = ({
                   Por Categoria
                 </h3>
                 <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                  Vendas, Compra p/ comercializacao e Servicos
+                  Vendas, Compra p/ comercialização e Serviços
                 </p>
                 {temDadosFiscais && resumoAcumuladorAtual ? (
                   <Detalhamento380Chart dados={resumoAcumuladorAtual} />
@@ -295,7 +295,7 @@ const DashboardFiscalTab = ({
               <Receipt className={`w-5 h-5 ${isDarkMode ? 'text-slate-500' : 'text-slate-700'}`} />
             </div>
             <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-              Situacao Fiscal
+              Situação Fiscal
             </h2>
           </div>
 
@@ -307,10 +307,10 @@ const DashboardFiscalTab = ({
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                      IRPJ por Periodo
+                      IRPJ por Período
                     </h3>
                     <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                      Composicao do IRPJ apurado
+                      Composição do IRPJ apurado
                     </p>
                   </div>
                   <div className="flex gap-1">
@@ -364,7 +364,7 @@ const DashboardFiscalTab = ({
                   Resumo dos Impostos
                 </h3>
                 <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                  Distribuicao dos impostos no periodo
+                  Distribuição dos impostos no período
                 </p>
                 <ResumoImpostosRoscaChart dados={resumoImpostosFiltrado} />
               </div>
@@ -375,10 +375,10 @@ const DashboardFiscalTab = ({
                 className={`xl:col-span-3 p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
               >
                 <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                  CSLL por Periodo
+                  CSLL por Período
                 </h3>
                 <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                  Composicao do CSLL
+                  Composição do CSLL
                 </p>
                 <CSLLPorPeriodoChart
                   dados={dadosFiscaisImportados?.csll || []}
@@ -408,10 +408,10 @@ const DashboardFiscalTab = ({
             >
               <div className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
                 <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                  Calculo 380
+                  Cálculo 380
                 </h3>
                 <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                  Periodo | Compra | Venda | Esperado | Receita Complementar | Situacao
+                  Período | Compra | Venda | Esperado | Receita Complementar | Situação
                 </p>
               </div>
               <Tabela380 dados={resumoAcumuladorAtual} periodFilter={periodFilter} />
@@ -423,7 +423,7 @@ const DashboardFiscalTab = ({
               className={`mt-6 p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
             >
               <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                Situacao 380
+                Situação 380
               </h3>
               <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                 Vendido vs Falta Vender (Esperado = Compra x 1.25)
@@ -441,12 +441,12 @@ const DashboardFiscalTab = ({
                 {temDadosFiscais && resumoAcumuladorAtual && (
                   <div className={`p-6 rounded-xl ${isDarkMode ? 'bg-slate-700/50' : 'bg-slate-50'}`}>
                     <h4 className={`text-sm font-bold mb-4 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-                      Resumo da Situacao
+                      Resumo da Situação
                     </h4>
                     <div className="space-y-3">
                       <div className="flex justify-between items-center">
                         <span className={isDarkMode ? 'text-slate-400' : 'text-slate-500'}>
-                          Compra p/ Comercializacao
+                          Compra p/ Comercialização
                         </span>
                         <span className={`font-bold ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
                           {formatCurrency(resumoAcumuladorAtual?.categorias?.compraComercializacao || 0)}
@@ -471,7 +471,7 @@ const DashboardFiscalTab = ({
                       <div className={`pt-3 mt-3 border-t ${isDarkMode ? 'border-slate-600' : 'border-slate-200'}`}>
                         <div className="flex justify-between items-center">
                           <span className={`font-semibold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                            Situacao
+                            Situação
                           </span>
                           <span
                             className={`px-3 py-1 rounded-full text-sm font-bold ${
@@ -504,15 +504,15 @@ const DashboardFiscalTab = ({
               <Award className="w-8 h-8" />
             </div>
             <div>
-              <h3 className="text-xl font-bold mb-3">Analise Fiscal {selectedYear}</h3>
+              <h3 className="text-xl font-bold mb-3">Análise Fiscal {selectedYear}</h3>
               <p className="text-white/80 leading-relaxed">
                 {temDadosFiscais ? (
                   <>
-                    Dados importados do Sistema Dominio. Os relatorios fiscais mostram a movimentacao
-                    de entradas e saidas, impostos a recolher e situacao do 380.
+                    Dados importados do Sistema Domínio. Os relatórios fiscais mostram a movimentação
+                    de entradas e saídas, impostos a recolher e situação do 380.
                   </>
                 ) : (
-                  <>Importe os relatorios fiscais do Sistema Dominio para gerar a analise deste setor.</>
+                  <>Importe os relatórios fiscais do Sistema Domínio para gerar a análise deste setor.</>
                 )}
               </p>
             </div>

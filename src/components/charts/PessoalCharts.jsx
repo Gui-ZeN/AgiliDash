@@ -55,7 +55,7 @@ const MESES_CURTOS = [
 const FGTSCATEGORIAS = [
   { id: 'mensal', label: 'FGTS Mensal', color: COLORS.primary },
   { id: 'decimo_terceiro', label: 'FGTS 13º', color: COLORS.warning },
-  { id: 'rescisao', label: 'FGTS Rescisao', color: COLORS.danger },
+  { id: 'rescisao', label: 'FGTS Rescisão', color: COLORS.danger },
   { id: 'consignado', label: 'FGTS Consignado', color: COLORS.secondary },
 ];
 
@@ -1184,7 +1184,7 @@ export const EmpregadosPorSituacaoChart = ({ dados, periodFilter }) => {
       situacaoContador = {};
 
       dados.empregados.forEach((empregado) => {
-        const situacao = empregado?.situacao || 'Nao informado';
+        const situacao = empregado?.situacao || 'Não informado';
         const dataReferencia =
           situacao === 'Ativo'
             ? empregado?.dataAdmissao
@@ -1213,7 +1213,7 @@ export const EmpregadosPorSituacaoChart = ({ dados, periodFilter }) => {
       .sort((a, b) => b[1] - a[1]);
 
     return {
-      labels: situacoes.map(([sit]) => (sit === 'Nao informado' ? 'Nao informado' : sit)),
+      labels: situacoes.map(([sit]) => (sit === 'Não informado' ? 'Não informado' : sit)),
       valores: situacoes.map(([, val]) => val),
       cores: situacoes.map(([sit]) => situacaoCores[sit] || COLORS.info),
     };
@@ -1288,7 +1288,7 @@ export const EmpregadosPorSituacaoChart = ({ dados, periodFilter }) => {
     return (
       <div className="h-[250px] flex items-center justify-center">
         <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-          Sem dados de situacao para o periodo selecionado
+          Sem dados de situação para o período selecionado
         </p>
       </div>
     );

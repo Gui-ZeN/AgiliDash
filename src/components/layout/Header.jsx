@@ -261,7 +261,7 @@ const Header = ({ activeTab, onTabChange, showTabs = true, tabsPermitidas = null
                         Todos os Grupos
                       </p>
                       <p className="text-xs text-slate-500 dark:text-slate-400">
-                        Visao completa do sistema
+                        Visão completa do sistema
                       </p>
                     </div>
                     {modoVisualizacao === 'todos' && (

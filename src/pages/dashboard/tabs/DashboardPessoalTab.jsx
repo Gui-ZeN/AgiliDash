@@ -34,7 +34,7 @@ const DashboardPessoalTab = ({
   const periodoLabel = (() => {
     if (!periodFilter) return 'Ano atual';
     if (periodFilter.type === 'month') {
-      return `Mes ${String(periodFilter.month || '').padStart(2, '0')}/${periodFilter.year}`;
+      return `Mês ${String(periodFilter.month || '').padStart(2, '0')}/${periodFilter.year}`;
     }
     if (periodFilter.type === 'quarter') {
       return `${periodFilter.quarter || 1}o trimestre/${periodFilter.year}`;
@@ -88,7 +88,7 @@ const DashboardPessoalTab = ({
                         <p
                           className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}
                         >
-                          Consignado, Rescisao, Mensal e 13o
+                          Consignado, Rescisão, Mensal e 13º
                         </p>
                       </div>
                       <div
@@ -115,7 +115,7 @@ const DashboardPessoalTab = ({
                         <h3
                           className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
                         >
-                          FGTS por Periodo
+                          FGTS por Período
                         </h3>
                         <p
                           className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}
@@ -155,12 +155,12 @@ const DashboardPessoalTab = ({
                         <h3
                           className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
                         >
-                          Relacao do INSS
+                          Relação do INSS
                         </h3>
                         <p
                           className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}
                         >
-                          Distribuicao por categoria
+                          Distribuição por categoria
                         </p>
                       </div>
                       <div
@@ -187,7 +187,7 @@ const DashboardPessoalTab = ({
                         <h3
                           className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
                         >
-                          INSS por Periodo
+                          INSS por Período
                         </h3>
                         <p
                           className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}
@@ -220,12 +220,12 @@ const DashboardPessoalTab = ({
                         <h3
                           className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
                         >
-                          Admissoes e Demissoes
+                          Admissões e Demissões
                         </h3>
                         <p
                           className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}
                         >
-                          Movimentacao por periodo
+                          Movimentação por período
                         </p>
                       </div>
                       <div
@@ -252,12 +252,12 @@ const DashboardPessoalTab = ({
                         <h3
                           className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
                         >
-                          Por Situacao
+                          Por Situação
                         </h3>
                         <p
                           className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}
                         >
-                          Situacao no periodo filtrado
+                          Situação no período filtrado
                         </p>
                       </div>
                       <div
@@ -277,7 +277,7 @@ const DashboardPessoalTab = ({
               </div>
             )}
 
-          {/* Tabela de Ferias */}
+          {/* Tabela de Férias */}
           {dadosPessoalImportados?.ferias && isVisible('tabela_ferias') && (
             <div
               className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-100'} rounded-xl border shadow-sm overflow-hidden transition-all duration-500 delay-800 ${cardAnimation}`}
@@ -289,10 +289,10 @@ const DashboardPessoalTab = ({
                   <h3
                     className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
                   >
-                    Programacao de Ferias
+                    Programação de Férias
                   </h3>
                   <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>
-                    Proximas ferias programadas
+                    Próximas férias programadas
                   </p>
                 </div>
                 <span
@@ -359,15 +359,15 @@ const DashboardPessoalTab = ({
             <p
               className={`text-lg mb-6 max-w-xl mx-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
             >
-              Para visualizar os graficos de FGTS, INSS, Empregados e Ferias, importe os arquivos
-              CSV do Sistema Dominio.
+              Para visualizar os gráficos de FGTS, INSS, Empregados e Férias, importe os arquivos
+              CSV do Sistema Domínio.
             </p>
             <div className={`flex flex-wrap justify-center gap-3 mb-8`}>
               {[
                 'Demonstrativo FGTS',
                 'Folha de INSS',
-                'Relacao de Empregados',
-                'Programacao de Ferias',
+                'Relação de Empregados',
+                'Programação de Férias',
               ].map((item) => (
                 <span
                   key={item}
@@ -382,7 +382,7 @@ const DashboardPessoalTab = ({
               className="inline-flex items-center gap-2 px-6 py-3 bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-colors font-semibold"
             >
               <Upload className="w-5 h-5" />
-              Ir para Importacao
+              Ir para Importação
             </a>
           </div>
 
@@ -406,7 +406,7 @@ const DashboardPessoalTab = ({
                         FGTS por Tipo
                       </h3>
                       <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>
-                        Consignado, Rescisao, Mensal e 13o
+                        Consignado, Rescisão, Mensal e 13º
                       </p>
                     </div>
                   </div>
@@ -423,7 +423,7 @@ const DashboardPessoalTab = ({
                       <h3
                         className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
                       >
-                        FGTS por Periodo
+                        FGTS por Período
                       </h3>
                       <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>
                         Filtro aplicado: {periodoLabel}
@@ -443,10 +443,10 @@ const DashboardPessoalTab = ({
                       <h3
                         className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
                       >
-                        Relacao do INSS
+                        Relação do INSS
                       </h3>
                       <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>
-                        Distribuicao por categoria
+                        Distribuição por categoria
                       </p>
                     </div>
                   </div>
@@ -463,7 +463,7 @@ const DashboardPessoalTab = ({
                       <h3
                         className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
                       >
-                        INSS por Periodo
+                        INSS por Período
                       </h3>
                       <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>
                         Filtro aplicado: {periodoLabel}
@@ -489,10 +489,10 @@ const DashboardPessoalTab = ({
                       <h3
                         className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
                       >
-                        Admissoes e Demissoes
+                        Admissões e Demissões
                       </h3>
                       <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>
-                        Movimentacao por periodo
+                        Movimentação por período
                       </p>
                     </div>
                   </div>
@@ -509,10 +509,10 @@ const DashboardPessoalTab = ({
                       <h3
                         className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
                       >
-                        Por Situacao
+                        Por Situação
                       </h3>
                       <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>
-                        Situacao no periodo filtrado
+                        Situação no período filtrado
                       </p>
                     </div>
                   </div>
@@ -538,14 +538,14 @@ const DashboardPessoalTab = ({
               <p className="text-white/80 leading-relaxed">
                 {temDadosPessoal ? (
                   <>
-                    Dados importados do Sistema Dominio. Visualize FGTS, INSS, relacao de empregados
-                    e programacao de ferias. Para atualizar os dados, importe novos arquivos CSV na
-                    pagina de Configuracoes.
+                    Dados importados do Sistema Domínio. Visualize FGTS, INSS, relação de empregados
+                    e programação de férias. Para atualizar os dados, importe novos arquivos CSV na
+                    página de Configurações.
                   </>
                 ) : (
                   <>
-                    Importe os relatorios do Sistema Dominio para visualizar dados de FGTS, INSS,
-                    empregados e ferias. Acesse Configuracoes &gt; Importacao &gt; Setor Pessoal.
+                    Importe os relatórios do Sistema Domínio para visualizar dados de FGTS, INSS,
+                    empregados e férias. Acesse Configurações &gt; Importação &gt; Setor Pessoal.
                   </>
                 )}
               </p>

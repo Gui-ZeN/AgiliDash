@@ -8,7 +8,7 @@ const Field = ({ label, value }) => (
       {label}
     </p>
     <p className="mt-1 text-sm font-medium text-slate-800 dark:text-slate-100">
-      {value || 'Nao informado'}
+      {value || 'Não informado'}
     </p>
   </div>
 );
@@ -47,9 +47,9 @@ const DashboardGeraisTab = ({
       <VisibleItem show={showCompanyInfo || showResponsavel}>
         <DashboardSectionTitle
           icon={Building2}
-          badge="Visao Geral"
-          title="Informacoes da Empresa"
-          subtitle="Dados cadastrais e responsavel legal."
+          badge="Visão Geral"
+          title="Informações da Empresa"
+          subtitle="Dados cadastrais e responsável legal."
           tone="blue"
           className={`transition-all duration-500 ${cardAnimation}`}
         />
@@ -69,15 +69,15 @@ const DashboardGeraisTab = ({
           </div>
 
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-            <Field label="Razao Social" value={cnpjInfo?.razaoSocial} />
+            <Field label="Razão Social" value={cnpjInfo?.razaoSocial} />
             <Field label="Nome Fantasia" value={cnpjInfo?.nomeFantasia} />
             <Field label="CNPJ" value={cnpjInfo?.cnpj} />
-            <Field label="Codigo Cliente" value={cnpjInfo?.codigoCliente} />
+            <Field label="Código Cliente" value={cnpjInfo?.codigoCliente} />
             <Field label="Tipo" value={cnpjInfo?.tipo} />
-            <Field label="Regime Tributario" value={cnpjInfo?.regimeTributario} />
-            <Field label="Exercicio" value={cnpjInfo?.exercicio} />
+            <Field label="Regime Tributário" value={cnpjInfo?.regimeTributario} />
+            <Field label="Exercício" value={cnpjInfo?.exercicio} />
             <Field label="Cidade / UF" value={cidadeEstado} />
-            <Field label="Endereco" value={enderecoCompleto} />
+            <Field label="Endereço" value={enderecoCompleto} />
           </div>
         </section>
       </VisibleItem>
@@ -91,7 +91,7 @@ const DashboardGeraisTab = ({
           <div className="mb-5 flex items-center gap-2">
             <ShieldCheck className={`h-5 w-5 ${isDarkMode ? 'text-teal-400' : 'text-[#0e4f6d]'}`} />
             <h2 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-              Responsavel Legal
+              Responsável Legal
             </h2>
           </div>
 
@@ -114,7 +114,7 @@ const DashboardGeraisTab = ({
                 </a>
               ) : (
                 <p className="mt-1 text-sm font-medium text-slate-800 dark:text-slate-100">
-                  Nao informado
+                  Não informado
                 </p>
               )}
             </div>
@@ -132,19 +132,19 @@ const DashboardGeraisTab = ({
             <div className="flex items-center gap-2">
               <Scale className={`h-4 w-4 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`} />
               <span className="text-sm text-slate-600 dark:text-slate-300">
-                Regime: <strong>{cnpjInfo?.regimeTributario || 'Nao informado'}</strong>
+                Regime: <strong>{cnpjInfo?.regimeTributario || 'Não informado'}</strong>
               </span>
             </div>
             <div className="flex items-center gap-2">
               <MapPin className={`h-4 w-4 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`} />
               <span className="text-sm text-slate-600 dark:text-slate-300">
-                Localizacao: <strong>{cidadeEstado || 'Nao informado'}</strong>
+                Localização: <strong>{cidadeEstado || 'Não informado'}</strong>
               </span>
             </div>
             <div className="flex items-center gap-2">
               <Briefcase className={`h-4 w-4 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`} />
               <span className="text-sm text-slate-600 dark:text-slate-300">
-                Tipo: <strong>{cnpjInfo?.tipo || 'Nao informado'}</strong>
+                Tipo: <strong>{cnpjInfo?.tipo || 'Não informado'}</strong>
               </span>
             </div>
           </div>

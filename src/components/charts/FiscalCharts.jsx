@@ -1548,7 +1548,7 @@ export const TabelaFaturamentoPeriodo = ({ dadosFaturamento, periodFilter }) => 
             <th
               className={`px-4 py-3 text-left text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
             >
-              Periodo
+              Período
             </th>
             <th
               className={`px-4 py-3 text-right text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
@@ -1581,7 +1581,7 @@ export const TabelaFaturamentoPeriodo = ({ dadosFaturamento, periodFilter }) => 
                 colSpan={2}
                 className={`px-4 py-6 text-center text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}
               >
-                Sem dados de faturamento para o periodo selecionado
+                Sem dados de faturamento para o período selecionado
               </td>
             </tr>
           )}
@@ -1747,7 +1747,7 @@ export const IRPJPorPeriodoChart = ({ dados = [], trimestre = null, year }) => {
     return (
       <div className="h-[300px] flex items-center justify-center">
         <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-          Importe os relatorios de IRPJ por trimestre
+          Importe os relatórios de IRPJ por trimestre
         </p>
       </div>
     );
@@ -1876,7 +1876,7 @@ export const CSLLPorPeriodoChart = ({ dados = [], trimestre = null, year }) => {
     return (
       <div className="h-[300px] flex items-center justify-center">
         <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-          Importe os relatorios de CSLL por trimestre
+          Importe os relatórios de CSLL por trimestre
         </p>
       </div>
     );
@@ -1974,7 +1974,7 @@ export const ResumoImpostosRoscaChart = ({ dados }) => {
     return (
       <div className="h-[300px] flex items-center justify-center">
         <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-          Sem dados de Resumo dos Impostos para o periodo
+          Sem dados de Resumo dos Impostos para o período
         </p>
       </div>
     );

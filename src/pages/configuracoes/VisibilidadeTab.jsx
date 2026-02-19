@@ -46,10 +46,10 @@ const VisibilidadeTab = ({
         </div>
         <div>
           <h2 className="text-xl font-bold text-slate-800 dark:text-white">
-            Configuracao de Visibilidade
+            Configuração de Visibilidade
           </h2>
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            Defina visibilidade por grupo e, se necessario, sobrescreva por CNPJ
+            Defina visibilidade por grupo e, se necessário, sobrescreva por CNPJ
           </p>
         </div>
       </div>
@@ -165,14 +165,14 @@ const VisibilidadeTab = ({
                   </p>
                   <p className="text-sm text-slate-600 dark:text-slate-400">
                     {visibilidadeEscopo === 'grupo'
-                      ? 'Configuracao base para todos os CNPJs do grupo'
-                      : `Regime: ${selectedCnpjInfo?.regimeTributario || 'Nao informado'} • Grupo: ${grupoNomeSelecionado}`}
+                      ? 'Configuração base para todos os CNPJs do grupo'
+                      : `Regime: ${selectedCnpjInfo?.regimeTributario || 'Não informado'} • Grupo: ${grupoNomeSelecionado}`}
                   </p>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                     Origem efetiva: {visibilidadeMeta.origem} •{' '}
                     {visibilidadeMeta.modoPersonalizadoAtivo
                       ? 'modo personalizado ativo'
-                      : 'sem personalizacao'}
+                      : 'sem personalização'}
                   </p>
                 </div>
               </div>
@@ -182,7 +182,7 @@ const VisibilidadeTab = ({
                     onClick={usarHerancaDoGrupo}
                     className="px-3 py-2 text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 rounded-lg hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors"
                   >
-                    Usar heranca do grupo
+                    Usar herança do grupo
                   </button>
                 )}
               </div>
@@ -207,7 +207,7 @@ const VisibilidadeTab = ({
               className="flex items-center gap-2 px-3 py-2 text-sm bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300 rounded-lg hover:bg-amber-200 dark:hover:bg-amber-900/40 transition-colors"
             >
               <RotateCcw className="w-4 h-4" />
-              Resetar padrao
+              Resetar padrão
             </button>
           </div>
 
@@ -284,7 +284,7 @@ const VisibilidadeTab = ({
                             {secao.descricao}
                           </p>
                           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                            {itensVisiveis}/{totalItens} itens visiveis
+                            {itensVisiveis}/{totalItens} itens visíveis
                           </p>
                         </div>
                       </div>
@@ -300,7 +300,7 @@ const VisibilidadeTab = ({
                               : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300'
                           }`}
                         >
-                          {visibilidadeConfig[secaoId]?.visivel ? 'Ocultar secao' : 'Mostrar secao'}
+                          {visibilidadeConfig[secaoId]?.visivel ? 'Ocultar seção' : 'Mostrar seção'}
                         </button>
                         <ChevronRight
                           className={`w-5 h-5 text-slate-400 transition-transform ${
@@ -314,7 +314,7 @@ const VisibilidadeTab = ({
                       <div className="p-4 border-t border-slate-200 dark:border-slate-700 space-y-2">
                         {itensFiltrados.length === 0 && (
                           <p className="text-sm text-slate-500 dark:text-slate-400 px-2">
-                            Nenhum item encontrado nesta secao.
+                            Nenhum item encontrado nesta seção.
                           </p>
                         )}
 
@@ -376,7 +376,7 @@ const VisibilidadeTab = ({
             <button
               onClick={() => {
                 setVisibilidadeConfig(loadCurrentVisibilidadeConfig());
-                showSuccess('Alteracoes descartadas');
+                showSuccess('Alterações descartadas');
               }}
               className="px-4 py-2 text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
             >
@@ -387,7 +387,7 @@ const VisibilidadeTab = ({
               className="flex items-center gap-2 px-6 py-2 bg-[#0e4f6d] text-white rounded-lg hover:bg-[#0d4560] transition-colors"
             >
               <Save className="w-4 h-4" />
-              Salvar configuracao
+              Salvar configuração
             </button>
           </div>
         </>

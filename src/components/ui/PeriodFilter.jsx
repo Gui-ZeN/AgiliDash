@@ -15,7 +15,7 @@ const PeriodFilter = ({
   const meses = [
     'Janeiro',
     'Fevereiro',
-    'Marco',
+    'Março',
     'Abril',
     'Maio',
     'Junho',
@@ -30,10 +30,10 @@ const PeriodFilter = ({
   const anos = [2025, 2024, 2023, 2022];
 
   const trimestres = [
-    { label: '1o Trimestre', value: 1, months: [1, 2, 3] },
-    { label: '2o Trimestre', value: 2, months: [4, 5, 6] },
-    { label: '3o Trimestre', value: 3, months: [7, 8, 9] },
-    { label: '4o Trimestre', value: 4, months: [10, 11, 12] },
+    { label: '1º Trimestre', value: 1, months: [1, 2, 3] },
+    { label: '2º Trimestre', value: 2, months: [4, 5, 6] },
+    { label: '3º Trimestre', value: 3, months: [7, 8, 9] },
+    { label: '4º Trimestre', value: 4, months: [10, 11, 12] },
   ];
 
   useEffect(() => {
@@ -51,7 +51,7 @@ const PeriodFilter = ({
       case 'month':
         return `${meses[value.month - 1]} ${value.year}`;
       case 'quarter':
-        return `${value.quarter}o Tri ${value.year}`;
+        return `${value.quarter}º Tri ${value.year}`;
       case 'year':
         return `Ano ${value.year}`;
       default:
@@ -99,7 +99,7 @@ const PeriodFilter = ({
                     : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
                 }`}
               >
-                {type === 'month' ? 'Mes' : type === 'quarter' ? 'Trimestre' : 'Ano'}
+                {type === 'month' ? 'Mês' : type === 'quarter' ? 'Trimestre' : 'Ano'}
               </button>
             ))}
           </div>

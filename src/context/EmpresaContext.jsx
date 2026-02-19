@@ -306,7 +306,7 @@ export const EmpresaProvider = ({ children }) => {
       case 'grupo':
         return `Consolidado: ${grupoAtual?.nome || 'Grupo'}`;
       case 'todos':
-        return isAdmin ? 'Visao Consolidada Total' : 'Visao Consolidada Permitida';
+        return isAdmin ? 'Visão Consolidada Total' : 'Visão Consolidada Permitida';
       default:
         return cnpjInfo?.nomeFantasia || 'CNPJ';
     }

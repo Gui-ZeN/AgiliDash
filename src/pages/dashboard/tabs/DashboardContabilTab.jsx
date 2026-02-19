@@ -38,14 +38,14 @@ const DashboardContabilTab = ({
 }) => {
   const isVisible = (itemId) => itemVisivel('contabil', itemId);
   const importHint =
-    'Dados ainda nao disponiveis. Importe os relatorios contabeis do Sistema Dominio em Configuracoes > Importar Dados para liberar este painel.';
+    'Dados ainda não disponíveis. Importe os relatórios contábeis do Sistema Domínio em Configurações > Importar Dados para liberar este painel.';
 
   return (
     <div className="space-y-7 pb-8">
       <DashboardSectionTitle
         icon={Calculator}
-        badge="Departamento Contabil"
-        title="Analise Financeira"
+        badge="Departamento Contábil"
+        title="Análise Financeira"
         subtitle="Demonstrativo de receitas, despesas, estoque e saldos."
         tone="emerald"
         className={`transition-all duration-500 ${cardAnimation}`}
@@ -83,7 +83,7 @@ const DashboardContabilTab = ({
               />
             </div>
             <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-              Resultado Liquido
+              Resultado Líquido
             </h2>
           </div>
 
@@ -98,7 +98,7 @@ const DashboardContabilTab = ({
                       Receita x Despesas/Custo
                     </h3>
                     <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                      Variacao comparativa
+                      Variação comparativa
                     </p>
                   </div>
                   <ButtonGroup
@@ -130,7 +130,7 @@ const DashboardContabilTab = ({
                 <h3
                   className={`text-lg font-bold mb-6 pb-4 border-b ${isDarkMode ? 'text-white border-slate-700' : 'text-slate-800 border-slate-100'}`}
                 >
-                  Resumo do Exercicio
+                  Resumo do Exercício
                 </h3>
 
                 {temDadosContabeis ? (
@@ -155,7 +155,7 @@ const DashboardContabilTab = ({
 
                     <div className={`p-4 rounded-xl ${isDarkMode ? 'bg-[#0e4f6d]/40' : 'bg-[#0e4f6d]/10'}`}>
                       <p className={`text-sm font-medium ${isDarkMode ? 'text-teal-500' : 'text-[#0e4f6d]'}`}>
-                        Lucro Liquido
+                        Lucro Líquido
                       </p>
                       <p className={`text-2xl font-bold ${isDarkMode ? 'text-slate-300' : 'text-[#0e4f6d]'}`}>
                         {formatCurrency(totalLucro)}
@@ -187,7 +187,7 @@ const DashboardContabilTab = ({
               Detalhamento Mensal
             </h3>
             <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-              Mes Referencia | Entradas | Saidas/Custos | Lucro Liquido
+              Mês Referência | Entradas | Saídas/Custos | Lucro Líquido
             </p>
           </div>
           {temDadosContabeis ? (
@@ -207,7 +207,7 @@ const DashboardContabilTab = ({
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                Variacao do Lucro
+                Variação do Lucro
               </h3>
               <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                 Lucro antes do IRPJ e CSLL
@@ -249,7 +249,7 @@ const DashboardContabilTab = ({
               <Wallet className={`w-5 h-5 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
             </div>
             <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-              Variacao de Estoque e Saldos Bancarios
+              Variação de Estoque e Saldos Bancários
             </h2>
           </div>
 
@@ -264,7 +264,7 @@ const DashboardContabilTab = ({
                       Receita x Custo x Estoque
                     </h3>
                     <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                      Ultimos 12 meses
+                      Últimos 12 meses
                     </p>
                   </div>
                 </div>
@@ -285,7 +285,7 @@ const DashboardContabilTab = ({
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                      Movimentacao Bancaria
+                      Movimentação Bancária
                     </h3>
                     <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                       Saldo em Bancos Conta Movimento
@@ -315,10 +315,10 @@ const DashboardContabilTab = ({
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                Aplicacoes Financeiras
+                Aplicações Financeiras
               </h3>
               <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                Aplicacoes Financeiras de Liquidez Imediata
+                Aplicações Financeiras de Liquidez Imediata
               </p>
             </div>
             <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-[#58a3a4]/30' : 'bg-[#58a3a4]/10'}`}>
@@ -342,16 +342,16 @@ const DashboardContabilTab = ({
               <Award className="w-8 h-8" />
             </div>
             <div>
-              <h3 className="text-xl font-bold mb-3">Analise de Performance 2025</h3>
+              <h3 className="text-xl font-bold mb-3">Análise de Performance 2025</h3>
               <p className="text-white/80 leading-relaxed">
                 {temDadosContabeis ? (
                   <>
-                    Dados importados do Sistema Dominio. Os relatorios mostram a evolucao financeira da
-                    empresa ao longo do exercicio, permitindo acompanhar receitas, despesas,
-                    movimentacao bancaria e aplicacoes financeiras mes a mes.
+                    Dados importados do Sistema Domínio. Os relatórios mostram a evolução financeira da
+                    empresa ao longo do exercício, permitindo acompanhar receitas, despesas,
+                    movimentação bancária e aplicações financeiras mês a mês.
                   </>
                 ) : (
-                  <>Importe os relatorios contabeis do Sistema Dominio para gerar a analise deste setor.</>
+                  <>Importe os relatórios contábeis do Sistema Domínio para gerar a análise deste setor.</>
                 )}
               </p>
             </div>
