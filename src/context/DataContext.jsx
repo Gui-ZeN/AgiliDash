@@ -86,6 +86,19 @@ export const DataProvider = ({ children }) => {
 
   const getGrupoIdByCnpj = (cnpjId) => cnpjs.find((cnpj) => cnpj.id === cnpjId)?.grupoId || null;
 
+  const sanitizeVisibilidadeConfig = (config) => {
+    if (
+      !config ||
+      typeof config !== 'object' ||
+      !Object.prototype.hasOwnProperty.call(config, 'gerais')
+    ) {
+      return config;
+    }
+
+    const { gerais: _legacyGerais, ...rest } = config;
+    return rest;
+  };
+
   const getVisibilidadeConfig = (cnpjId) => {
     if (!cnpjId) return null;
 
@@ -93,7 +106,7 @@ export const DataProvider = ({ children }) => {
     const configGrupo = grupoId ? getVisibilidadeScopeConfig('grupo', grupoId) : null;
     const configCnpj = getVisibilidadeScopeConfig('cnpj', cnpjId);
 
-    return mergeVisibilidadeConfigs(configGrupo, configCnpj);
+    return sanitizeVisibilidadeConfig(mergeVisibilidadeConfigs(configGrupo, configCnpj));
   };
 
   const getVisibilidadeMeta = (cnpjId) => {
@@ -109,7 +122,9 @@ export const DataProvider = ({ children }) => {
     const grupoId = getGrupoIdByCnpj(cnpjId);
     const configGrupo = grupoId ? getVisibilidadeScopeConfig('grupo', grupoId) : null;
     const configCnpj = getVisibilidadeScopeConfig('cnpj', cnpjId);
-    const configEfetiva = mergeVisibilidadeConfigs(configGrupo, configCnpj);
+    const configEfetiva = sanitizeVisibilidadeConfig(
+      mergeVisibilidadeConfigs(configGrupo, configCnpj)
+    );
 
     return {
       origem: configCnpj ? 'cnpj' : configGrupo ? 'grupo' : 'padrao',
@@ -138,6 +153,7 @@ export const DataProvider = ({ children }) => {
 
     isSecaoVisivel: (cnpjId, secaoId) => {
       if (!visibilidadeAplicada) return true;
+      if (secaoId === 'gerais') return true;
       const config = getVisibilidadeConfig(cnpjId);
       if (!config) return true;
       return config[secaoId]?.visivel !== false;
@@ -145,6 +161,7 @@ export const DataProvider = ({ children }) => {
 
     isItemVisivel: (cnpjId, secaoId, itemId) => {
       if (!visibilidadeAplicada) return true;
+      if (secaoId === 'gerais') return true;
       const config = getVisibilidadeConfig(cnpjId);
       if (!config) return true;
       return config[secaoId]?.itens?.[itemId] !== false;

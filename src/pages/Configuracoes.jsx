@@ -312,37 +312,9 @@ const Configuracoes = () => {
   const [selectedGrupoVisibilidade, setSelectedGrupoVisibilidade] = useState('');
   const [selectedCnpjVisibilidade, setSelectedCnpjVisibilidade] = useState('');
   const [visibilidadeBusca, setVisibilidadeBusca] = useState('');
-  const [selectedPresetVisibilidade, setSelectedPresetVisibilidade] = useState('padrao');
 
   // Estrutura de dashboards disponíveis
   const DASHBOARD_SECTIONS = {
-    gerais: {
-      nome: 'Informações Gerais',
-      descricao: 'Dados cadastrais e equipe técnica',
-      itens: [
-        {
-          id: 'header_empresa',
-          nome: 'Header da Empresa',
-          descricao: 'Informações básicas da empresa',
-        },
-        {
-          id: 'cards_resumo',
-          nome: 'Cards de Resumo',
-          descricao: 'Receita, Lucro, Margem, Meses Analisados',
-        },
-        { id: 'responsavel', nome: 'Responsável', descricao: 'Card do responsável com WhatsApp' },
-        {
-          id: 'equipe_tecnica',
-          nome: 'Equipe Técnica',
-          descricao: 'Cards da equipe contábil, fiscal, etc.',
-        },
-        {
-          id: 'analise_geral',
-          nome: 'Resumo Geral',
-          descricao: 'Card final de suporte e orientação',
-        },
-      ],
-    },
     contabil: {
       nome: 'Setor Contábil',
       descricao: 'Gráficos e indicadores contábeis',
@@ -498,50 +470,6 @@ const Configuracoes = () => {
     }, {})
   );
 
-  const VISIBILIDADE_PRESETS = {
-    padrao: {
-      nome: 'Padrão Agili',
-      descricao: 'Todos os gráficos e cards visíveis',
-      base: 'default',
-      overrides: {},
-    },
-    lucro_real: {
-      nome: 'Lucro Real',
-      descricao: 'Mantem todos os blocos fiscais habilitados',
-      base: 'default',
-      overrides: {},
-    },
-    lucro_presumido: {
-      nome: 'Lucro Presumido',
-      descricao: 'Oculta os blocos de cálculo 380 por padrão',
-      base: 'default',
-      overrides: {
-        fiscal: {
-          itens: {
-            tabela_380: false,
-            situacao_380: false,
-          },
-        },
-      },
-    },
-    simples_nacional: {
-      nome: 'Simples Nacional',
-      descricao: 'Oculta blocos de IRPJ/CSLL e calculo 380',
-      base: 'default',
-      overrides: {
-        fiscal: {
-          itens: {
-            irpj_periodo: false,
-            csll_periodo: false,
-            resumo_impostos: false,
-            tabela_380: false,
-            situacao_380: false,
-          },
-        },
-      },
-    },
-  };
-
   const createDefaultVisibilidadeConfig = () =>
     createVisibilidadeConfigFromSections(DASHBOARD_SECTIONS, true);
 
@@ -609,19 +537,6 @@ const Configuracoes = () => {
     setVisibilidadeConfig(loadCurrentVisibilidadeConfig());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibilidadeEscopo, selectedGrupoVisibilidade, selectedCnpjVisibilidade, grupos, cnpjs]);
-
-  const applyVisibilidadePreset = (presetId) => {
-    const preset = VISIBILIDADE_PRESETS[presetId];
-    if (!preset) return;
-
-    const baseConfig =
-      preset.base === 'all-hidden'
-        ? createAllHiddenVisibilidadeConfig()
-        : createDefaultVisibilidadeConfig();
-
-    setVisibilidadeConfig(mergeVisibilidadeConfigs(baseConfig, preset.overrides));
-    showSuccess(`Preset aplicado: ${preset.nome}`);
-  };
 
   const setTodosItensVisibilidade = (visivel) => {
     setVisibilidadeConfig(
@@ -709,19 +624,6 @@ const Configuracoes = () => {
 
   const selectedCnpjInfo = cnpjs.find((cnpj) => cnpj.id === selectedCnpjVisibilidade) || null;
   const selectedGrupoInfo = grupos.find((grupo) => grupo.id === selectedGrupoVisibilidade) || null;
-
-  useEffect(() => {
-    if (visibilidadeEscopo !== 'cnpj') return;
-    const regime = normalizeText(selectedCnpjInfo?.regimeTributario);
-    const presetSugerido = regime.includes('simples')
-      ? 'simples_nacional'
-      : regime.includes('presumido')
-        ? 'lucro_presumido'
-        : regime.includes('real')
-          ? 'lucro_real'
-          : 'padrao';
-    setSelectedPresetVisibilidade(presetSugerido);
-  }, [visibilidadeEscopo, selectedCnpjInfo?.regimeTributario]);
 
   useEffect(() => {
     if (!visibilidadeBusca.trim()) return;
@@ -3626,8 +3528,6 @@ const Configuracoes = () => {
           {activeTab === 'visibilidade' && (
             <VisibilidadeTab
               DASHBOARD_SECTIONS={DASHBOARD_SECTIONS}
-              VISIBILIDADE_PRESETS={VISIBILIDADE_PRESETS}
-              applyVisibilidadePreset={applyVisibilidadePreset}
               cnpjTemSobrescrita={cnpjTemSobrescrita}
               cnpjs={cnpjs}
               expandedSecoesVisibilidade={expandedSecoesVisibilidade}
@@ -3643,10 +3543,8 @@ const Configuracoes = () => {
               selectedCnpjVisibilidade={selectedCnpjVisibilidade}
               selectedGrupoInfo={selectedGrupoInfo}
               selectedGrupoVisibilidade={selectedGrupoVisibilidade}
-              selectedPresetVisibilidade={selectedPresetVisibilidade}
               setSelectedCnpjVisibilidade={setSelectedCnpjVisibilidade}
               setSelectedGrupoVisibilidade={setSelectedGrupoVisibilidade}
-              setSelectedPresetVisibilidade={setSelectedPresetVisibilidade}
               setTodosItensVisibilidade={setTodosItensVisibilidade}
               setVisibilidadeBusca={setVisibilidadeBusca}
               setVisibilidadeConfig={setVisibilidadeConfig}

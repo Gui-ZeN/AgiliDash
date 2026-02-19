@@ -2,8 +2,6 @@ import { Building2, Check, ChevronRight, Eye, RotateCcw, Save, Search, X } from 
 
 const VisibilidadeTab = ({
   DASHBOARD_SECTIONS,
-  VISIBILIDADE_PRESETS,
-  applyVisibilidadePreset,
   cnpjTemSobrescrita,
   expandedSecoesVisibilidade,
   cnpjs,
@@ -17,10 +15,8 @@ const VisibilidadeTab = ({
   selectedCnpjVisibilidade,
   selectedGrupoInfo,
   selectedGrupoVisibilidade,
-  selectedPresetVisibilidade,
   setSelectedCnpjVisibilidade,
   setSelectedGrupoVisibilidade,
-  setSelectedPresetVisibilidade,
   setTodosItensVisibilidade,
   setVisibilidadeBusca,
   setVisibilidadeConfig,
@@ -55,7 +51,7 @@ const VisibilidadeTab = ({
       </div>
 
       <div className="mb-6 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               Escopo
@@ -116,36 +112,6 @@ const VisibilidadeTab = ({
                 placeholder="Ex: IRPJ, estoque, FGTS..."
                 className="w-full pl-10 pr-3 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-white outline-none focus:border-[#0e4f6d]"
               />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              Preset por regime
-            </label>
-            {visibilidadeEscopo === 'cnpj' && selectedCnpjInfo?.regimeTributario && (
-              <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">
-                Sugerido para o regime: {selectedCnpjInfo.regimeTributario}
-              </p>
-            )}
-            <div className="flex gap-2">
-              <select
-                value={selectedPresetVisibilidade}
-                onChange={(e) => setSelectedPresetVisibilidade(e.target.value)}
-                className="flex-1 px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-white outline-none focus:border-[#0e4f6d]"
-              >
-                {Object.entries(VISIBILIDADE_PRESETS).map(([presetId, preset]) => (
-                  <option key={presetId} value={presetId}>
-                    {preset.nome}
-                  </option>
-                ))}
-              </select>
-              <button
-                onClick={() => applyVisibilidadePreset(selectedPresetVisibilidade)}
-                className="px-4 py-2 bg-[#0e4f6d] text-white rounded-lg hover:bg-[#0d4560] transition-colors"
-              >
-                Aplicar
-              </button>
             </div>
           </div>
         </div>

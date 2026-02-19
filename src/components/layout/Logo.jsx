@@ -35,12 +35,13 @@ const Logo = ({ width = 200, height = 75, className = '' }) => {
 
       {/* Texto "Complex" */}
       <text
-        x="168"
-        y="92"
+        x="212.5"
+        y="90"
         fontFamily="Arial, sans-serif"
         fontWeight="bold"
         fontSize="24"
         fill="#0e4f6d"
+        textAnchor="middle"
       >
         Complex
       </text>
