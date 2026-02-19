@@ -1,10 +1,5 @@
 import { Doughnut } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend
-} from 'chart.js';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { formatCurrency } from '../../utils/formatters';
 import { custosGrupos } from '../../data/mockData';
 import { useTheme } from '../../context/ThemeContext';
@@ -26,13 +21,11 @@ const CustosPizzaChart = () => {
     datasets: [
       {
         data: custosGrupos.data,
-        backgroundColor: isDarkMode
-          ? ['#f87171', '#fca5a5']
-          : ['#ef4444', '#fca5a5'],
+        backgroundColor: isDarkMode ? ['#f87171', '#fca5a5'] : ['#ef4444', '#fca5a5'],
         borderWidth: 0,
-        hoverOffset: 10
-      }
-    ]
+        hoverOffset: 10,
+      },
+    ],
   };
 
   const options = getPieChartOptions(isDarkMode, {
@@ -43,24 +36,24 @@ const CustosPizzaChart = () => {
           color: colors.textColor,
           usePointStyle: true,
           font: {
-            size: 11
-          }
-        }
+            size: 11,
+          },
+        },
       },
       tooltip: {
         callbacks: {
-          label: function(context) {
+          label: function (context) {
             let label = context.label || '';
             if (label) label += ': ';
             const value = context.raw;
             const total = context.chart._metasets[context.datasetIndex].total;
             const percentage = ((value / total) * 100).toFixed(1) + '%';
             return label + formatCurrency(value) + ' (' + percentage + ')';
-          }
-        }
-      }
+          },
+        },
+      },
     },
-    cutout: '65%'
+    cutout: '65%',
   });
 
   return (

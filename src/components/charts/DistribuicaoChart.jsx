@@ -1,11 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { Doughnut } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend
-} from 'chart.js';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { formatCurrency, calculatePercentage } from '../../utils/formatters';
 import { entradasData, saidasData } from '../../data/mockData';
 import { useTheme } from '../../context/ThemeContext';
@@ -35,7 +30,7 @@ const DistribuicaoChart = ({ onDataCalculated }) => {
       totalGeral,
       percEntradas: calculatePercentage(totalEntradas, totalGeral),
       percSaidas: calculatePercentage(totalSaidas, totalGeral),
-      percServicos: calculatePercentage(totalServicos, totalGeral)
+      percServicos: calculatePercentage(totalServicos, totalGeral),
     };
   }, []);
 
@@ -57,32 +52,32 @@ const DistribuicaoChart = ({ onDataCalculated }) => {
           ? ['#f87171', '#4ade80', '#38bdf8']
           : ['#ef4444', '#22c55e', '#3b82f6'],
         borderWidth: 0,
-        hoverOffset: 15
-      }
-    ]
+        hoverOffset: 15,
+      },
+    ],
   };
 
   const options = getPieChartOptions(isDarkMode, {
     cutout: '60%',
     layout: {
-      padding: 20
+      padding: 20,
     },
     plugins: {
       legend: {
-        display: false
+        display: false,
       },
       tooltip: {
         callbacks: {
-          label: function(context) {
+          label: function (context) {
             let label = context.label || '';
             if (label) label += ': ';
             const value = context.raw;
             const percentage = calculatePercentage(value, totalGeral);
             return label + formatCurrency(value) + ' (' + percentage + ')';
-          }
-        }
-      }
-    }
+          },
+        },
+      },
+    },
   });
 
   return (

@@ -8,7 +8,7 @@ import {
   Title,
   Tooltip,
   Legend,
-  Filler
+  Filler,
 } from 'chart.js';
 import { formatCurrency } from '../../utils/formatters';
 import { meses, dreData2024, dreData2025 } from '../../data/mockData';
@@ -46,7 +46,7 @@ const LucroComparativoChart = () => {
         borderWidth: 2,
         borderDash: [5, 5],
         tension: 0.4,
-        pointRadius: 3
+        pointRadius: 3,
       },
       {
         label: 'Lucro Liquido 2025',
@@ -56,9 +56,9 @@ const LucroComparativoChart = () => {
         borderWidth: 3,
         tension: 0.4,
         pointRadius: 4,
-        fill: true
-      }
-    ]
+        fill: true,
+      },
+    ],
   };
 
   const options = getChartOptions(isDarkMode, {
@@ -66,39 +66,39 @@ const LucroComparativoChart = () => {
       legend: {
         position: 'top',
         labels: {
-          color: colors.textColor
-        }
+          color: colors.textColor,
+        },
       },
       tooltip: {
         mode: 'index',
         intersect: false,
         callbacks: {
-          label: function(context) {
+          label: function (context) {
             return context.dataset.label + ': ' + formatCurrency(context.raw);
-          }
-        }
-      }
+          },
+        },
+      },
     },
     scales: {
       y: {
         beginAtZero: true,
         grid: {
-          color: colors.gridColor
+          color: colors.gridColor,
         },
         ticks: {
           color: colors.textColorSecondary,
-          callback: (value) => 'R$ ' + (value / 1000).toFixed(0) + 'k'
-        }
+          callback: (value) => 'R$ ' + (value / 1000).toFixed(0) + 'k',
+        },
       },
       x: {
         grid: {
-          display: false
+          display: false,
         },
         ticks: {
-          color: colors.textColorSecondary
-        }
-      }
-    }
+          color: colors.textColorSecondary,
+        },
+      },
+    },
   });
 
   return (

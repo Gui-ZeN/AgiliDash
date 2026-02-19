@@ -11,21 +11,22 @@ const Card = ({
   border = true,
   accent = false,
   accentColor = 'bg-primary-600',
-  hover = false
+  hover = false,
 }) => {
-  const baseClasses = 'bg-white dark:bg-slate-800 relative overflow-hidden transition-all duration-200';
+  const baseClasses =
+    'bg-white dark:bg-slate-800 relative overflow-hidden transition-all duration-200';
   const shadowClass = shadow ? 'shadow-sm hover:shadow-md' : '';
   const borderClass = border ? 'border border-slate-200/80 dark:border-slate-700/80' : '';
-  const hoverClass = hover ? 'hover:border-slate-300 dark:hover:border-slate-600 cursor-pointer' : '';
+  const hoverClass = hover
+    ? 'hover:border-slate-300 dark:hover:border-slate-600 cursor-pointer'
+    : '';
 
   return (
-    <div className={`${baseClasses} ${rounded} ${shadowClass} ${borderClass} ${hoverClass} ${className}`}>
-      {accent && (
-        <div className={`absolute left-0 top-0 bottom-0 w-1 ${accentColor}`} />
-      )}
-      <div className={`${padding} ${accent ? 'pl-7' : ''}`}>
-        {children}
-      </div>
+    <div
+      className={`${baseClasses} ${rounded} ${shadowClass} ${borderClass} ${hoverClass} ${className}`}
+    >
+      {accent && <div className={`absolute left-0 top-0 bottom-0 w-1 ${accentColor}`} />}
+      <div className={`${padding} ${accent ? 'pl-7' : ''}`}>{children}</div>
     </div>
   );
 };
@@ -46,7 +47,9 @@ export const PrimaryCard = ({ children, className = '' }) => {
  */
 export const AlertCard = ({ children, className = '' }) => {
   return (
-    <div className={`bg-amber-50/80 dark:bg-amber-900/10 border border-amber-200/80 dark:border-amber-800/50 p-5 rounded-lg ${className}`}>
+    <div
+      className={`bg-amber-50/80 dark:bg-amber-900/10 border border-amber-200/80 dark:border-amber-800/50 p-5 rounded-lg ${className}`}
+    >
       {children}
     </div>
   );
@@ -57,7 +60,9 @@ export const AlertCard = ({ children, className = '' }) => {
  */
 export const InfoCard = ({ children, className = '' }) => {
   return (
-    <div className={`bg-teal-50/80 dark:bg-teal-900/10 border border-teal-200/80 dark:border-teal-800/50 p-5 rounded-lg ${className}`}>
+    <div
+      className={`bg-teal-50/80 dark:bg-teal-900/10 border border-teal-200/80 dark:border-teal-800/50 p-5 rounded-lg ${className}`}
+    >
       {children}
     </div>
   );
@@ -72,10 +77,12 @@ export const MetricCard = ({
   iconColor = 'text-slate-600 dark:text-slate-300',
   label,
   value,
-  className = ''
+  className = '',
 }) => {
   return (
-    <div className={`bg-white dark:bg-slate-800 p-5 rounded-lg border border-slate-200/80 dark:border-slate-700/80 shadow-sm flex items-center gap-4 ${className}`}>
+    <div
+      className={`bg-white dark:bg-slate-800 p-5 rounded-lg border border-slate-200/80 dark:border-slate-700/80 shadow-sm flex items-center gap-4 ${className}`}
+    >
       <div className={`p-2.5 ${iconBgColor} rounded-md`}>
         <Icon className={`w-5 h-5 ${iconColor}`} />
       </div>
@@ -97,12 +104,16 @@ export const TeamCard = ({
   iconBgColor = 'bg-slate-100 dark:bg-slate-700/50',
   iconColor = 'text-slate-600 dark:text-slate-300',
   setor,
-  nome
+  nome,
 }) => {
   return (
     <div className="bg-white dark:bg-slate-800 p-5 rounded-lg border border-slate-200/80 dark:border-slate-700/80 shadow-sm flex items-center gap-4 group transition-all duration-200 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-md">
-      <div className={`p-2.5 ${iconBgColor} rounded-md group-hover:bg-primary-600 dark:group-hover:bg-primary-600 transition-colors duration-200`}>
-        <Icon className={`w-5 h-5 ${iconColor} group-hover:text-white transition-colors duration-200`} />
+      <div
+        className={`p-2.5 ${iconBgColor} rounded-md group-hover:bg-primary-600 dark:group-hover:bg-primary-600 transition-colors duration-200`}
+      >
+        <Icon
+          className={`w-5 h-5 ${iconColor} group-hover:text-white transition-colors duration-200`}
+        />
       </div>
       <div>
         <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">

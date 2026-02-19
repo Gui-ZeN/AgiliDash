@@ -7,14 +7,24 @@ import { Calendar, ChevronDown } from 'lucide-react';
 const PeriodFilter = ({
   value = { type: 'month', year: 2025, month: 1 },
   onChange,
-  className = ''
+  className = '',
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
   const meses = [
-    'Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho',
-    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+    'Janeiro',
+    'Fevereiro',
+    'Marco',
+    'Abril',
+    'Maio',
+    'Junho',
+    'Julho',
+    'Agosto',
+    'Setembro',
+    'Outubro',
+    'Novembro',
+    'Dezembro',
   ];
 
   const anos = [2025, 2024, 2023, 2022];
@@ -23,7 +33,7 @@ const PeriodFilter = ({
     { label: '1o Trimestre', value: 1, months: [1, 2, 3] },
     { label: '2o Trimestre', value: 2, months: [4, 5, 6] },
     { label: '3o Trimestre', value: 3, months: [7, 8, 9] },
-    { label: '4o Trimestre', value: 4, months: [10, 11, 12] }
+    { label: '4o Trimestre', value: 4, months: [10, 11, 12] },
   ];
 
   useEffect(() => {
@@ -70,7 +80,9 @@ const PeriodFilter = ({
         <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
           {getDisplayLabel()}
         </span>
-        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown
+          className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+        />
       </button>
 
       {isOpen && (

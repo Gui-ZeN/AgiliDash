@@ -726,10 +726,13 @@ const Configuracoes = () => {
   useEffect(() => {
     if (!visibilidadeBusca.trim()) return;
     setExpandedSecoesVisibilidade((prev) =>
-      Object.keys(prev).reduce((acc, secaoId) => {
-        acc[secaoId] = true;
-        return acc;
-      }, { ...prev })
+      Object.keys(prev).reduce(
+        (acc, secaoId) => {
+          acc[secaoId] = true;
+          return acc;
+        },
+        { ...prev }
+      )
     );
   }, [visibilidadeBusca]);
 

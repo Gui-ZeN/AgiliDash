@@ -25,45 +25,45 @@ function App() {
         <ToastProvider>
           <DataProvider>
             <EmpresaProvider>
-            <Routes>
-              {/* Login - Público */}
-              <Route path="/" element={<Login />} />
+              <Routes>
+                {/* Login - Público */}
+                <Route path="/" element={<Login />} />
 
-              {/* Dashboard - Requer autenticaÇão */}
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                }
-              />
+                {/* Dashboard - Requer autenticaÇão */}
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  }
+                />
 
-              {/* Configurações - Requer Admin */}
-              <Route
-                path="/configuracoes"
-                element={
-                  <ProtectedRoute requireAdmin>
-                    <Configuracoes />
-                  </ProtectedRoute>
-                }
-              />
+                {/* Configurações - Requer Admin */}
+                <Route
+                  path="/configuracoes"
+                  element={
+                    <ProtectedRoute requireAdmin>
+                      <Configuracoes />
+                    </ProtectedRoute>
+                  }
+                />
 
-              {/* Logs - Requer Admin */}
-              <Route
-                path="/logs"
-                element={
-                  <ProtectedRoute requireAdmin>
-                    <Logs />
-                  </ProtectedRoute>
-                }
-              />
+                {/* Logs - Requer Admin */}
+                <Route
+                  path="/logs"
+                  element={
+                    <ProtectedRoute requireAdmin>
+                      <Logs />
+                    </ProtectedRoute>
+                  }
+                />
 
-              {/* Redirecionamentos */}
-              <Route path="/admin" element={<Navigate to="/configuracoes" replace />} />
-              <Route path="/usuarios" element={<Navigate to="/configuracoes" replace />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
+                {/* Redirecionamentos */}
+                <Route path="/admin" element={<Navigate to="/configuracoes" replace />} />
+                <Route path="/usuarios" element={<Navigate to="/configuracoes" replace />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
             </EmpresaProvider>
           </DataProvider>
         </ToastProvider>

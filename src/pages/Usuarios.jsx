@@ -1,8 +1,19 @@
 ﻿import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  ArrowLeft, Users, Plus, Search, Edit2, Trash2, Shield, Eye,
-  Check, X, Mail, Phone, FolderTree
+  ArrowLeft,
+  Users,
+  Plus,
+  Search,
+  Edit2,
+  Trash2,
+  Shield,
+  Eye,
+  Check,
+  X,
+  Mail,
+  Phone,
+  FolderTree,
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useData } from '../context/DataContext';
@@ -13,14 +24,8 @@ import { useData } from '../context/DataContext';
  */
 const Usuarios = () => {
   const { isDarkMode } = useTheme();
-  const {
-    usuarios,
-    grupos,
-    addUsuario,
-    updateUsuario,
-    deleteUsuario,
-    setoresDisponiveis
-  } = useData();
+  const { usuarios, grupos, addUsuario, updateUsuario, deleteUsuario, setoresDisponiveis } =
+    useData();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPerfil, setFilterPerfil] = useState('todos');
@@ -41,13 +46,13 @@ const Usuarios = () => {
     perfil: 'Visualizador',
     status: 'Ativo',
     grupoId: '',
-    setoresAcesso: []
+    setoresAcesso: [],
   });
 
   // Perfis disponíveis
   const perfisUsuario = [
     { value: 'Admin', label: 'Administrador', descricao: 'Acesso total ao sistema' },
-    { value: 'Visualizador', label: 'Visualizador', descricao: 'Apenas visualização de dados' }
+    { value: 'Visualizador', label: 'Visualizador', descricao: 'Apenas visualização de dados' },
   ];
 
   // Mostrar mensagem de sucesso
@@ -58,9 +63,10 @@ const Usuarios = () => {
 
   // Filtered users
   const filteredUsers = useMemo(() => {
-    return usuarios.filter(user => {
-      const matchSearch = user.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    return usuarios.filter((user) => {
+      const matchSearch =
+        user.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase());
       const matchPerfil = filterPerfil === 'todos' || user.perfil === filterPerfil;
       const matchStatus = filterStatus === 'todos' || user.status === filterStatus;
       return matchSearch && matchPerfil && matchStatus;
@@ -78,7 +84,7 @@ const Usuarios = () => {
         perfil: user.perfil,
         status: user.status,
         grupoId: user.grupoId || '',
-        setoresAcesso: user.setoresAcesso || []
+        setoresAcesso: user.setoresAcesso || [],
       });
     } else {
       setSelectedUser(null);
@@ -89,7 +95,7 @@ const Usuarios = () => {
         perfil: 'Visualizador',
         status: 'Ativo',
         grupoId: grupos[0]?.id || '',
-        setoresAcesso: []
+        setoresAcesso: [],
       });
     }
     setModalOpen(true);
@@ -115,16 +121,16 @@ const Usuarios = () => {
   };
 
   const toggleSetor = (setorId) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       setoresAcesso: prev.setoresAcesso.includes(setorId)
-        ? prev.setoresAcesso.filter(s => s !== setorId)
-        : [...prev.setoresAcesso, setorId]
+        ? prev.setoresAcesso.filter((s) => s !== setorId)
+        : [...prev.setoresAcesso, setorId],
     }));
   };
 
   const getGrupoNome = (grupoId) => {
-    const grupo = grupos.find(g => g.id === grupoId);
+    const grupo = grupos.find((g) => g.id === grupoId);
     return grupo?.nome || 'Sem grupo';
   };
 
@@ -145,8 +151,12 @@ const Usuarios = () => {
                 <Users className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-slate-800 dark:text-white">Gestão de Usuários</h1>
-                <p className="text-xs text-slate-500 dark:text-slate-400">{usuarios.length} usuários cadastrados</p>
+                <h1 className="text-lg font-bold text-slate-800 dark:text-white">
+                  Gestão de Usuários
+                </h1>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {usuarios.length} usuários cadastrados
+                </p>
               </div>
             </div>
           </div>
@@ -173,19 +183,27 @@ const Usuarios = () => {
         {/* Stats Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-100 dark:border-slate-700">
-            <p className="text-2xl font-bold text-[#0e4f6d] dark:text-teal-500">{usuarios.length}</p>
+            <p className="text-2xl font-bold text-[#0e4f6d] dark:text-teal-500">
+              {usuarios.length}
+            </p>
             <p className="text-sm text-slate-500 dark:text-slate-400">Total Usuários</p>
           </div>
           <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-100 dark:border-slate-700">
-            <p className="text-2xl font-bold text-emerald-700">{usuarios.filter(u => u.status === 'Ativo').length}</p>
+            <p className="text-2xl font-bold text-emerald-700">
+              {usuarios.filter((u) => u.status === 'Ativo').length}
+            </p>
             <p className="text-sm text-slate-500 dark:text-slate-400">Ativos</p>
           </div>
           <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-100 dark:border-slate-700">
-            <p className="text-2xl font-bold text-amber-500">{usuarios.filter(u => u.perfil === 'Admin').length}</p>
+            <p className="text-2xl font-bold text-amber-500">
+              {usuarios.filter((u) => u.perfil === 'Admin').length}
+            </p>
             <p className="text-sm text-slate-500 dark:text-slate-400">Administradores</p>
           </div>
           <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-100 dark:border-slate-700">
-            <p className="text-2xl font-bold text-blue-500">{usuarios.filter(u => u.perfil === 'Visualizador').length}</p>
+            <p className="text-2xl font-bold text-blue-500">
+              {usuarios.filter((u) => u.perfil === 'Visualizador').length}
+            </p>
             <p className="text-sm text-slate-500 dark:text-slate-400">Visualizadores</p>
           </div>
         </div>
@@ -209,8 +227,10 @@ const Usuarios = () => {
               className="px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200"
             >
               <option value="todos">Todos os Perfis</option>
-              {perfisUsuario.map(p => (
-                <option key={p.value} value={p.value}>{p.label}</option>
+              {perfisUsuario.map((p) => (
+                <option key={p.value} value={p.value}>
+                  {p.label}
+                </option>
               ))}
             </select>
             <select
@@ -231,26 +251,47 @@ const Usuarios = () => {
             <table className="w-full">
               <thead className="bg-slate-50 dark:bg-slate-700/50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Usuário</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Contato</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Grupo</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Perfil</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Setores</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Status</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Ações</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                    Usuário
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                    Contato
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                    Grupo
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                    Perfil
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                    Setores
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                    Ações
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                 {filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                  <tr
+                    key={user.id}
+                    className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
+                  >
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-[#0e4f6d] flex items-center justify-center text-white font-bold">
                           {user.nome.substring(0, 2).toUpperCase()}
                         </div>
                         <div>
-                          <p className="font-semibold text-slate-800 dark:text-white">{user.nome}</p>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">ID: {user.id}</p>
+                          <p className="font-semibold text-slate-800 dark:text-white">
+                            {user.nome}
+                          </p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                            ID: {user.id}
+                          </p>
                         </div>
                       </div>
                     </td>
@@ -271,22 +312,30 @@ const Usuarios = () => {
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-2">
                         <FolderTree className="w-4 h-4 text-amber-500" />
-                        <span className="text-sm text-slate-600 dark:text-slate-300">{getGrupoNome(user.grupoId)}</span>
+                        <span className="text-sm text-slate-600 dark:text-slate-300">
+                          {getGrupoNome(user.grupoId)}
+                        </span>
                       </div>
                     </td>
                     <td className="px-4 py-4">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-                        user.perfil === 'Admin'
-                          ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
-                          : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                      }`}>
-                        {user.perfil === 'Admin' ? <Shield className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                          user.perfil === 'Admin'
+                            ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
+                            : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                        }`}
+                      >
+                        {user.perfil === 'Admin' ? (
+                          <Shield className="w-3 h-3" />
+                        ) : (
+                          <Eye className="w-3 h-3" />
+                        )}
                         {user.perfil}
                       </span>
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex flex-wrap gap-1">
-                        {(user.setoresAcesso || []).slice(0, 3).map(setor => (
+                        {(user.setoresAcesso || []).slice(0, 3).map((setor) => (
                           <span
                             key={setor}
                             className="px-2 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded text-xs capitalize"
@@ -305,11 +354,13 @@ const Usuarios = () => {
                       </div>
                     </td>
                     <td className="px-4 py-4">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                        user.status === 'Ativo'
-                          ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-700'
-                          : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
-                      }`}>
+                      <span
+                        className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                          user.status === 'Ativo'
+                            ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-700'
+                            : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
+                        }`}
+                      >
                         {user.status}
                       </span>
                     </td>
@@ -368,7 +419,9 @@ const Usuarios = () => {
               {/* Dados básicos */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nome *</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    Nome *
+                  </label>
                   <input
                     type="text"
                     value={formData.nome}
@@ -378,7 +431,9 @@ const Usuarios = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email *</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    Email *
+                  </label>
                   <input
                     type="email"
                     value={formData.email}
@@ -388,7 +443,9 @@ const Usuarios = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Telefone</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    Telefone
+                  </label>
                   <input
                     type="tel"
                     value={formData.telefone}
@@ -398,7 +455,9 @@ const Usuarios = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Status</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    Status
+                  </label>
                   <select
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
@@ -412,24 +471,30 @@ const Usuarios = () => {
 
               {/* Grupo */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">Grupo</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+                  Grupo
+                </label>
                 <select
                   value={formData.grupoId}
                   onChange={(e) => setFormData({ ...formData, grupoId: e.target.value })}
                   className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200"
                 >
                   <option value="">Selecione um grupo...</option>
-                  {grupos.map(grupo => (
-                    <option key={grupo.id} value={grupo.id}>{grupo.nome}</option>
+                  {grupos.map((grupo) => (
+                    <option key={grupo.id} value={grupo.id}>
+                      {grupo.nome}
+                    </option>
                   ))}
                 </select>
               </div>
 
               {/* Perfil */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">Perfil de Acesso</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+                  Perfil de Acesso
+                </label>
                 <div className="grid grid-cols-2 gap-4">
-                  {perfisUsuario.map(perfil => (
+                  {perfisUsuario.map((perfil) => (
                     <button
                       key={perfil.value}
                       onClick={() => setFormData({ ...formData, perfil: perfil.value })}
@@ -441,15 +506,23 @@ const Usuarios = () => {
                     >
                       <div className="flex items-center gap-3 mb-2">
                         {perfil.value === 'Admin' ? (
-                          <Shield className={`w-5 h-5 ${formData.perfil === perfil.value ? 'text-[#0e4f6d]' : 'text-slate-400'}`} />
+                          <Shield
+                            className={`w-5 h-5 ${formData.perfil === perfil.value ? 'text-[#0e4f6d]' : 'text-slate-400'}`}
+                          />
                         ) : (
-                          <Eye className={`w-5 h-5 ${formData.perfil === perfil.value ? 'text-[#0e4f6d]' : 'text-slate-400'}`} />
+                          <Eye
+                            className={`w-5 h-5 ${formData.perfil === perfil.value ? 'text-[#0e4f6d]' : 'text-slate-400'}`}
+                          />
                         )}
-                        <span className={`font-semibold ${formData.perfil === perfil.value ? 'text-[#0e4f6d] dark:text-teal-500' : 'text-slate-700 dark:text-slate-300'}`}>
+                        <span
+                          className={`font-semibold ${formData.perfil === perfil.value ? 'text-[#0e4f6d] dark:text-teal-500' : 'text-slate-700 dark:text-slate-300'}`}
+                        >
                           {perfil.label}
                         </span>
                       </div>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">{perfil.descricao}</p>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        {perfil.descricao}
+                      </p>
                     </button>
                   ))}
                 </div>
@@ -457,9 +530,11 @@ const Usuarios = () => {
 
               {/* Setores */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">Setores com Acesso</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+                  Setores com Acesso
+                </label>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {setoresDisponiveis.map(setor => (
+                  {setoresDisponiveis.map((setor) => (
                     <button
                       key={setor.id}
                       onClick={() => toggleSetor(setor.id)}
@@ -506,7 +581,9 @@ const Usuarios = () => {
               <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 mx-auto mb-4 flex items-center justify-center">
                 <Trash2 className="w-8 h-8 text-red-500" />
               </div>
-              <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">Excluir Usuário</h3>
+              <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">
+                Excluir Usuário
+              </h3>
               <p className="text-slate-500 dark:text-slate-400 mb-6">
                 Tem certeza que deseja excluir este usuário? Esta Ação Não pode ser desfeita.
               </p>

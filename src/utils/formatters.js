@@ -12,7 +12,7 @@ export const formatCurrency = (value) => {
 
   return value.toLocaleString('pt-BR', {
     style: 'currency',
-    currency: 'BRL'
+    currency: 'BRL',
   });
 };
 
@@ -60,10 +60,7 @@ export const calculatePercentage = (value, total, decimals = 1) => {
  */
 export const formatCNPJ = (cnpj) => {
   const cleanCnpj = cnpj.replace(/\D/g, '');
-  return cleanCnpj.replace(
-    /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,
-    '$1.$2.$3/$4-$5'
-  );
+  return cleanCnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
 };
 
 /**

@@ -364,7 +364,7 @@ const DashboardAdministrativoTab = ({
                     Aluguel: Home,
                     Utilidades: Zap,
                     Seguro: Shield,
-                    'Serviços': Wrench,
+                    Serviços: Wrench,
                   };
                   const Icon = iconMap[contrato.tipo] || Package;
 

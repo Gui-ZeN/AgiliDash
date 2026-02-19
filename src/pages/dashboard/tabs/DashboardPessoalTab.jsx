@@ -538,9 +538,9 @@ const DashboardPessoalTab = ({
               <p className="text-white/80 leading-relaxed">
                 {temDadosPessoal ? (
                   <>
-                    Dados importados do Sistema Dominio. Visualize FGTS, INSS, relacao de
-                    empregados e programacao de ferias. Para atualizar os dados, importe novos
-                    arquivos CSV na pagina de Configuracoes.
+                    Dados importados do Sistema Dominio. Visualize FGTS, INSS, relacao de empregados
+                    e programacao de ferias. Para atualizar os dados, importe novos arquivos CSV na
+                    pagina de Configuracoes.
                   </>
                 ) : (
                   <>

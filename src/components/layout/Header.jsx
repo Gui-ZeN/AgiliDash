@@ -53,7 +53,7 @@ const Header = ({ activeTab, onTabChange, showTabs = true, tabsPermitidas = null
     modoVisualizacao,
     isConsolidado,
     toggleModoConsolidado,
-    modoLabel
+    modoLabel,
   } = useEmpresa();
 
   const tabs = [
@@ -61,7 +61,7 @@ const Header = ({ activeTab, onTabChange, showTabs = true, tabsPermitidas = null
     { id: 'contabil', label: 'CONTABIL' },
     { id: 'fiscal', label: 'FISCAL' },
     { id: 'pessoal', label: 'PESSOAL' },
-    { id: 'administrativo', label: 'ADMIN' }
+    { id: 'administrativo', label: 'ADMIN' },
   ];
 
   const tabsPermitidasSet = useMemo(() => {
@@ -117,32 +117,33 @@ const Header = ({ activeTab, onTabChange, showTabs = true, tabsPermitidas = null
     }
   }, [dropdownOpen]);
 
-  const normalizeText = (value) => String(value || '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim();
+  const normalizeText = (value) =>
+    String(value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
 
   const matchesSearch = (value, term) => {
     if (!term) return true;
     return normalizeText(value).includes(normalizeText(term));
   };
 
-  const gruposFiltrados = listaGrupos.filter(grupo =>
-    matchesSearch(grupo.nome, searchGrupo)
+  const gruposFiltrados = listaGrupos.filter((grupo) => matchesSearch(grupo.nome, searchGrupo));
+
+  const empresasFiltradas = listaEmpresas.filter(
+    (empresa) =>
+      matchesSearch(empresa.nomeFantasia, searchEmpresa) ||
+      matchesSearch(empresa.razaoSocial, searchEmpresa) ||
+      matchesSearch(empresa.cnpjPrincipal, searchEmpresa)
   );
 
-  const empresasFiltradas = listaEmpresas.filter(empresa =>
-    matchesSearch(empresa.nomeFantasia, searchEmpresa) ||
-    matchesSearch(empresa.razaoSocial, searchEmpresa) ||
-    matchesSearch(empresa.cnpjPrincipal, searchEmpresa)
-  );
-
-  const cnpjsFiltrados = listaCnpjs.filter(cnpj =>
-    matchesSearch(cnpj.nomeFantasia, searchCnpj) ||
-    matchesSearch(cnpj.razaoSocial, searchCnpj) ||
-    matchesSearch(cnpj.cnpj, searchCnpj) ||
-    matchesSearch(cnpj.codigoCliente, searchCnpj)
+  const cnpjsFiltrados = listaCnpjs.filter(
+    (cnpj) =>
+      matchesSearch(cnpj.nomeFantasia, searchCnpj) ||
+      matchesSearch(cnpj.razaoSocial, searchCnpj) ||
+      matchesSearch(cnpj.cnpj, searchCnpj) ||
+      matchesSearch(cnpj.codigoCliente, searchCnpj)
   );
 
   const handleSelectCnpj = (cnpjId) => {
@@ -182,9 +183,10 @@ const Header = ({ activeTab, onTabChange, showTabs = true, tabsPermitidas = null
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
                 className={`px-4 xl:px-5 h-full flex items-center font-medium text-xs xl:text-sm tracking-wide transition-all duration-200
-                  ${activeTab === tab.id
-                    ? 'text-slate-900 dark:text-white border-b-2 border-slate-900 dark:border-white'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                  ${
+                    activeTab === tab.id
+                      ? 'text-slate-900 dark:text-white border-b-2 border-slate-900 dark:border-white'
+                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
                   }`}
               >
                 {tab.label}
@@ -229,7 +231,9 @@ const Header = ({ activeTab, onTabChange, showTabs = true, tabsPermitidas = null
                   {isConsolidado ? 'Consolidado' : cnpjInfo?.nomeFantasia}
                 </p>
               </div>
-              <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 flex-shrink-0 ${dropdownOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown
+                className={`w-4 h-4 text-slate-400 transition-transform duration-200 flex-shrink-0 ${dropdownOpen ? 'rotate-180' : ''}`}
+              />
             </button>
 
             {/* Dropdown Menu */}
@@ -245,14 +249,24 @@ const Header = ({ activeTab, onTabChange, showTabs = true, tabsPermitidas = null
                     onClick={() => handleConsolidado('todos')}
                     className={`w-full px-4 py-2.5 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${modoVisualizacao === 'todos' ? 'bg-[#0e4f6d]/5 dark:bg-[#0e4f6d]/20' : ''}`}
                   >
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${modoVisualizacao === 'todos' ? 'bg-[#0e4f6d]' : 'bg-slate-100 dark:bg-slate-700'}`}>
-                      <Layers className={`w-4 h-4 ${modoVisualizacao === 'todos' ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`} />
+                    <div
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center ${modoVisualizacao === 'todos' ? 'bg-[#0e4f6d]' : 'bg-slate-100 dark:bg-slate-700'}`}
+                    >
+                      <Layers
+                        className={`w-4 h-4 ${modoVisualizacao === 'todos' ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`}
+                      />
                     </div>
                     <div className="flex-1 text-left">
-                      <p className="font-semibold text-slate-800 dark:text-white text-sm">Todos os Grupos</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">Visao completa do sistema</p>
+                      <p className="font-semibold text-slate-800 dark:text-white text-sm">
+                        Todos os Grupos
+                      </p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        Visao completa do sistema
+                      </p>
                     </div>
-                    {modoVisualizacao === 'todos' && <Check className="w-5 h-5 text-[#0e4f6d] dark:text-teal-500" />}
+                    {modoVisualizacao === 'todos' && (
+                      <Check className="w-5 h-5 text-[#0e4f6d] dark:text-teal-500" />
+                    )}
                   </button>
                 )}
 
@@ -260,28 +274,48 @@ const Header = ({ activeTab, onTabChange, showTabs = true, tabsPermitidas = null
                   onClick={() => handleConsolidado('grupo')}
                   className={`w-full px-4 py-2.5 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${modoVisualizacao === 'grupo' ? 'bg-[#0e4f6d]/5 dark:bg-[#0e4f6d]/20' : ''}`}
                 >
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${modoVisualizacao === 'grupo' ? 'bg-[#0e4f6d]' : 'bg-slate-100 dark:bg-slate-700'}`}>
-                    <FolderTree className={`w-4 h-4 ${modoVisualizacao === 'grupo' ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`} />
+                  <div
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center ${modoVisualizacao === 'grupo' ? 'bg-[#0e4f6d]' : 'bg-slate-100 dark:bg-slate-700'}`}
+                  >
+                    <FolderTree
+                      className={`w-4 h-4 ${modoVisualizacao === 'grupo' ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`}
+                    />
                   </div>
                   <div className="flex-1 text-left">
-                    <p className="font-semibold text-slate-800 dark:text-white text-sm">Grupo: {grupoAtual?.nome}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Todas as empresas do grupo</p>
+                    <p className="font-semibold text-slate-800 dark:text-white text-sm">
+                      Grupo: {grupoAtual?.nome}
+                    </p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Todas as empresas do grupo
+                    </p>
                   </div>
-                  {modoVisualizacao === 'grupo' && <Check className="w-5 h-5 text-[#0e4f6d] dark:text-teal-500" />}
+                  {modoVisualizacao === 'grupo' && (
+                    <Check className="w-5 h-5 text-[#0e4f6d] dark:text-teal-500" />
+                  )}
                 </button>
 
                 <button
                   onClick={() => handleConsolidado('empresa')}
                   className={`w-full px-4 py-2.5 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${modoVisualizacao === 'empresa' ? 'bg-[#0e4f6d]/5 dark:bg-[#0e4f6d]/20' : ''}`}
                 >
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${modoVisualizacao === 'empresa' ? 'bg-[#0e4f6d]' : 'bg-slate-100 dark:bg-slate-700'}`}>
-                    <Building className={`w-4 h-4 ${modoVisualizacao === 'empresa' ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`} />
+                  <div
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center ${modoVisualizacao === 'empresa' ? 'bg-[#0e4f6d]' : 'bg-slate-100 dark:bg-slate-700'}`}
+                  >
+                    <Building
+                      className={`w-4 h-4 ${modoVisualizacao === 'empresa' ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`}
+                    />
                   </div>
                   <div className="flex-1 text-left">
-                    <p className="font-semibold text-slate-800 dark:text-white text-sm">Empresa: {empresaAtual?.nomeFantasia}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Todos os CNPJs da empresa</p>
+                    <p className="font-semibold text-slate-800 dark:text-white text-sm">
+                      Empresa: {empresaAtual?.nomeFantasia}
+                    </p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Todos os CNPJs da empresa
+                    </p>
                   </div>
-                  {modoVisualizacao === 'empresa' && <Check className="w-5 h-5 text-[#0e4f6d] dark:text-teal-500" />}
+                  {modoVisualizacao === 'empresa' && (
+                    <Check className="w-5 h-5 text-[#0e4f6d] dark:text-teal-500" />
+                  )}
                 </button>
 
                 <div className="h-px bg-slate-100 dark:bg-slate-700 my-2" />
@@ -308,15 +342,23 @@ const Header = ({ activeTab, onTabChange, showTabs = true, tabsPermitidas = null
                     onClick={() => handleSelectGrupo(grupo.id)}
                     className={`w-full px-4 py-2 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${grupo.id === grupoAtual?.id ? 'bg-amber-50 dark:bg-amber-900/20' : ''}`}
                   >
-                    <FolderTree className={`w-4 h-4 ${grupo.id === grupoAtual?.id ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400'}`} />
-                    <span className={`flex-1 text-left text-sm ${grupo.id === grupoAtual?.id ? 'font-semibold text-amber-700 dark:text-amber-400' : 'text-slate-700 dark:text-slate-300'}`}>
+                    <FolderTree
+                      className={`w-4 h-4 ${grupo.id === grupoAtual?.id ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400'}`}
+                    />
+                    <span
+                      className={`flex-1 text-left text-sm ${grupo.id === grupoAtual?.id ? 'font-semibold text-amber-700 dark:text-amber-400' : 'text-slate-700 dark:text-slate-300'}`}
+                    >
                       {grupo.nome}
                     </span>
-                    {grupo.id === grupoAtual?.id && <Check className="w-4 h-4 text-amber-600 dark:text-amber-400" />}
+                    {grupo.id === grupoAtual?.id && (
+                      <Check className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                    )}
                   </button>
                 ))}
                 {gruposFiltrados.length === 0 && (
-                  <p className="px-4 py-2 text-xs text-slate-500 dark:text-slate-400">Nenhum grupo encontrado.</p>
+                  <p className="px-4 py-2 text-xs text-slate-500 dark:text-slate-400">
+                    Nenhum grupo encontrado.
+                  </p>
                 )}
 
                 <div className="h-px bg-slate-100 dark:bg-slate-700 my-2" />
@@ -343,15 +385,23 @@ const Header = ({ activeTab, onTabChange, showTabs = true, tabsPermitidas = null
                     onClick={() => handleSelectEmpresa(empresa.id)}
                     className={`w-full px-4 py-2 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${empresa.id === empresaAtual?.id ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
                   >
-                    <Building className={`w-4 h-4 ${empresa.id === empresaAtual?.id ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400'}`} />
-                    <span className={`flex-1 text-left text-sm ${empresa.id === empresaAtual?.id ? 'font-semibold text-blue-700 dark:text-blue-400' : 'text-slate-700 dark:text-slate-300'}`}>
+                    <Building
+                      className={`w-4 h-4 ${empresa.id === empresaAtual?.id ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400'}`}
+                    />
+                    <span
+                      className={`flex-1 text-left text-sm ${empresa.id === empresaAtual?.id ? 'font-semibold text-blue-700 dark:text-blue-400' : 'text-slate-700 dark:text-slate-300'}`}
+                    >
                       {empresa.nomeFantasia}
                     </span>
-                    {empresa.id === empresaAtual?.id && <Check className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
+                    {empresa.id === empresaAtual?.id && (
+                      <Check className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    )}
                   </button>
                 ))}
                 {empresasFiltradas.length === 0 && (
-                  <p className="px-4 py-2 text-xs text-slate-500 dark:text-slate-400">Nenhuma empresa encontrada.</p>
+                  <p className="px-4 py-2 text-xs text-slate-500 dark:text-slate-400">
+                    Nenhuma empresa encontrada.
+                  </p>
                 )}
 
                 <div className="h-px bg-slate-100 dark:bg-slate-700 my-2" />
@@ -379,23 +429,35 @@ const Header = ({ activeTab, onTabChange, showTabs = true, tabsPermitidas = null
                     onClick={() => handleSelectCnpj(cnpj.id)}
                     className={`w-full px-4 py-2.5 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${cnpjSelecionado === cnpj.id && !isConsolidado ? 'bg-[#0e4f6d]/5 dark:bg-[#0e4f6d]/20' : ''}`}
                   >
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${cnpjSelecionado === cnpj.id && !isConsolidado ? 'bg-[#0e4f6d]' : 'bg-slate-100 dark:bg-slate-700'}`}>
-                      <Building2 className={`w-4 h-4 ${cnpjSelecionado === cnpj.id && !isConsolidado ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`} />
+                    <div
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center ${cnpjSelecionado === cnpj.id && !isConsolidado ? 'bg-[#0e4f6d]' : 'bg-slate-100 dark:bg-slate-700'}`}
+                    >
+                      <Building2
+                        className={`w-4 h-4 ${cnpjSelecionado === cnpj.id && !isConsolidado ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`}
+                      />
                     </div>
                     <div className="flex-1 text-left min-w-0">
-                      <p className="font-semibold text-slate-800 dark:text-white text-sm truncate">{cnpj.nomeFantasia}</p>
+                      <p className="font-semibold text-slate-800 dark:text-white text-sm truncate">
+                        {cnpj.nomeFantasia}
+                      </p>
                       <p className="text-xs text-slate-500 dark:text-slate-400">{cnpj.cnpj}</p>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${cnpj.tipo === 'Matriz' ? 'bg-[#0e4f6d]/10 dark:bg-[#0e4f6d]/30 text-[#0e4f6d] dark:text-teal-500' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400'}`}>
+                      <span
+                        className={`px-2 py-0.5 rounded text-xs font-medium ${cnpj.tipo === 'Matriz' ? 'bg-[#0e4f6d]/10 dark:bg-[#0e4f6d]/30 text-[#0e4f6d] dark:text-teal-500' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400'}`}
+                      >
                         {cnpj.tipo}
                       </span>
-                      {cnpjSelecionado === cnpj.id && !isConsolidado && <Check className="w-4 h-4 text-[#0e4f6d] dark:text-teal-500" />}
+                      {cnpjSelecionado === cnpj.id && !isConsolidado && (
+                        <Check className="w-4 h-4 text-[#0e4f6d] dark:text-teal-500" />
+                      )}
                     </div>
                   </button>
                 ))}
                 {cnpjsFiltrados.length === 0 && (
-                  <p className="px-4 py-2 text-xs text-slate-500 dark:text-slate-400">Nenhum CNPJ encontrado.</p>
+                  <p className="px-4 py-2 text-xs text-slate-500 dark:text-slate-400">
+                    Nenhum CNPJ encontrado.
+                  </p>
                 )}
 
                 {isAdmin && (
@@ -420,7 +482,9 @@ const Header = ({ activeTab, onTabChange, showTabs = true, tabsPermitidas = null
           {/* Exercício - Hidden on small screens */}
           <div className="hidden xl:block text-right border-l border-slate-200/80 dark:border-slate-700/80 pl-4">
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Exercício</p>
-            <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{cnpjInfo?.exercicio || '2025'}</p>
+            <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+              {cnpjInfo?.exercicio || '2025'}
+            </p>
           </div>
 
           {/* User Info */}
@@ -430,8 +494,12 @@ const Header = ({ activeTab, onTabChange, showTabs = true, tabsPermitidas = null
                 <User className="w-4 h-4 text-slate-600 dark:text-slate-300" />
               </div>
               <div className="text-right">
-                <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{user?.nome}</p>
-                <p className={`text-xs ${isAdmin ? 'text-slate-600 dark:text-slate-400' : 'text-slate-400 dark:text-slate-500'}`}>
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                  {user?.nome}
+                </p>
+                <p
+                  className={`text-xs ${isAdmin ? 'text-slate-600 dark:text-slate-400' : 'text-slate-400 dark:text-slate-500'}`}
+                >
                   {user?.perfil}
                 </p>
               </div>
@@ -481,9 +549,10 @@ const Header = ({ activeTab, onTabChange, showTabs = true, tabsPermitidas = null
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
                 className={`flex-1 min-w-[70px] px-3 py-2.5 text-xs font-medium tracking-wide transition-all duration-200 whitespace-nowrap
-                  ${activeTab === tab.id
-                    ? 'text-slate-900 dark:text-white border-b-2 border-slate-900 dark:border-white bg-slate-50 dark:bg-slate-700/50'
-                    : 'text-slate-500 dark:text-slate-400'
+                  ${
+                    activeTab === tab.id
+                      ? 'text-slate-900 dark:text-white border-b-2 border-slate-900 dark:border-white bg-slate-50 dark:bg-slate-700/50'
+                      : 'text-slate-500 dark:text-slate-400'
                   }`}
               >
                 {tab.label}
@@ -495,7 +564,10 @@ const Header = ({ activeTab, onTabChange, showTabs = true, tabsPermitidas = null
 
       {/* Mobile Slide-out Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 top-16 bg-black/50 z-40" onClick={() => setMobileMenuOpen(false)}>
+        <div
+          className="lg:hidden fixed inset-0 top-16 bg-black/50 z-40"
+          onClick={() => setMobileMenuOpen(false)}
+        >
           <div
             className="absolute right-0 top-0 w-64 h-full bg-white dark:bg-slate-800 shadow-md p-4"
             onClick={(e) => e.stopPropagation()}
@@ -509,7 +581,9 @@ const Header = ({ activeTab, onTabChange, showTabs = true, tabsPermitidas = null
                   </div>
                   <div>
                     <p className="font-semibold text-slate-700 dark:text-slate-200">{user?.nome}</p>
-                    <p className={`text-xs font-medium ${isAdmin ? 'text-[#0e4f6d] dark:text-teal-500' : 'text-slate-400 dark:text-slate-500'}`}>
+                    <p
+                      className={`text-xs font-medium ${isAdmin ? 'text-[#0e4f6d] dark:text-teal-500' : 'text-slate-400 dark:text-slate-500'}`}
+                    >
                       {user?.perfil}
                     </p>
                   </div>
@@ -517,8 +591,12 @@ const Header = ({ activeTab, onTabChange, showTabs = true, tabsPermitidas = null
               </div>
 
               <div className="pb-4 border-b border-slate-100 dark:border-slate-700">
-                <p className="text-xs text-slate-400 dark:text-slate-500 font-medium mb-1">Exercicio</p>
-                <p className="text-lg font-bold text-[#0e4f6d] dark:text-teal-500">{cnpjInfo?.exercicio || '2025'}</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 font-medium mb-1">
+                  Exercicio
+                </p>
+                <p className="text-lg font-bold text-[#0e4f6d] dark:text-teal-500">
+                  {cnpjInfo?.exercicio || '2025'}
+                </p>
               </div>
 
               <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-700">
@@ -542,7 +620,9 @@ const Header = ({ activeTab, onTabChange, showTabs = true, tabsPermitidas = null
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <Settings className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-                  <span className="font-medium text-slate-700 dark:text-slate-300">Painel Administrativo</span>
+                  <span className="font-medium text-slate-700 dark:text-slate-300">
+                    Painel Administrativo
+                  </span>
                 </Link>
               )}
 

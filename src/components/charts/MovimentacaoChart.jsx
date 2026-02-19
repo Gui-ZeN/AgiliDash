@@ -8,7 +8,7 @@ import {
   Title,
   Tooltip,
   Legend,
-  Filler
+  Filler,
 } from 'chart.js';
 import { meses, entradasData, saidasData } from '../../data/mockData';
 import { useTheme } from '../../context/ThemeContext';
@@ -44,7 +44,7 @@ const MovimentacaoChart = () => {
         backgroundColor: isDarkMode ? 'rgba(14, 79, 109, 0.2)' : 'rgba(14, 79, 109, 0.05)',
         fill: true,
         tension: 0.4,
-        borderWidth: 3
+        borderWidth: 3,
       },
       {
         label: 'Saidas',
@@ -52,30 +52,30 @@ const MovimentacaoChart = () => {
         borderColor: colors.primaryLight,
         borderDash: [5, 5],
         tension: 0.4,
-        borderWidth: 2
-      }
-    ]
+        borderWidth: 2,
+      },
+    ],
   };
 
   const options = getChartOptions(isDarkMode, {
     plugins: {
       legend: {
-        display: false
-      }
+        display: false,
+      },
     },
     scales: {
       y: {
         grid: { color: colors.gridColor },
         ticks: {
           color: colors.textColorSecondary,
-          callback: (value) => 'R$ ' + (value / 1000000).toFixed(1) + 'M'
-        }
+          callback: (value) => 'R$ ' + (value / 1000000).toFixed(1) + 'M',
+        },
       },
       x: {
         grid: { display: false },
-        ticks: { color: colors.textColorSecondary }
-      }
-    }
+        ticks: { color: colors.textColorSecondary },
+      },
+    },
   });
 
   return (

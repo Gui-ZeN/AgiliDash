@@ -28,7 +28,7 @@ export const getChartColors = (isDarkMode) => ({
   // Paleta para graficos de pizza
   palette: isDarkMode
     ? ['#38bdf8', '#4ade80', '#fbbf24', '#f87171', '#a78bfa', '#fb923c', '#2dd4bf', '#f472b6']
-    : ['#0ea5e9', '#16a34a', '#f59e0b', '#ef4444', '#8b5cf6', '#f97316', '#14b8a6', '#ec4899']
+    : ['#0ea5e9', '#16a34a', '#f59e0b', '#ef4444', '#8b5cf6', '#f97316', '#14b8a6', '#ec4899'],
 });
 
 export const getChartOptions = (isDarkMode, customOptions = {}) => {
@@ -46,9 +46,9 @@ export const getChartOptions = (isDarkMode, customOptions = {}) => {
           usePointStyle: true,
           font: {
             family: 'Inter',
-            size: 12
-          }
-        }
+            size: 12,
+          },
+        },
       },
       tooltip: {
         backgroundColor: colors.tooltipBackground,
@@ -59,42 +59,42 @@ export const getChartOptions = (isDarkMode, customOptions = {}) => {
         titleFont: {
           family: 'Inter',
           size: 13,
-          weight: '600'
+          weight: '600',
         },
         bodyFont: {
           family: 'Inter',
-          size: 12
-        }
-      }
+          size: 12,
+        },
+      },
     },
     scales: {
       x: {
         grid: {
-          display: false
+          display: false,
         },
         ticks: {
           color: colors.textColorSecondary,
           font: {
             family: 'Inter',
-            size: 11
-          }
-        }
+            size: 11,
+          },
+        },
       },
       y: {
         beginAtZero: true,
         grid: {
-          color: colors.gridColor
+          color: colors.gridColor,
         },
         ticks: {
           color: colors.textColorSecondary,
           font: {
             family: 'Inter',
-            size: 11
-          }
-        }
-      }
+            size: 11,
+          },
+        },
+      },
     },
-    ...customOptions
+    ...customOptions,
   };
 };
 
@@ -113,9 +113,9 @@ export const getPieChartOptions = (isDarkMode, customOptions = {}) => {
           usePointStyle: true,
           font: {
             family: 'Inter',
-            size: 12
-          }
-        }
+            size: 12,
+          },
+        },
       },
       tooltip: {
         backgroundColor: colors.tooltipBackground,
@@ -126,14 +126,14 @@ export const getPieChartOptions = (isDarkMode, customOptions = {}) => {
         titleFont: {
           family: 'Inter',
           size: 13,
-          weight: '600'
+          weight: '600',
         },
         bodyFont: {
           family: 'Inter',
-          size: 12
-        }
-      }
+          size: 12,
+        },
+      },
     },
-    ...customOptions
+    ...customOptions,
   };
 };

@@ -7,7 +7,7 @@ import {
   ArcElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
 } from 'chart.js';
 import { formatCurrency } from '../../utils/formatters';
 import { useTheme } from '../../context/ThemeContext';
@@ -40,43 +40,43 @@ export const DespesasMensaisChart = ({ despesasMensais }) => {
         data: despesasMensais,
         backgroundColor: colors.warning,
         borderRadius: 6,
-        barThickness: 24
-      }
-    ]
+        barThickness: 24,
+      },
+    ],
   };
 
   const options = getChartOptions(isDarkMode, {
     plugins: {
       legend: {
-        display: false
+        display: false,
       },
       tooltip: {
         callbacks: {
-          label: function(context) {
+          label: function (context) {
             return formatCurrency(context.raw);
-          }
-        }
-      }
+          },
+        },
+      },
     },
     scales: {
       x: {
         grid: { display: false },
         ticks: {
           font: { size: 11, weight: '500' },
-          color: colors.textColorSecondary
-        }
+          color: colors.textColorSecondary,
+        },
       },
       y: {
         grid: { color: colors.gridColor },
         ticks: {
           font: { size: 11 },
           color: colors.textColorSecondary,
-          callback: function(value) {
+          callback: function (value) {
             return formatCurrency(value);
-          }
-        }
-      }
-    }
+          },
+        },
+      },
+    },
   });
 
   return (
@@ -103,9 +103,9 @@ export const DespesasCategoriaChart = ({ despesasPorCategoria }) => {
           : ['#f59e0b', '#eab308', '#84cc16', '#22c55e', '#14b8a6', '#06b6d4'],
         borderColor: isDarkMode ? '#1e293b' : '#ffffff',
         borderWidth: 3,
-        hoverOffset: 10
-      }
-    ]
+        hoverOffset: 10,
+      },
+    ],
   };
 
   const options = getPieChartOptions(isDarkMode, {
@@ -119,20 +119,20 @@ export const DespesasCategoriaChart = ({ despesasPorCategoria }) => {
           padding: 12,
           font: {
             size: 11,
-            weight: '500'
-          }
-        }
+            weight: '500',
+          },
+        },
       },
       tooltip: {
         callbacks: {
-          label: function(context) {
+          label: function (context) {
             const total = context.dataset.data.reduce((a, b) => a + b, 0);
             const percentage = ((context.raw / total) * 100).toFixed(1);
             return `${context.label}: ${formatCurrency(context.raw)} (${percentage}%)`;
-          }
-        }
-      }
-    }
+          },
+        },
+      },
+    },
   });
 
   return (

@@ -6,21 +6,14 @@ import {
   BarElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
 } from 'chart.js';
 import { trimestres, irpjTotalData, irpjAdicional } from '../../data/mockData';
 import { useTheme } from '../../context/ThemeContext';
 import { getChartColors, getChartOptions } from '../../utils/chartTheme';
 
 // Registrar componentes do Chart.js
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 /**
  * Grafico IRPJ (Imposto de Renda Pessoa Juridica)
@@ -40,23 +33,23 @@ const IRPJChart = () => {
         label: 'IRPJ Base (15%)',
         data: irpjBase,
         backgroundColor: colors.primary,
-        borderRadius: 6
+        borderRadius: 6,
       },
       {
         label: 'Adicional IRPJ (10%)',
         data: irpjAdicional,
         backgroundColor: colors.danger,
-        borderRadius: 6
-      }
-    ]
+        borderRadius: 6,
+      },
+    ],
   };
 
   const options = getChartOptions(isDarkMode, {
     plugins: {
       legend: {
         position: 'bottom',
-        labels: { color: colors.textColor }
-      }
+        labels: { color: colors.textColor },
+      },
     },
     scales: {
       y: {
@@ -64,14 +57,14 @@ const IRPJChart = () => {
         grid: { color: colors.gridColor },
         ticks: {
           color: colors.textColorSecondary,
-          callback: (value) => 'R$ ' + value.toLocaleString('pt-BR')
-        }
+          callback: (value) => 'R$ ' + value.toLocaleString('pt-BR'),
+        },
       },
       x: {
         grid: { display: false },
-        ticks: { color: colors.textColorSecondary }
-      }
-    }
+        ticks: { color: colors.textColorSecondary },
+      },
+    },
   });
 
   return (

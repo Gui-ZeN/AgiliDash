@@ -47,6 +47,50 @@ export const parsePercentBR = (valor) => {
   return isNegative ? -num : num;
 };
 
+const normalizeText = (text = '') =>
+  String(text)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+
+const MONTH_PREFIXES = [
+  ['jan', 1],
+  ['fev', 2],
+  ['mar', 3],
+  ['abr', 4],
+  ['mai', 5],
+  ['jun', 6],
+  ['jul', 7],
+  ['ago', 8],
+  ['set', 9],
+  ['out', 10],
+  ['nov', 11],
+  ['dez', 12],
+];
+
+const MONTHS_FULL = [
+  'Janeiro',
+  'Fevereiro',
+  'Março',
+  'Abril',
+  'Maio',
+  'Junho',
+  'Julho',
+  'Agosto',
+  'Setembro',
+  'Outubro',
+  'Novembro',
+  'Dezembro',
+];
+
+const getMonthIndexFromText = (monthText = '') => {
+  const normalized = normalizeText(monthText).replace(/[^a-z]/g, '');
+  if (!normalized) return 0;
+  const prefix = MONTH_PREFIXES.find(([abbr]) => normalized.startsWith(abbr));
+  return prefix ? prefix[1] : 0;
+};
+
 /**
  * Parser para Balancete Mensal
  * Extrai contas contábeis com saldos
@@ -66,7 +110,7 @@ export const parseBalancete = (csvContent) => {
       .trim();
 
   const encontrarConta = ({ classificacoes = [], descricoes = [] }) => {
-    const classificacoesAlvo = new Set(classificacoes.map(c => c.trim()));
+    const classificacoesAlvo = new Set(classificacoes.map((c) => c.trim()));
     const descricoesAlvo = descricoes.map(normalizarTexto);
 
     return contas.find((conta) => {
@@ -78,13 +122,13 @@ export const parseBalancete = (csvContent) => {
       }
 
       const descricaoConta = normalizarTexto(conta.descricao || '');
-      return descricoesAlvo.some(alvo => descricaoConta.includes(alvo));
+      return descricoesAlvo.some((alvo) => descricaoConta.includes(alvo));
     });
   };
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const cols = line.split(';').map(c => c.trim());
+    const cols = line.split(';').map((c) => c.trim());
 
     // Extrair informações da empresa
     if (cols[0] === 'Empresa:') {
@@ -118,7 +162,7 @@ export const parseBalancete = (csvContent) => {
         debito,
         credito,
         saldoAtual,
-        nivel: classificacao.split('.').length
+        nivel: classificacao.split('.').length,
       });
     }
   }
@@ -130,40 +174,40 @@ export const parseBalancete = (csvContent) => {
     // Extrair contas específicas para os gráficos
     bancosMovimento: encontrarConta({
       classificacoes: ['1.1.1.02'],
-      descricoes: ['BANCOS CONTA MOVIMENTO']
+      descricoes: ['BANCOS CONTA MOVIMENTO'],
     }),
     aplicacoesFinanceiras: encontrarConta({
       classificacoes: ['1.1.1.03'],
-      descricoes: ['APLICACOES FINANCEIRAS DE LIQUIDEZ IMEDIATA']
+      descricoes: ['APLICACOES FINANCEIRAS DE LIQUIDEZ IMEDIATA'],
     }),
     estoque: encontrarConta({
       classificacoes: ['1.1.5'],
-      descricoes: ['ESTOQUE']
+      descricoes: ['ESTOQUE'],
     }),
     clientes: encontrarConta({
       classificacoes: ['1.1.2'],
-      descricoes: ['CLIENTES']
+      descricoes: ['CLIENTES'],
     }),
     fornecedores: encontrarConta({
       classificacoes: ['2.1.1'],
-      descricoes: ['FORNECEDORES']
+      descricoes: ['FORNECEDORES'],
     }),
     receitaBruta: encontrarConta({
       classificacoes: ['3.1.1'],
-      descricoes: ['RECEITA BRUTA']
+      descricoes: ['RECEITA BRUTA'],
     }),
     custoVendas: encontrarConta({
       classificacoes: ['3.1.5'],
-      descricoes: ['CMV', 'CPV', 'CUSTO DAS MERCADORIAS VENDIDAS', 'CUSTO DOS PRODUTOS VENDIDOS']
+      descricoes: ['CMV', 'CPV', 'CUSTO DAS MERCADORIAS VENDIDAS', 'CUSTO DOS PRODUTOS VENDIDOS'],
     }),
     despesasOperacionais: encontrarConta({
       classificacoes: ['3.2.1'],
-      descricoes: ['DESPESAS OPERACIONAIS']
+      descricoes: ['DESPESAS OPERACIONAIS'],
     }),
     resultadoLiquido: encontrarConta({
       classificacoes: ['3'],
-      descricoes: ['RESULTADO LIQUIDO']
-    })
+      descricoes: ['RESULTADO LIQUIDO'],
+    }),
   };
 };
 
@@ -173,7 +217,20 @@ export const parseBalancete = (csvContent) => {
  */
 export const parseAnaliseHorizontal = (csvContent) => {
   const lines = csvContent.split('\n');
-  const mesNomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+  const mesNomes = [
+    'Jan',
+    'Fev',
+    'Mar',
+    'Abr',
+    'Mai',
+    'Jun',
+    'Jul',
+    'Ago',
+    'Set',
+    'Out',
+    'Nov',
+    'Dez',
+  ];
 
   let empresaInfo = {};
   let competencia = '';
@@ -197,7 +254,7 @@ export const parseAnaliseHorizontal = (csvContent) => {
     lucroAntesIR: new Array(12).fill(0),
     provisaoCSLL: new Array(12).fill(0),
     provisaoIRPJ: new Array(12).fill(0),
-    resultadoLiquido: new Array(12).fill(0)
+    resultadoLiquido: new Array(12).fill(0),
   };
 
   // Mapear linha para categoria - usar includes para maior flexibilidade
@@ -220,7 +277,7 @@ export const parseAnaliseHorizontal = (csvContent) => {
     { match: '(-) PROVISAO PARA A CONTRIBUICAO SOCIAL', key: 'provisaoCSLL', exact: true },
     { match: '(-) PROVISAO PARA O IMPOSTO DE RENDA', key: 'provisaoIRPJ', exact: true },
     { match: '= RESULTADO LIQUIDO DO PERIODO', key: 'resultadoLiquido', exact: true },
-    { match: 'LUCRO/PREJU', key: 'resultadoLiquido', exact: false }
+    { match: 'LUCRO/PREJU', key: 'resultadoLiquido', exact: false },
   ];
 
   // Índices CORRETOS das colunas para cada mês no CSV do Domínio
@@ -229,15 +286,15 @@ export const parseAnaliseHorizontal = (csvContent) => {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const cols = line.split(';').map(c => c.trim());
+    const cols = line.split(';').map((c) => c.trim());
 
     // Extrair informações da empresa
     if (line.includes('C.N.P.J.:')) {
-      empresaInfo.cnpj = cols[3] || cols.find(c => c.match(/\d{2}\.\d{3}\.\d{3}/)) || '';
+      empresaInfo.cnpj = cols[3] || cols.find((c) => c.match(/\d{2}\.\d{3}\.\d{3}/)) || '';
     }
     // Extrair competência E ano do exercício
     if (line.includes('Compet')) {
-      competencia = cols[3] || cols.find(c => c.match(/\d{2}\/\d{4}/)) || '';
+      competencia = cols[3] || cols.find((c) => c.match(/\d{2}\/\d{4}/)) || '';
       // Extrair ano da competência (formato: MM/YYYY ou similar)
       const anoMatch = competencia.match(/\/(\d{4})/);
       if (anoMatch) {
@@ -258,9 +315,7 @@ export const parseAnaliseHorizontal = (csvContent) => {
 
     // Procurar categoria correspondente
     for (const cat of categoriaMap) {
-      const match = cat.exact
-        ? descricao === cat.match
-        : descricao.includes(cat.match);
+      const match = cat.exact ? descricao === cat.match : descricao.includes(cat.match);
 
       if (match) {
         // Extrair valores de cada mês
@@ -342,7 +397,7 @@ export const parseAnaliseHorizontal = (csvContent) => {
       // Valores calculados com base nas linhas específicas
       receita: receitasMensais[m],
       despesa: despesasMensais[m],
-      lucroLiquido: lucroLiquidoMensal[m]
+      lucroLiquido: lucroLiquidoMensal[m],
     };
   }
 
@@ -372,8 +427,8 @@ export const parseAnaliseHorizontal = (csvContent) => {
       despesaTotal: totalDespesas,
       lucroLiquido: totalLucroLiquido,
       totalReceitas,
-      totalDespesas
-    }
+      totalDespesas,
+    },
   };
 };
 
@@ -388,7 +443,7 @@ export const parseDREComparativa = (csvContent) => {
 
   const dados = {
     anoAtual: {},
-    anoAnterior: {}
+    anoAnterior: {},
   };
 
   const categorias = [
@@ -404,12 +459,12 @@ export const parseDREComparativa = (csvContent) => {
     { key: 'lucroAntesIR', match: '= LUCRO ANTES DO IR E DA CSL' },
     { key: 'provisaoCSLL', match: '(-) PROVISAO PARA A CONTRIBUICAO SOCIAL' },
     { key: 'provisaoIRPJ', match: '(-) PROVISAO PARA O IMPOSTO DE RENDA' },
-    { key: 'resultadoLiquido', match: '= RESULTADO LIQUIDO DO PERIODO' }
+    { key: 'resultadoLiquido', match: '= RESULTADO LIQUIDO DO PERIODO' },
   ];
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const cols = line.split(';').map(c => c.trim());
+    const cols = line.split(';').map((c) => c.trim());
 
     // Extrair informações
     if (cols[0] === 'Empresa:') {
@@ -435,11 +490,21 @@ export const parseDREComparativa = (csvContent) => {
     periodo,
     dados,
     variacao: {
-      receitaBruta: dados.anoAnterior.receitaBruta ?
-        ((dados.anoAtual.receitaBruta - dados.anoAnterior.receitaBruta) / Math.abs(dados.anoAnterior.receitaBruta) * 100).toFixed(2) : 0,
-      lucroLiquido: dados.anoAnterior.resultadoLiquido ?
-        ((dados.anoAtual.resultadoLiquido - dados.anoAnterior.resultadoLiquido) / Math.abs(dados.anoAnterior.resultadoLiquido) * 100).toFixed(2) : 0
-    }
+      receitaBruta: dados.anoAnterior.receitaBruta
+        ? (
+            ((dados.anoAtual.receitaBruta - dados.anoAnterior.receitaBruta) /
+              Math.abs(dados.anoAnterior.receitaBruta)) *
+            100
+          ).toFixed(2)
+        : 0,
+      lucroLiquido: dados.anoAnterior.resultadoLiquido
+        ? (
+            ((dados.anoAtual.resultadoLiquido - dados.anoAnterior.resultadoLiquido) /
+              Math.abs(dados.anoAnterior.resultadoLiquido)) *
+            100
+          ).toFixed(2)
+        : 0,
+    },
   };
 };
 
@@ -467,12 +532,12 @@ export const parseDREMensal = (csvContent) => {
     { key: 'lucroAntesIR', match: '= LUCRO ANTES DO IR E DA CSL' },
     { key: 'provisaoCSLL', match: '(-) PROVISAO PARA A CONTRIBUICAO SOCIAL' },
     { key: 'provisaoIRPJ', match: '(-) PROVISAO PARA O IMPOSTO DE RENDA' },
-    { key: 'resultadoLiquido', match: '= RESULTADO LIQUIDO DO PERIODO' }
+    { key: 'resultadoLiquido', match: '= RESULTADO LIQUIDO DO PERIODO' },
   ];
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const cols = line.split(';').map(c => c.trim());
+    const cols = line.split(';').map((c) => c.trim());
 
     // Extrair informações
     if (cols[0] === 'Empresa:') {
@@ -494,7 +559,7 @@ export const parseDREMensal = (csvContent) => {
   return {
     empresaInfo,
     periodo,
-    dados
+    dados,
   };
 };
 
@@ -539,14 +604,27 @@ export const parseRelatorioContabil = (csvContent) => {
  * para criar série temporal de 12 meses
  */
 export const consolidarBalancetesMensais = (balancetes) => {
-  const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+  const meses = [
+    'Jan',
+    'Fev',
+    'Mar',
+    'Abr',
+    'Mai',
+    'Jun',
+    'Jul',
+    'Ago',
+    'Set',
+    'Out',
+    'Nov',
+    'Dez',
+  ];
 
   const series = {
     bancosMovimento: new Array(12).fill(0),
     aplicacoesFinanceiras: new Array(12).fill(0),
     estoque: new Array(12).fill(0),
     receita: new Array(12).fill(0),
-    custo: new Array(12).fill(0)
+    custo: new Array(12).fill(0),
   };
 
   balancetes.forEach((bal, index) => {
@@ -595,15 +673,15 @@ export const parseContribuicaoSocial = (csvContent) => {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const cols = line.split(';').map(c => c.trim());
+    const cols = line.split(';').map((c) => c.trim());
     // Converte para uppercase para comparação (sem tentar remover acentos)
 
     // Extrair informações da empresa
     if (line.includes('C.N.P.J.:')) {
-      empresaInfo.cnpj = cols.find(c => c.match(/\d{2}\.\d{3}\.\d{3}/)) || cols[2];
+      empresaInfo.cnpj = cols.find((c) => c.match(/\d{2}\.\d{3}\.\d{3}/)) || cols[2];
     }
     if (line.includes('Trimestre:')) {
-      trimestre = cols.find(c => c.match(/\w{3}\/\d{2}/)) || cols[2];
+      trimestre = cols.find((c) => c.match(/\w{3}\/\d{2}/)) || cols[2];
     }
 
     // Extrair valores usando regex que ignora caracteres acentuados
@@ -645,7 +723,7 @@ export const parseContribuicaoSocial = (csvContent) => {
     empresaInfo,
     trimestre,
     dados,
-    tipo: 'csll'
+    tipo: 'csll',
   };
 };
 
@@ -675,14 +753,14 @@ export const parseImpostoRenda = (csvContent) => {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const cols = line.split(';').map(c => c.trim());
+    const cols = line.split(';').map((c) => c.trim());
 
     // Extrair informações da empresa
     if (line.includes('C.N.P.J.:')) {
-      empresaInfo.cnpj = cols.find(c => c.match(/\d{2}\.\d{3}\.\d{3}/)) || cols[2];
+      empresaInfo.cnpj = cols.find((c) => c.match(/\d{2}\.\d{3}\.\d{3}/)) || cols[2];
     }
     if (line.includes('Trimestre:')) {
-      trimestre = cols.find(c => c.match(/\w{3}\/\d{2}/)) || cols[2];
+      trimestre = cols.find((c) => c.match(/\w{3}\/\d{2}/)) || cols[2];
     }
 
     // Extrair valores usando regex que ignora caracteres acentuados
@@ -734,7 +812,7 @@ export const parseImpostoRenda = (csvContent) => {
     empresaInfo,
     trimestre,
     dados,
-    tipo: 'irpj'
+    tipo: 'irpj',
   };
 };
 
@@ -749,27 +827,28 @@ export const parseDemonstrativoFinanceiro = (csvContent) => {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const cols = line.split(';').map(c => c.trim());
+    const cols = line.split(';').map((c) => c.trim());
 
     // Extrair informações da empresa
     if (line.includes('Empresa:')) {
-      empresaInfo.razaoSocial = cols.find(c => c && !c.includes('Empresa') && c.length > 3) || '';
+      empresaInfo.razaoSocial = cols.find((c) => c && !c.includes('Empresa') && c.length > 3) || '';
     }
     if (line.includes('CNPJ:')) {
-      empresaInfo.cnpj = cols.find(c => c.match(/\d{2}\.\d{3}\.\d{3}|\d+E\+\d+/)) || '';
+      empresaInfo.cnpj = cols.find((c) => c.match(/\d{2}\.\d{3}\.\d{3}|\d+E\+\d+/)) || '';
     }
 
     // Identificar linhas de faturamento (começam com mês)
-    const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-                   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-
-    if (meses.includes(cols[0])) {
+    const mesIndex = getMonthIndexFromText(cols[0]);
+    if (mesIndex > 0) {
       // Encontrar índices dos valores
-      const anoIndex = cols.findIndex(c => c.match(/^\d{4}$/));
+      const anoIndex = cols.findIndex((c) => c.match(/^\d{4}$/));
       if (anoIndex > 0) {
         const ano = parseInt(cols[anoIndex]);
         // Buscar valores após o ano
-        let saidas = 0, servicos = 0, outros = 0, total = 0;
+        let saidas = 0,
+          servicos = 0,
+          outros = 0,
+          total = 0;
 
         for (let j = anoIndex + 1; j < cols.length; j++) {
           const val = parseValorBR(cols[j]);
@@ -782,20 +861,21 @@ export const parseDemonstrativoFinanceiro = (csvContent) => {
         }
 
         faturamento.push({
-          mes: cols[0],
+          mes: MONTHS_FULL[mesIndex - 1] || cols[0],
+          mesIndex,
           ano,
           saidas,
           servicos,
           outros,
-          total: total || saidas
+          total: total || saidas,
         });
       }
     }
   }
 
   // Separar por ano
-  const faturamento2024 = faturamento.filter(f => f.ano === 2024);
-  const faturamento2025 = faturamento.filter(f => f.ano === 2025);
+  const faturamento2024 = faturamento.filter((f) => f.ano === 2024);
+  const faturamento2025 = faturamento.filter((f) => f.ano === 2025);
 
   // Calcular totais
   const totalSaidas = faturamento.reduce((acc, f) => acc + f.saidas, 0);
@@ -811,9 +891,9 @@ export const parseDemonstrativoFinanceiro = (csvContent) => {
       saidas: totalSaidas,
       servicos: totalServicos,
       outros: totalOutros,
-      total: totalSaidas + totalServicos + totalOutros
+      total: totalSaidas + totalServicos + totalOutros,
     },
-    tipo: 'faturamento'
+    tipo: 'faturamento',
   };
 };
 
@@ -828,28 +908,27 @@ export const parseDemonstrativoMensal = (csvContent) => {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const cols = line.split(';').map(c => c.trim());
+    const cols = line.split(';').map((c) => c.trim());
 
     // Extrair informações da empresa
     if (line.includes('Empresa:')) {
-      empresaInfo.razaoSocial = cols.find(c => c && !c.includes('Empresa') && c.length > 3) || '';
+      empresaInfo.razaoSocial = cols.find((c) => c && !c.includes('Empresa') && c.length > 3) || '';
     }
     if (line.includes('CNPJ:')) {
-      empresaInfo.cnpj = cols.find(c => c.match(/\d{2}\.\d{3}\.\d{3}|\d+E\+\d+/)) || '';
+      empresaInfo.cnpj = cols.find((c) => c.match(/\d{2}\.\d{3}\.\d{3}|\d+E\+\d+/)) || '';
     }
 
     // Identificar linhas de Movimentação (começam com mês)
-    const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-                   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-
-    if (meses.includes(cols[0])) {
-      const anoIndex = cols.findIndex(c => c.match(/^\d{4}$/));
+    const mesIndex = getMonthIndexFromText(cols[0]);
+    if (mesIndex > 0) {
+      const anoIndex = cols.findIndex((c) => c.match(/^\d{4}$/));
       if (anoIndex > 0) {
         const ano = parseInt(cols[anoIndex]);
-        const mesIndex = meses.indexOf(cols[0]) + 1;
         // Buscar valores de entradas, saídas e serviços
         // Pegar os 3 primeiros valores numéricos (incluindo 0)
-        let entradas = 0, saidas = 0, servicos = 0;
+        let entradas = 0,
+          saidas = 0,
+          servicos = 0;
         const valoresEncontrados = [];
 
         for (let j = anoIndex + 1; j < cols.length && valoresEncontrados.length < 3; j++) {
@@ -865,31 +944,31 @@ export const parseDemonstrativoMensal = (csvContent) => {
         if (valoresEncontrados.length >= 3) servicos = valoresEncontrados[2];
 
         movimentacao.push({
-          mes: cols[0],
+          mes: MONTHS_FULL[mesIndex - 1] || cols[0],
           mesIndex,
           ano,
           entradas,
           saidas,
           servicos,
-          competencia: `${String(mesIndex).padStart(2, '0')}/${ano}`
+          competencia: `${String(mesIndex).padStart(2, '0')}/${ano}`,
         });
       }
     }
   }
 
   // Identificar anos únicos
-  const anosUnicos = [...new Set(movimentacao.map(m => m.ano))].sort();
+  const anosUnicos = [...new Set(movimentacao.map((m) => m.ano))].sort();
 
   // Separar por ano dinamicamente
   const movimentacaoPorAno = {};
   const totaisPorAno = {};
 
-  anosUnicos.forEach(ano => {
-    movimentacaoPorAno[ano] = movimentacao.filter(m => m.ano === ano);
+  anosUnicos.forEach((ano) => {
+    movimentacaoPorAno[ano] = movimentacao.filter((m) => m.ano === ano);
     totaisPorAno[ano] = {
       entradas: movimentacaoPorAno[ano].reduce((acc, m) => acc + m.entradas, 0),
       saidas: movimentacaoPorAno[ano].reduce((acc, m) => acc + m.saidas, 0),
-      servicos: movimentacaoPorAno[ano].reduce((acc, m) => acc + m.servicos, 0)
+      servicos: movimentacaoPorAno[ano].reduce((acc, m) => acc + m.servicos, 0),
     };
   });
 
@@ -897,7 +976,7 @@ export const parseDemonstrativoMensal = (csvContent) => {
   const totaisGerais = {
     entradas: movimentacao.reduce((acc, m) => acc + m.entradas, 0),
     saidas: movimentacao.reduce((acc, m) => acc + m.saidas, 0),
-    servicos: movimentacao.reduce((acc, m) => acc + m.servicos, 0)
+    servicos: movimentacao.reduce((acc, m) => acc + m.servicos, 0),
   };
 
   // Manter compatibilidade com estrutura antiga
@@ -918,7 +997,7 @@ export const parseDemonstrativoMensal = (csvContent) => {
     movimentacao2025,
     totais2024,
     totais2025,
-    tipo: 'demonstrativoMensal'
+    tipo: 'demonstrativoMensal',
   };
 };
 
@@ -945,7 +1024,7 @@ export const parseResumoImpostos = (csvContent) => {
     { pattern: /^ICMS/i, nome: 'ICMS', tipo: 'lancado' },
     { pattern: /^IPI/i, nome: 'IPI', tipo: 'lancado' },
     { pattern: /^ISS\b/i, nome: 'ISS', tipo: 'lancado' },
-    { pattern: /^IRRF/i, nome: 'IRRF', tipo: 'lancado' }
+    { pattern: /^IRRF/i, nome: 'IRRF', tipo: 'lancado' },
   ];
 
   // Função para extrair todos os valores numéricos de uma linha (preservando ordem)
@@ -962,7 +1041,7 @@ export const parseResumoImpostos = (csvContent) => {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const cols = line.split(';').map(c => c.trim());
+    const cols = line.split(';').map((c) => c.trim());
 
     // Detectar Seção do Relatório
     if (/RESUMO DOS IMPOSTOS LAN/i.test(line)) {
@@ -984,7 +1063,10 @@ export const parseResumoImpostos = (csvContent) => {
 
     // Identificar competência (mês)
     const col0Lower = (cols[0] || '').toLowerCase();
-    if (col0Lower.startsWith('compet') || (cols[0] === '' && cols[1] === '' && /\d{2}\/\d{4}/.test(line))) {
+    if (
+      col0Lower.startsWith('compet') ||
+      (cols[0] === '' && cols[1] === '' && /\d{2}\/\d{4}/.test(line))
+    ) {
       const match = line.match(/(\d{2})\/(\d{4})/);
       if (match) {
         competenciaAtual = `${match[1]}/${match[2]}`;
@@ -992,7 +1074,7 @@ export const parseResumoImpostos = (csvContent) => {
           impostosPorMes[competenciaAtual] = {
             impostos: [],
             totalRecolher: 0,
-            totalCredor: 0
+            totalCredor: 0,
           };
         }
       }
@@ -1006,7 +1088,7 @@ export const parseResumoImpostos = (csvContent) => {
         const valores = extrairValores(cols);
         if (valores.length >= 1) {
           // Pegar primeiro valor > 0 como total a recolher
-          const totalRecolher = valores.find(v => v > 0) || 0;
+          const totalRecolher = valores.find((v) => v > 0) || 0;
           impostosPorMes[competenciaAtual].totalRecolher += totalRecolher;
         }
       }
@@ -1053,7 +1135,7 @@ export const parseResumoImpostos = (csvContent) => {
         outrasDeducoes: 0,
         impostoRecolher: 0,
         impostoDiferido: 0,
-        saldoCredorFinal: 0
+        saldoCredorFinal: 0,
       };
 
       if (valores.length >= 9) {
@@ -1085,13 +1167,13 @@ export const parseResumoImpostos = (csvContent) => {
   // Calcular totais por imposto
   const totaisPorImposto = {};
   Object.entries(impostosPorMes).forEach(([_mes, dados]) => {
-    dados.impostos.forEach(imp => {
+    dados.impostos.forEach((imp) => {
       if (!totaisPorImposto[imp.nome]) {
         totaisPorImposto[imp.nome] = {
           recolher: 0,
           credito: 0,
           debitos: 0,
-          creditos: 0
+          creditos: 0,
         };
       }
       totaisPorImposto[imp.nome].recolher += imp.impostoRecolher;
@@ -1104,9 +1186,9 @@ export const parseResumoImpostos = (csvContent) => {
   // Calcular total geral a recolher
   let totalRecolher = 0;
   let totalCredor = 0;
-  Object.values(impostosPorMes).forEach(dados => {
+  Object.values(impostosPorMes).forEach((dados) => {
     totalRecolher += dados.totalRecolher;
-    dados.impostos.forEach(imp => {
+    dados.impostos.forEach((imp) => {
       totalCredor += imp.saldoCredorFinal;
     });
   });
@@ -1119,7 +1201,7 @@ export const parseResumoImpostos = (csvContent) => {
     totalRecolher: totalRecolher || totalGeralRecolher,
     totalCredor,
     periodosImportados: Object.keys(impostosPorMes).length,
-    tipo: 'resumoImpostos'
+    tipo: 'resumoImpostos',
   };
 };
 
@@ -1142,9 +1224,9 @@ export const parseResumoPorAcumulador = (csvContent) => {
     if (!texto) return false;
     const t = texto.toUpperCase().trim();
     // Verificar múltiplas formas: SAÍDAS, SAIDAS, SA[qualquer char]DAS
-    return t === 'SAIDAS' ||
-           t === 'SAÍDAS' ||
-           (t.startsWith('SA') && t.endsWith('DAS') && t.length <= 7);
+    return (
+      t === 'SAIDAS' || t === 'SAÍDAS' || (t.startsWith('SA') && t.endsWith('DAS') && t.length <= 7)
+    );
   };
 
   // Função para verificar se é Seção ENTRADAS
@@ -1163,19 +1245,20 @@ export const parseResumoPorAcumulador = (csvContent) => {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const cols = line.split(';').map(c => c.trim());
+    const cols = line.split(';').map((c) => c.trim());
 
     // Extrair informações da empresa
     if (line.includes('CNPJ:')) {
-      empresaInfo.cnpj = cols.find(c => c.match(/\d{8,}/)) || '';
+      empresaInfo.cnpj = cols.find((c) => c.match(/\d{8,}/)) || '';
     }
     if (line.toUpperCase().includes('PER') && line.includes(':')) {
       const datas = line.match(/\d{2}\/\d{2}\/\d{4}/g) || [];
       periodoInicio = datas[0] || '';
       periodoFim = datas[1] || datas[0] || '';
-      periodo = periodoInicio && periodoFim
-        ? `${periodoInicio} até ${periodoFim}`
-        : (periodoInicio || periodoFim || '');
+      periodo =
+        periodoInicio && periodoFim
+          ? `${periodoInicio} até ${periodoFim}`
+          : periodoInicio || periodoFim || '';
     }
 
     // Identificar Seção
@@ -1207,7 +1290,11 @@ export const parseResumoPorAcumulador = (csvContent) => {
 
       // Buscar Descrição (texto com mais de 5 caracteres)
       for (let j = 1; j < Math.min(cols.length, 10); j++) {
-        if (cols[j] && cols[j].length > 5 && isNaN(parseFloat(cols[j].replace(/\./g, '').replace(',', '.')))) {
+        if (
+          cols[j] &&
+          cols[j].length > 5 &&
+          isNaN(parseFloat(cols[j].replace(/\./g, '').replace(',', '.')))
+        ) {
           descricao = cols[j];
           break;
         }
@@ -1245,7 +1332,7 @@ export const parseResumoPorAcumulador = (csvContent) => {
         outras,
         vlrIpi,
         bcIcmsSt,
-        vlrIcmsSt
+        vlrIcmsSt,
       };
 
       if (secaoAtual === 'ENTRADAS') {
@@ -1287,20 +1374,28 @@ export const parseResumoPorAcumulador = (csvContent) => {
   const itensCompraComercializacao = entradas.filter((e) =>
     normalizarDescricao(e.descricao).includes('COMPRA P/ COMERCIALIZA')
   );
-  const compraComercializacao = itensCompraComercializacao.reduce((acc, e) => acc + e.vlrContabil, 0);
+  const compraComercializacao = itensCompraComercializacao.reduce(
+    (acc, e) => acc + e.vlrContabil,
+    0
+  );
 
   // Compras para industrializacao (inclui ST)
   const itensCompraIndustrializacao = entradas.filter((e) =>
     normalizarDescricao(e.descricao).includes('COMPRA P/ INDUSTRIALIZA')
   );
-  const compraIndustrializacao = itensCompraIndustrializacao.reduce((acc, e) => acc + e.vlrContabil, 0);
+  const compraIndustrializacao = itensCompraIndustrializacao.reduce(
+    (acc, e) => acc + e.vlrContabil,
+    0
+  );
 
   // Servicos relacionados
   const itensServicos = entradas.filter((e) => isServicoRelacionado(e.descricao));
   const servicos = itensServicos.reduce((acc, e) => acc + e.vlrContabil, 0);
 
   // Em Sa?das, ignorar cancelamentos para os c?lculos do 380
-  const saidasSemCancelamento = saidas.filter((s) => !normalizarDescricao(s.descricao).includes('CANCEL'));
+  const saidasSemCancelamento = saidas.filter(
+    (s) => !normalizarDescricao(s.descricao).includes('CANCEL')
+  );
 
   // Vendas (exceto ativo imobilizado)
   const itensVendas = saidasSemCancelamento.filter((s) => {
@@ -1318,9 +1413,10 @@ export const parseResumoPorAcumulador = (csvContent) => {
   const vendaMercadoria = totalVendasAgrupadas;
 
   // Detalhamento de vendas
-  const itensVendaProduto = itensVendas.filter((s) =>
-    normalizarDescricao(s.descricao).includes('PRODUTO') ||
-    normalizarDescricao(s.descricao).includes('PRODUCAO')
+  const itensVendaProduto = itensVendas.filter(
+    (s) =>
+      normalizarDescricao(s.descricao).includes('PRODUTO') ||
+      normalizarDescricao(s.descricao).includes('PRODUCAO')
   );
   const vendaProduto = itensVendaProduto.reduce((acc, s) => acc + s.vlrContabil, 0);
 
@@ -1349,7 +1445,7 @@ export const parseResumoPorAcumulador = (csvContent) => {
     saidas,
     totais: {
       entradas: totalEntradas,
-      saidas: totalSaidas
+      saidas: totalSaidas,
     },
     categorias: {
       compraComercializacao,
@@ -1360,7 +1456,7 @@ export const parseResumoPorAcumulador = (csvContent) => {
       servicos,
       totalVendas380,
       // Cálculo 380: Esperado = Compra Comercialização + 25%
-      esperado380: compraComercializacao * 1.25
+      esperado380: compraComercializacao * 1.25,
     },
     // Detalhes para gráfico de barras horizontais
     detalhes380: {
@@ -1368,9 +1464,9 @@ export const parseResumoPorAcumulador = (csvContent) => {
       vendasMercadoria: itensVendas,
       vendasProduto: itensVendaProduto,
       vendasExterior: itensVendaExterior,
-      servicos: itensServicos
+      servicos: itensServicos,
     },
-    tipo: 'resumoAcumulador'
+    tipo: 'resumoAcumulador',
   };
 };
 
@@ -1479,7 +1575,7 @@ export const parseDemonstrativoFGTS = (csvContent) => {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const cols = line.split(';').map(c => c.trim());
+    const cols = line.split(';').map((c) => c.trim());
     const tipoDetectadoNaLinha = detectarTipoRecolhimento(line);
     if (tipoDetectadoNaLinha) {
       tipoRecolhimentoAtual = tipoDetectadoNaLinha;
@@ -1489,7 +1585,13 @@ export const parseDemonstrativoFGTS = (csvContent) => {
     if (/^Empresa:/i.test(line)) {
       // Procurar texto significativo após "Empresa:"
       for (const col of cols) {
-        if (col && !col.includes('Empresa') && col.length > 5 && !/^\d+$/.test(col) && !col.includes('Página')) {
+        if (
+          col &&
+          !col.includes('Empresa') &&
+          col.length > 5 &&
+          !/^\d+$/.test(col) &&
+          !col.includes('Página')
+        ) {
           empresaInfo.razaoSocial = col.replace(/^\d+\s*-\s*/, ''); // Remove código numérico do início
           break;
         }
@@ -1554,8 +1656,13 @@ export const parseDemonstrativoFGTS = (csvContent) => {
     // Procurar nome (texto longo com espaços, provavelmente nome de pessoa)
     for (let j = 0; j < cols.length; j++) {
       const col = cols[j];
-      if (col && col.length > 10 && /[A-Za-z]/.test(col) && col.includes(' ') &&
-          !/sistema|esocial|total|base|valor|enviado|pendente|p\u00e1gina|emiss\u00e3o/i.test(col)) {
+      if (
+        col &&
+        col.length > 10 &&
+        /[A-Za-z]/.test(col) &&
+        col.includes(' ') &&
+        !/sistema|esocial|total|base|valor|enviado|pendente|p\u00e1gina|emiss\u00e3o/i.test(col)
+      ) {
         nome = col;
         break;
       }
@@ -1614,7 +1721,7 @@ export const parseDemonstrativoFGTS = (csvContent) => {
       base,
       valorFGTS,
       situacao,
-      tipo
+      tipo,
     };
 
     registros.push(registro);
@@ -1658,7 +1765,11 @@ export const parseDemonstrativoFGTS = (csvContent) => {
     const tipo = tipoRecolhimentoAtual || tipoArquivo || 'Mensal';
     totaisPorTipo[tipo] = { quantidade: 1, base: totalBaseSistema, valorFGTS: totalValorSistema };
     if (competenciaAtual) {
-      totaisPorCompetencia[competenciaAtual] = { colaboradores: 1, base: totalBaseSistema, valorFGTS: totalValorSistema };
+      totaisPorCompetencia[competenciaAtual] = {
+        colaboradores: 1,
+        base: totalBaseSistema,
+        valorFGTS: totalValorSistema,
+      };
     }
     totaisPorAno[ano] = { base: totalBaseSistema, valorFGTS: totalValorSistema, meses: 1 };
   }
@@ -1676,7 +1787,10 @@ export const parseDemonstrativoFGTS = (csvContent) => {
   // Total geral (usar totalizador se disponível, seNão somar registros)
   const totalGeral = {
     base: totalBaseSistema > 0 ? totalBaseSistema : registros.reduce((acc, r) => acc + r.base, 0),
-    valorFGTS: totalValorSistema > 0 ? totalValorSistema : registros.reduce((acc, r) => acc + r.valorFGTS, 0)
+    valorFGTS:
+      totalValorSistema > 0
+        ? totalValorSistema
+        : registros.reduce((acc, r) => acc + r.valorFGTS, 0),
   };
 
   return {
@@ -1689,7 +1803,7 @@ export const parseDemonstrativoFGTS = (csvContent) => {
     ultimos3Meses,
     totalGeral,
     anos: Object.keys(totaisPorAno).map(Number).sort(),
-    tipo: 'fgts'
+    tipo: 'fgts',
   };
 };
 
@@ -1718,12 +1832,18 @@ export const parseFolhaINSS = (csvContent) => {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const cols = line.split(';').map(c => c.trim());
+    const cols = line.split(';').map((c) => c.trim());
 
     // Extrair informações da empresa (formato: Empresa:;;;;;;NOME)
     if (/^Empresa:/i.test(line)) {
       for (const col of cols) {
-        if (col && !col.includes('Empresa') && col.length > 5 && !/^\d+$/.test(col) && !col.includes('Página')) {
+        if (
+          col &&
+          !col.includes('Empresa') &&
+          col.length > 5 &&
+          !/^\d+$/.test(col) &&
+          !col.includes('Página')
+        ) {
           empresaInfo.razaoSocial = col.replace(/^\d+\s*-\s*/, '');
           break;
         }
@@ -1816,8 +1936,15 @@ export const parseFolhaINSS = (csvContent) => {
     // Procurar nome (texto longo com espaços)
     for (let j = 0; j < cols.length; j++) {
       const col = cols[j];
-      if (col && col.length > 10 && /[A-Za-z]/.test(col) && col.includes(' ') &&
-          !/sistema|total|base|valor|p\u00e1gina|emiss\u00e3o|folha|inss|empregados|contribuintes/i.test(col)) {
+      if (
+        col &&
+        col.length > 10 &&
+        /[A-Za-z]/.test(col) &&
+        col.includes(' ') &&
+        !/sistema|total|base|valor|p\u00e1gina|emiss\u00e3o|folha|inss|empregados|contribuintes/i.test(
+          col
+        )
+      ) {
         nome = col;
         break;
       }
@@ -1871,7 +1998,7 @@ export const parseFolhaINSS = (csvContent) => {
       baseCalculo,
       taxa,
       valorINSS,
-      tipoGuia
+      tipoGuia,
     };
 
     registros.push(registro);
@@ -1901,7 +2028,7 @@ export const parseFolhaINSS = (csvContent) => {
     totaisPorCompetencia[competenciaAtual] = {
       empregados: totalEmpregados || registros.length,
       baseCalculo: totalBaseCalculo || registros.reduce((acc, r) => acc + r.baseCalculo, 0),
-      valorINSS: totalValorINSS || registros.reduce((acc, r) => acc + r.valorINSS, 0)
+      valorINSS: totalValorINSS || registros.reduce((acc, r) => acc + r.valorINSS, 0),
     };
   }
 
@@ -1914,8 +2041,12 @@ export const parseFolhaINSS = (csvContent) => {
 
   // Total geral (usar totais do resumo se disponíveis)
   const totalGeral = {
-    baseCalculo: totalBaseCalculo > 0 ? totalBaseCalculo : registros.reduce((acc, r) => acc + r.baseCalculo, 0),
-    valorINSS: totalValorINSS > 0 ? totalValorINSS : registros.reduce((acc, r) => acc + r.valorINSS, 0)
+    baseCalculo:
+      totalBaseCalculo > 0
+        ? totalBaseCalculo
+        : registros.reduce((acc, r) => acc + r.baseCalculo, 0),
+    valorINSS:
+      totalValorINSS > 0 ? totalValorINSS : registros.reduce((acc, r) => acc + r.valorINSS, 0),
   };
 
   return {
@@ -1926,7 +2057,7 @@ export const parseFolhaINSS = (csvContent) => {
     totaisPorTipo,
     competencias,
     totalGeral,
-    tipo: 'inss'
+    tipo: 'inss',
   };
 };
 
@@ -1968,19 +2099,27 @@ export const parseRelacaoEmpregados = (csvContent) => {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const cols = line.split(';').map(c => c.trim());
+    const cols = line.split(';').map((c) => c.trim());
     const lineUpper = line.toUpperCase();
 
     // Ignorar linhas de total
-    if (lineUpper.includes('TOTAL') || lineUpper.includes('PÁGINA') ||
-        lineUpper.includes('EMISS\u00c3O') ||
-        lineUpper.includes('RELA\u00c7\u00c3O DE EMPREGADOS')) {
+    if (
+      lineUpper.includes('TOTAL') ||
+      lineUpper.includes('PÁGINA') ||
+      lineUpper.includes('EMISS\u00c3O') ||
+      lineUpper.includes('RELA\u00c7\u00c3O DE EMPREGADOS')
+    ) {
       continue;
     }
 
     // Extrair informações da empresa (primeira coluna Não vazia com texto longo)
-    if (cols[0] && cols[0].length > 10 && !cols[0].includes('Código') &&
-        /[A-Z]/.test(cols[0]) && !empresaInfo.razaoSocial) {
+    if (
+      cols[0] &&
+      cols[0].length > 10 &&
+      !cols[0].includes('Código') &&
+      /[A-Z]/.test(cols[0]) &&
+      !empresaInfo.razaoSocial
+    ) {
       empresaInfo.razaoSocial = cols[0];
     }
 
@@ -2024,8 +2163,14 @@ export const parseRelacaoEmpregados = (csvContent) => {
     let nomeIndex = -1;
     for (let j = codigoIndex + 1; j < Math.min(codigoIndex + 15, cols.length); j++) {
       const val = cols[j];
-      if (val && val.length > 5 && /[A-Za-z]/.test(val) && val.includes(' ') &&
-          !/^\d{2}\/\d{2}\/\d{4}$/.test(val) && !/^[\d.,]+$/.test(val)) {
+      if (
+        val &&
+        val.length > 5 &&
+        /[A-Za-z]/.test(val) &&
+        val.includes(' ') &&
+        !/^\d{2}\/\d{2}\/\d{4}$/.test(val) &&
+        !/^[\d.,]+$/.test(val)
+      ) {
         nome = val;
         nomeIndex = j;
         break;
@@ -2039,9 +2184,17 @@ export const parseRelacaoEmpregados = (csvContent) => {
     for (let j = nomeIndex + 1; j < cols.length; j++) {
       const val = cols[j];
       // Cargo é texto que Não é data nem Número, com pelo menos 3 caracteres
-      if (val && val.length >= 3 && /[A-Za-z]/.test(val) &&
-          !/^\d{2}\/\d{2}\/\d{4}$/.test(val) && !/^[\d.,]+$/.test(val) &&
-          !/^[A-Z]$/.test(val) && val !== 'D' && val !== 'M') { // Excluir letras soltas como Fpg=D
+      if (
+        val &&
+        val.length >= 3 &&
+        /[A-Za-z]/.test(val) &&
+        !/^\d{2}\/\d{2}\/\d{4}$/.test(val) &&
+        !/^[\d.,]+$/.test(val) &&
+        !/^[A-Z]$/.test(val) &&
+        val !== 'D' &&
+        val !== 'M'
+      ) {
+        // Excluir letras soltas como Fpg=D
         cargo = val;
         break;
       }
@@ -2116,7 +2269,7 @@ export const parseRelacaoEmpregados = (csvContent) => {
       dataAdmissao,
       situacao: situacaoNormalizada,
       dataSituacao,
-      salario
+      salario,
     };
 
     empregados.push(empregado);
@@ -2170,7 +2323,7 @@ export const parseRelacaoEmpregados = (csvContent) => {
       total: empregados.length,
       ativos: totalAtivos,
       demitidos: totalDemitidos,
-      afastados: totalAfastados
+      afastados: totalAfastados,
     },
     empregadosPorCargo,
     empregadosPorSituacao,
@@ -2178,7 +2331,7 @@ export const parseRelacaoEmpregados = (csvContent) => {
     demissoesPorMes,
     competenciasAdmissao: ordenarCompetencias(admissoesPorMes),
     competenciasDemissao: ordenarCompetencias(demissoesPorMes),
-    tipo: 'empregados'
+    tipo: 'empregados',
   };
 };
 
@@ -2194,11 +2347,13 @@ export const parseSalarioBase = (csvContent) => {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const cols = line.split(';').map(c => c.trim());
+    const cols = line.split(';').map((c) => c.trim());
 
     // Extrair informações da empresa
     if (line.includes('Empresa:') || line.includes('EMPRESA:')) {
-      empresaInfo.razaoSocial = cols.find(c => c && !c.includes('Empresa') && !c.includes('EMPRESA') && c.length > 3) || '';
+      empresaInfo.razaoSocial =
+        cols.find((c) => c && !c.includes('Empresa') && !c.includes('EMPRESA') && c.length > 3) ||
+        '';
     }
     if (/C\.?N\.?P\.?J\.?:/i.test(line) || /CNPJ:/i.test(line)) {
       const cnpjMatch = line.match(/\d{14}|\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}/);
@@ -2258,24 +2413,36 @@ export const parseSalarioBase = (csvContent) => {
           codigo,
           nome: nome || `Empregado ${codigo}`,
           cargo: cargo || 'Não informado',
-          salario
+          salario,
         });
 
         // Agrupar por cargo
         const cargoNome = cargo || 'Não informado';
         if (!salariosPorCargo[cargoNome]) {
-          salariosPorCargo[cargoNome] = { quantidade: 0, salarioTotal: 0, salarioMedio: 0, salarioMin: Infinity, salarioMax: 0 };
+          salariosPorCargo[cargoNome] = {
+            quantidade: 0,
+            salarioTotal: 0,
+            salarioMedio: 0,
+            salarioMin: Infinity,
+            salarioMax: 0,
+          };
         }
         salariosPorCargo[cargoNome].quantidade++;
         salariosPorCargo[cargoNome].salarioTotal += salario;
-        salariosPorCargo[cargoNome].salarioMin = Math.min(salariosPorCargo[cargoNome].salarioMin, salario);
-        salariosPorCargo[cargoNome].salarioMax = Math.max(salariosPorCargo[cargoNome].salarioMax, salario);
+        salariosPorCargo[cargoNome].salarioMin = Math.min(
+          salariosPorCargo[cargoNome].salarioMin,
+          salario
+        );
+        salariosPorCargo[cargoNome].salarioMax = Math.max(
+          salariosPorCargo[cargoNome].salarioMax,
+          salario
+        );
       }
     }
   }
 
   // Calcular médias
-  Object.keys(salariosPorCargo).forEach(cargo => {
+  Object.keys(salariosPorCargo).forEach((cargo) => {
     const dados = salariosPorCargo[cargo];
     dados.salarioMedio = dados.quantidade > 0 ? dados.salarioTotal / dados.quantidade : 0;
     if (dados.salarioMin === Infinity) dados.salarioMin = 0;
@@ -2299,9 +2466,9 @@ export const parseSalarioBase = (csvContent) => {
       totalEmpregados: empregados.length,
       totalSalarios,
       salarioMedioGeral,
-      quantidadeCargos: Object.keys(salariosPorCargo).length
+      quantidadeCargos: Object.keys(salariosPorCargo).length,
     },
-    tipo: 'salarioBase'
+    tipo: 'salarioBase',
   };
 };
 
@@ -2331,7 +2498,7 @@ export const parseProgramacaoFerias = (csvContent) => {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const cols = line.split(';').map(c => c.trim());
+    const cols = line.split(';').map((c) => c.trim());
 
     // Extrair informações da empresa (primeira linha geralmente tem razão social)
     if (i === 0 && cols[0] && cols[0].length > 10 && !cols[0].includes('Código')) {
@@ -2367,12 +2534,20 @@ export const parseProgramacaoFerias = (csvContent) => {
 
       // Mapear as datas por posição conhecida
       // Ordem típica: admissão(~9), vencto(~10), inicioAq(~16), fimAq(~17), limiteGozo(última)
-      const dataAdmissao = datasEncontradas.find(d => d.idx >= 8 && d.idx <= 11)?.data || null;
-      const inicioAquisitivo = datasEncontradas.find(d => d.idx >= 14 && d.idx <= 18)?.data || null;
-      const fimAquisitivo = datasEncontradas.find(d => d.idx >= 15 && d.idx <= 19 && d.idx !== datasEncontradas.find(x => x.data === inicioAquisitivo)?.idx)?.data || null;
+      const dataAdmissao = datasEncontradas.find((d) => d.idx >= 8 && d.idx <= 11)?.data || null;
+      const inicioAquisitivo =
+        datasEncontradas.find((d) => d.idx >= 14 && d.idx <= 18)?.data || null;
+      const fimAquisitivo =
+        datasEncontradas.find(
+          (d) =>
+            d.idx >= 15 &&
+            d.idx <= 19 &&
+            d.idx !== datasEncontradas.find((x) => x.data === inicioAquisitivo)?.idx
+        )?.data || null;
 
       // Limite p/ Gozo é geralmente a última data válida (posição ~33)
-      const limiteGozo = datasEncontradas.length > 0 ? datasEncontradas[datasEncontradas.length - 1].data : null;
+      const limiteGozo =
+        datasEncontradas.length > 0 ? datasEncontradas[datasEncontradas.length - 1].data : null;
 
       // início Gozo Férias - procurar na posição ~23, verificar se Não é ..../..../......
       let inicioGozo = null;
@@ -2463,7 +2638,7 @@ export const parseProgramacaoFerias = (csvContent) => {
         status,
         // Para compatibilidade com gráficos existentes
         dataInicio: inicioGozo || inicioAquisitivo,
-        dataFim: limiteGozo
+        dataFim: limiteGozo,
       };
 
       ferias.push(registro);
@@ -2513,9 +2688,9 @@ export const parseProgramacaoFerias = (csvContent) => {
       totalRegistros: ferias.length,
       diasTotalProgramados: ferias.reduce((acc, f) => acc + f.diasDireito, 0),
       diasTotalGozados: ferias.reduce((acc, f) => acc + f.diasGozados, 0),
-      diasRestantes: ferias.reduce((acc, f) => acc + f.diasRestantes, 0)
+      diasRestantes: ferias.reduce((acc, f) => acc + f.diasRestantes, 0),
     },
-    tipo: 'ferias'
+    tipo: 'ferias',
   };
 };
 
@@ -2525,7 +2700,7 @@ export const parseProgramacaoFerias = (csvContent) => {
 export const detectarTipoRelatorioPessoal = (csvContent) => {
   const upper = csvContent.toUpperCase();
 
-  if (upper.includes('FGTS') || upper.includes('DEMONSTRATIVO') && upper.includes('FOLHA')) {
+  if (upper.includes('FGTS') || (upper.includes('DEMONSTRATIVO') && upper.includes('FOLHA'))) {
     if (upper.includes('E-SOCIAL') || upper.includes('ESOCIAL') || upper.includes('FGTS')) {
       return 'fgts';
     }

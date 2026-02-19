@@ -1,18 +1,13 @@
 const CACHE_NAME = 'agili-cache-v1';
-const urlsToCache = [
-  '/',
-  '/index.html',
-  '/manifest.json'
-];
+const urlsToCache = ['/', '/index.html', '/manifest.json'];
 
 // Install event
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('Opened cache');
-        return cache.addAll(urlsToCache);
-      })
+    caches.open(CACHE_NAME).then((cache) => {
+      console.log('Opened cache');
+      return cache.addAll(urlsToCache);
+    })
   );
   self.skipWaiting();
 });
@@ -53,26 +48,24 @@ self.addEventListener('fetch', (event) => {
         const responseClone = response.clone();
 
         // Open cache and store response
-        caches.open(CACHE_NAME)
-          .then((cache) => {
-            cache.put(event.request, responseClone);
-          });
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, responseClone);
+        });
 
         return response;
       })
       .catch(() => {
         // If network fails, try cache
-        return caches.match(event.request)
-          .then((response) => {
-            if (response) {
-              return response;
-            }
-            // Return offline fallback for navigation requests
-            if (event.request.mode === 'navigate') {
-              return caches.match('/index.html');
-            }
-            return new Response('Offline', { status: 503 });
-          });
+        return caches.match(event.request).then((response) => {
+          if (response) {
+            return response;
+          }
+          // Return offline fallback for navigation requests
+          if (event.request.mode === 'navigate') {
+            return caches.match('/index.html');
+          }
+          return new Response('Offline', { status: 503 });
+        });
       })
   );
 });
@@ -86,17 +79,15 @@ self.addEventListener('push', (event) => {
     vibrate: [100, 50, 100],
     data: {
       dateOfArrival: Date.now(),
-      primaryKey: 1
+      primaryKey: 1,
     },
     actions: [
       { action: 'explore', title: 'Ver detalhes' },
-      { action: 'close', title: 'Fechar' }
-    ]
+      { action: 'close', title: 'Fechar' },
+    ],
   };
 
-  event.waitUntil(
-    self.registration.showNotification('Agili Complex', options)
-  );
+  event.waitUntil(self.registration.showNotification('Agili Complex', options));
 });
 
 // Handle notification click
@@ -104,8 +95,6 @@ self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
   if (event.action === 'explore') {
-    event.waitUntil(
-      clients.openWindow('/dashboard')
-    );
+    event.waitUntil(clients.openWindow('/dashboard'));
   }
 });

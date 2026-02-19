@@ -1,13 +1,29 @@
 ﻿import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  ArrowLeft, Activity, Search, Calendar, Download, Trash2,
-  LogIn, LogOut, Eye, Plus, Edit, Shield, Settings, RefreshCw
+  ArrowLeft,
+  Activity,
+  Search,
+  Calendar,
+  Download,
+  Trash2,
+  LogIn,
+  LogOut,
+  Eye,
+  Plus,
+  Edit,
+  Shield,
+  Settings,
+  RefreshCw,
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import {
-  filterLogs, clearLogs, getLogStats, formatLogTime,
-  ActivityTypes, ActivityCategories
+  filterLogs,
+  clearLogs,
+  getLogStats,
+  formatLogTime,
+  ActivityTypes,
+  ActivityCategories,
 } from '../utils/activityLog';
 
 /**
@@ -36,9 +52,10 @@ const Logs = () => {
 
   // Filtered logs
   const filteredLogs = useMemo(() => {
-    return logs.filter(log => {
-      const matchSearch = log.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          log.userName?.toLowerCase().includes(searchTerm.toLowerCase());
+    return logs.filter((log) => {
+      const matchSearch =
+        log.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        log.userName?.toLowerCase().includes(searchTerm.toLowerCase());
       const matchType = filterType === 'todos' || log.type === filterType;
       const matchCategory = filterCategory === 'todos' || log.category === filterCategory;
       return matchSearch && matchType && matchCategory;
@@ -62,22 +79,28 @@ const Logs = () => {
       [ActivityTypes.DELETE]: Trash2,
       [ActivityTypes.EXPORT]: Download,
       [ActivityTypes.CONFIG_CHANGE]: Settings,
-      [ActivityTypes.PERMISSION_CHANGE]: Shield
+      [ActivityTypes.PERMISSION_CHANGE]: Shield,
     };
     return icons[type] || Activity;
   };
 
   const getTypeColor = (type) => {
     const colors = {
-      [ActivityTypes.LOGIN]: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-700',
+      [ActivityTypes.LOGIN]:
+        'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-700',
       [ActivityTypes.LOGOUT]: 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400',
       [ActivityTypes.VIEW]: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
-      [ActivityTypes.CREATE]: 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
-      [ActivityTypes.UPDATE]: 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400',
+      [ActivityTypes.CREATE]:
+        'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
+      [ActivityTypes.UPDATE]:
+        'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400',
       [ActivityTypes.DELETE]: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400',
-      [ActivityTypes.EXPORT]: 'bg-slate-100 dark:bg-slate-900/30 text-slate-700 dark:text-slate-500',
-      [ActivityTypes.CONFIG_CHANGE]: 'bg-slate-100 dark:bg-slate-900/30 text-teal-700 dark:text-teal-500',
-      [ActivityTypes.PERMISSION_CHANGE]: 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'
+      [ActivityTypes.EXPORT]:
+        'bg-slate-100 dark:bg-slate-900/30 text-slate-700 dark:text-slate-500',
+      [ActivityTypes.CONFIG_CHANGE]:
+        'bg-slate-100 dark:bg-slate-900/30 text-teal-700 dark:text-teal-500',
+      [ActivityTypes.PERMISSION_CHANGE]:
+        'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400',
     };
     return colors[type] || 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400';
   };
@@ -91,7 +114,7 @@ const Logs = () => {
     [ActivityTypes.DELETE]: 'Exclusão',
     [ActivityTypes.EXPORT]: 'ExportAção',
     [ActivityTypes.CONFIG_CHANGE]: 'ConfiguraÇão',
-    [ActivityTypes.PERMISSION_CHANGE]: 'Permissão'
+    [ActivityTypes.PERMISSION_CHANGE]: 'Permissão',
   };
 
   const categoryLabels = {
@@ -99,7 +122,7 @@ const Logs = () => {
     [ActivityCategories.NAVIGATION]: 'NavegAção',
     [ActivityCategories.DATA]: 'Dados',
     [ActivityCategories.CONFIG]: 'ConfiguraÇão',
-    [ActivityCategories.EXPORT]: 'ExportAção'
+    [ActivityCategories.EXPORT]: 'ExportAção',
   };
 
   return (
@@ -119,8 +142,12 @@ const Logs = () => {
                 <Activity className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-slate-800 dark:text-white">Logs de Atividade</h1>
-                <p className="text-xs text-slate-500 dark:text-slate-400">{logs.length} registros</p>
+                <h1 className="text-lg font-bold text-slate-800 dark:text-white">
+                  Logs de Atividade
+                </h1>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {logs.length} registros
+                </p>
               </div>
             </div>
           </div>
@@ -161,7 +188,9 @@ const Logs = () => {
               <p className="text-sm text-slate-500 dark:text-slate-400">Última Semana</p>
             </div>
             <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-100 dark:border-slate-700">
-              <p className="text-2xl font-bold text-amber-500">{Object.keys(stats.byType).length}</p>
+              <p className="text-2xl font-bold text-amber-500">
+                {Object.keys(stats.byType).length}
+              </p>
               <p className="text-sm text-slate-500 dark:text-slate-400">Tipos de Ação</p>
             </div>
           </div>
@@ -187,7 +216,9 @@ const Logs = () => {
             >
               <option value="todos">Todos os Tipos</option>
               {Object.entries(typeLabels).map(([key, label]) => (
-                <option key={key} value={key}>{label}</option>
+                <option key={key} value={key}>
+                  {label}
+                </option>
               ))}
             </select>
             <select
@@ -197,7 +228,9 @@ const Logs = () => {
             >
               <option value="todos">Todas as Categorias</option>
               {Object.entries(categoryLabels).map(([key, label]) => (
-                <option key={key} value={key}>{label}</option>
+                <option key={key} value={key}>
+                  {label}
+                </option>
               ))}
             </select>
           </div>
@@ -210,14 +243,21 @@ const Logs = () => {
               {filteredLogs.map((log) => {
                 const Icon = getIcon(log.type);
                 return (
-                  <div key={log.id} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                  <div
+                    key={log.id}
+                    className="p-4 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
+                  >
                     <div className="flex items-start gap-4">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${getTypeColor(log.type)}`}>
+                      <div
+                        className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${getTypeColor(log.type)}`}
+                      >
                         <Icon className="w-5 h-5" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getTypeColor(log.type)}`}>
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-xs font-medium ${getTypeColor(log.type)}`}
+                          >
                             {typeLabels[log.type] || log.type}
                           </span>
                           <span className="text-xs text-slate-400 dark:text-slate-500">
@@ -232,9 +272,7 @@ const Logs = () => {
                             <Calendar className="w-3 h-3" />
                             {formatLogTime(log.timestamp)}
                           </span>
-                          {log.userName && (
-                            <span>por {log.userName}</span>
-                          )}
+                          {log.userName && <span>por {log.userName}</span>}
                           <span className="truncate max-w-[200px]">{log.url}</span>
                         </div>
                       </div>
@@ -247,7 +285,9 @@ const Logs = () => {
             <div className="p-12 text-center">
               <Activity className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
               <p className="text-slate-500 dark:text-slate-400">
-                {logs.length === 0 ? 'Nenhum log registrado ainda' : 'Nenhum log encontrado com os filtros aplicados'}
+                {logs.length === 0
+                  ? 'Nenhum log registrado ainda'
+                  : 'Nenhum log encontrado com os filtros aplicados'}
               </p>
             </div>
           )}

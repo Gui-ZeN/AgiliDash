@@ -1,13 +1,4 @@
-import {
-  Building2,
-  Check,
-  ChevronRight,
-  Eye,
-  RotateCcw,
-  Save,
-  Search,
-  X,
-} from 'lucide-react';
+import { Building2, Check, ChevronRight, Eye, RotateCcw, Save, Search, X } from 'lucide-react';
 
 const VisibilidadeTab = ({
   DASHBOARD_SECTIONS,

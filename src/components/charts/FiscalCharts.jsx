@@ -20,7 +20,7 @@ const COLORS = {
   pink: '#ec4899',
   orange: '#f97316',
   cyan: '#06b6d4',
-  teal: '#14b8a6'
+  teal: '#14b8a6',
 };
 
 const CHART_COLORS = [
@@ -34,8 +34,46 @@ const CHART_COLORS = [
   COLORS.pink,
   COLORS.orange,
   COLORS.cyan,
-  COLORS.teal
+  COLORS.teal,
 ];
+
+const normalizeText = (text = '') =>
+  String(text)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+
+const MONTH_PREFIXES = [
+  ['jan', 1],
+  ['fev', 2],
+  ['mar', 3],
+  ['abr', 4],
+  ['mai', 5],
+  ['jun', 6],
+  ['jul', 7],
+  ['ago', 8],
+  ['set', 9],
+  ['out', 10],
+  ['nov', 11],
+  ['dez', 12],
+];
+
+const getMonthIndexFromMovimentacao = (item = {}) => {
+  const fromMesIndex = Number(item?.mesIndex || 0);
+  if (fromMesIndex >= 1 && fromMesIndex <= 12) return fromMesIndex;
+
+  const competencia = String(item?.competencia || '');
+  const matchCompetencia = competencia.match(/^(\d{2})\/\d{4}$/);
+  if (matchCompetencia) {
+    const mes = Number(matchCompetencia[1]);
+    if (mes >= 1 && mes <= 12) return mes;
+  }
+
+  const mesNormalizado = normalizeText(item?.mes || '').replace(/[^a-z]/g, '');
+  const prefix = MONTH_PREFIXES.find(([abbr]) => mesNormalizado.startsWith(abbr));
+  return prefix ? prefix[1] : 0;
+};
 
 const normalizeAccumulatorDescription = (text = '') =>
   String(text)
@@ -62,14 +100,12 @@ const mergeEntradasForTable = (lista = []) => {
   lista.forEach((item) => {
     const mergeGroup = getEntradaMergeGroup(item?.descricao || '');
     const normalized = normalizeAccumulatorDescription(item?.descricao || '');
-    const key = mergeGroup
-      ? `grupo::${mergeGroup}`
-      : `${item?.codigo || ''}::${normalized}`;
+    const key = mergeGroup ? `grupo::${mergeGroup}` : `${item?.codigo || ''}::${normalized}`;
 
     if (!grouped.has(key)) {
       grouped.set(key, {
         ...item,
-        descricao: mergeGroup || item?.descricao || ''
+        descricao: mergeGroup || item?.descricao || '',
       });
       return;
     }
@@ -104,26 +140,29 @@ export const FaturamentoPorCategoriaChart = ({ dados, year }) => {
 
     // Se for dados do Resumo por Acumulador
     if (dados.totais) {
-      const servicosResumo = Number(dados.totais?.servicos || 0) || Number(dados.categorias?.servicos || 0);
+      const servicosResumo =
+        Number(dados.totais?.servicos || 0) || Number(dados.categorias?.servicos || 0);
       return {
         entradas: Number(dados.totais.entradas || 0),
         servicos: servicosResumo,
-        saidas: Number(dados.totais.saidas || 0)
+        saidas: Number(dados.totais.saidas || 0),
       };
     }
 
     // Se for dados do Demonstrativo Mensal
     if (dados.totais2025) {
       const anoSelecionado = Number(year || 0);
-      const totaisAnoSelecionado = anoSelecionado && dados.totaisPorAno?.[anoSelecionado]
-        ? dados.totaisPorAno[anoSelecionado]
-        : null;
+      const totaisAnoSelecionado =
+        anoSelecionado && dados.totaisPorAno?.[anoSelecionado]
+          ? dados.totaisPorAno[anoSelecionado]
+          : null;
       const origemTotais = totaisAnoSelecionado || dados.totais2025;
-      const servicosMensal = Number(dados.totais2025.servicos || 0) || Number(dados.categorias?.servicos || 0);
+      const servicosMensal =
+        Number(dados.totais2025.servicos || 0) || Number(dados.categorias?.servicos || 0);
       return {
         entradas: Number(origemTotais?.entradas || 0),
         servicos: Number(origemTotais?.servicos || servicosMensal || 0),
-        saidas: Number(origemTotais?.saidas || 0)
+        saidas: Number(origemTotais?.saidas || 0),
       };
     }
 
@@ -138,7 +177,7 @@ export const FaturamentoPorCategoriaChart = ({ dados, year }) => {
     }
 
     const ctx = chartRef.current.getContext('2d');
-    const valores = [totais.entradas, totais.servicos, totais.saidas].filter(v => v > 0);
+    const valores = [totais.entradas, totais.servicos, totais.saidas].filter((v) => v > 0);
     const labels = [];
     const colors = [];
 
@@ -159,13 +198,15 @@ export const FaturamentoPorCategoriaChart = ({ dados, year }) => {
       type: 'doughnut',
       data: {
         labels,
-        datasets: [{
-          data: valores,
-          backgroundColor: colors.map(c => c + 'CC'),
-          borderColor: colors,
-          borderWidth: 2,
-          hoverOffset: 8
-        }]
+        datasets: [
+          {
+            data: valores,
+            backgroundColor: colors.map((c) => c + 'CC'),
+            borderColor: colors,
+            borderWidth: 2,
+            hoverOffset: 8,
+          },
+        ],
       },
       options: {
         responsive: true,
@@ -179,8 +220,8 @@ export const FaturamentoPorCategoriaChart = ({ dados, year }) => {
               font: { weight: 'bold', size: 12 },
               usePointStyle: true,
               pointStyle: 'circle',
-              padding: 20
-            }
+              padding: 20,
+            },
           },
           tooltip: {
             backgroundColor: isDarkMode ? '#1e293b' : 'white',
@@ -195,11 +236,11 @@ export const FaturamentoPorCategoriaChart = ({ dados, year }) => {
                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
                 const percentage = ((context.raw / total) * 100).toFixed(1);
                 return `${context.label}: ${formatCurrency(context.raw)} (${percentage}%)`;
-              }
-            }
-          }
-        }
-      }
+              },
+            },
+          },
+        },
+      },
     });
 
     return () => {
@@ -247,9 +288,24 @@ export const FaturamentoPorTrimestreChart = ({ dados, trimestre = null, year }) 
 
     if (!movimentacao.length) return { meses: [], entradas: [], saidas: [], servicos: [] };
 
-    const mesesNomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    const mesesNomes = [
+      'Jan',
+      'Fev',
+      'Mar',
+      'Abr',
+      'Mai',
+      'Jun',
+      'Jul',
+      'Ago',
+      'Set',
+      'Out',
+      'Nov',
+      'Dez',
+    ];
 
-    let dadosFiltrados = movimentacao;
+    let dadosFiltrados = movimentacao
+      .map((m) => ({ ...m, _mesIndex: getMonthIndexFromMovimentacao(m) }))
+      .filter((m) => m._mesIndex >= 1 && m._mesIndex <= 12);
 
     // Filtrar por trimestre se especificado
     if (trimestre) {
@@ -257,17 +313,23 @@ export const FaturamentoPorTrimestreChart = ({ dados, trimestre = null, year }) 
         1: [1, 2, 3],
         2: [4, 5, 6],
         3: [7, 8, 9],
-        4: [10, 11, 12]
+        4: [10, 11, 12],
       };
       const mesesPermitidos = trimestreMeses[trimestre] || [];
-      dadosFiltrados = movimentacao.filter((m) => mesesPermitidos.includes(Number(m?.mesIndex || 0)));
+      dadosFiltrados = dadosFiltrados.filter((m) =>
+        mesesPermitidos.includes(Number(m?._mesIndex || 0))
+      );
     }
 
+    dadosFiltrados.sort((a, b) => Number(a?._mesIndex || 0) - Number(b?._mesIndex || 0));
+
     return {
-      meses: dadosFiltrados.map((m) => mesesNomes[Math.max(0, Number(m?.mesIndex || 1) - 1)] || m?.mes || ''),
-      entradas: dadosFiltrados.map(m => m.entradas),
-      saidas: dadosFiltrados.map(m => m.saidas),
-      servicos: dadosFiltrados.map(m => m.servicos)
+      meses: dadosFiltrados.map(
+        (m) => mesesNomes[Math.max(0, Number(m?._mesIndex || 1) - 1)] || m?.mes || ''
+      ),
+      entradas: dadosFiltrados.map((m) => m.entradas),
+      saidas: dadosFiltrados.map((m) => m.saidas),
+      servicos: dadosFiltrados.map((m) => m.servicos),
     };
   }, [dados, trimestre, year]);
 
@@ -291,7 +353,7 @@ export const FaturamentoPorTrimestreChart = ({ dados, trimestre = null, year }) 
             backgroundColor: COLORS.success + 'CC',
             borderColor: COLORS.success,
             borderWidth: 2,
-            borderRadius: 6
+            borderRadius: 6,
           },
           {
             label: 'Saídas',
@@ -299,16 +361,16 @@ export const FaturamentoPorTrimestreChart = ({ dados, trimestre = null, year }) 
             backgroundColor: COLORS.danger + 'CC',
             borderColor: COLORS.danger,
             borderWidth: 2,
-            borderRadius: 6
-          }
-        ]
+            borderRadius: 6,
+          },
+        ],
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         interaction: {
           intersect: false,
-          mode: 'index'
+          mode: 'index',
         },
         plugins: {
           legend: {
@@ -318,8 +380,8 @@ export const FaturamentoPorTrimestreChart = ({ dados, trimestre = null, year }) 
               font: { weight: 'bold', size: 12 },
               usePointStyle: true,
               pointStyle: 'circle',
-              padding: 20
-            }
+              padding: 20,
+            },
           },
           tooltip: {
             backgroundColor: isDarkMode ? '#1e293b' : 'white',
@@ -330,29 +392,29 @@ export const FaturamentoPorTrimestreChart = ({ dados, trimestre = null, year }) 
             padding: 16,
             cornerRadius: 12,
             callbacks: {
-              label: (context) => `${context.dataset.label}: ${formatCurrency(context.raw)}`
-            }
-          }
+              label: (context) => `${context.dataset.label}: ${formatCurrency(context.raw)}`,
+            },
+          },
         },
         scales: {
           x: {
             grid: { display: false },
             ticks: {
               color: isDarkMode ? '#94a3b8' : '#64748b',
-              font: { weight: '600' }
-            }
+              font: { weight: '600' },
+            },
           },
           y: {
             grid: {
-              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)'
+              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)',
             },
             ticks: {
               color: isDarkMode ? '#94a3b8' : '#64748b',
-              callback: (value) => formatCurrency(value)
-            }
-          }
-        }
-      }
+              callback: (value) => formatCurrency(value),
+            },
+          },
+        },
+      },
     });
 
     const resizeChart = () => {
@@ -401,7 +463,8 @@ export const TabelaAcumuladores = ({ dados, tipo = 'entradas' }) => {
     if (!dados) return [];
 
     const listaOriginal = tipo === 'entradas' ? dados.entradas : dados.saidas;
-    const lista = tipo === 'entradas' ? mergeEntradasForTable(listaOriginal || []) : (listaOriginal || []);
+    const lista =
+      tipo === 'entradas' ? mergeEntradasForTable(listaOriginal || []) : listaOriginal || [];
     if (!lista) return [];
 
     const total = lista.reduce((acc, item) => acc + item.vlrContabil, 0);
@@ -409,9 +472,9 @@ export const TabelaAcumuladores = ({ dados, tipo = 'entradas' }) => {
     return [...lista]
       .sort((a, b) => b.vlrContabil - a.vlrContabil)
       .slice(0, 10)
-      .map(item => ({
+      .map((item) => ({
         ...item,
-        percentual: total > 0 ? ((item.vlrContabil / total) * 100).toFixed(1) : 0
+        percentual: total > 0 ? ((item.vlrContabil / total) * 100).toFixed(1) : 0,
       }));
   }, [dados, tipo]);
 
@@ -420,33 +483,50 @@ export const TabelaAcumuladores = ({ dados, tipo = 'entradas' }) => {
       <table className="w-full">
         <thead className={isDarkMode ? 'bg-slate-700/50' : 'bg-slate-50'}>
           <tr>
-            <th className={`px-4 py-3 text-left text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+            <th
+              className={`px-4 py-3 text-left text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
+            >
               Código
             </th>
-            <th className={`px-4 py-3 text-left text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+            <th
+              className={`px-4 py-3 text-left text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
+            >
               Descrição
             </th>
-            <th className={`px-4 py-3 text-right text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+            <th
+              className={`px-4 py-3 text-right text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
+            >
               Valor
             </th>
-            <th className={`px-4 py-3 text-right text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+            <th
+              className={`px-4 py-3 text-right text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
+            >
               %
             </th>
           </tr>
         </thead>
         <tbody className={`divide-y ${isDarkMode ? 'divide-slate-700' : 'divide-slate-100'}`}>
           {itens.map((item, i) => (
-            <tr key={i} className={`transition-colors ${isDarkMode ? 'hover:bg-slate-700/30' : 'hover:bg-slate-50'}`}>
-              <td className={`px-4 py-3 font-mono text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+            <tr
+              key={i}
+              className={`transition-colors ${isDarkMode ? 'hover:bg-slate-700/30' : 'hover:bg-slate-50'}`}
+            >
+              <td
+                className={`px-4 py-3 font-mono text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
+              >
                 {item.codigo}
               </td>
               <td className={`px-4 py-3 ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
                 {item.descricao}
               </td>
-              <td className={`px-4 py-3 text-right font-semibold ${tipo === 'entradas' ? (isDarkMode ? 'text-green-400' : 'text-green-600') : (isDarkMode ? 'text-red-400' : 'text-red-600')}`}>
+              <td
+                className={`px-4 py-3 text-right font-semibold ${tipo === 'entradas' ? (isDarkMode ? 'text-green-400' : 'text-green-600') : isDarkMode ? 'text-red-400' : 'text-red-600'}`}
+              >
                 {formatCurrency(item.vlrContabil)}
               </td>
-              <td className={`px-4 py-3 text-right ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+              <td
+                className={`px-4 py-3 text-right ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
+              >
                 {item.percentual}%
               </td>
             </tr>
@@ -474,36 +554,49 @@ export const ImpostosPorPeriodoChart = ({ dados, mesesSelecionados = null, trime
     if (!dados?.impostosPorMes) return { labels: [], valores: [] };
 
     const competencias = Object.keys(dados.impostosPorMes).sort();
-    const mesesNomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    const mesesNomes = [
+      'Jan',
+      'Fev',
+      'Mar',
+      'Abr',
+      'Mai',
+      'Jun',
+      'Jul',
+      'Ago',
+      'Set',
+      'Out',
+      'Nov',
+      'Dez',
+    ];
 
     let competenciasFiltradas = competencias;
 
     // Filtrar por trimestre se especificado
     if (trimestre) {
       const trimestreRanges = {
-        1: [1, 2, 3],   // Jan-Mar
-        2: [4, 5, 6],   // Abr-Jun
-        3: [7, 8, 9],   // Jul-Set
-        4: [10, 11, 12] // Out-Dez
+        1: [1, 2, 3], // Jan-Mar
+        2: [4, 5, 6], // Abr-Jun
+        3: [7, 8, 9], // Jul-Set
+        4: [10, 11, 12], // Out-Dez
       };
       const mesesTrimestre = trimestreRanges[trimestre];
-      competenciasFiltradas = competencias.filter(c => {
+      competenciasFiltradas = competencias.filter((c) => {
         const [mes] = c.split('/');
         return mesesTrimestre.includes(parseInt(mes));
       });
     } else if (mesesSelecionados && mesesSelecionados.length > 0) {
-      competenciasFiltradas = competencias.filter(c => mesesSelecionados.includes(c));
+      competenciasFiltradas = competencias.filter((c) => mesesSelecionados.includes(c));
     }
 
-    const labels = competenciasFiltradas.map(c => {
+    const labels = competenciasFiltradas.map((c) => {
       const [mes] = c.split('/');
       return mesesNomes[parseInt(mes) - 1];
     });
 
-    const valores = competenciasFiltradas.map(c => {
+    const valores = competenciasFiltradas.map((c) => {
       const mesData = dados.impostosPorMes[c];
       // Suporta estrutura antiga (array) e nova (objeto com .impostos)
-      const impostos = Array.isArray(mesData) ? mesData : (mesData?.impostos || []);
+      const impostos = Array.isArray(mesData) ? mesData : mesData?.impostos || [];
       return impostos.reduce((acc, imp) => acc + (imp.impostoRecolher || 0), 0);
     });
 
@@ -523,14 +616,16 @@ export const ImpostosPorPeriodoChart = ({ dados, mesesSelecionados = null, trime
       type: 'bar',
       data: {
         labels: dadosGrafico.labels,
-        datasets: [{
-          label: 'Impostos a Recolher',
-          data: dadosGrafico.valores,
-          backgroundColor: COLORS.primary + 'CC',
-          borderColor: COLORS.primary,
-          borderWidth: 2,
-          borderRadius: 8
-        }]
+        datasets: [
+          {
+            label: 'Impostos a Recolher',
+            data: dadosGrafico.valores,
+            backgroundColor: COLORS.primary + 'CC',
+            borderColor: COLORS.primary,
+            borderWidth: 2,
+            borderRadius: 8,
+          },
+        ],
       },
       options: {
         responsive: true,
@@ -546,29 +641,29 @@ export const ImpostosPorPeriodoChart = ({ dados, mesesSelecionados = null, trime
             padding: 16,
             cornerRadius: 12,
             callbacks: {
-              label: (context) => `Total: ${formatCurrency(context.raw)}`
-            }
-          }
+              label: (context) => `Total: ${formatCurrency(context.raw)}`,
+            },
+          },
         },
         scales: {
           x: {
             grid: { display: false },
             ticks: {
               color: isDarkMode ? '#94a3b8' : '#64748b',
-              font: { weight: '600' }
-            }
+              font: { weight: '600' },
+            },
           },
           y: {
             grid: {
-              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)'
+              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)',
             },
             ticks: {
               color: isDarkMode ? '#94a3b8' : '#64748b',
-              callback: (value) => formatCurrency(value)
-            }
-          }
-        }
-      }
+              callback: (value) => formatCurrency(value),
+            },
+          },
+        },
+      },
     });
 
     return () => {
@@ -599,12 +694,12 @@ export const ImpostosPorTipoChart = ({ dados }) => {
 
     const impostos = Object.entries(dados.totaisPorImposto)
       .map(([nome, val]) => ({ nome, valor: val.recolher }))
-      .filter(i => i.valor > 0)
+      .filter((i) => i.valor > 0)
       .sort((a, b) => b.valor - a.valor);
 
     return {
-      labels: impostos.map(i => i.nome),
-      valores: impostos.map(i => i.valor)
+      labels: impostos.map((i) => i.nome),
+      valores: impostos.map((i) => i.valor),
     };
   }, [dados]);
 
@@ -621,14 +716,18 @@ export const ImpostosPorTipoChart = ({ dados }) => {
       type: 'bar',
       data: {
         labels: dadosGrafico.labels,
-        datasets: [{
-          label: 'Valor',
-          data: dadosGrafico.valores,
-          backgroundColor: CHART_COLORS.slice(0, dadosGrafico.valores.length).map(c => c + 'CC'),
-          borderColor: CHART_COLORS.slice(0, dadosGrafico.valores.length),
-          borderWidth: 2,
-          borderRadius: 6
-        }]
+        datasets: [
+          {
+            label: 'Valor',
+            data: dadosGrafico.valores,
+            backgroundColor: CHART_COLORS.slice(0, dadosGrafico.valores.length).map(
+              (c) => c + 'CC'
+            ),
+            borderColor: CHART_COLORS.slice(0, dadosGrafico.valores.length),
+            borderWidth: 2,
+            borderRadius: 6,
+          },
+        ],
       },
       options: {
         indexAxis: 'y',
@@ -649,29 +748,29 @@ export const ImpostosPorTipoChart = ({ dados }) => {
                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
                 const percentage = ((context.raw / total) * 100).toFixed(1);
                 return `${formatCurrency(context.raw)} (${percentage}%)`;
-              }
-            }
-          }
+              },
+            },
+          },
         },
         scales: {
           x: {
             grid: {
-              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)'
+              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)',
             },
             ticks: {
               color: isDarkMode ? '#94a3b8' : '#64748b',
-              callback: (value) => formatCurrency(value)
-            }
+              callback: (value) => formatCurrency(value),
+            },
           },
           y: {
             grid: { display: false },
             ticks: {
               color: isDarkMode ? '#94a3b8' : '#64748b',
-              font: { weight: '600', size: 11 }
-            }
-          }
-        }
-      }
+              font: { weight: '600', size: 11 },
+            },
+          },
+        },
+      },
     });
 
     return () => {
@@ -707,7 +806,7 @@ export const ImpostosConsolidadosChart = ({ dadosResumo, dadosCsll, dadosIrpj })
           impostos.push({
             nome,
             valor: val.recolher,
-            fonte: 'Resumo Impostos'
+            fonte: 'Resumo Impostos',
           });
         }
       });
@@ -718,14 +817,18 @@ export const ImpostosConsolidadosChart = ({ dadosResumo, dadosCsll, dadosIrpj })
       const totalCsll = dadosCsll.reduce((acc, trim) => acc + (trim.dados?.csllRecolher || 0), 0);
       if (totalCsll > 0) {
         // Verificar se já existe CSLL no resumo
-        const existeCsll = impostos.findIndex(i => i.nome.toUpperCase().includes('CSLL') || i.nome.toUpperCase().includes('CONTRIBUIÇÃO SOCIAL'));
+        const existeCsll = impostos.findIndex(
+          (i) =>
+            i.nome.toUpperCase().includes('CSLL') ||
+            i.nome.toUpperCase().includes('CONTRIBUIÇÃO SOCIAL')
+        );
         if (existeCsll >= 0) {
           impostos[existeCsll].valor += totalCsll;
         } else {
           impostos.push({
             nome: 'CSLL',
             valor: totalCsll,
-            fonte: 'CSLL Trimestral'
+            fonte: 'CSLL Trimestral',
           });
         }
       }
@@ -736,14 +839,18 @@ export const ImpostosConsolidadosChart = ({ dadosResumo, dadosCsll, dadosIrpj })
       const totalIrpj = dadosIrpj.reduce((acc, trim) => acc + (trim.dados?.irpjRecolher || 0), 0);
       if (totalIrpj > 0) {
         // Verificar se já existe IRPJ no resumo
-        const existeIrpj = impostos.findIndex(i => i.nome.toUpperCase().includes('IRPJ') || i.nome.toUpperCase().includes('IMPOSTO DE RENDA'));
+        const existeIrpj = impostos.findIndex(
+          (i) =>
+            i.nome.toUpperCase().includes('IRPJ') ||
+            i.nome.toUpperCase().includes('IMPOSTO DE RENDA')
+        );
         if (existeIrpj >= 0) {
           impostos[existeIrpj].valor += totalIrpj;
         } else {
           impostos.push({
             nome: 'IRPJ',
             valor: totalIrpj,
-            fonte: 'IRPJ Trimestral'
+            fonte: 'IRPJ Trimestral',
           });
         }
       }
@@ -756,10 +863,10 @@ export const ImpostosConsolidadosChart = ({ dadosResumo, dadosCsll, dadosIrpj })
     const total = impostos.reduce((acc, i) => acc + i.valor, 0);
 
     return {
-      labels: impostos.map(i => i.nome),
-      valores: impostos.map(i => i.valor),
-      percentuais: impostos.map(i => total > 0 ? ((i.valor / total) * 100).toFixed(1) : 0),
-      total
+      labels: impostos.map((i) => i.nome),
+      valores: impostos.map((i) => i.valor),
+      percentuais: impostos.map((i) => (total > 0 ? ((i.valor / total) * 100).toFixed(1) : 0)),
+      total,
     };
   }, [dadosResumo, dadosCsll, dadosIrpj]);
 
@@ -776,14 +883,18 @@ export const ImpostosConsolidadosChart = ({ dadosResumo, dadosCsll, dadosIrpj })
       type: 'bar',
       data: {
         labels: dadosGrafico.labels,
-        datasets: [{
-          label: 'Valor',
-          data: dadosGrafico.valores,
-          backgroundColor: CHART_COLORS.slice(0, dadosGrafico.valores.length).map(c => c + 'CC'),
-          borderColor: CHART_COLORS.slice(0, dadosGrafico.valores.length),
-          borderWidth: 2,
-          borderRadius: 6
-        }]
+        datasets: [
+          {
+            label: 'Valor',
+            data: dadosGrafico.valores,
+            backgroundColor: CHART_COLORS.slice(0, dadosGrafico.valores.length).map(
+              (c) => c + 'CC'
+            ),
+            borderColor: CHART_COLORS.slice(0, dadosGrafico.valores.length),
+            borderWidth: 2,
+            borderRadius: 6,
+          },
+        ],
       },
       options: {
         indexAxis: 'y',
@@ -803,29 +914,29 @@ export const ImpostosConsolidadosChart = ({ dadosResumo, dadosCsll, dadosIrpj })
               label: (context) => {
                 const percentage = dadosGrafico.percentuais[context.dataIndex];
                 return `${formatCurrency(context.raw)} (${percentage}%)`;
-              }
-            }
-          }
+              },
+            },
+          },
         },
         scales: {
           x: {
             grid: {
-              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)'
+              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)',
             },
             ticks: {
               color: isDarkMode ? '#94a3b8' : '#64748b',
-              callback: (value) => formatCurrency(value)
-            }
+              callback: (value) => formatCurrency(value),
+            },
           },
           y: {
             grid: { display: false },
             ticks: {
               color: isDarkMode ? '#94a3b8' : '#64748b',
-              font: { weight: '600', size: 11 }
-            }
-          }
-        }
-      }
+              font: { weight: '600', size: 11 },
+            },
+          },
+        },
+      },
     });
 
     return () => {
@@ -870,7 +981,7 @@ export const CompraVendaChart = ({ dados }) => {
     return {
       compra: dados.categorias.compraComercializacao || 0,
       venda: dados.categorias.vendaMercadoria || 0,
-      servicos: dados.categorias.servicos || 0
+      servicos: dados.categorias.servicos || 0,
     };
   }, [dados]);
 
@@ -887,13 +998,15 @@ export const CompraVendaChart = ({ dados }) => {
       type: 'doughnut',
       data: {
         labels: ['Compra p/ Comercializa\u00e7\u00e3o', 'Vendas', 'Servi\u00e7os'],
-        datasets: [{
-          data: [totais.compra, totais.venda, totais.servicos],
-          backgroundColor: [COLORS.info + 'CC', COLORS.success + 'CC', COLORS.secondary + 'CC'],
-          borderColor: [COLORS.info, COLORS.success, COLORS.secondary],
-          borderWidth: 2,
-          hoverOffset: 8
-        }]
+        datasets: [
+          {
+            data: [totais.compra, totais.venda, totais.servicos],
+            backgroundColor: [COLORS.info + 'CC', COLORS.success + 'CC', COLORS.secondary + 'CC'],
+            borderColor: [COLORS.info, COLORS.success, COLORS.secondary],
+            borderWidth: 2,
+            hoverOffset: 8,
+          },
+        ],
       },
       options: {
         responsive: true,
@@ -907,8 +1020,8 @@ export const CompraVendaChart = ({ dados }) => {
               font: { weight: 'bold', size: 12 },
               usePointStyle: true,
               pointStyle: 'circle',
-              padding: 20
-            }
+              padding: 20,
+            },
           },
           tooltip: {
             backgroundColor: isDarkMode ? '#1e293b' : 'white',
@@ -923,11 +1036,11 @@ export const CompraVendaChart = ({ dados }) => {
                 const total = totais.compra + totais.venda + totais.servicos;
                 const percentage = total > 0 ? ((context.raw / total) * 100).toFixed(1) : 0;
                 return `${context.label}: ${formatCurrency(context.raw)} (${percentage}%)`;
-              }
-            }
-          }
-        }
-      }
+              },
+            },
+          },
+        },
+      },
     });
 
     return () => {
@@ -964,7 +1077,7 @@ export const Detalhamento380Chart = ({ dados }) => {
         label: 'Compra p/ Comercializa\u00e7\u00e3o',
         valor: dados.categorias.compraComercializacao,
         cor: COLORS.info,
-        tipo: 'compra'
+        tipo: 'compra',
       });
     }
 
@@ -974,7 +1087,7 @@ export const Detalhamento380Chart = ({ dados }) => {
         label: 'Vendas',
         valor: dados.categorias.vendaMercadoria,
         cor: COLORS.success,
-        tipo: 'venda'
+        tipo: 'venda',
       });
     }
 
@@ -984,7 +1097,7 @@ export const Detalhamento380Chart = ({ dados }) => {
         label: 'Servi\u00e7os',
         valor: dados.categorias.servicos,
         cor: COLORS.secondary,
-        tipo: 'servico'
+        tipo: 'servico',
       });
     }
 
@@ -992,9 +1105,9 @@ export const Detalhamento380Chart = ({ dados }) => {
     items.sort((a, b) => b.valor - a.valor);
 
     return {
-      labels: items.map(i => i.label),
-      valores: items.map(i => i.valor),
-      cores: items.map(i => i.cor)
+      labels: items.map((i) => i.label),
+      valores: items.map((i) => i.valor),
+      cores: items.map((i) => i.cor),
     };
   }, [dados]);
 
@@ -1011,14 +1124,16 @@ export const Detalhamento380Chart = ({ dados }) => {
       type: 'bar',
       data: {
         labels: dadosGrafico.labels,
-        datasets: [{
-          label: 'Valor',
-          data: dadosGrafico.valores,
-          backgroundColor: dadosGrafico.cores.map(c => c + 'CC'),
-          borderColor: dadosGrafico.cores,
-          borderWidth: 2,
-          borderRadius: 6
-        }]
+        datasets: [
+          {
+            label: 'Valor',
+            data: dadosGrafico.valores,
+            backgroundColor: dadosGrafico.cores.map((c) => c + 'CC'),
+            borderColor: dadosGrafico.cores,
+            borderWidth: 2,
+            borderRadius: 6,
+          },
+        ],
       },
       options: {
         indexAxis: 'y',
@@ -1039,29 +1154,29 @@ export const Detalhamento380Chart = ({ dados }) => {
                 const total = dadosGrafico.valores.reduce((a, b) => a + b, 0);
                 const percentage = total > 0 ? ((context.raw / total) * 100).toFixed(1) : 0;
                 return `${formatCurrency(context.raw)} (${percentage}%)`;
-              }
-            }
-          }
+              },
+            },
+          },
         },
         scales: {
           x: {
             grid: {
-              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)'
+              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)',
             },
             ticks: {
               color: isDarkMode ? '#94a3b8' : '#64748b',
-              callback: (value) => formatCurrency(value)
-            }
+              callback: (value) => formatCurrency(value),
+            },
           },
           y: {
             grid: { display: false },
             ticks: {
               color: isDarkMode ? '#94a3b8' : '#64748b',
-              font: { weight: '600', size: 11 }
-            }
-          }
-        }
-      }
+              font: { weight: '600', size: 11 },
+            },
+          },
+        },
+      },
     });
 
     return () => {
@@ -1107,21 +1222,24 @@ export const Situacao380Chart = ({ dados }) => {
 
     const ctx = chartRef.current.getContext('2d');
     const valores = [situacao.vendido, situacao.faltaVender];
-    const colors = situacao.faltaVender > 0
-      ? [COLORS.success, COLORS.warning]
-      : [COLORS.success, COLORS.secondary];
+    const colors =
+      situacao.faltaVender > 0
+        ? [COLORS.success, COLORS.warning]
+        : [COLORS.success, COLORS.secondary];
 
     chartInstance.current = new Chart(ctx, {
       type: 'doughnut',
       data: {
         labels: ['Vendido', 'Falta Vender'],
-        datasets: [{
-          data: valores,
-          backgroundColor: colors.map(c => c + 'CC'),
-          borderColor: colors,
-          borderWidth: 2,
-          hoverOffset: 8
-        }]
+        datasets: [
+          {
+            data: valores,
+            backgroundColor: colors.map((c) => c + 'CC'),
+            borderColor: colors,
+            borderWidth: 2,
+            hoverOffset: 8,
+          },
+        ],
       },
       options: {
         responsive: true,
@@ -1135,8 +1253,8 @@ export const Situacao380Chart = ({ dados }) => {
               font: { weight: 'bold', size: 12 },
               usePointStyle: true,
               pointStyle: 'circle',
-              padding: 20
-            }
+              padding: 20,
+            },
           },
           tooltip: {
             backgroundColor: isDarkMode ? '#1e293b' : 'white',
@@ -1148,15 +1266,14 @@ export const Situacao380Chart = ({ dados }) => {
             cornerRadius: 12,
             callbacks: {
               label: (context) => {
-                const percentage = situacao.esperado > 0
-                  ? ((context.raw / situacao.esperado) * 100).toFixed(1)
-                  : 0;
+                const percentage =
+                  situacao.esperado > 0 ? ((context.raw / situacao.esperado) * 100).toFixed(1) : 0;
                 return `${context.label}: ${formatCurrency(context.raw)} (${percentage}%)`;
-              }
-            }
-          }
-        }
-      }
+              },
+            },
+          },
+        },
+      },
     });
 
     return () => {
@@ -1187,7 +1304,7 @@ export const Tabela380 = ({ dados, periodFilter }) => {
     const compra = dados.categorias.compraComercializacao || 0;
     // Total de vendas 380 (Mercadoria + Produto + Exterior)
     const venda = dados.categorias.totalVendas380 || dados.categorias.vendaMercadoria || 0;
-    const esperado = dados.categorias.esperado380 || (compra * 1.25);
+    const esperado = dados.categorias.esperado380 || compra * 1.25;
     const receitaComplementar = Math.max(0, esperado - venda);
     const sit380 = venda >= esperado ? 'OK' : 'Pendente';
 
@@ -1196,7 +1313,7 @@ export const Tabela380 = ({ dados, periodFilter }) => {
       venda,
       esperado,
       receitaComplementar,
-      sit380
+      sit380,
     };
   }, [dados]);
 
@@ -1222,22 +1339,34 @@ export const Tabela380 = ({ dados, periodFilter }) => {
       <table className="w-full">
         <thead className={isDarkMode ? 'bg-slate-700/50' : 'bg-slate-50'}>
           <tr>
-            <th className={`px-4 py-3 text-left text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+            <th
+              className={`px-4 py-3 text-left text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
+            >
               Período
             </th>
-            <th className={`px-4 py-3 text-right text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+            <th
+              className={`px-4 py-3 text-right text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
+            >
               Compra
             </th>
-            <th className={`px-4 py-3 text-right text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+            <th
+              className={`px-4 py-3 text-right text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
+            >
               Venda
             </th>
-            <th className={`px-4 py-3 text-right text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+            <th
+              className={`px-4 py-3 text-right text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
+            >
               Esperado
             </th>
-            <th className={`px-4 py-3 text-right text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+            <th
+              className={`px-4 py-3 text-right text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
+            >
               Rec. Compl.
             </th>
-            <th className={`px-4 py-3 text-center text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+            <th
+              className={`px-4 py-3 text-center text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
+            >
               380
             </th>
           </tr>
@@ -1248,24 +1377,34 @@ export const Tabela380 = ({ dados, periodFilter }) => {
               <td className={`px-4 py-3 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
                 {periodoLabel}
               </td>
-              <td className={`px-4 py-3 text-right ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+              <td
+                className={`px-4 py-3 text-right ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}
+              >
                 {formatCurrency(resumo.compra)}
               </td>
-              <td className={`px-4 py-3 text-right ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}>
+              <td
+                className={`px-4 py-3 text-right ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}
+              >
                 {formatCurrency(resumo.venda)}
               </td>
-              <td className={`px-4 py-3 text-right ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`}>
+              <td
+                className={`px-4 py-3 text-right ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`}
+              >
                 {formatCurrency(resumo.esperado)}
               </td>
-              <td className={`px-4 py-3 text-right ${isDarkMode ? 'text-slate-500' : 'text-slate-700'}`}>
+              <td
+                className={`px-4 py-3 text-right ${isDarkMode ? 'text-slate-500' : 'text-slate-700'}`}
+              >
                 {formatCurrency(resumo.receitaComplementar)}
               </td>
               <td className="px-4 py-3 text-center">
-                <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                  resumo.sit380 === 'OK'
-                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                    : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                }`}>
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-bold ${
+                    resumo.sit380 === 'OK'
+                      ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                      : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                  }`}
+                >
                   {resumo.sit380}
                 </span>
               </td>
@@ -1293,7 +1432,7 @@ export const CardsMetricasFiscais = ({ dados, totalFaturamento = 0 }) => {
     return {
       totalEntradas,
       totalSaidas,
-      totalFaturamento
+      totalFaturamento,
     };
   }, [dados, totalFaturamento]);
 
@@ -1302,7 +1441,12 @@ export const CardsMetricasFiscais = ({ dados, totalFaturamento = 0 }) => {
       <div className="bg-emerald-700 p-6 rounded-xl text-white shadow-md">
         <div className="flex items-center justify-between mb-4">
           <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
+            />
           </svg>
         </div>
         <p className="text-3xl font-bold">{formatCurrency(metricas.totalEntradas)}</p>
@@ -1312,7 +1456,12 @@ export const CardsMetricasFiscais = ({ dados, totalFaturamento = 0 }) => {
       <div className="bg-red-600 p-6 rounded-xl text-white shadow-md">
         <div className="flex items-center justify-between mb-4">
           <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16V4m0 0l4 4m-4-4l-4 4M7 8v12m0 0l-4-4m4 4l4-4" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M17 16V4m0 0l4 4m-4-4l-4 4M7 8v12m0 0l-4-4m4 4l4-4"
+            />
           </svg>
         </div>
         <p className="text-3xl font-bold">{formatCurrency(metricas.totalSaidas)}</p>
@@ -1322,7 +1471,12 @@ export const CardsMetricasFiscais = ({ dados, totalFaturamento = 0 }) => {
       <div className="bg-[#0e4f6d] p-6 rounded-xl text-white shadow-md">
         <div className="flex items-center justify-between mb-4">
           <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
           </svg>
         </div>
         <p className="text-3xl font-bold">{formatCurrency(metricas.totalFaturamento)}</p>
@@ -1360,8 +1514,8 @@ export const TabelaFaturamentoPeriodo = ({ dadosFaturamento, periodFilter }) => 
       return [
         {
           periodo: `${String(mes).padStart(2, '0')}/${ano}`,
-          total: getTotalCompetencia(mes, ano)
-        }
+          total: getTotalCompetencia(mes, ano),
+        },
       ];
     }
 
@@ -1371,7 +1525,7 @@ export const TabelaFaturamentoPeriodo = ({ dadosFaturamento, periodFilter }) => 
         1: [1, 2, 3],
         2: [4, 5, 6],
         3: [7, 8, 9],
-        4: [10, 11, 12]
+        4: [10, 11, 12],
       };
       const meses = mesesTrimestre[trimestre] || [];
       if (!meses.length) return [];
@@ -1379,8 +1533,10 @@ export const TabelaFaturamentoPeriodo = ({ dadosFaturamento, periodFilter }) => 
       return [{ periodo: `${trimestre}T/${ano}`, total }];
     }
 
-    const totalAno = Array.from({ length: 12 }, (_, idx) => idx + 1)
-      .reduce((acc, mes) => acc + getTotalCompetencia(mes, ano), 0);
+    const totalAno = Array.from({ length: 12 }, (_, idx) => idx + 1).reduce(
+      (acc, mes) => acc + getTotalCompetencia(mes, ano),
+      0
+    );
     return [{ periodo: `Ano ${ano}`, total: totalAno }];
   }, [dadosFaturamento, periodFilter]);
 
@@ -1389,28 +1545,42 @@ export const TabelaFaturamentoPeriodo = ({ dadosFaturamento, periodFilter }) => 
       <table className="w-full">
         <thead className={isDarkMode ? 'bg-slate-700/50' : 'bg-slate-50'}>
           <tr>
-            <th className={`px-4 py-3 text-left text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+            <th
+              className={`px-4 py-3 text-left text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
+            >
               Periodo
             </th>
-            <th className={`px-4 py-3 text-right text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+            <th
+              className={`px-4 py-3 text-right text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
+            >
               Total Faturamento
             </th>
           </tr>
         </thead>
         <tbody className={`divide-y ${isDarkMode ? 'divide-slate-700' : 'divide-slate-100'}`}>
           {linhas.map((linha, idx) => (
-            <tr key={`${linha.periodo}-${idx}`} className={`transition-colors ${isDarkMode ? 'hover:bg-slate-700/30' : 'hover:bg-slate-50'}`}>
-              <td className={`px-4 py-3 font-semibold ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>
+            <tr
+              key={`${linha.periodo}-${idx}`}
+              className={`transition-colors ${isDarkMode ? 'hover:bg-slate-700/30' : 'hover:bg-slate-50'}`}
+            >
+              <td
+                className={`px-4 py-3 font-semibold ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}
+              >
                 {linha.periodo}
               </td>
-              <td className={`px-4 py-3 text-right font-bold ${isDarkMode ? 'text-emerald-400' : 'text-emerald-700'}`}>
+              <td
+                className={`px-4 py-3 text-right font-bold ${isDarkMode ? 'text-emerald-400' : 'text-emerald-700'}`}
+              >
                 {formatCurrency(linha.total)}
               </td>
             </tr>
           ))}
           {linhas.length === 0 && (
             <tr>
-              <td colSpan={2} className={`px-4 py-6 text-center text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+              <td
+                colSpan={2}
+                className={`px-4 py-6 text-center text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}
+              >
                 Sem dados de faturamento para o periodo selecionado
               </td>
             </tr>
@@ -1428,12 +1598,12 @@ const parseAnoTrimestre = (item = {}) => {
     const match = item.trimestre.match(/(\d{2,4})$/);
     if (match) {
       const anoRaw = Number(match[1]);
-      ano = anoRaw < 100 ? (2000 + anoRaw) : anoRaw;
+      ano = anoRaw < 100 ? 2000 + anoRaw : anoRaw;
     }
   }
   return {
     trimestre: trim,
-    ano: ano || null
+    ano: ano || null,
   };
 };
 
@@ -1447,24 +1617,28 @@ export const IRPJPorPeriodoChart = ({ dados = [], trimestre = null, year }) => {
   const { isDarkMode } = useTheme();
 
   const dadosGrafico = useMemo(() => {
-    const selecionados = (Array.isArray(dados) ? dados : []).map((item) => {
-      const { trimestre: tri, ano } = parseAnoTrimestre(item);
-      return {
-        ...item,
-        trimestreNumero: tri,
-        anoNormalizado: ano || Number(year || 0)
-      };
-    }).filter(item => Number(item?.trimestreNumero || 0) > 0);
+    const selecionados = (Array.isArray(dados) ? dados : [])
+      .map((item) => {
+        const { trimestre: tri, ano } = parseAnoTrimestre(item);
+        return {
+          ...item,
+          trimestreNumero: tri,
+          anoNormalizado: ano || Number(year || 0),
+        };
+      })
+      .filter((item) => Number(item?.trimestreNumero || 0) > 0);
 
     const anoAlvo = Number(year || 0);
     let filtrados = selecionados;
 
     if (anoAlvo) {
-      filtrados = filtrados.filter(item => Number(item?.anoNormalizado || 0) === anoAlvo);
+      filtrados = filtrados.filter((item) => Number(item?.anoNormalizado || 0) === anoAlvo);
     }
 
     if (trimestre) {
-      filtrados = filtrados.filter(item => Number(item?.trimestreNumero || 0) === Number(trimestre));
+      filtrados = filtrados.filter(
+        (item) => Number(item?.trimestreNumero || 0) === Number(trimestre)
+      );
     }
 
     filtrados.sort((a, b) => Number(a.trimestreNumero || 0) - Number(b.trimestreNumero || 0));
@@ -1477,9 +1651,11 @@ export const IRPJPorPeriodoChart = ({ dados = [], trimestre = null, year }) => {
 
     return {
       labels,
-      devido: filtrados.map(item => Number(item?.dados?.irpjDevido || 0)),
-      adicional: filtrados.map(item => Number(item?.dados?.adicionalIR || item?.dados?.adicionalIrpj || 0)),
-      recolher: filtrados.map(item => Number(item?.dados?.irpjRecolher || 0))
+      devido: filtrados.map((item) => Number(item?.dados?.irpjDevido || 0)),
+      adicional: filtrados.map((item) =>
+        Number(item?.dados?.adicionalIR || item?.dados?.adicionalIrpj || 0)
+      ),
+      recolher: filtrados.map((item) => Number(item?.dados?.irpjRecolher || 0)),
     };
   }, [dados, trimestre, year]);
 
@@ -1499,7 +1675,7 @@ export const IRPJPorPeriodoChart = ({ dados = [], trimestre = null, year }) => {
             backgroundColor: COLORS.primary + 'CC',
             borderColor: COLORS.primary,
             borderWidth: 2,
-            borderRadius: 8
+            borderRadius: 8,
           },
           {
             label: 'Adicional IRPJ',
@@ -1507,7 +1683,7 @@ export const IRPJPorPeriodoChart = ({ dados = [], trimestre = null, year }) => {
             backgroundColor: COLORS.warning + 'CC',
             borderColor: COLORS.warning,
             borderWidth: 2,
-            borderRadius: 8
+            borderRadius: 8,
           },
           {
             label: 'IRPJ a Recolher',
@@ -1515,9 +1691,9 @@ export const IRPJPorPeriodoChart = ({ dados = [], trimestre = null, year }) => {
             backgroundColor: COLORS.danger + 'CC',
             borderColor: COLORS.danger,
             borderWidth: 2,
-            borderRadius: 8
-          }
-        ]
+            borderRadius: 8,
+          },
+        ],
       },
       options: {
         responsive: true,
@@ -1528,8 +1704,8 @@ export const IRPJPorPeriodoChart = ({ dados = [], trimestre = null, year }) => {
             labels: {
               color: isDarkMode ? '#e2e8f0' : '#475569',
               usePointStyle: true,
-              pointStyle: 'circle'
-            }
+              pointStyle: 'circle',
+            },
           },
           tooltip: {
             backgroundColor: isDarkMode ? '#1e293b' : 'white',
@@ -1540,26 +1716,26 @@ export const IRPJPorPeriodoChart = ({ dados = [], trimestre = null, year }) => {
             padding: 12,
             cornerRadius: 10,
             callbacks: {
-              label: (context) => `${context.dataset.label}: ${formatCurrency(context.raw)}`
-            }
-          }
+              label: (context) => `${context.dataset.label}: ${formatCurrency(context.raw)}`,
+            },
+          },
         },
         scales: {
           x: {
             grid: { display: false },
-            ticks: { color: isDarkMode ? '#94a3b8' : '#64748b', font: { weight: '600' } }
+            ticks: { color: isDarkMode ? '#94a3b8' : '#64748b', font: { weight: '600' } },
           },
           y: {
             grid: {
-              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)'
+              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)',
             },
             ticks: {
               color: isDarkMode ? '#94a3b8' : '#64748b',
-              callback: (value) => formatCurrency(value)
-            }
-          }
-        }
-      }
+              callback: (value) => formatCurrency(value),
+            },
+          },
+        },
+      },
     });
 
     return () => {
@@ -1594,29 +1770,37 @@ export const CSLLPorPeriodoChart = ({ dados = [], trimestre = null, year }) => {
   const { isDarkMode } = useTheme();
 
   const dadosGrafico = useMemo(() => {
-    const selecionados = (Array.isArray(dados) ? dados : []).map((item) => {
-      const { trimestre: tri, ano } = parseAnoTrimestre(item);
-      return {
-        ...item,
-        trimestreNumero: tri,
-        anoNormalizado: ano || Number(year || 0)
-      };
-    }).filter(item => Number(item?.trimestreNumero || 0) > 0);
+    const selecionados = (Array.isArray(dados) ? dados : [])
+      .map((item) => {
+        const { trimestre: tri, ano } = parseAnoTrimestre(item);
+        return {
+          ...item,
+          trimestreNumero: tri,
+          anoNormalizado: ano || Number(year || 0),
+        };
+      })
+      .filter((item) => Number(item?.trimestreNumero || 0) > 0);
 
     const anoAlvo = Number(year || 0);
     let filtrados = selecionados;
     if (anoAlvo) {
-      filtrados = filtrados.filter(item => Number(item?.anoNormalizado || 0) === anoAlvo);
+      filtrados = filtrados.filter((item) => Number(item?.anoNormalizado || 0) === anoAlvo);
     }
     if (trimestre) {
-      filtrados = filtrados.filter(item => Number(item?.trimestreNumero || 0) === Number(trimestre));
+      filtrados = filtrados.filter(
+        (item) => Number(item?.trimestreNumero || 0) === Number(trimestre)
+      );
     }
 
     filtrados.sort((a, b) => Number(a.trimestreNumero || 0) - Number(b.trimestreNumero || 0));
 
     return {
-      labels: filtrados.map((item) => trimestre ? `${item.trimestreNumero}T/${item?.anoNormalizado || ''}` : `${item.trimestreNumero}T`),
-      valores: filtrados.map(item => Number(item?.dados?.csllDevida || 0))
+      labels: filtrados.map((item) =>
+        trimestre
+          ? `${item.trimestreNumero}T/${item?.anoNormalizado || ''}`
+          : `${item.trimestreNumero}T`
+      ),
+      valores: filtrados.map((item) => Number(item?.dados?.csllDevida || 0)),
     };
   }, [dados, trimestre, year]);
 
@@ -1629,14 +1813,16 @@ export const CSLLPorPeriodoChart = ({ dados = [], trimestre = null, year }) => {
       type: 'bar',
       data: {
         labels: dadosGrafico.labels,
-        datasets: [{
-          label: 'CSLL Devida',
-          data: dadosGrafico.valores,
-          backgroundColor: COLORS.secondary + 'CC',
-          borderColor: COLORS.secondary,
-          borderWidth: 2,
-          borderRadius: 8
-        }]
+        datasets: [
+          {
+            label: 'CSLL Devida',
+            data: dadosGrafico.valores,
+            backgroundColor: COLORS.secondary + 'CC',
+            borderColor: COLORS.secondary,
+            borderWidth: 2,
+            borderRadius: 8,
+          },
+        ],
       },
       options: {
         responsive: true,
@@ -1647,8 +1833,8 @@ export const CSLLPorPeriodoChart = ({ dados = [], trimestre = null, year }) => {
             labels: {
               color: isDarkMode ? '#e2e8f0' : '#475569',
               usePointStyle: true,
-              pointStyle: 'circle'
-            }
+              pointStyle: 'circle',
+            },
           },
           tooltip: {
             backgroundColor: isDarkMode ? '#1e293b' : 'white',
@@ -1659,26 +1845,26 @@ export const CSLLPorPeriodoChart = ({ dados = [], trimestre = null, year }) => {
             padding: 12,
             cornerRadius: 10,
             callbacks: {
-              label: (context) => `${context.dataset.label}: ${formatCurrency(context.raw)}`
-            }
-          }
+              label: (context) => `${context.dataset.label}: ${formatCurrency(context.raw)}`,
+            },
+          },
         },
         scales: {
           x: {
             grid: { display: false },
-            ticks: { color: isDarkMode ? '#94a3b8' : '#64748b', font: { weight: '600' } }
+            ticks: { color: isDarkMode ? '#94a3b8' : '#64748b', font: { weight: '600' } },
           },
           y: {
             grid: {
-              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)'
+              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)',
             },
             ticks: {
               color: isDarkMode ? '#94a3b8' : '#64748b',
-              callback: (value) => formatCurrency(value)
-            }
-          }
-        }
-      }
+              callback: (value) => formatCurrency(value),
+            },
+          },
+        },
+      },
     });
 
     return () => {
@@ -1716,12 +1902,12 @@ export const ResumoImpostosRoscaChart = ({ dados }) => {
     if (!dados?.totaisPorImposto) return { labels: [], valores: [] };
     const itens = Object.entries(dados.totaisPorImposto)
       .map(([nome, item]) => ({ nome, valor: Number(item?.recolher || 0) }))
-      .filter(item => item.valor > 0)
+      .filter((item) => item.valor > 0)
       .sort((a, b) => b.valor - a.valor);
 
     return {
-      labels: itens.map(i => i.nome),
-      valores: itens.map(i => i.valor)
+      labels: itens.map((i) => i.nome),
+      valores: itens.map((i) => i.valor),
     };
   }, [dados]);
 
@@ -1734,13 +1920,15 @@ export const ResumoImpostosRoscaChart = ({ dados }) => {
       type: 'doughnut',
       data: {
         labels: series.labels,
-        datasets: [{
-          data: series.valores,
-          backgroundColor: CHART_COLORS.slice(0, series.valores.length).map(c => c + 'CC'),
-          borderColor: CHART_COLORS.slice(0, series.valores.length),
-          borderWidth: 2,
-          hoverOffset: 8
-        }]
+        datasets: [
+          {
+            data: series.valores,
+            backgroundColor: CHART_COLORS.slice(0, series.valores.length).map((c) => c + 'CC'),
+            borderColor: CHART_COLORS.slice(0, series.valores.length),
+            borderWidth: 2,
+            hoverOffset: 8,
+          },
+        ],
       },
       options: {
         responsive: true,
@@ -1754,8 +1942,8 @@ export const ResumoImpostosRoscaChart = ({ dados }) => {
               font: { weight: 'bold', size: 11 },
               usePointStyle: true,
               pointStyle: 'circle',
-              padding: 14
-            }
+              padding: 14,
+            },
           },
           tooltip: {
             backgroundColor: isDarkMode ? '#1e293b' : 'white',
@@ -1770,11 +1958,11 @@ export const ResumoImpostosRoscaChart = ({ dados }) => {
                 const total = context.dataset.data.reduce((acc, val) => acc + val, 0);
                 const perc = total > 0 ? ((context.raw / total) * 100).toFixed(1) : '0.0';
                 return `${context.label}: ${formatCurrency(context.raw)} (${perc}%)`;
-              }
-            }
-          }
-        }
-      }
+              },
+            },
+          },
+        },
+      },
     });
 
     return () => {
@@ -1814,5 +2002,5 @@ export default {
   Detalhamento380Chart,
   Situacao380Chart,
   Tabela380,
-  CardsMetricasFiscais
+  CardsMetricasFiscais,
 };

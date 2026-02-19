@@ -12,7 +12,7 @@ const Sparkline = ({
   strokeWidth = 2,
   showDots = false,
   showEndDot = true,
-  className = ''
+  className = '',
 }) => {
   const points = useMemo(() => {
     if (!data.length) return '';
@@ -25,11 +25,13 @@ const Sparkline = ({
     const padding = 2;
     const effectiveHeight = height - padding * 2;
 
-    return data.map((value, i) => {
-      const x = i * xStep;
-      const y = padding + effectiveHeight - ((value - min) / range) * effectiveHeight;
-      return `${x},${y}`;
-    }).join(' ');
+    return data
+      .map((value, i) => {
+        const x = i * xStep;
+        const y = padding + effectiveHeight - ((value - min) / range) * effectiveHeight;
+        return `${x},${y}`;
+      })
+      .join(' ');
   }, [data, width, height]);
 
   const lastPoint = useMemo(() => {
@@ -46,7 +48,7 @@ const Sparkline = ({
     const lastValue = data[data.length - 1];
     return {
       x: (data.length - 1) * xStep,
-      y: padding + effectiveHeight - ((lastValue - min) / range) * effectiveHeight
+      y: padding + effectiveHeight - ((lastValue - min) / range) * effectiveHeight,
     };
   }, [data, width, height]);
 
@@ -64,12 +66,7 @@ const Sparkline = ({
   if (!data.length) return null;
 
   return (
-    <svg
-      width={width}
-      height={height}
-      className={className}
-      viewBox={`0 0 ${width} ${height}`}
-    >
+    <svg width={width} height={height} className={className} viewBox={`0 0 ${width} ${height}`}>
       {fillColor && (
         <polygon
           points={`0,${height} ${points} ${width},${height}`}
@@ -85,26 +82,19 @@ const Sparkline = ({
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      {showDots && data.map((value, i) => {
-        const min = Math.min(...data);
-        const max = Math.max(...data);
-        const range = max - min || 1;
-        const xStep = width / (data.length - 1 || 1);
-        const padding = 2;
-        const effectiveHeight = height - padding * 2;
-        const x = i * xStep;
-        const y = padding + effectiveHeight - ((value - min) / range) * effectiveHeight;
+      {showDots &&
+        data.map((value, i) => {
+          const min = Math.min(...data);
+          const max = Math.max(...data);
+          const range = max - min || 1;
+          const xStep = width / (data.length - 1 || 1);
+          const padding = 2;
+          const effectiveHeight = height - padding * 2;
+          const x = i * xStep;
+          const y = padding + effectiveHeight - ((value - min) / range) * effectiveHeight;
 
-        return (
-          <circle
-            key={i}
-            cx={x}
-            cy={y}
-            r={2}
-            fill={trendColor}
-          />
-        );
-      })}
+          return <circle key={i} cx={x} cy={y} r={2} fill={trendColor} />;
+        })}
       {showEndDot && lastPoint && (
         <circle
           cx={lastPoint.x}

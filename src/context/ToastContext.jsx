@@ -13,29 +13,29 @@ const TOAST_TYPES = {
     bgClass: 'bg-emerald-50 dark:bg-emerald-900/30',
     borderClass: 'border-emerald-200 dark:border-emerald-800',
     iconClass: 'text-emerald-700 dark:text-emerald-700',
-    titleClass: 'text-emerald-800 dark:text-emerald-300'
+    titleClass: 'text-emerald-800 dark:text-emerald-300',
   },
   error: {
     icon: XCircle,
     bgClass: 'bg-red-50 dark:bg-red-900/30',
     borderClass: 'border-red-200 dark:border-red-800',
     iconClass: 'text-red-600 dark:text-red-400',
-    titleClass: 'text-red-800 dark:text-red-300'
+    titleClass: 'text-red-800 dark:text-red-300',
   },
   warning: {
     icon: AlertTriangle,
     bgClass: 'bg-amber-50 dark:bg-amber-900/30',
     borderClass: 'border-amber-200 dark:border-amber-800',
     iconClass: 'text-amber-600 dark:text-amber-400',
-    titleClass: 'text-amber-800 dark:text-amber-300'
+    titleClass: 'text-amber-800 dark:text-amber-300',
   },
   info: {
     icon: Info,
     bgClass: 'bg-blue-50 dark:bg-blue-900/30',
     borderClass: 'border-blue-200 dark:border-blue-800',
     iconClass: 'text-blue-600 dark:text-blue-400',
-    titleClass: 'text-blue-800 dark:text-blue-300'
-  }
+    titleClass: 'text-blue-800 dark:text-blue-300',
+  },
 };
 
 /**
@@ -53,12 +53,8 @@ const Toast = ({ id, type = 'info', title, message, onClose }) => {
     >
       <Icon className={`w-5 h-5 ${config.iconClass} flex-shrink-0 mt-0.5`} />
       <div className="flex-1 min-w-0">
-        {title && (
-          <p className={`font-semibold text-sm ${config.titleClass}`}>{title}</p>
-        )}
-        {message && (
-          <p className="text-sm text-slate-600 dark:text-slate-300 mt-0.5">{message}</p>
-        )}
+        {title && <p className={`font-semibold text-sm ${config.titleClass}`}>{title}</p>}
+        {message && <p className="text-sm text-slate-600 dark:text-slate-300 mt-0.5">{message}</p>}
       </div>
       <button
         onClick={() => onClose(id)}
@@ -96,20 +92,23 @@ export const ToastProvider = ({ children }) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  const addToast = useCallback(({ type = 'info', title, message, duration = 5000 }) => {
-    const id = `toast-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  const addToast = useCallback(
+    ({ type = 'info', title, message, duration = 5000 }) => {
+      const id = `toast-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-    setToasts((prev) => [...prev, { id, type, title, message }]);
+      setToasts((prev) => [...prev, { id, type, title, message }]);
 
-    // Auto-remove after duration
-    if (duration > 0) {
-      setTimeout(() => {
-        removeToast(id);
-      }, duration);
-    }
+      // Auto-remove after duration
+      if (duration > 0) {
+        setTimeout(() => {
+          removeToast(id);
+        }, duration);
+      }
 
-    return id;
-  }, [removeToast]);
+      return id;
+    },
+    [removeToast]
+  );
 
   // Shorthand methods
   const toast = {
@@ -117,7 +116,7 @@ export const ToastProvider = ({ children }) => {
     error: (title, message) => addToast({ type: 'error', title, message }),
     warning: (title, message) => addToast({ type: 'warning', title, message }),
     info: (title, message) => addToast({ type: 'info', title, message }),
-    custom: addToast
+    custom: addToast,
   };
 
   return (

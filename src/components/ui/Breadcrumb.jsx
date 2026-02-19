@@ -14,7 +14,7 @@ const Breadcrumb = ({ className = '' }) => {
     isConsolidado,
     selecionarGrupo,
     selecionarEmpresa,
-    setModoVisualizacao
+    setModoVisualizacao,
   } = useEmpresa();
 
   const handleHomeClick = () => {
@@ -40,8 +40,8 @@ const Breadcrumb = ({ className = '' }) => {
       label: 'Todos',
       icon: Home,
       onClick: handleHomeClick,
-      active: modoVisualizacao === 'todos'
-    }
+      active: modoVisualizacao === 'todos',
+    },
   ];
 
   if (grupoAtual) {
@@ -49,7 +49,7 @@ const Breadcrumb = ({ className = '' }) => {
       label: grupoAtual.nome,
       icon: FolderTree,
       onClick: handleGrupoClick,
-      active: modoVisualizacao === 'grupo'
+      active: modoVisualizacao === 'grupo',
     });
   }
 
@@ -58,7 +58,7 @@ const Breadcrumb = ({ className = '' }) => {
       label: empresaAtual.nomeFantasia,
       icon: Building,
       onClick: handleEmpresaClick,
-      active: modoVisualizacao === 'empresa'
+      active: modoVisualizacao === 'empresa',
     });
   }
 
@@ -67,7 +67,7 @@ const Breadcrumb = ({ className = '' }) => {
       label: cnpjInfo.nomeFantasia,
       icon: Building2,
       onClick: null,
-      active: true
+      active: true,
     });
   }
 
@@ -91,11 +91,13 @@ const Breadcrumb = ({ className = '' }) => {
               <span className="max-w-[120px] truncate">{item.label}</span>
             </button>
           ) : (
-            <span className={`flex items-center gap-1.5 px-2 py-1 rounded-lg ${
-              item.active
-                ? 'bg-[#0e4f6d]/10 dark:bg-[#0e4f6d]/20 text-[#0e4f6d] dark:text-teal-500 font-medium'
-                : 'text-slate-500 dark:text-slate-400'
-            }`}>
+            <span
+              className={`flex items-center gap-1.5 px-2 py-1 rounded-lg ${
+                item.active
+                  ? 'bg-[#0e4f6d]/10 dark:bg-[#0e4f6d]/20 text-[#0e4f6d] dark:text-teal-500 font-medium'
+                  : 'text-slate-500 dark:text-slate-400'
+              }`}
+            >
               <item.icon className="w-3.5 h-3.5" />
               <span className="max-w-[120px] truncate">{item.label}</span>
             </span>

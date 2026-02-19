@@ -25,7 +25,9 @@ export const SkeletonCard = () => (
 
 // Skeleton para gráficos
 export const SkeletonChart = ({ height = 'h-64' }) => (
-  <div className={`bg-white dark:bg-slate-800 rounded-lg p-6 shadow-sm border border-slate-200/80 dark:border-slate-700/80 ${height}`}>
+  <div
+    className={`bg-white dark:bg-slate-800 rounded-lg p-6 shadow-sm border border-slate-200/80 dark:border-slate-700/80 ${height}`}
+  >
     <Skeleton className="h-5 w-40 mb-6" />
     <div className="flex items-end gap-2 h-[calc(100%-60px)]">
       {[40, 65, 45, 80, 55, 70, 50, 75, 60, 85, 45, 70].map((h, i) => (

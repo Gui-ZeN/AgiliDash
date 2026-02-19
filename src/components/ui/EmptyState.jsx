@@ -10,7 +10,7 @@ const ICONS = {
   database: Database,
   users: Users,
   chart: BarChart3,
-  spreadsheet: FileSpreadsheet
+  spreadsheet: FileSpreadsheet,
 };
 
 /**
@@ -24,30 +24,29 @@ const EmptyState = ({
   actionLabel,
   actionLink,
   onAction,
-  className = ''
+  className = '',
 }) => {
   const Icon = ICONS[icon] || ICONS.file;
 
   return (
-    <div className={`flex flex-col items-center justify-center py-12 px-6 text-center ${className}`}>
+    <div
+      className={`flex flex-col items-center justify-center py-12 px-6 text-center ${className}`}
+    >
       {/* Ícone decorativo */}
       <div className="w-14 h-14 rounded-lg bg-slate-100 dark:bg-slate-700/50 flex items-center justify-center mb-4">
         <Icon className="w-7 h-7 text-slate-400 dark:text-slate-500" />
       </div>
 
       {/* Título */}
-      <h3 className="text-base font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
-        {title}
-      </h3>
+      <h3 className="text-base font-semibold text-slate-700 dark:text-slate-200 mb-1.5">{title}</h3>
 
       {/* Descrição */}
-      <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm mb-5">
-        {description}
-      </p>
+      <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm mb-5">{description}</p>
 
       {/* CTA Button */}
-      {(actionLabel && (actionLink || onAction)) && (
-        actionLink ? (
+      {actionLabel &&
+        (actionLink || onAction) &&
+        (actionLink ? (
           <Link
             to={actionLink}
             className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-md transition-colors duration-200"
@@ -63,8 +62,7 @@ const EmptyState = ({
             <Upload className="w-4 h-4" />
             {actionLabel}
           </button>
-        )
-      )}
+        ))}
     </div>
   );
 };

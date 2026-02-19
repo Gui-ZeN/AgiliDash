@@ -1,10 +1,5 @@
 import { Doughnut } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend
-} from 'chart.js';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { formatCurrency } from '../../utils/formatters';
 import { receitaGrupos } from '../../data/mockData';
 import { useTheme } from '../../context/ThemeContext';
@@ -30,9 +25,9 @@ const ReceitaPizzaChart = () => {
           ? ['#4ade80', '#86efac', '#22c55e']
           : ['#22c55e', '#86efac', '#166534'],
         borderWidth: 0,
-        hoverOffset: 10
-      }
-    ]
+        hoverOffset: 10,
+      },
+    ],
   };
 
   const options = getPieChartOptions(isDarkMode, {
@@ -43,24 +38,24 @@ const ReceitaPizzaChart = () => {
           color: colors.textColor,
           usePointStyle: true,
           font: {
-            size: 11
-          }
-        }
+            size: 11,
+          },
+        },
       },
       tooltip: {
         callbacks: {
-          label: function(context) {
+          label: function (context) {
             let label = context.label || '';
             if (label) label += ': ';
             const value = context.raw;
             const total = context.chart._metasets[context.datasetIndex].total;
             const percentage = ((value / total) * 100).toFixed(1) + '%';
             return label + formatCurrency(value) + ' (' + percentage + ')';
-          }
-        }
-      }
+          },
+        },
+      },
     },
-    cutout: '65%'
+    cutout: '65%',
   });
 
   return (

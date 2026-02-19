@@ -18,7 +18,7 @@ import {
   CheckCircle,
   XCircle,
   History,
-  FileText
+  FileText,
 } from 'lucide-react';
 import Logo from '../components/layout/Logo';
 import Card from '../components/common/Card';
@@ -30,7 +30,7 @@ import {
   perfisUsuario,
   statusUsuario,
   cnpjsEmpresa,
-  historicoImportacoes
+  historicoImportacoes,
 } from '../data/mockData';
 
 /**
@@ -61,7 +61,7 @@ const AdminPanel = () => {
     email: '',
     perfil: '',
     status: 'Ativo',
-    cnpjsAcesso: []
+    cnpjsAcesso: [],
   });
 
   // Tab ativa (usuarios ou historico)
@@ -86,7 +86,7 @@ const AdminPanel = () => {
         const text = event.target.result;
         const lines = text.split('\n').slice(0, 6); // Primeiras 5 linhas + header
         const headers = lines[0]?.split(',') || [];
-        const rows = lines.slice(1).map(line => line.split(','));
+        const rows = lines.slice(1).map((line) => line.split(','));
         setCsvPreview({ headers, rows, totalLines: text.split('\n').length - 1 });
       };
       reader.readAsText(selectedFile);
@@ -95,7 +95,9 @@ const AdminPanel = () => {
 
   // Handler para upload
   const handleUpload = () => {
-    alert(`Upload do arquivo "${file.name}" para o setor ${selectedSetor} será processado quando Firebase estiver integrado.`);
+    alert(
+      `Upload do arquivo "${file.name}" para o setor ${selectedSetor} será processado quando Firebase estiver integrado.`
+    );
     setFile(null);
     setCsvPreview(null);
     setSelectedSetor('');
@@ -110,7 +112,7 @@ const AdminPanel = () => {
       email: '',
       perfil: '',
       status: 'Ativo',
-      cnpjsAcesso: []
+      cnpjsAcesso: [],
     });
     setModalUsuario({ open: true, mode: 'add', data: null });
   };
@@ -122,7 +124,7 @@ const AdminPanel = () => {
       email: usuario.email,
       perfil: usuario.perfil,
       status: usuario.status,
-      cnpjsAcesso: usuario.cnpjsAcesso || []
+      cnpjsAcesso: usuario.cnpjsAcesso || [],
     });
     setModalUsuario({ open: true, mode: 'edit', data: usuario });
   };
@@ -137,14 +139,14 @@ const AdminPanel = () => {
     if (modalUsuario.mode === 'add') {
       const novoUsuario = {
         id: Date.now(),
-        ...formUsuario
+        ...formUsuario,
       };
       setUsuarios([...usuarios, novoUsuario]);
       alert('Usuário adicionado com sucesso!');
     } else {
-      setUsuarios(usuarios.map(u =>
-        u.id === modalUsuario.data.id ? { ...u, ...formUsuario } : u
-      ));
+      setUsuarios(
+        usuarios.map((u) => (u.id === modalUsuario.data.id ? { ...u, ...formUsuario } : u))
+      );
       alert('Usuário atualizado com sucesso!');
     }
     setModalUsuario({ open: false, mode: 'add', data: null });
@@ -152,18 +154,18 @@ const AdminPanel = () => {
 
   // Confirmar exclusão
   const handleConfirmDelete = () => {
-    setUsuarios(usuarios.filter(u => u.id !== modalDelete.usuario.id));
+    setUsuarios(usuarios.filter((u) => u.id !== modalDelete.usuario.id));
     alert('Usuário removido com sucesso!');
     setModalDelete({ open: false, usuario: null });
   };
 
   // Toggle CNPJ no formulário
   const toggleCnpjAcesso = (cnpjId) => {
-    setFormUsuario(prev => ({
+    setFormUsuario((prev) => ({
       ...prev,
       cnpjsAcesso: prev.cnpjsAcesso.includes(cnpjId)
-        ? prev.cnpjsAcesso.filter(id => id !== cnpjId)
-        : [...prev.cnpjsAcesso, cnpjId]
+        ? prev.cnpjsAcesso.filter((id) => id !== cnpjId)
+        : [...prev.cnpjsAcesso, cnpjId],
     }));
   };
 
@@ -174,16 +176,18 @@ const AdminPanel = () => {
       Inativo: 'bg-red-100 text-red-700',
       Pendente: 'bg-yellow-100 text-yellow-700',
       Sucesso: 'bg-green-100 text-green-700',
-      Erro: 'bg-red-100 text-red-700'
+      Erro: 'bg-red-100 text-red-700',
     };
 
     const icons = {
       Sucesso: <CheckCircle className="w-3 h-3" />,
-      Erro: <XCircle className="w-3 h-3" />
+      Erro: <XCircle className="w-3 h-3" />,
     };
 
     return (
-      <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${styles[status] || styles.Ativo}`}>
+      <span
+        className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${styles[status] || styles.Ativo}`}
+      >
         {icons[status]}
         {status}
       </span>
@@ -211,9 +215,7 @@ const AdminPanel = () => {
       <main className="max-w-7xl mx-auto px-4 py-10">
         {/* Header da página */}
         <div className="mb-10">
-          <h1 className="text-4xl font-semibold text-[#1e293b] mb-2">
-            Painel Administrativo
-          </h1>
+          <h1 className="text-4xl font-semibold text-[#1e293b] mb-2">Painel Administrativo</h1>
           <p className="text-lg text-slate-400 font-medium">
             Gerencie uploads de dados e usuários do sistema.
           </p>
@@ -228,9 +230,7 @@ const AdminPanel = () => {
               </div>
               <div>
                 <h2 className="text-xl font-bold text-slate-800">Upload de CSV</h2>
-                <p className="text-sm text-slate-400">
-                  Importe dados para o sistema
-                </p>
+                <p className="text-sm text-slate-400">Importe dados para o sistema</p>
               </div>
             </div>
 
@@ -296,9 +296,7 @@ const AdminPanel = () => {
                         <span className="text-[#0e4f6d] font-medium">{file.name}</span>
                       ) : (
                         <>
-                          <span className="text-slate-600 font-medium">
-                            Clique para selecionar
-                          </span>
+                          <span className="text-slate-600 font-medium">Clique para selecionar</span>
                           <span className="text-slate-400 text-sm block">
                             ou arraste o arquivo aqui
                           </span>
@@ -380,9 +378,7 @@ const AdminPanel = () => {
                 </div>
                 <div>
                   <h2 className="text-xl font-bold text-slate-800">Gerenciar Usuários</h2>
-                  <p className="text-sm text-slate-400">
-                    {usuarios.length} usuários cadastrados
-                  </p>
+                  <p className="text-sm text-slate-400">{usuarios.length} usuários cadastrados</p>
                 </div>
               </div>
               <Button variant="primary" size="sm" onClick={handleAddUsuario}>
@@ -489,9 +485,7 @@ const AdminPanel = () => {
                 </div>
 
                 {filteredUsuarios.length === 0 && (
-                  <div className="text-center py-8 text-slate-400">
-                    Nenhum usuário encontrado.
-                  </div>
+                  <div className="text-center py-8 text-slate-400">Nenhum usuário encontrado.</div>
                 )}
               </>
             )}
@@ -505,12 +499,18 @@ const AdminPanel = () => {
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3">
-                        <div className={`p-2 rounded-lg ${item.status === 'Sucesso' ? 'bg-green-100' : 'bg-red-100'}`}>
-                          <FileText className={`w-4 h-4 ${item.status === 'Sucesso' ? 'text-green-600' : 'text-red-600'}`} />
+                        <div
+                          className={`p-2 rounded-lg ${item.status === 'Sucesso' ? 'bg-green-100' : 'bg-red-100'}`}
+                        >
+                          <FileText
+                            className={`w-4 h-4 ${item.status === 'Sucesso' ? 'text-green-600' : 'text-red-600'}`}
+                          />
                         </div>
                         <div>
                           <p className="font-semibold text-slate-800">{item.arquivo}</p>
-                          <p className="text-xs text-slate-500">{item.setor} • {item.cnpj}</p>
+                          <p className="text-xs text-slate-500">
+                            {item.setor} • {item.cnpj}
+                          </p>
                           <p className="text-xs text-slate-400 mt-1">
                             <Clock className="w-3 h-3 inline mr-1" />
                             {new Date(item.data).toLocaleString('pt-BR')} por {item.usuario}
@@ -538,12 +538,10 @@ const AdminPanel = () => {
               <FileSpreadsheet className="w-8 h-8 text-amber-600" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-slate-800 mb-2">
-                Sobre a Importação de Dados
-              </h3>
+              <h3 className="text-xl font-bold text-slate-800 mb-2">Sobre a Importação de Dados</h3>
               <p className="text-slate-500 leading-relaxed mb-4">
-                O sistema suporta importAção de arquivos CSV para os departamentos Contábil,
-                Fiscal e Pessoal. Os dados serão processados e armazenados no Firebase Firestore,
+                O sistema suporta importAção de arquivos CSV para os departamentos Contábil, Fiscal
+                e Pessoal. Os dados serão processados e armazenados no Firebase Firestore,
                 permitindo visualização em tempo real no dashboard do cliente.
               </p>
               <div className="flex flex-wrap gap-4">
@@ -638,7 +636,9 @@ const AdminPanel = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Acesso aos CNPJs</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Acesso aos CNPJs
+                </label>
                 <div className="space-y-2 max-h-40 overflow-y-auto border border-slate-200 rounded-lg p-3">
                   {cnpjsEmpresa.map((cnpj) => (
                     <label
@@ -655,7 +655,9 @@ const AdminPanel = () => {
                         <p className="text-sm font-medium text-slate-700">{cnpj.nomeFantasia}</p>
                         <p className="text-xs text-slate-500">{cnpj.cnpj}</p>
                       </div>
-                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${cnpj.tipo === 'Matriz' ? 'bg-[#0e4f6d]/10 text-[#0e4f6d]' : 'bg-slate-100 text-slate-600'}`}>
+                      <span
+                        className={`px-2 py-0.5 rounded text-xs font-medium ${cnpj.tipo === 'Matriz' ? 'bg-[#0e4f6d]/10 text-[#0e4f6d]' : 'bg-slate-100 text-slate-600'}`}
+                      >
                         {cnpj.tipo}
                       </span>
                     </label>
@@ -700,15 +702,9 @@ const AdminPanel = () => {
               </div>
 
               <div className="mt-4 p-4 bg-slate-50 rounded-lg">
-                <p className="text-sm text-slate-600">
-                  Você está prestes a excluir o usuário:
-                </p>
-                <p className="font-bold text-slate-800 mt-1">
-                  {modalDelete.usuario?.nome}
-                </p>
-                <p className="text-sm text-slate-500">
-                  {modalDelete.usuario?.email}
-                </p>
+                <p className="text-sm text-slate-600">Você está prestes a excluir o usuário:</p>
+                <p className="font-bold text-slate-800 mt-1">{modalDelete.usuario?.nome}</p>
+                <p className="text-sm text-slate-500">{modalDelete.usuario?.email}</p>
               </div>
             </div>
 

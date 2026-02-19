@@ -9,7 +9,7 @@ const ExportButton = ({
   filename = 'relatorio',
   title = 'Relatorio',
   columns = [],
-  className = ''
+  className = '',
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [exporting, setExporting] = useState(null);
@@ -36,12 +36,12 @@ const ExportButton = ({
   const exportToCSV = async () => {
     setExporting('csv');
     try {
-      await new Promise(resolve => setTimeout(resolve, 500)); // Simula processamento
+      await new Promise((resolve) => setTimeout(resolve, 500)); // Simula processamento
 
-      const headers = columns.map(col => col.label).join(';');
-      const rows = data.map(item =>
-        columns.map(col => formatValue(item[col.key])).join(';')
-      ).join('\n');
+      const headers = columns.map((col) => col.label).join(';');
+      const rows = data
+        .map((item) => columns.map((col) => formatValue(item[col.key])).join(';'))
+        .join('\n');
 
       const csvContent = `${headers}\n${rows}`;
       const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -60,7 +60,7 @@ const ExportButton = ({
   const exportToExcel = async () => {
     setExporting('excel');
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Criar HTML table para Excel
       let html = `
@@ -69,9 +69,9 @@ const ExportButton = ({
         <body>
         <h2>${title}</h2>
         <table>
-        <thead><tr>${columns.map(col => `<th>${col.label}</th>`).join('')}</tr></thead>
+        <thead><tr>${columns.map((col) => `<th>${col.label}</th>`).join('')}</tr></thead>
         <tbody>
-        ${data.map(item => `<tr>${columns.map(col => `<td>${formatValue(item[col.key])}</td>`).join('')}</tr>`).join('')}
+        ${data.map((item) => `<tr>${columns.map((col) => `<td>${formatValue(item[col.key])}</td>`).join('')}</tr>`).join('')}
         </tbody>
         </table>
         </body></html>
@@ -93,7 +93,7 @@ const ExportButton = ({
   const exportToPDF = async () => {
     setExporting('pdf');
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Criar HTML para impressão/PDF
       const printContent = `
@@ -116,9 +116,9 @@ const ExportButton = ({
           <h1>${title}</h1>
           <p>Data de geracao: ${new Date().toLocaleDateString('pt-BR')}</p>
           <table>
-            <thead><tr>${columns.map(col => `<th>${col.label}</th>`).join('')}</tr></thead>
+            <thead><tr>${columns.map((col) => `<th>${col.label}</th>`).join('')}</tr></thead>
             <tbody>
-            ${data.map(item => `<tr>${columns.map(col => `<td>${formatValue(item[col.key])}</td>`).join('')}</tr>`).join('')}
+            ${data.map((item) => `<tr>${columns.map((col) => `<td>${formatValue(item[col.key])}</td>`).join('')}</tr>`).join('')}
             </tbody>
           </table>
           <div class="footer">Portal Agili Complex - Relatorio gerado automaticamente</div>
@@ -142,22 +142,22 @@ const ExportButton = ({
       label: 'Exportar PDF',
       icon: FileText,
       onClick: exportToPDF,
-      color: 'text-red-500'
+      color: 'text-red-500',
     },
     {
       id: 'excel',
       label: 'Exportar Excel',
       icon: FileSpreadsheet,
       onClick: exportToExcel,
-      color: 'text-emerald-700'
+      color: 'text-emerald-700',
     },
     {
       id: 'csv',
       label: 'Exportar CSV',
       icon: Download,
       onClick: exportToCSV,
-      color: 'text-blue-500'
-    }
+      color: 'text-blue-500',
+    },
   ];
 
   return (

@@ -16,7 +16,7 @@ const USERS = [
     nome: 'Administrador',
     perfil: 'Admin',
     avatar: null,
-    acesso: null
+    acesso: null,
   },
   {
     id: 'user_001',
@@ -28,16 +28,17 @@ const USERS = [
     acesso: {
       grupoIds: ['grupo_001'],
       empresaIds: ['empresa_001'],
-      cnpjIds: []
-    }
-  }
+      cnpjIds: [],
+    },
+  },
 ];
 
 const normalizarUsuarioSalvo = (rawUser) => {
   if (!rawUser) return null;
 
   const usuarioBase = USERS.find(
-    u => u.id === rawUser.id || u.email.toLowerCase() === String(rawUser.email || '').toLowerCase()
+    (u) =>
+      u.id === rawUser.id || u.email.toLowerCase() === String(rawUser.email || '').toLowerCase()
   );
 
   if (!usuarioBase) return rawUser;
@@ -46,7 +47,7 @@ const normalizarUsuarioSalvo = (rawUser) => {
   return {
     ...baseSemSenha,
     ...rawUser,
-    acesso: rawUser.acesso ?? baseSemSenha.acesso ?? null
+    acesso: rawUser.acesso ?? baseSemSenha.acesso ?? null,
   };
 };
 
@@ -77,10 +78,10 @@ export const AuthProvider = ({ children }) => {
     setIsLoading(true);
 
     // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 800));
+    await new Promise((resolve) => setTimeout(resolve, 800));
 
     const foundUser = USERS.find(
-      u => u.email.toLowerCase() === email.toLowerCase() && u.password === password
+      (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
     );
 
     setIsLoading(false);
@@ -111,14 +112,10 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated,
     isAdmin,
     login,
-    logout
+    logout,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

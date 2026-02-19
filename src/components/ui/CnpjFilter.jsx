@@ -21,7 +21,7 @@ const CnpjFilter = ({ className = '' }) => {
     selecionarCnpj,
     cnpjSelecionado,
     modoVisualizacao,
-    toggleModoConsolidado
+    toggleModoConsolidado,
   } = useEmpresa();
 
   useEffect(() => {
@@ -76,14 +76,18 @@ const CnpjFilter = ({ className = '' }) => {
         <span className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate flex-1 text-left">
           {getDisplayLabel()}
         </span>
-        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown
+          className={`w-4 h-4 text-slate-400 transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`}
+        />
       </button>
 
       {isOpen && (
         <div className="absolute top-full left-0 z-[110] mt-2 max-h-[400px] w-72 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-md dark:border-slate-700 dark:bg-slate-800">
           {/* Consolidado */}
           <div className="p-2 border-b border-slate-100 dark:border-slate-700">
-            <p className="px-2 py-1 text-xs font-semibold text-slate-400 uppercase tracking-wide">Consolidado</p>
+            <p className="px-2 py-1 text-xs font-semibold text-slate-400 uppercase tracking-wide">
+              Consolidado
+            </p>
             {modosConsolidado.map((modo) => (
               <button
                 key={modo}
@@ -102,7 +106,9 @@ const CnpjFilter = ({ className = '' }) => {
                   {modo === 'grupo' && `Grupo: ${grupoAtual?.nome}`}
                   {modo === 'empresa' && `Empresa: ${empresaAtual?.nomeFantasia}`}
                 </span>
-                {modoVisualizacao === modo && <Check className="w-4 h-4 text-[#0e4f6d] dark:text-teal-500" />}
+                {modoVisualizacao === modo && (
+                  <Check className="w-4 h-4 text-[#0e4f6d] dark:text-teal-500" />
+                )}
               </button>
             ))}
           </div>
@@ -124,14 +130,18 @@ const CnpjFilter = ({ className = '' }) => {
               >
                 <Building2 className="w-4 h-4 text-slate-400" />
                 <div className="flex-1 text-left min-w-0">
-                  <p className="text-sm text-slate-700 dark:text-slate-300 truncate">{cnpj.nomeFantasia}</p>
+                  <p className="text-sm text-slate-700 dark:text-slate-300 truncate">
+                    {cnpj.nomeFantasia}
+                  </p>
                   <p className="text-xs text-slate-400">{cnpj.cnpj}</p>
                 </div>
-                <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${
-                  cnpj.tipo === 'Matriz'
-                    ? 'bg-[#0e4f6d]/10 text-[#0e4f6d] dark:bg-slate-900/30 dark:text-teal-500'
-                    : 'bg-slate-100 dark:bg-slate-700 text-slate-500'
-                }`}>
+                <span
+                  className={`px-1.5 py-0.5 rounded text-xs font-medium ${
+                    cnpj.tipo === 'Matriz'
+                      ? 'bg-[#0e4f6d]/10 text-[#0e4f6d] dark:bg-slate-900/30 dark:text-teal-500'
+                      : 'bg-slate-100 dark:bg-slate-700 text-slate-500'
+                  }`}
+                >
                   {cnpj.tipo}
                 </span>
                 {cnpjSelecionado === cnpj.id && modoVisualizacao === 'cnpj' && (

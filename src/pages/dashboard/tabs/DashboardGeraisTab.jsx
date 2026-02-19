@@ -1,307 +1,154 @@
-import {
-  User,
-  ShieldCheck,
-  Calculator,
-  FileSpreadsheet,
-  Users,
-  TrendingUp,
-  Phone,
-  Mail,
-  MapPin,
-  Calendar,
-  DollarSign,
-  Target,
-  Briefcase,
-  FileText,
-  Percent,
-} from 'lucide-react';
-import Sparkline from '../../../components/ui/Sparkline';
+import { Briefcase, Building2, FileText, MapPin, Phone, Scale, ShieldCheck } from 'lucide-react';
 import VisibleItem from '../../../components/common/VisibleItem';
 import DashboardSectionTitle from '../../../components/ui/DashboardSectionTitle';
-import { formatCurrency } from '../../../utils/formatters';
 
-const iconMap = {
-  calculator: Calculator,
-  'file-spreadsheet': FileSpreadsheet,
-  users: Users,
-  briefcase: Briefcase,
-};
+const Field = ({ label, value }) => (
+  <div className="rounded-lg border border-slate-200/80 bg-slate-50/80 px-4 py-3 dark:border-slate-700 dark:bg-slate-900/40">
+    <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+      {label}
+    </p>
+    <p className="mt-1 text-sm font-medium text-slate-800 dark:text-slate-100">
+      {value || 'Nao informado'}
+    </p>
+  </div>
+);
 
 const DashboardGeraisTab = ({
   cardAnimation,
   cnpjInfo,
-  equipeTecnica,
   isDarkMode,
   itemVisivel,
-  margemLucro,
-  lucroSparkline,
-  receitaSparkline,
   responsavelInfo,
   responsavelWhatsappLink,
-  selectedYear,
-  totalLucro,
-  totalReceita,
-  variacaoReceita,
 }) => {
   const isVisible = (itemId) => itemVisivel('gerais', itemId);
-  const showHeader = isVisible('header_empresa');
+
+  // Compatibilidade com configs antigas: qualquer um desses itens mostra o bloco de empresa.
+  const showCompanyInfo =
+    isVisible('header_empresa') ||
+    isVisible('cards_resumo') ||
+    isVisible('equipe_tecnica') ||
+    isVisible('analise_geral');
   const showResponsavel = isVisible('responsavel');
+
+  const enderecoCompleto = [
+    cnpjInfo?.endereco?.logradouro,
+    cnpjInfo?.endereco?.numero,
+    cnpjInfo?.endereco?.bairro,
+  ]
+    .filter(Boolean)
+    .join(', ');
+  const cidadeEstado = [cnpjInfo?.endereco?.cidade, cnpjInfo?.endereco?.estado]
+    .filter(Boolean)
+    .join('/');
 
   return (
     <div className="space-y-7 pb-8">
-      <VisibleItem show={showHeader}>
+      <VisibleItem show={showCompanyInfo || showResponsavel}>
         <DashboardSectionTitle
-          icon={FileSpreadsheet}
-          badge="Visão Geral"
-          title="Informações Gerais"
-          subtitle="Dados cadastrais e equipe técnica responsável pela conta."
+          icon={Building2}
+          badge="Visao Geral"
+          title="Informacoes da Empresa"
+          subtitle="Dados cadastrais e responsavel legal."
           tone="blue"
           className={`transition-all duration-500 ${cardAnimation}`}
         />
       </VisibleItem>
 
-      <VisibleItem show={isVisible('cards_resumo')}>
-        <div
-          className={`grid grid-cols-2 md:grid-cols-4 gap-4 transition-all duration-500 delay-100 ${cardAnimation}`}
+      <VisibleItem show={showCompanyInfo}>
+        <section
+          className={`rounded-xl border p-6 shadow-sm transition-all duration-500 delay-100 ${cardAnimation} ${
+            isDarkMode ? 'border-slate-700 bg-slate-800' : 'border-slate-100 bg-white'
+          }`}
         >
-          <div className="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-3">
-              <div className="p-2 bg-green-50 dark:bg-green-900/30 rounded-lg">
-                <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
-              </div>
-              <span className="text-xs font-bold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-2 py-1 rounded-full">
-                +{variacaoReceita}%
-              </span>
-            </div>
-            <div className="flex items-end justify-between">
-              <div>
-                <p className="text-2xl font-bold text-slate-800 dark:text-white">
-                  {formatCurrency(totalReceita)}
-                </p>
-                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
-                  Receita {selectedYear}
-                </p>
-              </div>
-              <Sparkline data={receitaSparkline} color="#10b981" height={32} width={60} />
-            </div>
+          <div className="mb-5 flex items-center gap-2">
+            <FileText className={`h-5 w-5 ${isDarkMode ? 'text-teal-400' : 'text-[#0e4f6d]'}`} />
+            <h2 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+              Dados Cadastrais
+            </h2>
           </div>
 
-          <div className="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-3">
-              <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
-                <DollarSign className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              </div>
-            </div>
-            <div className="flex items-end justify-between">
-              <div>
-                <p className="text-2xl font-bold text-slate-800 dark:text-white">
-                  {formatCurrency(totalLucro)}
-                </p>
-                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Lucro Líquido</p>
-              </div>
-              <Sparkline data={lucroSparkline} color="#3b82f6" height={32} width={60} />
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-3">
-              <div className="p-2 bg-slate-50 dark:bg-slate-700 rounded-lg">
-                <Percent className="w-5 h-5 text-slate-700 dark:text-slate-300" />
-              </div>
-            </div>
-            <p className="text-2xl font-bold text-slate-800 dark:text-white">{margemLucro}%</p>
-            <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Margem de Lucro</p>
-          </div>
-
-          <div className="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-3">
-              <div className="p-2 bg-amber-50 dark:bg-amber-900/30 rounded-lg">
-                <Calendar className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-              </div>
-            </div>
-            <p className="text-2xl font-bold text-slate-800 dark:text-white">12</p>
-            <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Meses Analisados</p>
-          </div>
-        </div>
-      </VisibleItem>
-
-      <VisibleItem show={showHeader || showResponsavel}>
-        <div
-          className={`bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-md overflow-hidden transition-all duration-500 delay-200 ${cardAnimation}`}
-        >
-          <VisibleItem show={showHeader}>
-            <div className="bg-[#0e4f6d] p-8 text-white">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                    <span className="text-xs font-medium text-white/70 uppercase tracking-wider">
-                      Cliente Ativo • {cnpjInfo?.tipo}
-                    </span>
-                  </div>
-                  <h2 className="text-3xl font-bold mb-2">{cnpjInfo?.razaoSocial}</h2>
-                  <div className="flex flex-wrap items-center gap-4 text-white/80">
-                    <span className="flex items-center gap-2">
-                      <FileText className="w-4 h-4" />
-                      CNPJ: {cnpjInfo?.cnpj}
-                    </span>
-                    <span className="flex items-center gap-2">
-                      <Target className="w-4 h-4" />
-                      Cód: {cnpjInfo?.codigoCliente}
-                    </span>
-                    <span className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4" />
-                      {cnpjInfo?.endereco?.cidade}/{cnpjInfo?.endereco?.estado}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex flex-col items-end gap-2">
-                  <div className="bg-white/20 backdrop-blur-sm px-6 py-3 rounded-xl">
-                    <p className="text-xs font-medium text-white/70 uppercase tracking-wider mb-1">
-                      Regime Tributário
-                    </p>
-                    <p className="text-xl font-bold">{cnpjInfo?.regimeTributario}</p>
-                  </div>
-                  <span className="text-xs text-white/60">Exercício {cnpjInfo?.exercicio}</span>
-                </div>
-              </div>
-            </div>
-          </VisibleItem>
-
-          <VisibleItem show={showResponsavel}>
-            <div className="p-8 dark:bg-slate-800">
-              <div className="flex items-center gap-6">
-                <a
-                  href={responsavelWhatsappLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-20 h-20 rounded-xl bg-[#0e4f6d] hover:bg-[#0c4058] flex items-center justify-center shadow-md transition-colors cursor-pointer group"
-                  title={responsavelInfo?.whatsapp ? 'Abrir WhatsApp' : 'WhatsApp Não cadastrado'}
-                >
-                  <User className="w-10 h-10 text-white group-hover:scale-110 transition-transform" />
-                </a>
-                <div>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
-                    Responsável Legal
-                  </p>
-                  <h3
-                    className={`text-2xl font-bold mb-1 ${isDarkMode ? 'text-teal-400' : 'text-[#0e4f6d]'}`}
-                  >
-                    {responsavelInfo?.nome}
-                  </h3>
-                  <div className="flex items-center gap-4">
-                    <span className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                      <Briefcase className="w-4 h-4" />
-                      {responsavelInfo?.cargo}
-                    </span>
-                    {responsavelInfo?.whatsapp && (
-                      <a
-                        href={responsavelWhatsappLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 flex items-center gap-1 transition-colors"
-                      >
-                        <Phone className="w-4 h-4" />
-                        {responsavelInfo.whatsapp}
-                      </a>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </VisibleItem>
-        </div>
-      </VisibleItem>
-
-      <VisibleItem show={isVisible('equipe_tecnica')}>
-        <section className={`pt-4 transition-all duration-500 delay-300 ${cardAnimation}`}>
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <div
-                className={`p-2 rounded-lg ${isDarkMode ? 'bg-teal-900/30' : 'bg-[#0e4f6d]/10'}`}
-              >
-                <ShieldCheck
-                  className={`w-5 h-5 ${isDarkMode ? 'text-teal-400' : 'text-[#0e4f6d]'}`}
-                />
-              </div>
-              <h2
-                className={`text-xl font-bold uppercase tracking-wide ${isDarkMode ? 'text-white' : 'text-[#1e293b]'}`}
-              >
-                Equipe Técnica
-              </h2>
-            </div>
-            <span className="text-xs text-slate-400 font-medium">
-              {equipeTecnica.length} profissionais
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {equipeTecnica.length > 0 ? (
-              equipeTecnica.map((membro, index) => {
-                const Icon = iconMap[membro.icon];
-                const colors = [
-                  { bg: 'bg-teal-700', light: 'bg-slate-50' },
-                  { bg: 'bg-slate-700', light: 'bg-blue-50' },
-                  { bg: 'bg-teal-600', light: 'bg-teal-50' },
-                ];
-                const color = colors[index % colors.length];
-
-                return (
-                  <div
-                    key={membro.id}
-                    className="group bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1"
-                  >
-                    <div className="flex items-start justify-between mb-4">
-                      <div className={`p-4 rounded-xl ${color.bg} shadow-md`}>
-                        <Icon className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="w-2 h-2 bg-green-400 rounded-full" />
-                    </div>
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
-                      {membro.setor}
-                    </p>
-                    <h4 className="text-xl font-bold text-slate-800 dark:text-white mb-3">
-                      {membro.nome}
-                    </h4>
-                    <div className="flex items-center gap-2 text-sm text-slate-400">
-                      <Mail className="w-4 h-4" />
-                      <span className="truncate">
-                        {membro.nome.toLowerCase().split(' ')[0]}@agili.com.br
-                      </span>
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <div className="md:col-span-3 p-8 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-center">
-                <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                  Sem equipe tÃ©cnica cadastrada para este cliente.
-                </p>
-              </div>
-            )}
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+            <Field label="Razao Social" value={cnpjInfo?.razaoSocial} />
+            <Field label="Nome Fantasia" value={cnpjInfo?.nomeFantasia} />
+            <Field label="CNPJ" value={cnpjInfo?.cnpj} />
+            <Field label="Codigo Cliente" value={cnpjInfo?.codigoCliente} />
+            <Field label="Tipo" value={cnpjInfo?.tipo} />
+            <Field label="Regime Tributario" value={cnpjInfo?.regimeTributario} />
+            <Field label="Exercicio" value={cnpjInfo?.exercicio} />
+            <Field label="Cidade / UF" value={cidadeEstado} />
+            <Field label="Endereco" value={enderecoCompleto} />
           </div>
         </section>
       </VisibleItem>
 
-      <VisibleItem show={isVisible('analise_geral')}>
-        <div
-          className={`bg-[#0e4f6d] p-8 rounded-xl text-white transition-all duration-500 delay-400 ${cardAnimation}`}
+      <VisibleItem show={showResponsavel}>
+        <section
+          className={`rounded-xl border p-6 shadow-sm transition-all duration-500 delay-200 ${cardAnimation} ${
+            isDarkMode ? 'border-slate-700 bg-slate-800' : 'border-slate-100 bg-white'
+          }`}
         >
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-6">
-              <div className="p-4 bg-white/10 rounded-xl backdrop-blur-sm">
-                <Phone className="w-8 h-8" />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold mb-1">Precisa de suporte?</h3>
-                <p className="text-white/70">Nossa equipe está disponível para ajudá-lo.</p>
-              </div>
-            </div>
-            <button className="bg-white text-[#0e4f6d] px-8 py-4 rounded-xl font-bold hover:bg-white/90 transition-colors shadow-md">
-              Entrar em Contato
-            </button>
+          <div className="mb-5 flex items-center gap-2">
+            <ShieldCheck className={`h-5 w-5 ${isDarkMode ? 'text-teal-400' : 'text-[#0e4f6d]'}`} />
+            <h2 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+              Responsavel Legal
+            </h2>
           </div>
-        </div>
+
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+            <Field label="Nome" value={responsavelInfo?.nome} />
+            <Field label="Cargo" value={responsavelInfo?.cargo} />
+            <div className="rounded-lg border border-slate-200/80 bg-slate-50/80 px-4 py-3 dark:border-slate-700 dark:bg-slate-900/40">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                WhatsApp
+              </p>
+              {responsavelInfo?.whatsapp ? (
+                <a
+                  href={responsavelWhatsappLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-1 inline-flex items-center gap-1 text-sm font-medium text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
+                >
+                  <Phone className="h-4 w-4" />
+                  {responsavelInfo.whatsapp}
+                </a>
+              ) : (
+                <p className="mt-1 text-sm font-medium text-slate-800 dark:text-slate-100">
+                  Nao informado
+                </p>
+              )}
+            </div>
+          </div>
+        </section>
+      </VisibleItem>
+
+      <VisibleItem show={showCompanyInfo}>
+        <section
+          className={`rounded-xl border p-6 shadow-sm transition-all duration-500 delay-300 ${cardAnimation} ${
+            isDarkMode ? 'border-slate-700 bg-slate-800' : 'border-slate-100 bg-white'
+          }`}
+        >
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div className="flex items-center gap-2">
+              <Scale className={`h-4 w-4 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`} />
+              <span className="text-sm text-slate-600 dark:text-slate-300">
+                Regime: <strong>{cnpjInfo?.regimeTributario || 'Nao informado'}</strong>
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <MapPin className={`h-4 w-4 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`} />
+              <span className="text-sm text-slate-600 dark:text-slate-300">
+                Localizacao: <strong>{cidadeEstado || 'Nao informado'}</strong>
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Briefcase className={`h-4 w-4 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`} />
+              <span className="text-sm text-slate-600 dark:text-slate-300">
+                Tipo: <strong>{cnpjInfo?.tipo || 'Nao informado'}</strong>
+              </span>
+            </div>
+          </div>
+        </section>
       </VisibleItem>
     </div>
   );

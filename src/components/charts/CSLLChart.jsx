@@ -8,7 +8,7 @@ import {
   Title,
   Tooltip,
   Legend,
-  Filler
+  Filler,
 } from 'chart.js';
 import { trimestres, csllData } from '../../data/mockData';
 import { useTheme } from '../../context/ThemeContext';
@@ -44,16 +44,16 @@ const CSLLChart = () => {
         backgroundColor: isDarkMode ? 'rgba(56, 189, 248, 0.1)' : 'rgba(6, 182, 212, 0.05)',
         fill: true,
         tension: 0.4,
-        borderWidth: 4
-      }
-    ]
+        borderWidth: 4,
+      },
+    ],
   };
 
   const options = getChartOptions(isDarkMode, {
     plugins: {
       legend: {
-        display: false
-      }
+        display: false,
+      },
     },
     scales: {
       y: {
@@ -61,14 +61,14 @@ const CSLLChart = () => {
         grid: { color: colors.gridColor },
         ticks: {
           color: colors.textColorSecondary,
-          callback: (value) => 'R$ ' + value.toLocaleString('pt-BR')
-        }
+          callback: (value) => 'R$ ' + value.toLocaleString('pt-BR'),
+        },
       },
       x: {
         grid: { display: false },
-        ticks: { color: colors.textColorSecondary }
-      }
-    }
+        ticks: { color: colors.textColorSecondary },
+      },
+    },
   });
 
   return (

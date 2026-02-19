@@ -6,25 +6,23 @@ import {
   BarElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
 } from 'chart.js';
 import { useTheme } from '../../context/ThemeContext';
 import { getChartColors, getChartOptions } from '../../utils/chartTheme';
 
 // Registrar componentes do Chart.js
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 // Mock data para Entradas e Saídas mensais
 const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-const entradasMock = [2595763, 2247713, 2052673, 2498739, 2423405, 3642289, 4958289, 2222369, 10651793, 10616332, 16392351, 4012352];
-const saidasMock = [577643, 500914, 529673, 616527, 521590, 574772, 692399, 631988, 644739, 526565, 502744, 698934];
+const entradasMock = [
+  2595763, 2247713, 2052673, 2498739, 2423405, 3642289, 4958289, 2222369, 10651793, 10616332,
+  16392351, 4012352,
+];
+const saidasMock = [
+  577643, 500914, 529673, 616527, 521590, 574772, 692399, 631988, 644739, 526565, 502744, 698934,
+];
 
 /**
  * Grafico de Evolucao Mensal - Entradas vs Saidas
@@ -43,7 +41,7 @@ const FaturamentoChart = () => {
         backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.8)' : 'rgba(16, 185, 129, 0.7)',
         borderColor: '#10b981',
         borderWidth: 2,
-        borderRadius: 6
+        borderRadius: 6,
       },
       {
         label: 'Saídas',
@@ -51,9 +49,9 @@ const FaturamentoChart = () => {
         backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.8)' : 'rgba(239, 68, 68, 0.7)',
         borderColor: '#ef4444',
         borderWidth: 2,
-        borderRadius: 6
-      }
-    ]
+        borderRadius: 6,
+      },
+    ],
   };
 
   const options = getChartOptions(isDarkMode, {
@@ -66,38 +64,38 @@ const FaturamentoChart = () => {
           font: { weight: 'bold', size: 12 },
           usePointStyle: true,
           pointStyle: 'circle',
-          padding: 20
-        }
+          padding: 20,
+        },
       },
       tooltip: {
         callbacks: {
           label: (context) => {
             const value = context.raw;
             return `${context.dataset.label}: R$ ${value.toLocaleString('pt-BR')}`;
-          }
-        }
-      }
+          },
+        },
+      },
     },
     scales: {
       y: {
         beginAtZero: true,
         grid: {
-          color: colors.gridColor
+          color: colors.gridColor,
         },
         ticks: {
           color: colors.textColorSecondary,
-          callback: (value) => 'R$ ' + (value / 1000000).toFixed(1) + 'M'
-        }
+          callback: (value) => 'R$ ' + (value / 1000000).toFixed(1) + 'M',
+        },
       },
       x: {
         grid: {
-          display: false
+          display: false,
         },
         ticks: {
-          color: colors.textColorSecondary
-        }
-      }
-    }
+          color: colors.textColorSecondary,
+        },
+      },
+    },
   });
 
   return (

@@ -55,16 +55,19 @@ dashboard-fiscal/
 ## Instalação
 
 1. **Clone o repositório** (ou navegue até a pasta do projeto):
+
    ```bash
    cd dashboard-fiscal
    ```
 
 2. **Instale as dependências**:
+
    ```bash
    npm install
    ```
 
 3. **Inicie o servidor de desenvolvimento**:
+
    ```bash
    npm run dev
    ```
@@ -77,6 +80,7 @@ dashboard-fiscal/
 ## Funcionalidades
 
 ### Página de Login
+
 - Design empresarial moderno
 - Qualquer credencial funciona (mock)
 - Redirecionamento para o dashboard após login
@@ -84,10 +88,12 @@ dashboard-fiscal/
 ### Dashboard Principal (4 tabs)
 
 #### Tab 1: Informações Gerais
+
 - Dados cadastrais da empresa
 - Equipe técnica responsável (Contábil, Fiscal, Pessoal)
 
 #### Tab 2: Contábil
+
 - Gráfico comparativo Receita vs Despesa (barras)
 - Alternância entre anos 2024/2025
 - Card com totais anuais
@@ -97,6 +103,7 @@ dashboard-fiscal/
 - Tabela com dados mensais
 
 #### Tab 3: Fiscal
+
 - Gráfico de distribuição entrada/saída (pizza)
 - Tabela de resumo operacional
 - Gráfico de faturamento (barras)
@@ -105,9 +112,11 @@ dashboard-fiscal/
 - Gráfico de fluxo mensal (barras horizontais)
 
 #### Tab 4: Pessoal
+
 - Placeholder "Em desenvolvimento"
 
 ### Painel Admin
+
 - Upload de CSV (UI apenas, sem funcionalidade)
 - Gerenciamento de usuários (tabela mockada)
 

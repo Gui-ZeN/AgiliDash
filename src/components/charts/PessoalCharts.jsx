@@ -20,7 +20,7 @@ const COLORS = {
   pink: '#ec4899',
   orange: '#f97316',
   cyan: '#06b6d4',
-  teal: '#14b8a6'
+  teal: '#14b8a6',
 };
 
 const CHART_COLORS = [
@@ -34,10 +34,23 @@ const CHART_COLORS = [
   COLORS.pink,
   COLORS.orange,
   COLORS.cyan,
-  COLORS.teal
+  COLORS.teal,
 ];
 
-const MESES_CURTOS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+const MESES_CURTOS = [
+  'Jan',
+  'Fev',
+  'Mar',
+  'Abr',
+  'Mai',
+  'Jun',
+  'Jul',
+  'Ago',
+  'Set',
+  'Out',
+  'Nov',
+  'Dez',
+];
 
 const FGTSCATEGORIAS = [
   { id: 'mensal', label: 'FGTS Mensal', color: COLORS.primary },
@@ -244,14 +257,16 @@ export const FGTSPorTipoChart = ({ dados, periodFilter }) => {
       type: 'bar',
       data: {
         labels: dadosGrafico.labels,
-        datasets: [{
-          label: 'FGTS',
-          data: dadosGrafico.valores,
-          backgroundColor: dadosGrafico.cores.map((cor) => cor + 'CC'),
-          borderColor: dadosGrafico.cores,
-          borderWidth: 2,
-          borderRadius: 8,
-        }]
+        datasets: [
+          {
+            label: 'FGTS',
+            data: dadosGrafico.valores,
+            backgroundColor: dadosGrafico.cores.map((cor) => cor + 'CC'),
+            borderColor: dadosGrafico.cores,
+            borderWidth: 2,
+            borderRadius: 8,
+          },
+        ],
       },
       options: {
         responsive: true,
@@ -269,7 +284,7 @@ export const FGTSPorTipoChart = ({ dados, periodFilter }) => {
             callbacks: {
               label: (context) => `${context.label}: ${formatCurrency(context.raw)}`,
             },
-          }
+          },
         },
         scales: {
           x: {
@@ -288,8 +303,8 @@ export const FGTSPorTipoChart = ({ dados, periodFilter }) => {
               callback: (value) => formatCurrency(value),
             },
           },
-        }
-      }
+        },
+      },
     });
 
     return () => {
@@ -327,12 +342,11 @@ export const FGTSPorAnoChart = ({ dados }) => {
   const dadosGrafico = useMemo(() => {
     if (!dados?.totaisPorAno) return { labels: [], valores: [] };
 
-    const anos = Object.entries(dados.totaisPorAno)
-      .sort((a, b) => parseInt(a[0]) - parseInt(b[0]));
+    const anos = Object.entries(dados.totaisPorAno).sort((a, b) => parseInt(a[0]) - parseInt(b[0]));
 
     return {
       labels: anos.map(([ano]) => ano),
-      valores: anos.map(([, val]) => val.valorFGTS)
+      valores: anos.map(([, val]) => val.valorFGTS),
     };
   }, [dados]);
 
@@ -349,14 +363,16 @@ export const FGTSPorAnoChart = ({ dados }) => {
       type: 'bar',
       data: {
         labels: dadosGrafico.labels,
-        datasets: [{
-          label: 'FGTS Acumulado',
-          data: dadosGrafico.valores,
-          backgroundColor: COLORS.primary + 'CC',
-          borderColor: COLORS.primary,
-          borderWidth: 2,
-          borderRadius: 8
-        }]
+        datasets: [
+          {
+            label: 'FGTS Acumulado',
+            data: dadosGrafico.valores,
+            backgroundColor: COLORS.primary + 'CC',
+            borderColor: COLORS.primary,
+            borderWidth: 2,
+            borderRadius: 8,
+          },
+        ],
       },
       options: {
         indexAxis: 'y',
@@ -373,29 +389,29 @@ export const FGTSPorAnoChart = ({ dados }) => {
             padding: 16,
             cornerRadius: 12,
             callbacks: {
-              label: (context) => `Total: ${formatCurrency(context.raw)}`
-            }
-          }
+              label: (context) => `Total: ${formatCurrency(context.raw)}`,
+            },
+          },
         },
         scales: {
           x: {
             grid: {
-              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)'
+              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)',
             },
             ticks: {
               color: isDarkMode ? '#94a3b8' : '#64748b',
-              callback: (value) => formatCurrency(value)
-            }
+              callback: (value) => formatCurrency(value),
+            },
           },
           y: {
             grid: { display: false },
             ticks: {
               color: isDarkMode ? '#94a3b8' : '#64748b',
-              font: { weight: '600' }
-            }
-          }
-        }
-      }
+              font: { weight: '600' },
+            },
+          },
+        },
+      },
     });
 
     return () => {
@@ -456,14 +472,16 @@ export const FGTSPorPeriodoChart = ({ dados, periodFilter }) => {
       type: 'bar',
       data: {
         labels: dadosGrafico.labels,
-        datasets: [{
-          label: 'FGTS',
-          data: dadosGrafico.valores,
-          backgroundColor: dadosGrafico.cores.map((cor) => cor + 'CC'),
-          borderColor: dadosGrafico.cores,
-          borderWidth: 2,
-          borderRadius: 6,
-        }],
+        datasets: [
+          {
+            label: 'FGTS',
+            data: dadosGrafico.valores,
+            backgroundColor: dadosGrafico.cores.map((cor) => cor + 'CC'),
+            borderColor: dadosGrafico.cores,
+            borderWidth: 2,
+            borderRadius: 6,
+          },
+        ],
       },
       options: {
         responsive: true,
@@ -541,14 +559,27 @@ export const FGTSMensalChart = ({ dados }) => {
       return { labels: [], valores: [] };
     }
 
-    const mesesNomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    const mesesNomes = [
+      'Jan',
+      'Fev',
+      'Mar',
+      'Abr',
+      'Mai',
+      'Jun',
+      'Jul',
+      'Ago',
+      'Set',
+      'Out',
+      'Nov',
+      'Dez',
+    ];
 
     return {
-      labels: dados.competencias.map(comp => {
+      labels: dados.competencias.map((comp) => {
         const [mes, ano] = comp.split('/');
         return `${mesesNomes[parseInt(mes) - 1]}/${ano.slice(-2)}`;
       }),
-      valores: dados.competencias.map(comp => dados.totaisPorCompetencia[comp]?.valorFGTS || 0)
+      valores: dados.competencias.map((comp) => dados.totaisPorCompetencia[comp]?.valorFGTS || 0),
     };
   }, [dados]);
 
@@ -565,14 +596,16 @@ export const FGTSMensalChart = ({ dados }) => {
       type: 'bar',
       data: {
         labels: dadosGrafico.labels,
-        datasets: [{
-          label: 'FGTS Mensal',
-          data: dadosGrafico.valores,
-          backgroundColor: COLORS.primary + 'CC',
-          borderColor: COLORS.primary,
-          borderWidth: 2,
-          borderRadius: 6
-        }]
+        datasets: [
+          {
+            label: 'FGTS Mensal',
+            data: dadosGrafico.valores,
+            backgroundColor: COLORS.primary + 'CC',
+            borderColor: COLORS.primary,
+            borderWidth: 2,
+            borderRadius: 6,
+          },
+        ],
       },
       options: {
         responsive: true,
@@ -588,9 +621,9 @@ export const FGTSMensalChart = ({ dados }) => {
             padding: 16,
             cornerRadius: 12,
             callbacks: {
-              label: (context) => `FGTS: ${formatCurrency(context.raw)}`
-            }
-          }
+              label: (context) => `FGTS: ${formatCurrency(context.raw)}`,
+            },
+          },
         },
         scales: {
           x: {
@@ -598,20 +631,20 @@ export const FGTSMensalChart = ({ dados }) => {
             ticks: {
               color: isDarkMode ? '#94a3b8' : '#64748b',
               font: { weight: '600', size: 10 },
-              maxRotation: 45
-            }
+              maxRotation: 45,
+            },
           },
           y: {
             grid: {
-              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)'
+              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)',
             },
             ticks: {
               color: isDarkMode ? '#94a3b8' : '#64748b',
-              callback: (value) => formatCurrency(value)
-            }
-          }
-        }
-      }
+              callback: (value) => formatCurrency(value),
+            },
+          },
+        },
+      },
     });
 
     return () => {
@@ -685,14 +718,18 @@ export const INSSPorEmpresaChart = ({ dados, periodFilter }) => {
       type: 'bar',
       data: {
         labels: dadosGrafico.labels,
-        datasets: [{
-          label: 'INSS',
-          data: dadosGrafico.valores,
-          backgroundColor: CHART_COLORS.slice(0, dadosGrafico.valores.length).map(c => c + 'CC'),
-          borderColor: CHART_COLORS.slice(0, dadosGrafico.valores.length),
-          borderWidth: 2,
-          borderRadius: 6
-        }]
+        datasets: [
+          {
+            label: 'INSS',
+            data: dadosGrafico.valores,
+            backgroundColor: CHART_COLORS.slice(0, dadosGrafico.valores.length).map(
+              (c) => c + 'CC'
+            ),
+            borderColor: CHART_COLORS.slice(0, dadosGrafico.valores.length),
+            borderWidth: 2,
+            borderRadius: 6,
+          },
+        ],
       },
       options: {
         indexAxis: 'y',
@@ -713,29 +750,29 @@ export const INSSPorEmpresaChart = ({ dados, periodFilter }) => {
                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
                 const percentage = ((context.raw / total) * 100).toFixed(1);
                 return `INSS: ${formatCurrency(context.raw)} (${percentage}%)`;
-              }
-            }
-          }
+              },
+            },
+          },
         },
         scales: {
           x: {
             grid: {
-              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)'
+              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)',
             },
             ticks: {
               color: isDarkMode ? '#94a3b8' : '#64748b',
-              callback: (value) => formatCurrency(value)
-            }
+              callback: (value) => formatCurrency(value),
+            },
           },
           y: {
             grid: { display: false },
             ticks: {
               color: isDarkMode ? '#94a3b8' : '#64748b',
-              font: { weight: '600', size: 10 }
-            }
-          }
-        }
-      }
+              font: { weight: '600', size: 10 },
+            },
+          },
+        },
+      },
     });
 
     return () => {
@@ -778,13 +815,17 @@ export const INSSPorTipoGuiaChart = ({ dados }) => {
       tipos.push({ label: 'Original', valor: dados.totaisPorTipo.original, cor: COLORS.success });
     }
     if (dados.totaisPorTipo.retificador > 0) {
-      tipos.push({ label: 'Retificador', valor: dados.totaisPorTipo.retificador, cor: COLORS.warning });
+      tipos.push({
+        label: 'Retificador',
+        valor: dados.totaisPorTipo.retificador,
+        cor: COLORS.warning,
+      });
     }
 
     return {
-      labels: tipos.map(t => t.label),
-      valores: tipos.map(t => t.valor),
-      cores: tipos.map(t => t.cor)
+      labels: tipos.map((t) => t.label),
+      valores: tipos.map((t) => t.valor),
+      cores: tipos.map((t) => t.cor),
     };
   }, [dados]);
 
@@ -801,13 +842,15 @@ export const INSSPorTipoGuiaChart = ({ dados }) => {
       type: 'doughnut',
       data: {
         labels: dadosGrafico.labels,
-        datasets: [{
-          data: dadosGrafico.valores,
-          backgroundColor: dadosGrafico.cores.map(c => c + 'CC'),
-          borderColor: dadosGrafico.cores,
-          borderWidth: 2,
-          hoverOffset: 8
-        }]
+        datasets: [
+          {
+            data: dadosGrafico.valores,
+            backgroundColor: dadosGrafico.cores.map((c) => c + 'CC'),
+            borderColor: dadosGrafico.cores,
+            borderWidth: 2,
+            hoverOffset: 8,
+          },
+        ],
       },
       options: {
         responsive: true,
@@ -821,8 +864,8 @@ export const INSSPorTipoGuiaChart = ({ dados }) => {
               font: { weight: 'bold', size: 12 },
               usePointStyle: true,
               pointStyle: 'circle',
-              padding: 20
-            }
+              padding: 20,
+            },
           },
           tooltip: {
             backgroundColor: isDarkMode ? '#1e293b' : 'white',
@@ -837,11 +880,11 @@ export const INSSPorTipoGuiaChart = ({ dados }) => {
                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
                 const percentage = ((context.raw / total) * 100).toFixed(1);
                 return `${context.label}: ${context.raw} guias (${percentage}%)`;
-              }
-            }
-          }
-        }
-      }
+              },
+            },
+          },
+        },
+      },
     });
 
     return () => {
@@ -904,14 +947,16 @@ export const INSSPorPeriodoChart = ({ dados, periodFilter }) => {
       type: 'bar',
       data: {
         labels: dadosGrafico.labels,
-        datasets: [{
-          label: 'INSS',
-          data: dadosGrafico.valores,
-          backgroundColor: dadosGrafico.cores.map((cor) => cor + 'CC'),
-          borderColor: dadosGrafico.cores,
-          borderWidth: 2,
-          borderRadius: 6
-        }]
+        datasets: [
+          {
+            label: 'INSS',
+            data: dadosGrafico.valores,
+            backgroundColor: dadosGrafico.cores.map((cor) => cor + 'CC'),
+            borderColor: dadosGrafico.cores,
+            borderWidth: 2,
+            borderRadius: 6,
+          },
+        ],
       },
       options: {
         responsive: true,
@@ -996,7 +1041,7 @@ export const AdmissoesDemissoesChart = ({ dados, periodFilter }) => {
     // Combinar todas as competências
     const todasCompetencias = new Set([
       ...(dados.competenciasAdmissao || []),
-      ...(dados.competenciasDemissao || [])
+      ...(dados.competenciasDemissao || []),
     ]);
 
     let competenciasOrdenadas = ordenarCompetencias(Array.from(todasCompetencias));
@@ -1036,7 +1081,7 @@ export const AdmissoesDemissoesChart = ({ dados, periodFilter }) => {
             backgroundColor: COLORS.success + 'CC',
             borderColor: COLORS.success,
             borderWidth: 2,
-            borderRadius: 6
+            borderRadius: 6,
           },
           {
             label: 'Demissões',
@@ -1044,9 +1089,9 @@ export const AdmissoesDemissoesChart = ({ dados, periodFilter }) => {
             backgroundColor: COLORS.danger + 'CC',
             borderColor: COLORS.danger,
             borderWidth: 2,
-            borderRadius: 6
-          }
-        ]
+            borderRadius: 6,
+          },
+        ],
       },
       options: {
         responsive: true,
@@ -1059,8 +1104,8 @@ export const AdmissoesDemissoesChart = ({ dados, periodFilter }) => {
               font: { weight: 'bold', size: 12 },
               usePointStyle: true,
               pointStyle: 'circle',
-              padding: 20
-            }
+              padding: 20,
+            },
           },
           tooltip: {
             backgroundColor: isDarkMode ? '#1e293b' : 'white',
@@ -1069,8 +1114,8 @@ export const AdmissoesDemissoesChart = ({ dados, periodFilter }) => {
             borderColor: isDarkMode ? '#334155' : '#e2e8f0',
             borderWidth: 1,
             padding: 16,
-            cornerRadius: 12
-          }
+            cornerRadius: 12,
+          },
         },
         scales: {
           x: {
@@ -1078,20 +1123,20 @@ export const AdmissoesDemissoesChart = ({ dados, periodFilter }) => {
             ticks: {
               color: isDarkMode ? '#94a3b8' : '#64748b',
               font: { weight: '600', size: 10 },
-              maxRotation: 45
-            }
+              maxRotation: 45,
+            },
           },
           y: {
             grid: {
-              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)'
+              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)',
             },
             ticks: {
               color: isDarkMode ? '#94a3b8' : '#64748b',
-              stepSize: 1
-            }
-          }
-        }
-      }
+              stepSize: 1,
+            },
+          },
+        },
+      },
     });
 
     return () => {
@@ -1141,7 +1186,9 @@ export const EmpregadosPorSituacaoChart = ({ dados, periodFilter }) => {
       dados.empregados.forEach((empregado) => {
         const situacao = empregado?.situacao || 'Nao informado';
         const dataReferencia =
-          situacao === 'Ativo' ? empregado?.dataAdmissao : empregado?.dataSituacao || empregado?.dataAdmissao;
+          situacao === 'Ativo'
+            ? empregado?.dataAdmissao
+            : empregado?.dataSituacao || empregado?.dataAdmissao;
         const competencia = dataReferencia
           ? competenciaFromMesAno(
               Number(String(dataReferencia).split('/')[1]),
@@ -1166,7 +1213,7 @@ export const EmpregadosPorSituacaoChart = ({ dados, periodFilter }) => {
       .sort((a, b) => b[1] - a[1]);
 
     return {
-      labels: situacoes.map(([sit]) => sit === 'Nao informado' ? 'Nao informado' : sit),
+      labels: situacoes.map(([sit]) => (sit === 'Nao informado' ? 'Nao informado' : sit)),
       valores: situacoes.map(([, val]) => val),
       cores: situacoes.map(([sit]) => situacaoCores[sit] || COLORS.info),
     };
@@ -1185,13 +1232,15 @@ export const EmpregadosPorSituacaoChart = ({ dados, periodFilter }) => {
       type: 'doughnut',
       data: {
         labels: dadosGrafico.labels,
-        datasets: [{
-          data: dadosGrafico.valores,
-          backgroundColor: dadosGrafico.cores.map(c => c + 'CC'),
-          borderColor: dadosGrafico.cores,
-          borderWidth: 2,
-          hoverOffset: 8
-        }]
+        datasets: [
+          {
+            data: dadosGrafico.valores,
+            backgroundColor: dadosGrafico.cores.map((c) => c + 'CC'),
+            borderColor: dadosGrafico.cores,
+            borderWidth: 2,
+            hoverOffset: 8,
+          },
+        ],
       },
       options: {
         responsive: true,
@@ -1205,8 +1254,8 @@ export const EmpregadosPorSituacaoChart = ({ dados, periodFilter }) => {
               font: { weight: 'bold', size: 12 },
               usePointStyle: true,
               pointStyle: 'circle',
-              padding: 20
-            }
+              padding: 20,
+            },
           },
           tooltip: {
             backgroundColor: isDarkMode ? '#1e293b' : 'white',
@@ -1221,11 +1270,11 @@ export const EmpregadosPorSituacaoChart = ({ dados, periodFilter }) => {
                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
                 const percentage = ((context.raw / total) * 100).toFixed(1);
                 return `${context.label}: ${context.raw} (${percentage}%)`;
-              }
-            }
-          }
-        }
-      }
+              },
+            },
+          },
+        },
+      },
     });
 
     return () => {
@@ -1263,14 +1312,12 @@ export const SalarioPorCargoChart = ({ dados }) => {
   const dadosGrafico = useMemo(() => {
     if (!dados?.cargosOrdenados) return { labels: [], valores: [] };
 
-    const cargos = dados.cargosOrdenados
-      .filter(c => c.salarioMedio > 0)
-      .slice(0, 10);
+    const cargos = dados.cargosOrdenados.filter((c) => c.salarioMedio > 0).slice(0, 10);
 
     return {
-      labels: cargos.map(c => c.cargo.length > 25 ? c.cargo.slice(0, 25) + '...' : c.cargo),
-      valores: cargos.map(c => c.salarioMedio),
-      quantidades: cargos.map(c => c.quantidade)
+      labels: cargos.map((c) => (c.cargo.length > 25 ? c.cargo.slice(0, 25) + '...' : c.cargo)),
+      valores: cargos.map((c) => c.salarioMedio),
+      quantidades: cargos.map((c) => c.quantidade),
     };
   }, [dados]);
 
@@ -1287,14 +1334,18 @@ export const SalarioPorCargoChart = ({ dados }) => {
       type: 'bar',
       data: {
         labels: dadosGrafico.labels,
-        datasets: [{
-          label: 'Salário Médio',
-          data: dadosGrafico.valores,
-          backgroundColor: CHART_COLORS.slice(0, dadosGrafico.valores.length).map(c => c + 'CC'),
-          borderColor: CHART_COLORS.slice(0, dadosGrafico.valores.length),
-          borderWidth: 2,
-          borderRadius: 6
-        }]
+        datasets: [
+          {
+            label: 'Salário Médio',
+            data: dadosGrafico.valores,
+            backgroundColor: CHART_COLORS.slice(0, dadosGrafico.valores.length).map(
+              (c) => c + 'CC'
+            ),
+            borderColor: CHART_COLORS.slice(0, dadosGrafico.valores.length),
+            borderWidth: 2,
+            borderRadius: 6,
+          },
+        ],
       },
       options: {
         indexAxis: 'y',
@@ -1314,29 +1365,29 @@ export const SalarioPorCargoChart = ({ dados }) => {
               label: (context) => {
                 const qtd = dadosGrafico.quantidades[context.dataIndex];
                 return `Salário Médio: ${formatCurrency(context.raw)} (${qtd} colaboradores)`;
-              }
-            }
-          }
+              },
+            },
+          },
         },
         scales: {
           x: {
             grid: {
-              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)'
+              color: isDarkMode ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)',
             },
             ticks: {
               color: isDarkMode ? '#94a3b8' : '#64748b',
-              callback: (value) => formatCurrency(value)
-            }
+              callback: (value) => formatCurrency(value),
+            },
           },
           y: {
             grid: { display: false },
             ticks: {
               color: isDarkMode ? '#94a3b8' : '#64748b',
-              font: { weight: '600', size: 10 }
-            }
-          }
-        }
-      }
+              font: { weight: '600', size: 10 },
+            },
+          },
+        },
+      },
     });
 
     return () => {
@@ -1401,26 +1452,39 @@ export const TabelaFerias = ({ dados }) => {
       <table className="w-full">
         <thead className={`sticky top-0 ${isDarkMode ? 'bg-slate-700/90' : 'bg-slate-50'}`}>
           <tr>
-            <th className={`px-4 py-3 text-left text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+            <th
+              className={`px-4 py-3 text-left text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
+            >
               Colaborador
             </th>
-            <th className={`px-4 py-3 text-center text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+            <th
+              className={`px-4 py-3 text-center text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
+            >
               Per. Aquisitivo
             </th>
-            <th className={`px-4 py-3 text-center text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+            <th
+              className={`px-4 py-3 text-center text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
+            >
               Limite p/ Gozo
             </th>
-            <th className={`px-4 py-3 text-center text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+            <th
+              className={`px-4 py-3 text-center text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
+            >
               Dias Rest.
             </th>
-            <th className={`px-4 py-3 text-center text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+            <th
+              className={`px-4 py-3 text-center text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
+            >
               Status
             </th>
           </tr>
         </thead>
         <tbody className={`divide-y ${isDarkMode ? 'divide-slate-700' : 'divide-slate-100'}`}>
           {dados.ferias.slice(0, 20).map((item, i) => (
-            <tr key={i} className={`transition-colors ${isDarkMode ? 'hover:bg-slate-700/30' : 'hover:bg-slate-50'}`}>
+            <tr
+              key={i}
+              className={`transition-colors ${isDarkMode ? 'hover:bg-slate-700/30' : 'hover:bg-slate-50'}`}
+            >
               <td className={`px-4 py-3 ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
                 <div className="font-medium">
                   {item.nome.length > 25 ? item.nome.slice(0, 25) + '...' : item.nome}
@@ -1431,22 +1495,34 @@ export const TabelaFerias = ({ dados }) => {
                   </div>
                 )}
               </td>
-              <td className={`px-4 py-3 text-center font-mono text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+              <td
+                className={`px-4 py-3 text-center font-mono text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
+              >
                 <div>{item.inicioAquisitivo || '-'}</div>
                 <div>{item.fimAquisitivo || '-'}</div>
               </td>
-              <td className={`px-4 py-3 text-center font-mono text-sm font-semibold ${
-                item.status === 'Vencida'
-                  ? (isDarkMode ? 'text-red-400' : 'text-red-600')
-                  : (isDarkMode ? 'text-slate-300' : 'text-slate-700')
-              }`}>
+              <td
+                className={`px-4 py-3 text-center font-mono text-sm font-semibold ${
+                  item.status === 'Vencida'
+                    ? isDarkMode
+                      ? 'text-red-400'
+                      : 'text-red-600'
+                    : isDarkMode
+                      ? 'text-slate-300'
+                      : 'text-slate-700'
+                }`}
+              >
                 {item.limiteGozo || '-'}
               </td>
-              <td className={`px-4 py-3 text-center font-semibold ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
+              <td
+                className={`px-4 py-3 text-center font-semibold ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}
+              >
                 {item.diasRestantes}/{item.diasDireito}
               </td>
               <td className="px-4 py-3 text-center">
-                <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusStyle(item.status)}`}>
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusStyle(item.status)}`}
+                >
                   {item.status}
                 </span>
               </td>
@@ -1455,7 +1531,9 @@ export const TabelaFerias = ({ dados }) => {
         </tbody>
       </table>
       {dados.ferias.length > 20 && (
-        <div className={`px-4 py-2 text-center text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+        <div
+          className={`px-4 py-2 text-center text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}
+        >
           Mostrando 20 de {dados.ferias.length} registros
         </div>
       )}
@@ -1480,7 +1558,12 @@ export const CardsMetricasPessoal = ({ dadosFGTS, dadosINSS, dadosEmpregados }) 
       <div className="bg-[#0e4f6d] p-6 rounded-xl text-white shadow-md">
         <div className="flex items-center justify-between mb-4">
           <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+            />
           </svg>
         </div>
         <p className="text-3xl font-bold">{metricas.totalEmpregados}</p>
@@ -1490,7 +1573,12 @@ export const CardsMetricasPessoal = ({ dadosFGTS, dadosINSS, dadosEmpregados }) 
       <div className="bg-slate-700 p-6 rounded-xl text-white shadow-md">
         <div className="flex items-center justify-between mb-4">
           <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"
+            />
           </svg>
         </div>
         <p className="text-3xl font-bold">{formatCurrency(metricas.totalFGTS)}</p>
@@ -1500,7 +1588,12 @@ export const CardsMetricasPessoal = ({ dadosFGTS, dadosINSS, dadosEmpregados }) 
       <div className="bg-slate-700 p-6 rounded-xl text-white shadow-md">
         <div className="flex items-center justify-between mb-4">
           <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+            />
           </svg>
         </div>
         <p className="text-3xl font-bold">{formatCurrency(metricas.totalINSS)}</p>
@@ -1522,5 +1615,5 @@ export default {
   EmpregadosPorSituacaoChart,
   SalarioPorCargoChart,
   TabelaFerias,
-  CardsMetricasPessoal
+  CardsMetricasPessoal,
 };

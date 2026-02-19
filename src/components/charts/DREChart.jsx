@@ -6,7 +6,7 @@ import {
   BarElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
 } from 'chart.js';
 import { formatCurrency } from '../../utils/formatters';
 import { meses } from '../../data/mockData';
@@ -14,14 +14,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { getChartColors, getChartOptions } from '../../utils/chartTheme';
 
 // Registrar componentes do Chart.js
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 /**
  * Grafico DRE (Demonstrativo do Resultado do Exercicio)
@@ -38,15 +31,15 @@ const DREChart = ({ data }) => {
         label: 'Receita Bruta',
         data: data.receita,
         backgroundColor: colors.success,
-        borderRadius: 4
+        borderRadius: 4,
       },
       {
         label: 'Despesas/Custos',
         data: data.despesa,
         backgroundColor: colors.danger,
-        borderRadius: 4
-      }
-    ]
+        borderRadius: 4,
+      },
+    ],
   };
 
   const options = getChartOptions(isDarkMode, {
@@ -55,32 +48,32 @@ const DREChart = ({ data }) => {
         mode: 'index',
         intersect: false,
         callbacks: {
-          label: function(context) {
+          label: function (context) {
             return context.dataset.label + ': ' + formatCurrency(context.raw);
-          }
-        }
-      }
+          },
+        },
+      },
     },
     scales: {
       y: {
         beginAtZero: true,
         grid: {
-          color: colors.gridColor
+          color: colors.gridColor,
         },
         ticks: {
           color: colors.textColorSecondary,
-          callback: (value) => 'R$ ' + (value / 1000).toFixed(0) + 'k'
-        }
+          callback: (value) => 'R$ ' + (value / 1000).toFixed(0) + 'k',
+        },
       },
       x: {
         grid: {
-          display: false
+          display: false,
         },
         ticks: {
-          color: colors.textColorSecondary
-        }
-      }
-    }
+          color: colors.textColorSecondary,
+        },
+      },
+    },
   });
 
   return (

@@ -1,10 +1,5 @@
 import { Doughnut } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend
-} from 'chart.js';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { useTheme } from '../../context/ThemeContext';
 import { getChartColors, getPieChartOptions } from '../../utils/chartTheme';
 
@@ -27,9 +22,9 @@ export const DepartamentoPizzaChart = ({ porDepartamento }) => {
           : ['#0e4f6d', '#58a3a4', '#1a6b8a', '#7cc4c7', '#0d3d54'],
         borderColor: isDarkMode ? '#1e293b' : '#ffffff',
         borderWidth: 3,
-        hoverOffset: 10
-      }
-    ]
+        hoverOffset: 10,
+      },
+    ],
   };
 
   const options = getPieChartOptions(isDarkMode, {
@@ -43,20 +38,20 @@ export const DepartamentoPizzaChart = ({ porDepartamento }) => {
           padding: 15,
           font: {
             size: 12,
-            weight: '500'
-          }
-        }
+            weight: '500',
+          },
+        },
       },
       tooltip: {
         callbacks: {
-          label: function(context) {
+          label: function (context) {
             const total = context.dataset.data.reduce((a, b) => a + b, 0);
             const percentage = ((context.raw / total) * 100).toFixed(1);
             return `${context.label}: ${context.raw} (${percentage}%)`;
-          }
-        }
-      }
-    }
+          },
+        },
+      },
+    },
   });
 
   return (
@@ -83,9 +78,9 @@ export const ContratoPizzaChart = ({ porContrato }) => {
           : ['#10b981', '#f59e0b', '#8b5cf6', '#ef4444'],
         borderColor: isDarkMode ? '#1e293b' : '#ffffff',
         borderWidth: 3,
-        hoverOffset: 10
-      }
-    ]
+        hoverOffset: 10,
+      },
+    ],
   };
 
   const options = getPieChartOptions(isDarkMode, {
@@ -99,20 +94,20 @@ export const ContratoPizzaChart = ({ porContrato }) => {
           padding: 15,
           font: {
             size: 12,
-            weight: '500'
-          }
-        }
+            weight: '500',
+          },
+        },
       },
       tooltip: {
         callbacks: {
-          label: function(context) {
+          label: function (context) {
             const total = context.dataset.data.reduce((a, b) => a + b, 0);
             const percentage = ((context.raw / total) * 100).toFixed(1);
             return `${context.label}: ${context.raw} (${percentage}%)`;
-          }
-        }
-      }
-    }
+          },
+        },
+      },
+    },
   });
 
   return (

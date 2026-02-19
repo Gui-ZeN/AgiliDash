@@ -7,7 +7,7 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 const ThemeContext = createContext(null);
 
 export const ThemeProvider = ({ children }) => {
-  // Verifica preferÃªncia salva ou do sistema
+  // Verifica preferência salva ou do sistema
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = localStorage.getItem('agili-theme');
     if (saved) return saved === 'dark';
@@ -26,7 +26,7 @@ export const ThemeProvider = ({ children }) => {
     }
   }, [isDarkMode]);
 
-  // Escuta mudanÃ§as na preferÃªncia do sistema
+  // Escuta mudanças na preferência do sistema
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = (e) => {
@@ -40,7 +40,7 @@ export const ThemeProvider = ({ children }) => {
   }, []);
 
   const toggleTheme = useCallback(() => {
-    setIsDarkMode(prev => !prev);
+    setIsDarkMode((prev) => !prev);
   }, []);
 
   const setTheme = useCallback((theme) => {
@@ -51,14 +51,10 @@ export const ThemeProvider = ({ children }) => {
     isDarkMode,
     toggleTheme,
     setTheme,
-    theme: isDarkMode ? 'dark' : 'light'
+    theme: isDarkMode ? 'dark' : 'light',
   };
 
-  return (
-    <ThemeContext.Provider value={value}>
-      {children}
-    </ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 };
 
 export const useTheme = () => {

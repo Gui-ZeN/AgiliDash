@@ -6,7 +6,7 @@ import {
   BarElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
 } from 'chart.js';
 import { formatCurrency } from '../../utils/formatters';
 import { meses, entradasData, saidasData } from '../../data/mockData';
@@ -14,14 +14,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { getChartColors, getChartOptions } from '../../utils/chartTheme';
 
 // Registrar componentes do Chart.js
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 /**
  * Grafico de Fluxo Mensal Fiscal (Barras Horizontais)
@@ -40,7 +33,7 @@ const FluxoFiscalChart = () => {
         backgroundColor: colors.danger,
         borderRadius: 4,
         barPercentage: 0.7,
-        categoryPercentage: 0.8
+        categoryPercentage: 0.8,
       },
       {
         label: 'Saidas',
@@ -48,9 +41,9 @@ const FluxoFiscalChart = () => {
         backgroundColor: colors.success,
         borderRadius: 4,
         barPercentage: 0.7,
-        categoryPercentage: 0.8
-      }
-    ]
+        categoryPercentage: 0.8,
+      },
+    ],
   };
 
   const options = getChartOptions(isDarkMode, {
@@ -58,29 +51,29 @@ const FluxoFiscalChart = () => {
     plugins: {
       legend: {
         position: 'top',
-        labels: { color: colors.textColor }
+        labels: { color: colors.textColor },
       },
       tooltip: {
         callbacks: {
-          label: function(context) {
+          label: function (context) {
             return context.dataset.label + ': ' + formatCurrency(context.raw);
-          }
-        }
-      }
+          },
+        },
+      },
     },
     scales: {
       x: {
         grid: { color: colors.gridColor },
         ticks: {
           color: colors.textColorSecondary,
-          callback: (value) => 'R$ ' + (value / 1000000).toFixed(1) + 'M'
-        }
+          callback: (value) => 'R$ ' + (value / 1000000).toFixed(1) + 'M',
+        },
       },
       y: {
         grid: { display: false },
-        ticks: { color: colors.textColorSecondary }
-      }
-    }
+        ticks: { color: colors.textColorSecondary },
+      },
+    },
   });
 
   return (

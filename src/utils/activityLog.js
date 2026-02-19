@@ -18,7 +18,7 @@ export const ActivityTypes = {
   DELETE: 'delete',
   EXPORT: 'export',
   CONFIG_CHANGE: 'config_change',
-  PERMISSION_CHANGE: 'permission_change'
+  PERMISSION_CHANGE: 'permission_change',
 };
 
 /**
@@ -29,7 +29,7 @@ export const ActivityCategories = {
   NAVIGATION: 'navigation',
   DATA: 'data',
   CONFIG: 'config',
-  EXPORT: 'export'
+  EXPORT: 'export',
 };
 
 /**
@@ -66,7 +66,7 @@ export const logActivity = ({
   description,
   userId = null,
   userName = null,
-  metadata = {}
+  metadata = {},
 }) => {
   const logs = getLogs();
 
@@ -80,7 +80,7 @@ export const logActivity = ({
     metadata,
     timestamp: new Date().toISOString(),
     userAgent: navigator.userAgent,
-    url: window.location.pathname
+    url: window.location.pathname,
   };
 
   logs.push(newLog);
@@ -98,30 +98,30 @@ export const filterLogs = ({
   userId = null,
   startDate = null,
   endDate = null,
-  limit = 50
+  limit = 50,
 }) => {
   let logs = getLogs();
 
   if (type) {
-    logs = logs.filter(log => log.type === type);
+    logs = logs.filter((log) => log.type === type);
   }
 
   if (category) {
-    logs = logs.filter(log => log.category === category);
+    logs = logs.filter((log) => log.category === category);
   }
 
   if (userId) {
-    logs = logs.filter(log => log.userId === userId);
+    logs = logs.filter((log) => log.userId === userId);
   }
 
   if (startDate) {
     const start = new Date(startDate);
-    logs = logs.filter(log => new Date(log.timestamp) >= start);
+    logs = logs.filter((log) => new Date(log.timestamp) >= start);
   }
 
   if (endDate) {
     const end = new Date(endDate);
-    logs = logs.filter(log => new Date(log.timestamp) <= end);
+    logs = logs.filter((log) => new Date(log.timestamp) <= end);
   }
 
   // Ordena do mais recente para o mais antigo
@@ -148,14 +148,14 @@ export const getLogStats = () => {
     byType: {},
     byCategory: {},
     last24h: 0,
-    lastWeek: 0
+    lastWeek: 0,
   };
 
   const now = new Date();
   const oneDayAgo = new Date(now - 24 * 60 * 60 * 1000);
   const oneWeekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
 
-  logs.forEach(log => {
+  logs.forEach((log) => {
     // Por tipo
     stats.byType[log.type] = (stats.byType[log.type] || 0) + 1;
 
@@ -208,7 +208,7 @@ export const formatLogTime = (timestamp) => {
     month: '2-digit',
     year: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   });
 };
 
@@ -225,7 +225,7 @@ export const getActivityIcon = (type) => {
     [ActivityTypes.DELETE]: 'Trash2',
     [ActivityTypes.EXPORT]: 'Download',
     [ActivityTypes.CONFIG_CHANGE]: 'Settings',
-    [ActivityTypes.PERMISSION_CHANGE]: 'Shield'
+    [ActivityTypes.PERMISSION_CHANGE]: 'Shield',
   };
   return icons[type] || 'Activity';
 };
@@ -243,7 +243,7 @@ export const getActivityColor = (type) => {
     [ActivityTypes.DELETE]: 'text-red-500',
     [ActivityTypes.EXPORT]: 'text-purple-500',
     [ActivityTypes.CONFIG_CHANGE]: 'text-cyan-500',
-    [ActivityTypes.PERMISSION_CHANGE]: 'text-orange-500'
+    [ActivityTypes.PERMISSION_CHANGE]: 'text-orange-500',
   };
   return colors[type] || 'text-slate-500';
 };
@@ -258,5 +258,5 @@ export default {
   getActivityIcon,
   getActivityColor,
   ActivityTypes,
-  ActivityCategories
+  ActivityCategories,
 };
