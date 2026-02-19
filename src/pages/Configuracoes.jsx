@@ -55,6 +55,7 @@ import {
   parseProgramacaoFerias,
 } from '../utils/dominioParser';
 import { formatCurrency } from '../utils/formatters';
+import { decodeTextWithEncodingFallback } from '../utils/textEncoding';
 import {
   buildVisibilidadeOverrideDiff,
   createVisibilidadeConfigFromSections,
@@ -870,12 +871,34 @@ const Configuracoes = () => {
   // Verificar se relatório é trimestral (CSLL ou IRPJ)
   const isRelatorioTrimestral = importRelatorio === 'csll' || importRelatorio === 'irpj';
 
+  const getImportEncodingMarkers = () => {
+    const markers = [];
+
+    if (importSetor === 'contabil') {
+      markers.push('DRE', 'BALANCETE', 'ANÁLISE HORIZONTAL');
+    }
+
+    if (importSetor === 'fiscal') {
+      markers.push('RESUMO POR ACUMULADOR', 'ENTRADAS', 'SAÍDAS', 'FATURAMENTO', 'IMPOSTO');
+    }
+
+    if (importSetor === 'pessoal') {
+      markers.push('FGTS', 'INSS', 'EMPREGADOS', 'FÉRIAS');
+    }
+
+    if (importRelatorio === 'resumoAcumulador') {
+      markers.push('CÓDIGO', 'DESCRIÇÃO', 'VLR CONTÁBIL');
+    }
+
+    return markers;
+  };
+
   // Função auxiliar para processar um único arquivo
   const processarArquivo = (file) => {
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.onload = (event) => {
-        const text = event.target.result;
+        const text = decodeTextWithEncodingFallback(event.target.result, getImportEncodingMarkers());
         const isDominioFormat =
           importCategory === 'setores' &&
           (importSetor === 'contabil' || importSetor === 'fiscal' || importSetor === 'pessoal');
@@ -983,7 +1006,7 @@ const Configuracoes = () => {
           });
         }
       };
-      reader.readAsText(file);
+      reader.readAsArrayBuffer(file);
     });
   };
 
