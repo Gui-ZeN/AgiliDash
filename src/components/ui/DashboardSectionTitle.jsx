@@ -59,7 +59,7 @@ const DashboardSectionTitle = ({
           <h1 className="text-3xl font-semibold leading-tight text-slate-800 dark:text-white lg:text-4xl">
             {title}
           </h1>
-          <p className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400 lg:text-base">
+          <p className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-300 lg:text-base">
             {subtitle}
           </p>
         </div>

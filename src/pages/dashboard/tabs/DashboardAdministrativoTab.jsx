@@ -137,7 +137,9 @@ const DashboardAdministrativoTab = ({
               <h3 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
                 Despesas Administrativas
               </h3>
-              <p className="text-sm text-slate-400">Evolução mensal das despesas</p>
+              <p className={`text-sm ${isDarkMode ? 'text-slate-300' : 'text-slate-500'}`}>
+                Evolução mensal das despesas
+              </p>
             </div>
             <div className="p-3 bg-amber-50 dark:bg-amber-900/30 rounded-xl">
               <BarChartBig className="w-6 h-6 text-amber-600 dark:text-amber-400" />
@@ -162,7 +164,9 @@ const DashboardAdministrativoTab = ({
                   >
                     Despesas por Categoria
                   </h3>
-                  <p className="text-sm text-slate-400">Distribuição dos custos</p>
+                  <p className={`text-sm ${isDarkMode ? 'text-slate-300' : 'text-slate-500'}`}>
+                    Distribuição dos custos
+                  </p>
                 </div>
                 <div className="p-3 bg-amber-50 dark:bg-amber-900/30 rounded-xl">
                   <PieChart className="w-6 h-6 text-amber-600 dark:text-amber-400" />
@@ -254,7 +258,9 @@ const DashboardAdministrativoTab = ({
               <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
                 Certidões e Documentos
               </h3>
-              <p className="text-sm text-slate-400">Status das certidões da empresa</p>
+              <p className={`text-sm ${isDarkMode ? 'text-slate-300' : 'text-slate-500'}`}>
+                Status das certidões da empresa
+              </p>
             </div>
             <span className="px-3 py-1 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full text-sm font-medium">
               {administrativoData.certidoes.length} documentos
@@ -264,16 +270,16 @@ const DashboardAdministrativoTab = ({
             <table className="w-full">
               <thead className="bg-slate-50 dark:bg-slate-700/50">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">
+                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 dark:text-slate-300 uppercase">
                     Documento
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">
+                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 dark:text-slate-300 uppercase">
                     Tipo
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">
+                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 dark:text-slate-300 uppercase">
                     Validade
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">
+                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 dark:text-slate-300 uppercase">
                     Status
                   </th>
                 </tr>
@@ -293,17 +299,17 @@ const DashboardAdministrativoTab = ({
                             className={`w-4 h-4 ${cert.status === 'Válida' ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'}`}
                           />
                         </div>
-                        <span className="font-semibold text-slate-700 dark:text-slate-300">
+                        <span className="font-semibold text-slate-700 dark:text-slate-200">
                           {cert.nome}
                         </span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 rounded text-sm">
+                      <span className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-200 rounded text-sm">
                         {cert.tipo}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-slate-600 dark:text-slate-400">
+                    <td className="px-6 py-4 text-slate-600 dark:text-slate-200">
                       {new Date(cert.validade).toLocaleDateString('pt-BR')}
                     </td>
                     <td className="px-6 py-4">
@@ -336,7 +342,9 @@ const DashboardAdministrativoTab = ({
               <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
                 Contratos Ativos
               </h3>
-              <p className="text-sm text-slate-400">Contratos vigentes com fornecedores</p>
+              <p className={`text-sm ${isDarkMode ? 'text-slate-300' : 'text-slate-500'}`}>
+                Contratos vigentes com fornecedores
+              </p>
             </div>
             <span className="px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full text-sm font-medium">
               {administrativoData.listaContratos.length} contratos
@@ -346,19 +354,19 @@ const DashboardAdministrativoTab = ({
             <table className="w-full">
               <thead className="bg-slate-50 dark:bg-slate-700/50">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">
+                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 dark:text-slate-300 uppercase">
                     Fornecedor
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">
+                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 dark:text-slate-300 uppercase">
                     Tipo
                   </th>
-                  <th className="px-6 py-4 text-right text-xs font-bold text-slate-400 uppercase">
+                  <th className="px-6 py-4 text-right text-xs font-bold text-slate-500 dark:text-slate-300 uppercase">
                     Valor Mensal
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">
+                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 dark:text-slate-300 uppercase">
                     Vencimento
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase">
+                  <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 dark:text-slate-300 uppercase">
                     Status
                   </th>
                 </tr>
@@ -381,15 +389,15 @@ const DashboardAdministrativoTab = ({
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700">
-                            <Icon className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                            <Icon className="w-4 h-4 text-slate-600 dark:text-slate-300" />
                           </div>
-                          <span className="font-semibold text-slate-700 dark:text-slate-300">
+                          <span className="font-semibold text-slate-700 dark:text-slate-200">
                             {contrato.fornecedor}
                           </span>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 rounded text-sm">
+                        <span className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-200 rounded text-sm">
                           {contrato.tipo}
                         </span>
                       </td>
@@ -398,7 +406,7 @@ const DashboardAdministrativoTab = ({
                       >
                         {formatCurrency(contrato.valor)}
                       </td>
-                      <td className="px-6 py-4 text-slate-600 dark:text-slate-400">
+                      <td className="px-6 py-4 text-slate-600 dark:text-slate-200">
                         {new Date(contrato.vencimento).toLocaleDateString('pt-BR')}
                       </td>
                       <td className="px-6 py-4">

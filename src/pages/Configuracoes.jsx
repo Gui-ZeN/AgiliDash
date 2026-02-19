@@ -1302,7 +1302,7 @@ const Configuracoes = () => {
       },
       violet: {
         bg: 'bg-violet-100 dark:bg-slate-900/30',
-        text: 'text-slate-700 dark:text-slate-500',
+        text: 'text-slate-700 dark:text-slate-300',
         border: 'border-slate-600',
       },
       amber: {
@@ -3247,7 +3247,7 @@ const Configuracoes = () => {
                             Competencias Importadas:{' '}
                             {importPreview.dadosParsed.competencias?.length || 0}
                           </p>
-                          <p className="text-sm text-slate-700 dark:text-slate-500">
+                          <p className="text-sm text-slate-700 dark:text-slate-300">
                             {importPreview.dadosParsed.competencias?.join(', ') ||
                               'Nenhuma competencia encontrada'}
                           </p>
