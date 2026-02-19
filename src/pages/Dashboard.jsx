@@ -69,6 +69,73 @@ const obterDespesaCompetencia = (competencia = {}) => {
   return calcularDespesasCustos(competencia);
 };
 
+const filtrarAnaliseHorizontalPorAno = (analiseHorizontal = null, anoSelecionado = null) => {
+  if (!analiseHorizontal) return null;
+
+  const ano = Number(anoSelecionado || 0);
+  if (!ano || !analiseHorizontal?.dadosPorCompetencia) return analiseHorizontal;
+
+  const dadosPorCompetencia = Object.entries(analiseHorizontal.dadosPorCompetencia)
+    .filter(([, competencia]) => Number(competencia?.ano || 0) === ano)
+    .reduce((acc, [competencia, dados]) => {
+      acc[competencia] = dados;
+      return acc;
+    }, {});
+
+  const competenciasOrdenadas = Object.keys(dadosPorCompetencia).sort(ordenarCompetencia);
+
+  const getSerieCampo = (campo) =>
+    competenciasOrdenadas.map((competencia) => Number(dadosPorCompetencia[competencia]?.[campo] || 0));
+
+  const meses = competenciasOrdenadas.map((competencia) => {
+    const item = dadosPorCompetencia[competencia];
+    if (item?.mesNome && item?.ano) return `${item.mesNome}/${String(item.ano).slice(-2)}`;
+    return competencia;
+  });
+
+  const receitasMensais = competenciasOrdenadas.map((competencia) =>
+    obterReceitaCompetencia(dadosPorCompetencia[competencia])
+  );
+  const despesasMensais = competenciasOrdenadas.map((competencia) =>
+    obterDespesaCompetencia(dadosPorCompetencia[competencia])
+  );
+  const lucroLiquidoMensal = receitasMensais.map(
+    (receita, index) => receita - (despesasMensais[index] || 0)
+  );
+
+  const totalReceitas = receitasMensais.reduce((acc, valor) => acc + Number(valor || 0), 0);
+  const totalDespesas = despesasMensais.reduce((acc, valor) => acc + Number(valor || 0), 0);
+
+  return {
+    ...analiseHorizontal,
+    anoExercicio: ano,
+    dadosPorCompetencia,
+    competenciasOrdenadas,
+    meses,
+    receitasMensais,
+    despesasMensais,
+    lucroLiquidoMensal,
+    dados: {
+      ...(analiseHorizontal?.dados || {}),
+      receitaBruta: getSerieCampo('receitaBruta'),
+      cmv: getSerieCampo('cmv'),
+      despesasOperacionais: getSerieCampo('despesasOperacionais'),
+      resultadoFinanceiro: getSerieCampo('resultadoFinanceiro'),
+      outrasReceitasOperacionais: getSerieCampo('outrasReceitasOperacionais'),
+      outrasDespesasReceitas: getSerieCampo('outrasDespesasReceitas'),
+      provisaoCSLL: getSerieCampo('provisaoCSLL'),
+      provisaoIRPJ: getSerieCampo('provisaoIRPJ'),
+      lucroAntesIR: getSerieCampo('lucroAntesIR'),
+    },
+    totais: {
+      ...(analiseHorizontal?.totais || {}),
+      totalReceitas,
+      totalDespesas,
+      lucroLiquido: totalReceitas - totalDespesas,
+    },
+  };
+};
+
 const mergeDeep = (target, source) => {
   if (source == null) return target;
   if (target == null) return source;
@@ -1433,6 +1500,20 @@ const Dashboard = () => {
   // Calcular totais do DRE
   // Se em modo consolidado, usa totaisConsolidados; senão, prioriza dados importados (Análise Horizontal)
   const analiseHorizontal = dadosContabeisImportados?.analiseHorizontal;
+  const analiseHorizontalContabil = useMemo(
+    () => filtrarAnaliseHorizontalPorAno(analiseHorizontal, selectedYear),
+    [analiseHorizontal, selectedYear]
+  );
+  const dadosContabeisContabilTab = useMemo(
+    () =>
+      dadosContabeisImportados
+        ? {
+            ...dadosContabeisImportados,
+            analiseHorizontal: analiseHorizontalContabil,
+          }
+        : dadosContabeisImportados,
+    [dadosContabeisImportados, analiseHorizontalContabil]
+  );
 
   const totalReceita = !temDadosContabeis
     ? 0
@@ -1456,6 +1537,24 @@ const Dashboard = () => {
     isConsolidado && totaisConsolidados ? totaisConsolidados.lucro : totalReceita - totalDespesa;
 
   const margemLucro = totalReceita > 0 ? ((totalLucro / totalReceita) * 100).toFixed(1) : '0.0';
+
+  const totalReceitaContabil = !temDadosContabeis
+    ? 0
+    : analiseHorizontalContabil?.totais?.totalReceitas ||
+      (analiseHorizontalContabil?.receitasMensais
+        ? analiseHorizontalContabil.receitasMensais.reduce((a, b) => a + b, 0)
+        : totalReceita);
+
+  const totalDespesaContabil = !temDadosContabeis
+    ? 0
+    : analiseHorizontalContabil?.totais?.totalDespesas ||
+      (analiseHorizontalContabil?.despesasMensais
+        ? analiseHorizontalContabil.despesasMensais.reduce((a, b) => a + b, 0)
+        : totalDespesa);
+
+  const totalLucroContabil = totalReceitaContabil - totalDespesaContabil;
+  const margemLucroContabil =
+    totalReceitaContabil > 0 ? ((totalLucroContabil / totalReceitaContabil) * 100).toFixed(1) : '0.0';
 
   // Dados consolidados extras (funcionários, folha, tributos)
   const totalFuncionarios =
@@ -1713,17 +1812,17 @@ const Dashboard = () => {
             <DashboardContabilTab
               cardAnimation={cardAnimation}
               dadosComparativoLucro={dadosComparativoLucro}
-              dadosContabeisImportados={dadosContabeisImportados}
+              dadosContabeisImportados={dadosContabeisContabilTab}
               dadosReceitaCustoEstoque={dadosReceitaCustoEstoque}
               isDarkMode={isDarkMode}
               itemVisivel={itemVisivel}
-              margemLucro={margemLucro}
+              margemLucro={margemLucroContabil}
               selectedYear={selectedYear}
               setSelectedYear={setSelectedYear}
               temDadosContabeis={temDadosContabeis}
-              totalDespesa={totalDespesa}
-              totalLucro={totalLucro}
-              totalReceita={totalReceita}
+              totalDespesa={totalDespesaContabil}
+              totalLucro={totalLucroContabil}
+              totalReceita={totalReceitaContabil}
             />
           </Suspense>
         )}
