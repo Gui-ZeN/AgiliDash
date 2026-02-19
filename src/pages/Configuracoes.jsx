@@ -1354,7 +1354,7 @@ const Configuracoes = () => {
                 <p className="text-2xl font-bold text-slate-800 dark:text-white">
                   {stats.totalGrupos}
                 </p>
-                <p className="text-xs text-slate-500">Grupos</p>
+                <p className="text-xs text-slate-500 dark:text-slate-300">Grupos</p>
               </div>
             </div>
           </div>
@@ -1367,7 +1367,7 @@ const Configuracoes = () => {
                 <p className="text-2xl font-bold text-slate-800 dark:text-white">
                   {stats.totalCnpjs}
                 </p>
-                <p className="text-xs text-slate-500">CNPJs</p>
+                <p className="text-xs text-slate-500 dark:text-slate-300">CNPJs</p>
               </div>
             </div>
           </div>
@@ -1380,7 +1380,7 @@ const Configuracoes = () => {
                 <p className="text-2xl font-bold text-slate-800 dark:text-white">
                   {stats.totalUsuarios}
                 </p>
-                <p className="text-xs text-slate-500">Usuarios</p>
+                <p className="text-xs text-slate-500 dark:text-slate-300">Usuarios</p>
               </div>
             </div>
           </div>
@@ -1396,7 +1396,7 @@ const Configuracoes = () => {
                 onClick={() =>
                   tab.isLink ? (window.location.href = '/logs') : setActiveTab(tab.id)
                 }
-                className={`flex items-center gap-2 px-6 py-4 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${activeTab === tab.id ? 'border-[#0e4f6d] text-[#0e4f6d] dark:text-teal-500 dark:border-teal-500' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                className={`flex items-center gap-2 px-6 py-4 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${activeTab === tab.id ? 'border-[#0e4f6d] text-[#0e4f6d] dark:text-teal-400 dark:border-teal-400' : 'border-transparent text-slate-500 dark:text-slate-300 hover:text-slate-700 dark:hover:text-white'}`}
               >
                 <tab.icon className="w-4 h-4" />
                 {tab.label}
@@ -1460,7 +1460,7 @@ const Configuracoes = () => {
                   <h2 className="text-lg font-bold text-slate-800 dark:text-white">
                     Grupos e CNPJs
                   </h2>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-slate-500 dark:text-slate-300">
                     Organize suas empresas em grupos para melhor gestão
                   </p>
                 </div>
@@ -1476,12 +1476,12 @@ const Configuracoes = () => {
                 {grupos.length === 0 ? (
                   <div className="p-12 text-center">
                     <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <FolderTree className="w-8 h-8 text-slate-400" />
+                      <FolderTree className="w-8 h-8 text-slate-400 dark:text-slate-300" />
                     </div>
                     <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-2">
                       Comece criando um Grupo
                     </h3>
-                    <p className="text-slate-500 mb-6 max-w-md mx-auto">
+                    <p className="text-slate-500 dark:text-slate-300 mb-6 max-w-md mx-auto">
                       Grupos servem para organizar empresas relacionadas. Por exemplo: "Grupo ABC"
                       pode conter a matriz e todas as filiais.
                     </p>
@@ -1506,9 +1506,9 @@ const Configuracoes = () => {
                               className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-600"
                             >
                               {isExpanded ? (
-                                <ChevronDown className="w-5 h-5 text-slate-400" />
+                                <ChevronDown className="w-5 h-5 text-slate-400 dark:text-slate-300" />
                               ) : (
-                                <ChevronRight className="w-5 h-5 text-slate-400" />
+                                <ChevronRight className="w-5 h-5 text-slate-400 dark:text-slate-300" />
                               )}
                             </button>
                             <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
@@ -1518,7 +1518,7 @@ const Configuracoes = () => {
                               <h3 className="font-bold text-slate-800 dark:text-white truncate">
                                 {grupo.nome}
                               </h3>
-                              <p className="text-xs text-slate-500">
+                              <p className="text-xs text-slate-500 dark:text-slate-300">
                                 {cnpjsDoGrupo.length} CNPJ(s) | {grupo.descricao || 'Sem descricao'}
                               </p>
                             </div>
@@ -1536,7 +1536,7 @@ const Configuracoes = () => {
                               className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"
                               title="Editar grupo"
                             >
-                              <Edit2 className="w-4 h-4 text-slate-500" />
+                              <Edit2 className="w-4 h-4 text-slate-500 dark:text-slate-300" />
                             </button>
                             <button
                               onClick={() => handleDelete('Grupo', grupo)}
@@ -1559,7 +1559,7 @@ const Configuracoes = () => {
                                     <p className="font-medium text-slate-700 dark:text-slate-200 mb-1">
                                       Este grupo ainda Não tem CNPJs
                                     </p>
-                                    <p className="text-sm text-slate-500 mb-3">
+                                    <p className="text-sm text-slate-500 dark:text-slate-300 mb-3">
                                       Adicione os CNPJs das empresas que pertencem a este grupo.
                                     </p>
                                     <button
@@ -1592,12 +1592,12 @@ const Configuracoes = () => {
                                           {cnpj.nomeFantasia || cnpj.razaoSocial}
                                         </h5>
                                         <span
-                                          className={`px-2 py-0.5 rounded text-xs font-medium ${cnpj.tipo === 'Matriz' ? 'bg-[#0e4f6d] text-white' : 'bg-slate-200 text-slate-600'}`}
+                                          className={`px-2 py-0.5 rounded text-xs font-medium ${cnpj.tipo === 'Matriz' ? 'bg-[#0e4f6d] text-white' : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-200'}`}
                                         >
                                           {cnpj.tipo}
                                         </span>
                                       </div>
-                                      <p className="text-xs text-slate-500 font-mono">
+                                      <p className="text-xs text-slate-500 dark:text-slate-300 font-mono">
                                         {cnpj.cnpj}
                                       </p>
                                     </div>
@@ -1607,7 +1607,7 @@ const Configuracoes = () => {
                                       onClick={() => handleEditCnpj(cnpj)}
                                       className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"
                                     >
-                                      <Edit2 className="w-4 h-4 text-slate-500" />
+                                      <Edit2 className="w-4 h-4 text-slate-500 dark:text-slate-300" />
                                     </button>
                                     <button
                                       onClick={() => handleDelete('CNPJ', cnpj)}
@@ -1635,7 +1635,9 @@ const Configuracoes = () => {
               <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
                 <div>
                   <h2 className="text-lg font-bold text-slate-800 dark:text-white">Usuarios</h2>
-                  <p className="text-sm text-slate-500">Gerencie usuarios e permissoes por setor</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-300">
+                    Gerencie usuarios e permissoes por setor
+                  </p>
                 </div>
                 <button
                   onClick={handleAddUsuario}
@@ -1647,8 +1649,8 @@ const Configuracoes = () => {
               </div>
               {usuarios.length === 0 ? (
                 <div className="p-12 text-center">
-                  <Users className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                  <p className="text-slate-500 mb-4">Nenhum usuario cadastrado</p>
+                  <Users className="w-12 h-12 text-slate-300 dark:text-slate-200 mx-auto mb-4" />
+                  <p className="text-slate-500 dark:text-slate-300 mb-4">Nenhum usuario cadastrado</p>
                   <button
                     onClick={handleAddUsuario}
                     className="px-4 py-2 bg-[#0e4f6d] text-white rounded-lg"
