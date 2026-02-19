@@ -1,14 +1,9 @@
 import {
-  Activity,
   AlertCircle,
-  ArrowDownRight,
-  ArrowUpRight,
   Award,
   Banknote,
   BarChart2,
   Calculator,
-  Coins,
-  TrendingDown,
   TrendingUp,
   Wallet,
 } from 'lucide-react';
@@ -42,33 +37,29 @@ const DashboardContabilTab = ({
   totalReceita,
 }) => {
   const isVisible = (itemId) => itemVisivel('contabil', itemId);
+  const importHint =
+    'Dados ainda nao disponiveis. Importe os relatorios contabeis do Sistema Dominio em Configuracoes > Importar Dados para liberar este painel.';
 
   return (
     <div className="space-y-7 pb-8">
-      {/* Header da seção */}
       <DashboardSectionTitle
         icon={Calculator}
-        badge="Departamento Contábil"
-        title="Análise Financeira"
+        badge="Departamento Contabil"
+        title="Analise Financeira"
         subtitle="Demonstrativo de receitas, despesas, estoque e saldos."
         tone="emerald"
         className={`transition-all duration-500 ${cardAnimation}`}
       />
 
-      {/* Banner de status de dados importados */}
       {!temDadosContabeis && (
         <div
           className={`p-4 rounded-xl flex items-center gap-3 ${isDarkMode ? 'bg-amber-900/30 border border-amber-700/50' : 'bg-amber-50 border border-amber-200'}`}
         >
           <AlertCircle className={`w-5 h-5 ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`} />
-          <span className={isDarkMode ? 'text-amber-300' : 'text-amber-800'}>
-            Nenhum relatório importado. Acesse <strong>Configurações</strong> para importar dados
-            do Domínio.
-          </span>
+          <span className={isDarkMode ? 'text-amber-300' : 'text-amber-800'}>{importHint}</span>
         </div>
       )}
 
-      {/* Cards de métricas - usando dados importados ou mock */}
       <VisibleItem show={isVisible('cards_metricas')}>
         {temDadosContabeis ? (
           <div className={`transition-all duration-500 delay-100 ${cardAnimation}`}>
@@ -76,78 +67,38 @@ const DashboardContabilTab = ({
           </div>
         ) : (
           <div
-            className={`grid grid-cols-1 md:grid-cols-4 gap-4 transition-all duration-500 delay-100 ${cardAnimation}`}
+            className={`rounded-xl border p-5 transition-all duration-500 delay-100 ${cardAnimation} ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-white border-slate-200 text-slate-600'}`}
           >
-            <div className="bg-emerald-700 p-6 rounded-xl text-white shadow-md">
-              <div className="flex items-center justify-between mb-4">
-                <TrendingUp className="w-8 h-8 opacity-80" />
-                <span className="text-xs font-bold bg-white/20 px-3 py-1 rounded-full">
-                  -
-                </span>
-              </div>
-              <p className="text-3xl font-bold">-</p>
-              <p className="text-white/70 text-sm mt-1">Receita Total {selectedYear}</p>
-            </div>
-
-            <div className="bg-red-600 p-6 rounded-xl text-white shadow-md">
-              <div className="flex items-center justify-between mb-4">
-                <TrendingDown className="w-8 h-8 opacity-80" />
-              </div>
-              <p className="text-3xl font-bold">-</p>
-              <p className="text-white/70 text-sm mt-1">Despesas Total {selectedYear}</p>
-            </div>
-
-            <div className="bg-[#0e4f6d] p-6 rounded-xl text-white shadow-md">
-              <div className="flex items-center justify-between mb-4">
-                <Coins className="w-8 h-8 opacity-80" />
-              </div>
-              <p className="text-3xl font-bold">-</p>
-              <p className="text-white/70 text-sm mt-1">Lucro Líquido</p>
-            </div>
-
-            <div className="bg-slate-700 p-6 rounded-xl text-white shadow-md">
-              <div className="flex items-center justify-between mb-4">
-                <Activity className="w-8 h-8 opacity-80" />
-              </div>
-              <p className="text-3xl font-bold">-</p>
-              <p className="text-white/70 text-sm mt-1">Margem de Lucro</p>
-            </div>
+            <p className="text-sm">{importHint}</p>
           </div>
         )}
       </VisibleItem>
 
-      {/* Seção 1: Resultado Líquido */}
       {(isVisible('grafico_receita_despesa') || isVisible('card_resumo_exercicio')) && (
         <section className={`transition-all duration-500 delay-200 ${cardAnimation}`}>
           <div className="flex items-center gap-3 mb-6">
-            <div
-              className={`p-2 rounded-lg ${isDarkMode ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}
-            >
+            <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-emerald-900/50' : 'bg-emerald-100'}`}>
               <BarChart2
-                className={`w-5 h-5 ${isDarkMode ? 'text-emerald-700' : 'text-emerald-700'}`}
+                className={`w-5 h-5 ${isDarkMode ? 'text-emerald-400' : 'text-emerald-700'}`}
               />
             </div>
             <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-              Resultado Líquido
+              Resultado Liquido
             </h2>
           </div>
 
-          {/* Grid: Gráfico de Barras + Cards Resumo */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
-            {/* Gráfico de Barras - Receita x Despesa */}
             <VisibleItem show={isVisible('grafico_receita_despesa')}>
               <div
                 className={`h-full lg:col-span-2 p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
               >
                 <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
                   <div>
-                    <h3
-                      className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
-                    >
+                    <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
                       Receita x Despesas/Custo
                     </h3>
                     <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                      Variação comparativa
+                      Variacao comparativa
                     </p>
                   </div>
                   <ButtonGroup
@@ -159,21 +110,19 @@ const DashboardContabilTab = ({
                     onChange={setSelectedYear}
                   />
                 </div>
+
                 {temDadosContabeis ? (
-                  <ComparativoReceitaDespesaChart
-                    dados={dadosContabeisImportados?.analiseHorizontal}
-                  />
+                  <ComparativoReceitaDespesaChart dados={dadosContabeisImportados?.analiseHorizontal} />
                 ) : (
-                  <div className="h-[280px] md:h-[320px] flex items-center justify-center">
+                  <div className="h-[320px] flex items-center justify-center">
                     <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                      Importe Análise Horizontal para visualizar
+                      {importHint}
                     </p>
                   </div>
                 )}
               </div>
             </VisibleItem>
 
-            {/* Card Lateral de Resumo */}
             <VisibleItem show={isVisible('card_resumo_exercicio')}>
               <div
                 className={`h-full p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
@@ -181,80 +130,54 @@ const DashboardContabilTab = ({
                 <h3
                   className={`text-lg font-bold mb-6 pb-4 border-b ${isDarkMode ? 'text-white border-slate-700' : 'text-slate-800 border-slate-100'}`}
                 >
-                  Resumo do Exercício
+                  Resumo do Exercicio
                 </h3>
 
-                <div className="space-y-4">
-                  <div
-                    className={`p-4 rounded-xl ${isDarkMode ? 'bg-green-900/30' : 'bg-green-50'}`}
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <ArrowUpRight
-                        className={`w-5 h-5 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}
-                      />
-                      <p
-                        className={`text-sm font-medium ${isDarkMode ? 'text-green-400' : 'text-green-700'}`}
-                      >
+                {temDadosContabeis ? (
+                  <div className="space-y-4">
+                    <div className={`p-4 rounded-xl ${isDarkMode ? 'bg-green-900/30' : 'bg-green-50'}`}>
+                      <p className={`text-sm font-medium ${isDarkMode ? 'text-green-400' : 'text-green-700'}`}>
                         Receita Anual
                       </p>
+                      <p className={`text-2xl font-bold ${isDarkMode ? 'text-green-300' : 'text-green-700'}`}>
+                        {formatCurrency(totalReceita)}
+                      </p>
                     </div>
-                    <p
-                      className={`text-2xl font-bold ${isDarkMode ? 'text-green-300' : 'text-green-700'}`}
-                    >
-                      {temDadosContabeis ? formatCurrency(totalReceita) : '-'}
-                    </p>
-                  </div>
 
-                  <div className={`p-4 rounded-xl ${isDarkMode ? 'bg-red-900/30' : 'bg-red-50'}`}>
-                    <div className="flex items-center gap-2 mb-2">
-                      <ArrowDownRight
-                        className={`w-5 h-5 ${isDarkMode ? 'text-red-400' : 'text-red-600'}`}
-                      />
-                      <p
-                        className={`text-sm font-medium ${isDarkMode ? 'text-red-400' : 'text-red-700'}`}
-                      >
+                    <div className={`p-4 rounded-xl ${isDarkMode ? 'bg-red-900/30' : 'bg-red-50'}`}>
+                      <p className={`text-sm font-medium ${isDarkMode ? 'text-red-400' : 'text-red-700'}`}>
                         Despesa Anual
                       </p>
-                    </div>
-                    <p
-                      className={`text-2xl font-bold ${isDarkMode ? 'text-red-300' : 'text-red-600'}`}
-                    >
-                      {temDadosContabeis ? formatCurrency(totalDespesa) : '-'}
-                    </p>
-                  </div>
-
-                  <div
-                    className={`p-4 rounded-xl ${isDarkMode ? 'bg-[#0e4f6d]/40' : 'bg-[#0e4f6d]/10'}`}
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <Coins
-                        className={`w-5 h-5 ${isDarkMode ? 'text-teal-500' : 'text-[#0e4f6d]'}`}
-                      />
-                      <p
-                        className={`text-sm font-medium ${isDarkMode ? 'text-teal-500' : 'text-[#0e4f6d]'}`}
-                      >
-                        Lucro Líquido
+                      <p className={`text-2xl font-bold ${isDarkMode ? 'text-red-300' : 'text-red-600'}`}>
+                        {formatCurrency(totalDespesa)}
                       </p>
                     </div>
-                    <p
-                      className={`text-2xl font-bold ${isDarkMode ? 'text-slate-300' : 'text-[#0e4f6d]'}`}
-                    >
-                      {temDadosContabeis ? formatCurrency(totalLucro) : '-'}
-                    </p>
-                    <p
-                      className={`text-xs mt-2 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}
-                    >
-                      Margem: {temDadosContabeis ? `${margemLucro}%` : '-'}
+
+                    <div className={`p-4 rounded-xl ${isDarkMode ? 'bg-[#0e4f6d]/40' : 'bg-[#0e4f6d]/10'}`}>
+                      <p className={`text-sm font-medium ${isDarkMode ? 'text-teal-500' : 'text-[#0e4f6d]'}`}>
+                        Lucro Liquido
+                      </p>
+                      <p className={`text-2xl font-bold ${isDarkMode ? 'text-slate-300' : 'text-[#0e4f6d]'}`}>
+                        {formatCurrency(totalLucro)}
+                      </p>
+                      <p className={`text-xs mt-2 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                        Margem: {margemLucro}%
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="h-[260px] flex items-center justify-center text-center">
+                    <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                      {importHint}
                     </p>
                   </div>
-                </div>
+                )}
               </div>
             </VisibleItem>
           </div>
         </section>
       )}
 
-      {/* Tabela Comparativo Mensal */}
       <VisibleItem show={isVisible('tabela_comparativo_mensal')}>
         <div
           className={`rounded-xl shadow-sm overflow-hidden transition-all duration-500 delay-300 ${cardAnimation} ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
@@ -264,22 +187,19 @@ const DashboardContabilTab = ({
               Detalhamento Mensal
             </h3>
             <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-              Mês Referência | Entradas | Saídas/Custos | Lucro Líquido
+              Mes Referencia | Entradas | Saidas/Custos | Lucro Liquido
             </p>
           </div>
           {temDadosContabeis ? (
             <TabelaComparativoMensal dados={dadosContabeisImportados?.analiseHorizontal} />
           ) : (
-            <div className="h-[220px] flex items-center justify-center">
-              <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                Importe relatórios contábeis para visualizar a tabela
-              </p>
+            <div className="h-[260px] flex items-center justify-center p-6 text-center">
+              <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{importHint}</p>
             </div>
           )}
         </div>
       </VisibleItem>
 
-      {/* Gráfico de Variação do Lucro */}
       <VisibleItem show={isVisible('grafico_variacao_lucro')}>
         <div
           className={`p-6 rounded-xl shadow-sm transition-all duration-500 delay-400 ${cardAnimation} ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
@@ -287,137 +207,99 @@ const DashboardContabilTab = ({
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                Variação do Lucro
+                Variacao do Lucro
               </h3>
               <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                 Lucro antes do IRPJ e CSLL
               </p>
             </div>
-            <div className="flex items-center gap-4">
-              <span
-                className={`flex items-center gap-2 text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
-              >
-                <div className="w-3 h-3 rounded-full bg-[#0e4f6d]" />{' '}
-                {dadosComparativoLucro.anoAtual}
-              </span>
-              {dadosComparativoLucro.dadosAnterior && (
-                <span
-                  className={`flex items-center gap-2 text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
-                >
-                  <div className="w-3 h-3 rounded-full bg-[#58a3a4] border-2 border-dashed border-[#58a3a4]" />{' '}
-                  {dadosComparativoLucro.anoAnterior}
+            {temDadosContabeis && (
+              <div className="flex items-center gap-4">
+                <span className={`flex items-center gap-2 text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                  <div className="w-3 h-3 rounded-full bg-[#0e4f6d]" />
+                  {dadosComparativoLucro.anoAtual}
                 </span>
-              )}
-            </div>
+                {dadosComparativoLucro.dadosAnterior && (
+                  <span className={`flex items-center gap-2 text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                    <div className="w-3 h-3 rounded-full bg-[#58a3a4] border-2 border-dashed border-[#58a3a4]" />
+                    {dadosComparativoLucro.anoAnterior}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
+
           {temDadosContabeis ? (
             <VariacaoLucroChart
               dadosAtual={dadosComparativoLucro.dadosAtual}
               dadosAnterior={dadosComparativoLucro.dadosAnterior}
             />
           ) : (
-            <div className="h-[260px] flex items-center justify-center">
-              <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                Importe Análise Horizontal para visualizar
-              </p>
+            <div className="h-[300px] flex items-center justify-center text-center">
+              <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{importHint}</p>
             </div>
           )}
         </div>
       </VisibleItem>
 
-      {/* Seção 2: Variação de Estoque e Saldos Bancários */}
-      {(isVisible('grafico_receita_custo_estoque') ||
-        isVisible('grafico_movimentacao_bancaria')) && (
+      {(isVisible('grafico_receita_custo_estoque') || isVisible('grafico_movimentacao_bancaria')) && (
         <section className={`transition-all duration-500 delay-500 ${cardAnimation}`}>
           <div className="flex items-center gap-3 mb-6">
             <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-blue-900/50' : 'bg-blue-100'}`}>
               <Wallet className={`w-5 h-5 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
             </div>
             <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-              Variação de Estoque e Saldos Bancários
+              Variacao de Estoque e Saldos Bancarios
             </h2>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Gráfico de Receita x Custo x Estoque */}
             <VisibleItem show={isVisible('grafico_receita_custo_estoque')}>
               <div
                 className={`p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
               >
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h3
-                      className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
-                    >
+                    <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
                       Receita x Custo x Estoque
                     </h3>
                     <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                      Últimos 12 meses
+                      Ultimos 12 meses
                     </p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={`flex items-center gap-1 text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
-                    >
-                      <div className="w-2 h-2 rounded-full bg-emerald-700" /> Receita
-                    </span>
-                    <span
-                      className={`flex items-center gap-1 text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
-                    >
-                      <div className="w-2 h-2 rounded-full bg-red-500" /> Custo
-                    </span>
-                    <span
-                      className={`flex items-center gap-1 text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}
-                    >
-                      <div className="w-2 h-2 rounded-full bg-blue-500" /> Estoque
-                    </span>
                   </div>
                 </div>
                 {temDadosContabeis ? (
                   <ReceitaCustoEstoqueChart dados={dadosReceitaCustoEstoque} />
                 ) : (
-                  <div className="h-[280px] md:h-[320px] flex items-center justify-center">
-                    <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                      Importe Balancetes e DRE para visualizar
-                    </p>
+                  <div className="h-[280px] md:h-[320px] flex items-center justify-center text-center">
+                    <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{importHint}</p>
                   </div>
                 )}
               </div>
             </VisibleItem>
 
-            {/* Gráfico de Movimentação Bancária */}
             <VisibleItem show={isVisible('grafico_movimentacao_bancaria')}>
               <div
                 className={`p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
               >
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h3
-                      className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
-                    >
-                      Movimentação Bancária
+                    <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                      Movimentacao Bancaria
                     </h3>
                     <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                       Saldo em Bancos Conta Movimento
                     </p>
                   </div>
-                  <div
-                    className={`p-2 rounded-lg ${isDarkMode ? 'bg-[#0e4f6d]/30' : 'bg-[#0e4f6d]/10'}`}
-                  >
-                    <Banknote
-                      className={`w-5 h-5 ${isDarkMode ? 'text-teal-500' : 'text-[#0e4f6d]'}`}
-                    />
+                  <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-[#0e4f6d]/30' : 'bg-[#0e4f6d]/10'}`}>
+                    <Banknote className={`w-5 h-5 ${isDarkMode ? 'text-teal-500' : 'text-[#0e4f6d]'}`} />
                   </div>
                 </div>
                 {temDadosContabeis ? (
-                  <MovimentacaoBancariaChart
-                    dados={dadosContabeisImportados?.balancetesConsolidados}
-                  />
+                  <MovimentacaoBancariaChart dados={dadosContabeisImportados?.balancetesConsolidados} />
                 ) : (
-                  <div className="h-[280px] md:h-[320px] flex items-center justify-center">
-                    <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                      Importe Balancetes para visualizar
-                    </p>
+                  <div className="h-[280px] md:h-[320px] flex items-center justify-center text-center">
+                    <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{importHint}</p>
                   </div>
                 )}
               </div>
@@ -426,7 +308,6 @@ const DashboardContabilTab = ({
         </section>
       )}
 
-      {/* Gráfico de Aplicações Financeiras */}
       <VisibleItem show={isVisible('grafico_aplicacoes_financeiras')}>
         <div
           className={`p-6 rounded-xl shadow-sm transition-all duration-500 delay-600 ${cardAnimation} ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
@@ -434,61 +315,52 @@ const DashboardContabilTab = ({
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                Aplicações Financeiras
+                Aplicacoes Financeiras
               </h3>
               <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                Aplicações Financeiras de Liquidez Imediata
+                Aplicacoes Financeiras de Liquidez Imediata
               </p>
             </div>
             <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-[#58a3a4]/30' : 'bg-[#58a3a4]/10'}`}>
-              <TrendingUp
-                className={`w-5 h-5 ${isDarkMode ? 'text-teal-400' : 'text-[#58a3a4]'}`}
-              />
+              <TrendingUp className={`w-5 h-5 ${isDarkMode ? 'text-teal-400' : 'text-[#58a3a4]'}`} />
             </div>
           </div>
           {temDadosContabeis ? (
             <AplicacoesFinanceirasChart dados={dadosContabeisImportados?.balancetesConsolidados} />
           ) : (
-            <div className="h-[280px] md:h-[320px] flex items-center justify-center">
-              <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                Importe Balancetes para visualizar
-              </p>
+            <div className="h-[280px] md:h-[320px] flex items-center justify-center text-center">
+              <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{importHint}</p>
             </div>
           )}
         </div>
       </VisibleItem>
 
-      {/* Card de análise */}
       <VisibleItem show={isVisible('analise_contabil')}>
-        <div
-          className={`bg-[#0e4f6d] p-8 rounded-xl text-white shadow-md transition-all duration-500 delay-700 ${cardAnimation}`}
-        >
+        <div className={`bg-[#0e4f6d] p-8 rounded-xl text-white shadow-md transition-all duration-500 delay-700 ${cardAnimation}`}>
           <div className="flex items-start gap-6">
             <div className="p-4 bg-white/10 rounded-xl backdrop-blur-sm">
               <Award className="w-8 h-8" />
             </div>
             <div>
-              <h3 className="text-xl font-bold mb-3">Análise de Performance 2025</h3>
+              <h3 className="text-xl font-bold mb-3">Analise de Performance 2025</h3>
               <p className="text-white/80 leading-relaxed">
                 {temDadosContabeis ? (
                   <>
-                    Dados importados do Sistema Domínio. Os relatórios mostram a evolução
-                    financeira da empresa ao longo do exercício, permitindo acompanhar receitas,
-                    despesas, movimentação bancária e aplicações financeiras mês a mês.
+                    Dados importados do Sistema Dominio. Os relatorios mostram a evolucao financeira da
+                    empresa ao longo do exercicio, permitindo acompanhar receitas, despesas,
+                    movimentacao bancaria e aplicacoes financeiras mes a mes.
                   </>
                 ) : (
-                  <>
-                    Para visualizar dados reais, importe os relatórios do Sistema Domínio (Balancete, Análise Horizontal e DRE) na área de Configurações.
-                  </>
+                  <>Importe os relatorios contabeis do Sistema Dominio para gerar a analise deste setor.</>
                 )}
               </p>
             </div>
           </div>
         </div>
       </VisibleItem>
+
     </div>
   );
 };
 
 export default DashboardContabilTab;
-
