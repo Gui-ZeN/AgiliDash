@@ -1,152 +1,64 @@
-# Dashboard Fiscal - Ágili Complex
+# AgiliDash
 
-Sistema de dashboard fiscal/contábil/pessoal para visualização de dados empresariais desenvolvido em React + Vite + Tailwind CSS + Chart.js.
+Dashboard empresarial com foco em Contábil, Fiscal, Pessoal e Administrativo.
 
-## Tecnologias Utilizadas
+## Stack
 
-- **React 18** - Biblioteca para construção de interfaces
-- **Vite** - Build tool e dev server
-- **Tailwind CSS** - Framework CSS utilitário
-- **Chart.js + react-chartjs-2** - Biblioteca de gráficos
-- **React Router** - Navegação entre páginas
-- **Lucide React** - Ícones
+- React 18
+- Vite 5
+- Tailwind CSS
+- Chart.js + react-chartjs-2
+- React Router
+- Vitest
 
-## Estrutura do Projeto
+## Funcionalidades principais
 
-```
-dashboard-fiscal/
-├── src/
-│   ├── pages/
-│   │   ├── Login.jsx           # Página de login
-│   │   ├── Dashboard.jsx       # Dashboard principal (com tabs)
-│   │   └── AdminPanel.jsx      # Painel administrativo
-│   ├── components/
-│   │   ├── charts/
-│   │   │   ├── DREChart.jsx           # Gráfico DRE (Receita vs Despesa)
-│   │   │   ├── MovimentacaoChart.jsx  # Gráfico de movimentação financeira
-│   │   │   ├── LucroComparativoChart.jsx # Comparativo de lucro 2024/2025
-│   │   │   ├── ReceitaPizzaChart.jsx  # Pizza de grupos de receitas
-│   │   │   ├── CustosPizzaChart.jsx   # Pizza de grupos de custos
-│   │   │   ├── FaturamentoChart.jsx   # Gráfico de faturamento
-│   │   │   ├── IRPJChart.jsx          # Gráfico IRPJ trimestral
-│   │   │   ├── CSLLChart.jsx          # Gráfico CSLL trimestral
-│   │   │   ├── FluxoFiscalChart.jsx   # Fluxo mensal (barras horizontais)
-│   │   │   └── DistribuicaoChart.jsx  # Distribuição entrada/saída
-│   │   ├── layout/
-│   │   │   ├── Header.jsx      # Cabeçalho com navegação
-│   │   │   └── Logo.jsx        # Logo SVG Ágili Complex
-│   │   └── common/
-│   │       ├── Card.jsx        # Componentes de card reutilizáveis
-│   │       └── Button.jsx      # Botões reutilizáveis
-│   ├── data/
-│   │   └── mockData.js         # Dados mockados (hardcoded)
-│   ├── utils/
-│   │   └── formatters.js       # Funções de formatação
-│   ├── App.jsx                 # Configuração de rotas
-│   ├── main.jsx                # Entry point
-│   └── index.css               # Estilos globais + Tailwind
-├── package.json
-├── vite.config.js
-├── tailwind.config.js
-├── postcss.config.js
-└── index.html
+- Dashboard por setor:
+  - Informações Gerais
+  - Setor Contábil
+  - Setor Fiscal
+  - Setor Pessoal
+  - Setor Administrativo
+- Controle de visibilidade por Grupo e por CNPJ (com herança e sobrescrita)
+- Modo preview de cliente para admin
+- Importação de relatórios (Domínio) por setor
+- Exportação (PDF e Excel) nas telas de dashboard
+- Filtros de período (mês, trimestre, ano) conforme cada gráfico/tabela
+
+## Estrutura resumida
+
+```txt
+src/
+  components/
+    charts/
+    layout/
+    ui/
+  context/
+    domains/
+  pages/
+    dashboard/tabs/
+  utils/
 ```
 
-## Instalação
-
-1. **Clone o repositório** (ou navegue até a pasta do projeto):
-
-   ```bash
-   cd dashboard-fiscal
-   ```
-
-2. **Instale as dependências**:
-
-   ```bash
-   npm install
-   ```
-
-3. **Inicie o servidor de desenvolvimento**:
-
-   ```bash
-   npm run dev
-   ```
-
-4. **Acesse no navegador**:
-   ```
-   http://localhost:3000
-   ```
-
-## Funcionalidades
-
-### Página de Login
-
-- Design empresarial moderno
-- Qualquer credencial funciona (mock)
-- Redirecionamento para o dashboard após login
-
-### Dashboard Principal (4 tabs)
-
-#### Tab 1: Informações Gerais
-
-- Dados cadastrais da empresa
-- Equipe técnica responsável (Contábil, Fiscal, Pessoal)
-
-#### Tab 2: Contábil
-
-- Gráfico comparativo Receita vs Despesa (barras)
-- Alternância entre anos 2024/2025
-- Card com totais anuais
-- Gráficos de pizza (Grupos de Receitas e Custos)
-- Gráfico de linha (Variação do Lucro Líquido)
-- Gráfico de movimentação financeira
-- Tabela com dados mensais
-
-#### Tab 3: Fiscal
-
-- Gráfico de distribuição entrada/saída (pizza)
-- Tabela de resumo operacional
-- Gráfico de faturamento (barras)
-- Gráficos IRPJ e CSLL
-- Cards com totais tributários
-- Gráfico de fluxo mensal (barras horizontais)
-
-#### Tab 4: Pessoal
-
-- Placeholder "Em desenvolvimento"
-
-### Painel Admin
-
-- Upload de CSV (UI apenas, sem funcionalidade)
-- Gerenciamento de usuários (tabela mockada)
-
-## Cores do Tema
-
-```css
-Primary:   #0e4f6d (azul escuro)
-Secondary: #58a3a4 (azul claro)
-Background: #f8fafc
-Success:   #22c55e
-Error:     #ef4444
-```
-
-## Próximos Passos (TODO)
-
-1. **Integração Firebase Auth** - Autenticação real
-2. **Integração Firestore** - Dados dinâmicos
-3. **Upload funcional** - Firebase Storage
-4. **Seção Pessoal** - Implementar funcionalidades
-5. **PWA** - Tornar instalável
-
-## Scripts Disponíveis
+## Scripts
 
 ```bash
-npm run dev      # Inicia servidor de desenvolvimento
-npm run build    # Gera build de produção
-npm run preview  # Preview do build de produção
-npm run lint     # Executa linter
+npm run dev
+npm run build
+npm run preview
+npm run lint
+npm run lint:fix
+npm run format
+npm run format:check
+npm run test
 ```
 
-## Licença
+## Autenticação e banco
 
-Projeto proprietário - Ágili Complex © 2025
+- A autenticação atual ainda é local/mock.
+- Integração com backend (ex.: Firebase Auth/Firestore) ficará para a próxima fase, após validação funcional.
+
+## Deploy (Vercel)
+
+- SPA fallback configurado com `rewrites` em `vercel.json`.
+- Build de saída: `dist/`.

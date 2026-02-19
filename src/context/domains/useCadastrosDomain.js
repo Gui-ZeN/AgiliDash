@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { loadFromStorage, saveToStorage } from '../../utils/storage';
 
 const initialGrupos = [
   {
@@ -56,31 +57,24 @@ const setoresDisponiveis = [
 ];
 
 export const useCadastrosDomain = () => {
-  const [grupos, setGrupos] = useState(() => {
-    const saved = localStorage.getItem('agili_grupos');
-    return saved ? JSON.parse(saved) : initialGrupos;
-  });
+  const [grupos, setGrupos] = useState(() => loadFromStorage('agili_grupos', initialGrupos));
 
-  const [cnpjs, setCnpjs] = useState(() => {
-    const saved = localStorage.getItem('agili_cnpjs');
-    return saved ? JSON.parse(saved) : initialCnpjs;
-  });
+  const [cnpjs, setCnpjs] = useState(() => loadFromStorage('agili_cnpjs', initialCnpjs));
 
-  const [usuarios, setUsuarios] = useState(() => {
-    const saved = localStorage.getItem('agili_usuarios');
-    return saved ? JSON.parse(saved) : initialUsuarios;
-  });
+  const [usuarios, setUsuarios] = useState(() =>
+    loadFromStorage('agili_usuarios', initialUsuarios)
+  );
 
   useEffect(() => {
-    localStorage.setItem('agili_grupos', JSON.stringify(grupos));
+    saveToStorage('agili_grupos', grupos);
   }, [grupos]);
 
   useEffect(() => {
-    localStorage.setItem('agili_cnpjs', JSON.stringify(cnpjs));
+    saveToStorage('agili_cnpjs', cnpjs);
   }, [cnpjs]);
 
   useEffect(() => {
-    localStorage.setItem('agili_usuarios', JSON.stringify(usuarios));
+    saveToStorage('agili_usuarios', usuarios);
   }, [usuarios]);
 
   const addGrupo = (grupo) => {

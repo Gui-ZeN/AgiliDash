@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { loadFromStorage, saveToStorage } from '../../utils/storage';
 import {
   consolidarBalancetesMensais,
   parseAnaliseHorizontal,
@@ -10,13 +11,12 @@ import {
 const initialDadosContabeis = {};
 
 export const useContabilDomain = () => {
-  const [dadosContabeis, setDadosContabeis] = useState(() => {
-    const saved = localStorage.getItem('agili_dados_contabeis');
-    return saved ? JSON.parse(saved) : initialDadosContabeis;
-  });
+  const [dadosContabeis, setDadosContabeis] = useState(() =>
+    loadFromStorage('agili_dados_contabeis', initialDadosContabeis)
+  );
 
   useEffect(() => {
-    localStorage.setItem('agili_dados_contabeis', JSON.stringify(dadosContabeis));
+    saveToStorage('agili_dados_contabeis', dadosContabeis);
   }, [dadosContabeis]);
 
   const importarRelatorioContabil = (cnpjId, tipoRelatorio, csvContent) => {

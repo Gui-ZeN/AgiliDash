@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { loadFromStorage, saveToStorage } from '../../utils/storage';
 import {
   parseDemonstrativoFGTS,
   parseFolhaINSS,
@@ -10,13 +11,12 @@ import {
 const initialDadosPessoal = {};
 
 export const usePessoalDomain = () => {
-  const [dadosPessoal, setDadosPessoal] = useState(() => {
-    const saved = localStorage.getItem('agili_dados_pessoal');
-    return saved ? JSON.parse(saved) : initialDadosPessoal;
-  });
+  const [dadosPessoal, setDadosPessoal] = useState(() =>
+    loadFromStorage('agili_dados_pessoal', initialDadosPessoal)
+  );
 
   useEffect(() => {
-    localStorage.setItem('agili_dados_pessoal', JSON.stringify(dadosPessoal));
+    saveToStorage('agili_dados_pessoal', dadosPessoal);
   }, [dadosPessoal]);
 
   const importarRelatorioPessoal = (cnpjId, tipoRelatorio, csvContent) => {

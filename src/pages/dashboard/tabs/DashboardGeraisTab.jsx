@@ -142,7 +142,9 @@ const DashboardGeraisTab = ({
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <Briefcase className={`h-4 w-4 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`} />
+              <Briefcase
+                className={`h-4 w-4 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}
+              />
               <span className="text-sm text-slate-600 dark:text-slate-300">
                 Tipo: <strong>{cnpjInfo?.tipo || 'Não informado'}</strong>
               </span>

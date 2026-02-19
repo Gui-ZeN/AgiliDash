@@ -332,11 +332,6 @@ export const parseAnaliseHorizontal = (csvContent) => {
     }
   }
 
-  // Debug: log dos valores encontrados
-  console.log('Parser Análise Horizontal - Ano:', anoExercicio);
-  console.log('Parser Análise Horizontal - Receita Bruta:', dados.receitaBruta);
-  console.log('Parser Análise Horizontal - Resultado Líquido:', dados.resultadoLiquido);
-
   // Calcular receitas e despesas por mês usando LINHAS ESPECÍFICAS do DRE
   // RECEITA = RECEITA BRUTA
   const receitasMensais = [...dados.receitaBruta];
@@ -405,10 +400,6 @@ export const parseAnaliseHorizontal = (csvContent) => {
   const totalReceitas = receitasMensais.reduce((a, b) => a + b, 0);
   const totalDespesas = despesasMensais.reduce((a, b) => a + b, 0);
   const totalLucroLiquido = totalReceitas - totalDespesas;
-
-  console.log('Parser Análise Horizontal - Total Receita (RECEITA BRUTA):', totalReceitas);
-  console.log('Parser Análise Horizontal - Total Despesas/Custos:', totalDespesas);
-  console.log('Parser Análise Horizontal - Total Lucro Líquido:', totalLucroLiquido);
 
   return {
     empresaInfo,

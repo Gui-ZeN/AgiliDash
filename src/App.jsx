@@ -1,69 +1,66 @@
-﻿import { Routes, Route, Navigate } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
+import { Navigate, Route, Routes } from 'react-router-dom';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import { AuthProvider } from './context/AuthContext';
+import { DataProvider } from './context/DataContext';
 import { EmpresaProvider } from './context/EmpresaContext';
 import { ThemeProvider } from './context/ThemeContext';
-import { DataProvider } from './context/DataContext';
-import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
-import ProtectedRoute from './components/auth/ProtectedRoute';
 import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import Configuracoes from './pages/Configuracoes';
-import Logs from './pages/Logs';
 
-/**
- * App Principal
- * Rotas:
- * - / = Login (público)
- * - /dashboard = Dashboard com 5 abas (requer autenticaÇão)
- * - /configuracoes = Painel Admin (requer Admin)
- * - /logs = Logs de atividade (requer Admin)
- */
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Configuracoes = lazy(() => import('./pages/Configuracoes'));
+const Logs = lazy(() => import('./pages/Logs'));
+
 function App() {
+  const pageLoader = (
+    <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
+      <p className="text-sm font-medium text-slate-500 dark:text-slate-300">Carregando página...</p>
+    </div>
+  );
+
   return (
     <AuthProvider>
       <ThemeProvider>
         <ToastProvider>
           <DataProvider>
             <EmpresaProvider>
-              <Routes>
-                {/* Login - Público */}
-                <Route path="/" element={<Login />} />
+              <Suspense fallback={pageLoader}>
+                <Routes>
+                  <Route path="/" element={<Login />} />
 
-                {/* Dashboard - Requer autenticaÇão */}
-                <Route
-                  path="/dashboard"
-                  element={
-                    <ProtectedRoute>
-                      <Dashboard />
-                    </ProtectedRoute>
-                  }
-                />
+                  <Route
+                    path="/dashboard"
+                    element={
+                      <ProtectedRoute>
+                        <Dashboard />
+                      </ProtectedRoute>
+                    }
+                  />
 
-                {/* Configurações - Requer Admin */}
-                <Route
-                  path="/configuracoes"
-                  element={
-                    <ProtectedRoute requireAdmin>
-                      <Configuracoes />
-                    </ProtectedRoute>
-                  }
-                />
+                  <Route
+                    path="/configuracoes"
+                    element={
+                      <ProtectedRoute requireAdmin>
+                        <Configuracoes />
+                      </ProtectedRoute>
+                    }
+                  />
 
-                {/* Logs - Requer Admin */}
-                <Route
-                  path="/logs"
-                  element={
-                    <ProtectedRoute requireAdmin>
-                      <Logs />
-                    </ProtectedRoute>
-                  }
-                />
+                  <Route
+                    path="/logs"
+                    element={
+                      <ProtectedRoute requireAdmin>
+                        <Logs />
+                      </ProtectedRoute>
+                    }
+                  />
 
-                {/* Redirecionamentos */}
-                <Route path="/admin" element={<Navigate to="/configuracoes" replace />} />
-                <Route path="/usuarios" element={<Navigate to="/configuracoes" replace />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
+                  <Route path="/admin" element={<Navigate to="/configuracoes" replace />} />
+                  <Route path="/usuarios" element={<Navigate to="/configuracoes" replace />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </Suspense>
             </EmpresaProvider>
           </DataProvider>
         </ToastProvider>

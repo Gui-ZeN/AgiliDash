@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { loadFromStorage, saveToStorage } from '../../utils/storage';
 import {
   parseContribuicaoSocial,
   parseDemonstrativoFinanceiro,
@@ -200,13 +201,12 @@ const consolidarFaturamento = (porCompetencia = {}, empresaInfo = {}) => {
 };
 
 export const useFiscalDomain = () => {
-  const [dadosFiscais, setDadosFiscais] = useState(() => {
-    const saved = localStorage.getItem('agili_dados_fiscais');
-    return saved ? JSON.parse(saved) : initialDadosFiscais;
-  });
+  const [dadosFiscais, setDadosFiscais] = useState(() =>
+    loadFromStorage('agili_dados_fiscais', initialDadosFiscais)
+  );
 
   useEffect(() => {
-    localStorage.setItem('agili_dados_fiscais', JSON.stringify(dadosFiscais));
+    saveToStorage('agili_dados_fiscais', dadosFiscais);
   }, [dadosFiscais]);
 
   const importarRelatorioFiscal = (cnpjId, tipoRelatorio, csvContent, opcoes = {}) => {

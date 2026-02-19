@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { loadFromStorage, saveToStorage } from '../utils/storage';
 
 /**
  * Authentication context
@@ -53,21 +54,16 @@ const normalizarUsuarioSalvo = (rawUser) => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('agili_auth_user');
+    const saved = loadFromStorage('agili_auth_user', null);
     if (!saved) return null;
-
-    try {
-      return normalizarUsuarioSalvo(JSON.parse(saved));
-    } catch {
-      return null;
-    }
+    return normalizarUsuarioSalvo(saved);
   });
   const [isLoading, setIsLoading] = useState(false);
 
   // Persist user in localStorage
   useEffect(() => {
     if (user) {
-      localStorage.setItem('agili_auth_user', JSON.stringify(user));
+      saveToStorage('agili_auth_user', user);
     } else {
       localStorage.removeItem('agili_auth_user');
     }

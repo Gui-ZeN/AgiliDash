@@ -34,7 +34,12 @@ const DashboardAdministrativoTab = ({
   const isVisible = (itemId) => itemVisivel('administrativo', itemId);
   const administrativoData = administrativoDataProp || {
     contratos: { total: 0, vigentes: 0, vencendo30dias: 0 },
-    indicadores: { custoOperacional: 0, ticketMedioVenda: 0, margemOperacional: 0, inadimplencia: 0 },
+    indicadores: {
+      custoOperacional: 0,
+      ticketMedioVenda: 0,
+      margemOperacional: 0,
+      inadimplencia: 0,
+    },
     certidoes: [],
     listaContratos: [],
     despesasMensais: new Array(12).fill(0),
@@ -432,7 +437,9 @@ const DashboardAdministrativoTab = ({
               <strong>{administrativoData.contratos.total} contratos</strong> com custo operacional
               mensal de{' '}
               <strong>{formatCurrency(administrativoData.indicadores.custoOperacional)}</strong>.
-              {administrativoData.certidoes.length > 0 ? ' Consulte periodicamente os documentos e contratos para manter a regularidade da empresa.' : ' Importe relatórios adicionais para ampliar os indicadores administrativos.'}
+              {administrativoData.certidoes.length > 0
+                ? ' Consulte periodicamente os documentos e contratos para manter a regularidade da empresa.'
+                : ' Importe relatórios adicionais para ampliar os indicadores administrativos.'}
               {administrativoData.contratos.vencendo30dias > 0 && (
                 <strong className="block mt-2">
                   Atenção: {administrativoData.contratos.vencendo30dias} contrato(s) vencendo nos
@@ -448,4 +455,3 @@ const DashboardAdministrativoTab = ({
 };
 
 export default DashboardAdministrativoTab;
-

@@ -1,12 +1,8 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
-import { grupos, empresas, cnpjsEmpresa, getDadosCnpj, setoresDisponiveis } from '../data/mockData';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useAuth } from './AuthContext';
+import { useData } from './DataContext';
 
-/**
- * Context for global company/CNPJ selection state.
- * Hierarchy: Group -> Company -> CNPJ
- */
 const EmpresaContext = createContext(null);
 
 const EMPTY_TOTALS = {
@@ -23,89 +19,169 @@ const EMPTY_TOTALS = {
 
 const criarSet = (lista) => (Array.isArray(lista) && lista.length > 0 ? new Set(lista) : null);
 
-const somarArray = (arr) =>
-  Array.isArray(arr) ? arr.reduce((acc, v) => acc + Number(v || 0), 0) : 0;
+const toNumber = (value) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
 
-const calcularTotaisConsolidados = (cnpjIds) => {
-  if (!Array.isArray(cnpjIds) || cnpjIds.length === 0) return EMPTY_TOTALS;
+const normalizarSlug = (value) =>
+  String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
 
-  return cnpjIds.reduce(
-    (totais, cnpjId) => {
-      const dados = getDadosCnpj(cnpjId);
-      if (!dados) return totais;
+const gerarEmpresaId = (cnpj) => {
+  if (cnpj?.empresaId) return cnpj.empresaId;
+  const base = normalizarSlug(cnpj?.razaoSocial || cnpj?.nomeFantasia || cnpj?.id || 'empresa');
+  return `empresa_${cnpj?.grupoId || 'sem_grupo'}_${base}`;
+};
 
-      const receita = somarArray(dados?.dreData2025?.receita);
-      const despesa = somarArray(dados?.dreData2025?.despesa);
-      const lucro = somarArray(dados?.dreData2025?.lucro);
-      const funcionarios = Number(dados?.pessoalData?.funcionarios || 0);
-      const folhaMensal = Number(dados?.pessoalData?.folhaMensal || 0);
-      const irpj = Number(dados?.totaisFiscais?.irpj || 0);
-      const csll = Number(dados?.totaisFiscais?.csll || 0);
+const normalizarCnpjs = (cnpjs = [], grupos = []) => {
+  const grupoDefault = grupos[0]?.id || null;
 
-      return {
-        receita: totais.receita + receita,
-        despesa: totais.despesa + despesa,
-        lucro: totais.lucro + lucro,
-        funcionarios: totais.funcionarios + funcionarios,
-        folhaMensal: totais.folhaMensal + folhaMensal,
-        irpj: totais.irpj + irpj,
-        csll: totais.csll + csll,
-        cargaTributaria: totais.cargaTributaria + irpj + csll,
-        qtdCnpjs: totais.qtdCnpjs + 1,
-      };
-    },
-    { ...EMPTY_TOTALS }
+  return (cnpjs || []).map((cnpj) => {
+    const grupoId = cnpj?.grupoId || grupoDefault;
+    return {
+      ...cnpj,
+      grupoId,
+      empresaId: gerarEmpresaId({ ...cnpj, grupoId }),
+      endereco: cnpj?.endereco || {
+        cidade: cnpj?.cidade || '',
+        estado: cnpj?.estado || '',
+      },
+    };
+  });
+};
+
+const construirEmpresas = (cnpjs = []) => {
+  const map = new Map();
+
+  cnpjs.forEach((cnpj) => {
+    if (!cnpj?.empresaId) return;
+
+    if (!map.has(cnpj.empresaId)) {
+      map.set(cnpj.empresaId, {
+        id: cnpj.empresaId,
+        grupoId: cnpj.grupoId,
+        razaoSocial: cnpj.razaoSocial || cnpj.nomeFantasia || 'Empresa',
+        nomeFantasia: cnpj.nomeFantasia || cnpj.razaoSocial || 'Empresa',
+        cnpjPrincipal: cnpj.cnpj || '',
+        regimeTributario: cnpj.regimeTributario || '',
+        status: cnpj.status || 'Ativo',
+      });
+    }
+  });
+
+  return Array.from(map.values());
+};
+
+const getTotaisCnpj = ({ dadosContabeis, dadosFiscais, dadosPessoal }) => {
+  const receita = toNumber(dadosContabeis?.analiseHorizontal?.totais?.totalReceitas);
+  const despesa = toNumber(dadosContabeis?.analiseHorizontal?.totais?.totalDespesas);
+  const lucro = receita - despesa;
+
+  const funcionarios = toNumber(dadosPessoal?.empregados?.estatisticas?.total);
+  const folhaMensal = toNumber(dadosPessoal?.inss?.totais?.valorINSS);
+
+  const irpj = (dadosFiscais?.irpj || []).reduce(
+    (acc, item) => acc + toNumber(item?.totalImpostoRecolher || item?.totalImpostoDevido),
+    0
   );
+  const csll = (dadosFiscais?.csll || []).reduce(
+    (acc, item) => acc + toNumber(item?.csllApurada || item?.totalRecolher),
+    0
+  );
+
+  return {
+    receita,
+    despesa,
+    lucro,
+    funcionarios,
+    folhaMensal,
+    irpj,
+    csll,
+    cargaTributaria: irpj + csll,
+  };
 };
 
 export const EmpresaProvider = ({ children }) => {
   const { user, isAdmin } = useAuth();
+  const {
+    grupos: gruposBase,
+    cnpjs: cnpjsBase,
+    setoresDisponiveis,
+    getDadosContabeis,
+    getDadosFiscais,
+    getDadosPessoal,
+  } = useData();
 
   const [grupoSelecionado, setGrupoSelecionado] = useState(null);
   const [empresaSelecionada, setEmpresaSelecionada] = useState(null);
   const [cnpjSelecionado, setCnpjSelecionado] = useState(null);
-
-  // View mode: 'cnpj', 'empresa', 'grupo' or 'todos'
   const [modoVisualizacao, setModoVisualizacao] = useState('cnpj');
+
+  const cnpjsNormalizados = useMemo(
+    () => normalizarCnpjs(cnpjsBase || [], gruposBase || []),
+    [cnpjsBase, gruposBase]
+  );
+  const empresasBase = useMemo(() => construirEmpresas(cnpjsNormalizados), [cnpjsNormalizados]);
 
   const grupoIdsPermitidos = useMemo(
     () => (isAdmin ? null : criarSet(user?.acesso?.grupoIds)),
     [isAdmin, user?.acesso?.grupoIds]
   );
+
   const empresaIdsPermitidas = useMemo(
     () => (isAdmin ? null : criarSet(user?.acesso?.empresaIds)),
     [isAdmin, user?.acesso?.empresaIds]
   );
+
+  const empresaIdsPermitidasValidas = useMemo(() => {
+    if (isAdmin || !empresaIdsPermitidas) return null;
+    const idsExistentes = new Set(empresasBase.map((e) => e.id));
+    const ids = [...empresaIdsPermitidas].filter((id) => idsExistentes.has(id));
+    return ids.length > 0 ? new Set(ids) : null;
+  }, [isAdmin, empresaIdsPermitidas, empresasBase]);
+
   const cnpjIdsPermitidos = useMemo(
     () => (isAdmin ? null : criarSet(user?.acesso?.cnpjIds)),
     [isAdmin, user?.acesso?.cnpjIds]
   );
 
   const empresasPermitidas = useMemo(() => {
-    if (isAdmin) return empresas;
+    if (isAdmin) return empresasBase;
 
-    const temEscopo = !!(grupoIdsPermitidos || empresaIdsPermitidas || cnpjIdsPermitidos);
+    const temEscopo = !!(grupoIdsPermitidos || empresaIdsPermitidasValidas || cnpjIdsPermitidos);
     if (!temEscopo) return [];
 
-    let resultado = [...empresas];
+    let resultado = [...empresasBase];
 
     if (grupoIdsPermitidos) {
       resultado = resultado.filter((e) => grupoIdsPermitidos.has(e.grupoId));
     }
 
-    if (empresaIdsPermitidas) {
-      resultado = resultado.filter((e) => empresaIdsPermitidas.has(e.id));
+    if (empresaIdsPermitidasValidas) {
+      resultado = resultado.filter((e) => empresaIdsPermitidasValidas.has(e.id));
     }
 
     if (cnpjIdsPermitidos) {
       const empresaIdsDoCnpj = new Set(
-        cnpjsEmpresa.filter((c) => cnpjIdsPermitidos.has(c.id)).map((c) => c.empresaId)
+        cnpjsNormalizados.filter((c) => cnpjIdsPermitidos.has(c.id)).map((c) => c.empresaId)
       );
       resultado = resultado.filter((e) => empresaIdsDoCnpj.has(e.id));
     }
 
     return resultado;
-  }, [isAdmin, grupoIdsPermitidos, empresaIdsPermitidas, cnpjIdsPermitidos]);
+  }, [
+    isAdmin,
+    empresasBase,
+    grupoIdsPermitidos,
+    empresaIdsPermitidasValidas,
+    cnpjIdsPermitidos,
+    cnpjsNormalizados,
+  ]);
 
   const empresaIdsPermitidasSet = useMemo(
     () => new Set(empresasPermitidas.map((e) => e.id)),
@@ -113,23 +189,22 @@ export const EmpresaProvider = ({ children }) => {
   );
 
   const cnpjsPermitidos = useMemo(() => {
-    if (isAdmin) return cnpjsEmpresa;
+    if (isAdmin) return cnpjsNormalizados;
 
-    let resultado = cnpjsEmpresa.filter((c) => empresaIdsPermitidasSet.has(c.empresaId));
+    let resultado = cnpjsNormalizados.filter((c) => empresaIdsPermitidasSet.has(c.empresaId));
 
     if (cnpjIdsPermitidos) {
       resultado = resultado.filter((c) => cnpjIdsPermitidos.has(c.id));
     }
 
     return resultado;
-  }, [isAdmin, empresaIdsPermitidasSet, cnpjIdsPermitidos]);
+  }, [isAdmin, cnpjsNormalizados, empresaIdsPermitidasSet, cnpjIdsPermitidos]);
 
   const gruposPermitidos = useMemo(() => {
     const grupoIds = new Set(empresasPermitidas.map((e) => e.grupoId));
-    return grupos.filter((g) => grupoIds.has(g.id));
-  }, [empresasPermitidas]);
+    return (gruposBase || []).filter((g) => grupoIds.has(g.id));
+  }, [empresasPermitidas, gruposBase]);
 
-  // Keep selected group/company/CNPJ always inside permitted scope.
   useEffect(() => {
     if (
       empresasPermitidas.length === 0 ||
@@ -170,10 +245,31 @@ export const EmpresaProvider = ({ children }) => {
     [cnpjsPermitidos, cnpjSelecionado]
   );
 
-  const cnpjDados = useMemo(
-    () => (cnpjInfo?.id ? getDadosCnpj(cnpjInfo.id) : null),
-    [cnpjInfo?.id]
-  );
+  const cnpjDados = useMemo(() => {
+    if (!cnpjInfo?.id) return null;
+    const totais = getTotaisCnpj({
+      dadosContabeis: getDadosContabeis(cnpjInfo.id),
+      dadosFiscais: getDadosFiscais(cnpjInfo.id),
+      dadosPessoal: getDadosPessoal(cnpjInfo.id),
+    });
+
+    return {
+      pessoalData: {
+        funcionarios: totais.funcionarios,
+        totalFuncionarios: totais.funcionarios,
+        folhaMensal: totais.folhaMensal,
+      },
+      totaisFiscais: {
+        irpj: totais.irpj,
+        csll: totais.csll,
+      },
+      dreData2025: {
+        receita: [totais.receita],
+        despesa: [totais.despesa],
+        lucro: [totais.lucro],
+      },
+    };
+  }, [cnpjInfo?.id, getDadosContabeis, getDadosFiscais, getDadosPessoal]);
 
   const empresaAtual = useMemo(
     () =>
@@ -187,12 +283,10 @@ export const EmpresaProvider = ({ children }) => {
   );
 
   const listaGrupos = gruposPermitidos;
-
   const listaEmpresas = useMemo(
     () => empresasPermitidas.filter((e) => e.grupoId === grupoSelecionado),
     [empresasPermitidas, grupoSelecionado]
   );
-
   const listaCnpjs = useMemo(
     () => cnpjsPermitidos.filter((c) => c.empresaId === empresaSelecionada),
     [cnpjsPermitidos, empresaSelecionada]
@@ -230,8 +324,30 @@ export const EmpresaProvider = ({ children }) => {
 
   const totaisConsolidados = useMemo(() => {
     if (!isConsolidado) return null;
-    return calcularTotaisConsolidados(cnpjIdsEscopo);
-  }, [isConsolidado, cnpjIdsEscopo]);
+    if (!cnpjIdsEscopo.length) return { ...EMPTY_TOTALS };
+
+    return cnpjIdsEscopo.reduce(
+      (totais, cnpjId) => {
+        const dadosContabeis = getDadosContabeis(cnpjId);
+        const dadosFiscais = getDadosFiscais(cnpjId);
+        const dadosPessoal = getDadosPessoal(cnpjId);
+        const dados = getTotaisCnpj({ dadosContabeis, dadosFiscais, dadosPessoal });
+
+        return {
+          receita: totais.receita + dados.receita,
+          despesa: totais.despesa + dados.despesa,
+          lucro: totais.lucro + dados.lucro,
+          funcionarios: totais.funcionarios + dados.funcionarios,
+          folhaMensal: totais.folhaMensal + dados.folhaMensal,
+          irpj: totais.irpj + dados.irpj,
+          csll: totais.csll + dados.csll,
+          cargaTributaria: totais.cargaTributaria + dados.cargaTributaria,
+          qtdCnpjs: totais.qtdCnpjs + 1,
+        };
+      },
+      { ...EMPTY_TOTALS }
+    );
+  }, [isConsolidado, cnpjIdsEscopo, getDadosContabeis, getDadosFiscais, getDadosPessoal]);
 
   const selecionarGrupo = useCallback(
     (grupoId) => {
@@ -262,7 +378,6 @@ export const EmpresaProvider = ({ children }) => {
       if (!empresa) return;
 
       setEmpresaSelecionada(empresa.id);
-
       if (empresa.grupoId !== grupoSelecionado) {
         setGrupoSelecionado(empresa.grupoId);
       }
@@ -319,7 +434,6 @@ export const EmpresaProvider = ({ children }) => {
   ]);
 
   const value = {
-    // Current state
     grupoSelecionado,
     empresaSelecionada,
     cnpjSelecionado,
@@ -327,13 +441,11 @@ export const EmpresaProvider = ({ children }) => {
     isConsolidado,
     modoLabel,
 
-    // Current entities
     cnpjInfo,
     cnpjDados,
     empresaAtual,
     grupoAtual,
 
-    // Lists (already filtered by permission)
     listaGrupos,
     listaEmpresas,
     listaCnpjs,
@@ -342,10 +454,8 @@ export const EmpresaProvider = ({ children }) => {
     todosGrupos: gruposPermitidos,
     setoresDisponiveis,
 
-    // Totals
     totaisConsolidados,
 
-    // Actions
     selecionarGrupo,
     selecionarEmpresa,
     selecionarCnpj,
@@ -356,7 +466,6 @@ export const EmpresaProvider = ({ children }) => {
   return <EmpresaContext.Provider value={value}>{children}</EmpresaContext.Provider>;
 };
 
-// Hook to consume context
 export const useEmpresa = () => {
   const context = useContext(EmpresaContext);
   if (!context) {

@@ -1,11 +1,4 @@
-import {
-  AlertCircle,
-  Award,
-  BarChartBig,
-  FileSpreadsheet,
-  Receipt,
-  Scale,
-} from 'lucide-react';
+import { AlertCircle, Award, BarChartBig, FileSpreadsheet, Receipt, Scale } from 'lucide-react';
 import DashboardSectionTitle from '../../../components/ui/DashboardSectionTitle';
 import {
   CardsMetricasFiscais,
@@ -84,7 +77,9 @@ const DashboardFiscalTab = ({
       <section className={`transition-all duration-500 delay-200 ${cardAnimation}`}>
         <div className="flex items-center gap-3 mb-6">
           <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-green-900/50' : 'bg-green-100'}`}>
-            <BarChartBig className={`w-5 h-5 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`} />
+            <BarChartBig
+              className={`w-5 h-5 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}
+            />
           </div>
           <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
             Faturamento
@@ -97,7 +92,9 @@ const DashboardFiscalTab = ({
               <div
                 className={`h-full p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
               >
-                <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                <h3
+                  className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
+                >
                   Por Categoria
                 </h3>
                 <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
@@ -114,7 +111,9 @@ const DashboardFiscalTab = ({
                   />
                 ) : (
                   <div className="h-[300px] flex items-center justify-center text-center">
-                    <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{importHint}</p>
+                    <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                      {importHint}
+                    </p>
                   </div>
                 )}
               </div>
@@ -126,7 +125,9 @@ const DashboardFiscalTab = ({
               >
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                    <h3
+                      className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
+                    >
                       Evolução Mensal
                     </h3>
                     <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
@@ -172,7 +173,9 @@ const DashboardFiscalTab = ({
                   />
                 ) : (
                   <div className="h-[350px] flex items-center justify-center text-center">
-                    <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{importHint}</p>
+                    <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                      {importHint}
+                    </p>
                   </div>
                 )}
               </div>
@@ -188,8 +191,12 @@ const DashboardFiscalTab = ({
                 <div
                   className={`h-full rounded-xl shadow-sm overflow-hidden ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
                 >
-                  <div className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
-                    <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                  <div
+                    className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}
+                  >
+                    <h3
+                      className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
+                    >
                       Principais Acumuladores - Entradas
                     </h3>
                     <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
@@ -204,8 +211,12 @@ const DashboardFiscalTab = ({
                 <div
                   className={`h-full rounded-xl shadow-sm overflow-hidden ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
                 >
-                  <div className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
-                    <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                  <div
+                    className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}
+                  >
+                    <h3
+                      className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
+                    >
                       Principais Acumuladores - Saídas
                     </h3>
                     <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
@@ -249,7 +260,9 @@ const DashboardFiscalTab = ({
               <div
                 className={`p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
               >
-                <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                <h3
+                  className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
+                >
                   Compra vs Venda
                 </h3>
                 <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
@@ -259,7 +272,9 @@ const DashboardFiscalTab = ({
                   <CompraVendaChart dados={resumoAcumuladorAtual} />
                 ) : (
                   <div className="h-[300px] flex items-center justify-center text-center">
-                    <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{importHint}</p>
+                    <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                      {importHint}
+                    </p>
                   </div>
                 )}
               </div>
@@ -269,7 +284,9 @@ const DashboardFiscalTab = ({
               <div
                 className={`p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
               >
-                <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                <h3
+                  className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
+                >
                   Por Categoria
                 </h3>
                 <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
@@ -279,7 +296,9 @@ const DashboardFiscalTab = ({
                   <Detalhamento380Chart dados={resumoAcumuladorAtual} />
                 ) : (
                   <div className="h-[250px] flex items-center justify-center text-center">
-                    <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{importHint}</p>
+                    <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                      {importHint}
+                    </p>
                   </div>
                 )}
               </div>
@@ -306,7 +325,9 @@ const DashboardFiscalTab = ({
               >
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                    <h3
+                      className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
+                    >
                       IRPJ por Período
                     </h3>
                     <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
@@ -360,7 +381,9 @@ const DashboardFiscalTab = ({
               <div
                 className={`p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
               >
-                <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                <h3
+                  className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
+                >
                   Resumo dos Impostos
                 </h3>
                 <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
@@ -374,7 +397,9 @@ const DashboardFiscalTab = ({
               <div
                 className={`xl:col-span-3 p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
               >
-                <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                <h3
+                  className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
+                >
                   CSLL por Período
                 </h3>
                 <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
@@ -406,7 +431,9 @@ const DashboardFiscalTab = ({
             <div
               className={`mt-6 h-full rounded-xl shadow-sm overflow-hidden ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
             >
-              <div className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
+              <div
+                className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}
+              >
                 <h3 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
                   Cálculo 380
                 </h3>
@@ -422,7 +449,9 @@ const DashboardFiscalTab = ({
             <div
               className={`mt-6 p-6 rounded-xl shadow-sm ${isDarkMode ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-100'}`}
             >
-              <h3 className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+              <h3
+                className={`text-lg font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
+              >
                 Situação 380
               </h3>
               <p className={`text-sm mb-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
@@ -434,13 +463,19 @@ const DashboardFiscalTab = ({
                     <Situacao380Chart dados={resumoAcumuladorAtual} />
                   ) : (
                     <div className="h-[300px] flex items-center justify-center text-center">
-                      <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{importHint}</p>
+                      <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                        {importHint}
+                      </p>
                     </div>
                   )}
                 </div>
                 {temDadosFiscais && resumoAcumuladorAtual && (
-                  <div className={`p-6 rounded-xl ${isDarkMode ? 'bg-slate-700/50' : 'bg-slate-50'}`}>
-                    <h4 className={`text-sm font-bold mb-4 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                  <div
+                    className={`p-6 rounded-xl ${isDarkMode ? 'bg-slate-700/50' : 'bg-slate-50'}`}
+                  >
+                    <h4
+                      className={`text-sm font-bold mb-4 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}
+                    >
                       Resumo da Situação
                     </h4>
                     <div className="space-y-3">
@@ -448,15 +483,21 @@ const DashboardFiscalTab = ({
                         <span className={isDarkMode ? 'text-slate-400' : 'text-slate-500'}>
                           Compra p/ Comercialização
                         </span>
-                        <span className={`font-bold ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
-                          {formatCurrency(resumoAcumuladorAtual?.categorias?.compraComercializacao || 0)}
+                        <span
+                          className={`font-bold ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}
+                        >
+                          {formatCurrency(
+                            resumoAcumuladorAtual?.categorias?.compraComercializacao || 0
+                          )}
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className={isDarkMode ? 'text-slate-400' : 'text-slate-500'}>
                           Esperado (Compra + 25%)
                         </span>
-                        <span className={`font-bold ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`}>
+                        <span
+                          className={`font-bold ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`}
+                        >
                           {formatCurrency(resumoAcumuladorAtual?.categorias?.esperado380 || 0)}
                         </span>
                       </div>
@@ -464,13 +505,19 @@ const DashboardFiscalTab = ({
                         <span className={isDarkMode ? 'text-slate-400' : 'text-slate-500'}>
                           Total Vendido
                         </span>
-                        <span className={`font-bold ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}>
+                        <span
+                          className={`font-bold ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}
+                        >
                           {formatCurrency(resumoAcumuladorAtual?.categorias?.totalVendas380 || 0)}
                         </span>
                       </div>
-                      <div className={`pt-3 mt-3 border-t ${isDarkMode ? 'border-slate-600' : 'border-slate-200'}`}>
+                      <div
+                        className={`pt-3 mt-3 border-t ${isDarkMode ? 'border-slate-600' : 'border-slate-200'}`}
+                      >
                         <div className="flex justify-between items-center">
-                          <span className={`font-semibold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                          <span
+                            className={`font-semibold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}
+                          >
                             Situação
                           </span>
                           <span
@@ -498,7 +545,9 @@ const DashboardFiscalTab = ({
       )}
 
       <VisibleItem show={isVisible('analise_fiscal')}>
-        <div className={`bg-slate-700 p-8 rounded-xl text-white shadow-md transition-all duration-500 delay-600 ${cardAnimation}`}>
+        <div
+          className={`bg-slate-700 p-8 rounded-xl text-white shadow-md transition-all duration-500 delay-600 ${cardAnimation}`}
+        >
           <div className="flex items-start gap-6">
             <div className="p-4 bg-white/10 rounded-xl backdrop-blur-sm">
               <Award className="w-8 h-8" />
@@ -508,18 +557,20 @@ const DashboardFiscalTab = ({
               <p className="text-white/80 leading-relaxed">
                 {temDadosFiscais ? (
                   <>
-                    Dados importados do Sistema Domínio. Os relatórios fiscais mostram a movimentação
-                    de entradas e saídas, impostos a recolher e situação do 380.
+                    Dados importados do Sistema Domínio. Os relatórios fiscais mostram a
+                    movimentação de entradas e saídas, impostos a recolher e situação do 380.
                   </>
                 ) : (
-                  <>Importe os relatórios fiscais do Sistema Domínio para gerar a análise deste setor.</>
+                  <>
+                    Importe os relatórios fiscais do Sistema Domínio para gerar a análise deste
+                    setor.
+                  </>
                 )}
               </p>
             </div>
           </div>
         </div>
       </VisibleItem>
-
     </div>
   );
 };

@@ -16,7 +16,9 @@ const DashboardGeraisTab = lazy(() => import('./dashboard/tabs/DashboardGeraisTa
 const DashboardContabilTab = lazy(() => import('./dashboard/tabs/DashboardContabilTab'));
 const DashboardFiscalTab = lazy(() => import('./dashboard/tabs/DashboardFiscalTab'));
 const DashboardPessoalTab = lazy(() => import('./dashboard/tabs/DashboardPessoalTab'));
-const DashboardAdministrativoTab = lazy(() => import('./dashboard/tabs/DashboardAdministrativoTab'));
+const DashboardAdministrativoTab = lazy(
+  () => import('./dashboard/tabs/DashboardAdministrativoTab')
+);
 
 const ordenarCompetencia = (a, b) => {
   const [mesA, anoA] = String(a || '')
@@ -111,7 +113,20 @@ const somarArrayNumerico = (arrays, tamanho = 12) => {
   return base;
 };
 
-const MESES_LABELS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+const MESES_LABELS = [
+  'Jan',
+  'Fev',
+  'Mar',
+  'Abr',
+  'Mai',
+  'Jun',
+  'Jul',
+  'Ago',
+  'Set',
+  'Out',
+  'Nov',
+  'Dez',
+];
 
 /**
  * Dashboard Principal - Design Aprimorado
@@ -971,7 +986,10 @@ const Dashboard = () => {
       if (!texto) return 0;
 
       if (texto.includes(',') && texto.includes('.')) {
-        const normalizado = texto.replace(/\./g, '').replace(',', '.').replace(/[^\d.-]/g, '');
+        const normalizado = texto
+          .replace(/\./g, '')
+          .replace(',', '.')
+          .replace(/[^\d.-]/g, '');
         const numero = Number(normalizado);
         return Number.isFinite(numero) ? numero : 0;
       }
@@ -1390,7 +1408,7 @@ const Dashboard = () => {
   }, [dadosFiscaisImportados?.resumoImpostos, competenciasFiltroFiscal]);
 
   // Dados do CNPJ selecionado
-  const pessoalData = cnpjDados.pessoalData;
+  const pessoalData = cnpjDados?.pessoalData;
 
   // Animação ao trocar de tab ou CNPJ
   useEffect(() => {
@@ -1637,8 +1655,8 @@ const Dashboard = () => {
                   {modoVisualizacao === 'empresa' && `Consolidado: ${empresaAtual?.nomeFantasia}`}
                 </span>
                 <span className="text-sm text-white/70">
-                  {qtdCnpjsConsolidado} CNPJ(s) • Receita: {formatCurrency(totalReceita)} •
-                  Lucro: {formatCurrency(totalLucro)}
+                  {qtdCnpjsConsolidado} CNPJ(s) • Receita: {formatCurrency(totalReceita)} • Lucro:{' '}
+                  {formatCurrency(totalLucro)}
                 </span>
               </div>
             </div>
@@ -1658,9 +1676,7 @@ const Dashboard = () => {
         {visibilidadeMeta.modoPersonalizadoAtivo && (
           <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-300">
             <div className="flex items-center justify-between gap-4">
-              <p className="font-medium">
-                Modo personalizado ativo ({visibilidadeMeta.origem})
-              </p>
+              <p className="font-medium">Modo personalizado ativo ({visibilidadeMeta.origem})</p>
               {isAdmin && !isVisibilidadeAplicada && (
                 <p className="text-xs">
                   Preview cliente inativo: a visibilidade não está sendo aplicada agora.
