@@ -479,9 +479,107 @@ const Dashboard = () => {
       balancetesConsolidados = { meses: mesesPadrao, series };
     }
 
+    const comparativoMap = {};
+    dadosContabeisEscopo.forEach((item) => {
+      const trimestres = item?.dreComparativa?.comparativoCalculo?.trimestres || [];
+      trimestres.forEach((trimestreItem) => {
+        const trimestreNumero = Number(trimestreItem?.trimestreNumero || 0);
+        const ano = Number(trimestreItem?.ano || 0);
+        if (!trimestreNumero || !ano) return;
+
+        const key = `${ano}-${trimestreNumero}`;
+        if (!comparativoMap[key]) {
+          comparativoMap[key] = {
+            trimestre: `${trimestreNumero}/${ano}`,
+            trimestreNumero,
+            ano,
+            csllReal: 0,
+            irpjReal: 0,
+            totalReal: 0,
+            csllEstimado: 0,
+            irpjEstimado: 0,
+            totalEstimado: 0,
+            diferencaRealEstimado: 0,
+          };
+        }
+
+        comparativoMap[key].csllReal += Number(trimestreItem?.csllReal || 0);
+        comparativoMap[key].irpjReal += Number(trimestreItem?.irpjReal || 0);
+        comparativoMap[key].totalReal += Number(trimestreItem?.totalReal || 0);
+        comparativoMap[key].csllEstimado += Number(trimestreItem?.csllEstimado || 0);
+        comparativoMap[key].irpjEstimado += Number(trimestreItem?.irpjEstimado || 0);
+        comparativoMap[key].totalEstimado += Number(trimestreItem?.totalEstimado || 0);
+        comparativoMap[key].diferencaRealEstimado += Number(
+          trimestreItem?.diferencaRealEstimado || 0
+        );
+      });
+    });
+
+    let dreComparativa = null;
+    const trimestresComparativo = Object.values(comparativoMap).sort((a, b) =>
+      a.ano !== b.ano ? a.ano - b.ano : a.trimestreNumero - b.trimestreNumero
+    );
+    if (trimestresComparativo.length > 0) {
+      const anosDisponiveis = [...new Set(trimestresComparativo.map((item) => item.ano))].sort(
+        (a, b) => b - a
+      );
+      const anoAtual = anosDisponiveis[0];
+      const anoAnterior = anosDisponiveis[1];
+
+      const montarSerieTrimestreAno = (ano) => {
+        if (!ano) return [0, 0, 0, 0];
+        const serie = [0, 0, 0, 0];
+        trimestresComparativo
+          .filter((item) => item.ano === ano)
+          .forEach((item) => {
+            const index = Number(item.trimestreNumero) - 1;
+            if (index >= 0 && index < 4) {
+              serie[index] = Number(item.totalReal || 0);
+            }
+          });
+        return serie;
+      };
+
+      const lucroAtual = montarSerieTrimestreAno(anoAtual);
+      const lucroAnterior = montarSerieTrimestreAno(anoAnterior);
+      const totalAtual = lucroAtual.reduce((acc, value) => acc + Number(value || 0), 0);
+      const totalAnterior = lucroAnterior.reduce((acc, value) => acc + Number(value || 0), 0);
+
+      dreComparativa = {
+        periodo: '',
+        dados: {
+          anoAtual: {
+            ano: anoAtual,
+            lucroAntesIR: lucroAtual,
+            resultadoLiquido: totalAtual,
+          },
+          anoAnterior: anoAnterior
+            ? {
+                ano: anoAnterior,
+                lucroAntesIR: lucroAnterior,
+                resultadoLiquido: totalAnterior,
+              }
+            : {},
+        },
+        comparativoCalculo: {
+          trimestres: trimestresComparativo,
+          anoAtual,
+          anoAnterior,
+          periodo: '',
+        },
+        variacao: {
+          receitaBruta: 0,
+          lucroLiquido: totalAnterior
+            ? (((totalAtual - totalAnterior) / Math.abs(totalAnterior)) * 100).toFixed(2)
+            : 0,
+        },
+      };
+    }
+
     return {
       analiseHorizontal,
       balancetesConsolidados,
+      dreComparativa,
     };
   }, [isConsolidado, dadosContabeisEscopo, selectedYear]);
 
@@ -1023,7 +1121,9 @@ const Dashboard = () => {
   const dadosPessoalImportados = isConsolidado ? dadosPessoalConsolidados : dadosPessoalSelecionado;
 
   const temDadosContabeis = Boolean(
-    dadosContabeisImportados?.analiseHorizontal || dadosContabeisImportados?.balancetesConsolidados
+    dadosContabeisImportados?.analiseHorizontal ||
+      dadosContabeisImportados?.balancetesConsolidados ||
+      dadosContabeisImportados?.dreComparativa
   );
   const temDadosFiscais = Boolean(
     dadosFiscaisImportados?.resumoAcumulador ||
@@ -1500,6 +1600,7 @@ const Dashboard = () => {
   // Calcular totais do DRE
   // Se em modo consolidado, usa totaisConsolidados; senão, prioriza dados importados (Análise Horizontal)
   const analiseHorizontal = dadosContabeisImportados?.analiseHorizontal;
+  const dreComparativa = dadosContabeisImportados?.dreComparativa;
   const analiseHorizontalContabil = useMemo(
     () => filtrarAnaliseHorizontalPorAno(analiseHorizontal, selectedYear),
     [analiseHorizontal, selectedYear]
@@ -1609,6 +1710,48 @@ const Dashboard = () => {
 
   // Dados para comparação trimestral de lucro (ano atual x ano anterior)
   const dadosComparativoLucro = useMemo(() => {
+    const trimestresComparativo = dreComparativa?.comparativoCalculo?.trimestres;
+    if (Array.isArray(trimestresComparativo) && trimestresComparativo.length > 0) {
+      const anosDisponiveis = [
+        ...new Set(
+          trimestresComparativo
+            .map((item) => Number(item?.ano || 0))
+            .filter((ano) => Number.isFinite(ano) && ano > 0)
+        ),
+      ].sort((a, b) => b - a);
+
+      const anoAtual = anosDisponiveis[0] || selectedYear;
+      const temAnoAnterior = anosDisponiveis.length > 1;
+      const anoAnterior = temAnoAnterior ? anosDisponiveis[1] : anoAtual - 1;
+
+      const montarSerieTrimestreAno = (ano) => {
+        if (!ano) return [0, 0, 0, 0];
+        const serie = [0, 0, 0, 0];
+        trimestresComparativo.forEach((item) => {
+          if (Number(item?.ano || 0) !== ano) return;
+          const index = Number(item?.trimestreNumero || 0) - 1;
+          if (index < 0 || index > 3) return;
+          serie[index] = Number(item?.totalReal || 0);
+        });
+        return serie;
+      };
+
+      return {
+        anoAtual,
+        anoAnterior,
+        dadosAtual: {
+          anoExercicio: anoAtual,
+          dados: { lucroAntesIR: montarSerieTrimestreAno(anoAtual) },
+        },
+        dadosAnterior: temAnoAnterior
+          ? {
+              anoExercicio: anoAnterior,
+              dados: { lucroAntesIR: montarSerieTrimestreAno(anoAnterior) },
+            }
+          : null,
+      };
+    }
+
     const competencias = analiseHorizontal?.dadosPorCompetencia;
 
     if (!competencias) {
@@ -1666,7 +1809,7 @@ const Dashboard = () => {
       dadosAtual: montarSerieAno(anoAtual) || analiseHorizontal || null,
       dadosAnterior: temAnoAnterior ? montarSerieAno(anoAnterior) : null,
     };
-  }, [analiseHorizontal, selectedYear]);
+  }, [analiseHorizontal, dreComparativa, selectedYear]);
 
   // Classe de animação
   const cardAnimation = animateCards ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4';

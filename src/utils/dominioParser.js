@@ -492,6 +492,7 @@ export const parseAnaliseHorizontal = (csvContent) => {
  */
 export const parseDREComparativa = (csvContent) => {
   const lines = csvContent.split('\n');
+  const delimiter = detectarDelimitadorCsv(lines.find((line) => line && line.trim()) || '');
   let empresaInfo = {};
   let periodo = '';
 
@@ -499,6 +500,146 @@ export const parseDREComparativa = (csvContent) => {
     anoAtual: {},
     anoAnterior: {},
   };
+
+  const extrairValoresNumericos = (cols = []) =>
+    (cols || [])
+      .map((col) => String(col || '').replace(/^"+|"+$/g, '').trim())
+      .filter(
+        (col) => /^-?\(?[\d.]+,\d{2}\)?$/.test(col) || /^-?\(?\d+\)?$/.test(col)
+      )
+      .map((col) => parseValorBR(col));
+
+  const isComparativoCalculo = lines.some((line) =>
+    normalizeText(line).includes('comparativo de calculo')
+  );
+
+  if (isComparativoCalculo) {
+    const trimestres = [];
+    let periodoComparativo = '';
+
+    for (let i = 0; i < lines.length; i += 1) {
+      const line = lines[i];
+      const cols = parseCsvLine(line, delimiter);
+      const lineNormalized = normalizeText(line);
+
+      if (!empresaInfo.razaoSocial) {
+        const primeiraColuna = String(cols[0] || '').replace(/^"+|"+$/g, '').trim();
+        if (primeiraColuna && !lineNormalized.includes('c.n.p.j') && !lineNormalized.includes('trimestre:')) {
+          empresaInfo.razaoSocial = primeiraColuna;
+        }
+      }
+
+      if (!empresaInfo.cnpj) {
+        const cnpj = extrairCnpjDaLinha(line);
+        if (cnpj) empresaInfo.cnpj = cnpj;
+      }
+
+      if (!periodoComparativo && lineNormalized.includes('trimestre:')) {
+        const faixaMatch = line.match(/(\d{1,2}\/\d{4}\s*a\s*\d{1,2}\/\d{4})/i);
+        if (faixaMatch?.[1]) {
+          periodoComparativo = faixaMatch[1].replace(/\s+/g, ' ');
+        } else {
+          periodoComparativo = extrairTrimestreDaLinha(line, cols);
+        }
+      }
+
+      const trimestreIndex = cols.findIndex((col) =>
+        /^\d{1,2}\/\d{4}$/.test(String(col || '').replace(/^"+|"+$/g, '').trim())
+      );
+      if (trimestreIndex < 0) continue;
+
+      const trimestreRaw = String(cols[trimestreIndex] || '').replace(/^"+|"+$/g, '').trim();
+      const [trimestreNumeroRaw, anoRaw] = trimestreRaw.split('/');
+      const trimestreNumero = Number(trimestreNumeroRaw);
+      const ano = Number(anoRaw);
+      if (!Number.isFinite(trimestreNumero) || !Number.isFinite(ano)) continue;
+
+      const valores = extrairValoresNumericos(cols.slice(trimestreIndex + 1));
+      if (valores.length < 2) continue;
+
+      const csllReal = Number(valores[0] || 0);
+      const irpjReal = Number(valores[1] || 0);
+      const totalReal = Number(valores[2] || csllReal + irpjReal);
+      const csllEstimado = Number(valores[3] || 0);
+      const irpjEstimado = Number(valores[4] || 0);
+      const totalEstimado = Number(valores[5] || csllEstimado + irpjEstimado);
+      const diferencaRealEstimado = Number(valores[6] || totalReal - totalEstimado);
+
+      trimestres.push({
+        trimestre: trimestreRaw,
+        trimestreNumero,
+        ano,
+        csllReal,
+        irpjReal,
+        totalReal,
+        csllEstimado,
+        irpjEstimado,
+        totalEstimado,
+        diferencaRealEstimado,
+      });
+    }
+
+    trimestres.sort((a, b) =>
+      a.ano !== b.ano ? a.ano - b.ano : a.trimestreNumero - b.trimestreNumero
+    );
+
+    const anosDisponiveis = [...new Set(trimestres.map((item) => item.ano))].sort((a, b) => b - a);
+    const anoAtual = anosDisponiveis[0];
+    const anoAnterior = anosDisponiveis[1];
+
+    const serieTrimestralPorAno = (ano) => {
+      if (!ano) return [0, 0, 0, 0];
+      const serie = [0, 0, 0, 0];
+      trimestres
+        .filter((item) => item.ano === ano)
+        .forEach((item) => {
+          const index = item.trimestreNumero - 1;
+          if (index >= 0 && index < 4) {
+            serie[index] = Number(item.totalReal || 0);
+          }
+        });
+      return serie;
+    };
+
+    const lucroAtual = serieTrimestralPorAno(anoAtual);
+    const lucroAnterior = serieTrimestralPorAno(anoAnterior);
+    const totalAtual = lucroAtual.reduce((acc, value) => acc + Number(value || 0), 0);
+    const totalAnterior = lucroAnterior.reduce((acc, value) => acc + Number(value || 0), 0);
+
+    if (anoAtual) {
+      dados.anoAtual = {
+        ano: anoAtual,
+        lucroAntesIR: lucroAtual,
+        resultadoLiquido: totalAtual,
+      };
+    }
+
+    if (anoAnterior) {
+      dados.anoAnterior = {
+        ano: anoAnterior,
+        lucroAntesIR: lucroAnterior,
+        resultadoLiquido: totalAnterior,
+      };
+    }
+
+    return {
+      empresaInfo,
+      periodo: periodoComparativo,
+      dados,
+      comparativoCalculo: {
+        trimestres,
+        periodo: periodoComparativo,
+        anoAtual,
+        anoAnterior,
+      },
+      variacao: {
+        receitaBruta: 0,
+        lucroLiquido: totalAnterior
+          ? (((totalAtual - totalAnterior) / Math.abs(totalAnterior)) * 100).toFixed(2)
+          : 0,
+      },
+    };
+  }
 
   const categorias = [
     { key: 'receitaBruta', match: 'RECEITA BRUTA' },
@@ -518,22 +659,27 @@ export const parseDREComparativa = (csvContent) => {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const cols = line.split(';').map((c) => c.trim());
+    const cols = parseCsvLine(line, delimiter);
 
     // Extrair informações
-    if (cols[0] === 'Empresa:') {
-      empresaInfo.razaoSocial = cols[3];
+    if (cols[0] === 'Empresa:' || normalizeText(line).includes('empresa:')) {
+      empresaInfo.razaoSocial = cols[3] || cols[1] || empresaInfo.razaoSocial;
     }
-    if (cols[0] === 'Período:') {
-      periodo = cols[3];
+    if (cols[0] === 'Período:' || normalizeText(line).includes('periodo:')) {
+      periodo = cols[3] || cols[1] || periodo;
+    }
+    if (!empresaInfo.cnpj) {
+      const cnpj = extrairCnpjDaLinha(line);
+      if (cnpj) empresaInfo.cnpj = cnpj;
     }
 
     // Buscar categorias
     for (const cat of categorias) {
-      if (cols[0] === cat.match) {
+      if (String(cols[0] || '').trim() === cat.match) {
         // Formato: Descrição, vazios, valor 2025, vazios, valor 2024
-        dados.anoAtual[cat.key] = parseValorBR(cols[6]);
-        dados.anoAnterior[cat.key] = parseValorBR(cols[9]);
+        const valores = extrairValoresNumericos(cols.slice(1));
+        dados.anoAtual[cat.key] = Number(valores[0] || 0);
+        dados.anoAnterior[cat.key] = Number(valores[1] || 0);
         break;
       }
     }
@@ -623,6 +769,7 @@ export const parseDREMensal = (csvContent) => {
 export const detectarTipoRelatorio = (csvContent) => {
   if (csvContent.includes('BALANCETE')) return 'balancete';
   if (csvContent.includes('ANÁLISE HORIZONTAL')) return 'analiseHorizontal';
+  if (normalizeText(csvContent).includes('comparativo de calculo')) return 'dreComparativa';
   if (csvContent.includes('DEMONSTRAÇÃO DO RESULTADO DO EXERCÍCIO')) {
     // Verificar se é comparativa ou mensal
     if (csvContent.includes('2024') && csvContent.includes('2025')) {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseImpostoRenda, parseResumoPorAcumulador } from './dominioParser';
+import { parseDREComparativa, parseImpostoRenda, parseResumoPorAcumulador } from './dominioParser';
 
 describe('parseResumoPorAcumulador', () => {
   it('mantem suporte ao formato com delimitador ponto e virgula', () => {
@@ -94,5 +94,47 @@ describe('parseImpostoRenda', () => {
     expect(dados.dados.irpjDevido).toBeCloseTo(38116.42, 2);
     expect(dados.dados.adicionalIR).toBeCloseTo(19410.95, 2);
     expect(dados.dados.irpjRecolher).toBeCloseTo(57527.37, 2);
+  });
+});
+
+describe('parseDREComparativa', () => {
+  it('mantem suporte ao layout antigo da DRE comparativa anual', () => {
+    const csv = [
+      'Empresa:;;;EJP COMERCIO DE ALIMENTOS LTDA',
+      'Periodo:;;;2025 x 2024',
+      'RECEITA BRUTA;;;;;;1.000.000,00;;;900.000,00',
+      '(-) DESPESAS OPERACIONAIS DAS ATIVIDADES EM GERAL;;;;;;400.000,00;;;350.000,00',
+      '= LUCRO BRUTO;;;;;;600.000,00;;;550.000,00',
+      '= RESULTADO LIQUIDO DO PERIODO;;;;;;200.000,00;;;180.000,00',
+    ].join('\n');
+
+    const dados = parseDREComparativa(csv);
+
+    expect(dados.dados.anoAtual.receitaBruta).toBeCloseTo(1000000, 2);
+    expect(dados.dados.anoAnterior.receitaBruta).toBeCloseTo(900000, 2);
+    expect(dados.dados.anoAtual.resultadoLiquido).toBeCloseTo(200000, 2);
+    expect(dados.dados.anoAnterior.resultadoLiquido).toBeCloseTo(180000, 2);
+  });
+
+  it('suporta o layout novo COMPARATIVO DE CALCULO trimestral', () => {
+    const csv = [
+      'ATACADAO DO ACAI INDUSTRIA E COMERCIO LTDA;;;;;;;;;;;;;;;;;;;Pagina:;;1/1',
+      'C.N.P.J.:;;;;35.018.014/0001-17;;;;;;;;;;;;;;;;;',
+      'Trimestre:;;;;1/2025 a 4/2025;;;;;;;;;;;;;;;;;',
+      'COMPARATIVO DE CALCULO;;;;;;;;;;;;;;;;;;;;;',
+      'Trimestre;;;CSLL real;;;IRPJ real;;Total real;;CSLL estimado;;IRPJ estimado;;Total estimado;;Diferenca real x estimado;;;;;',
+      ';1/2025;;7.623,29;;;19.175,79;;26.799,08;;0,00;;0,00;;0,00;;26.799,08;;;;;',
+      ';2/2025;;20.399,61;;;50.665,60;;71.065,21;;0,00;;0,00;;0,00;;71.065,21;;;;;',
+      ';3/2025;;20.242,03;;;50.227,87;;70.469,90;;0,00;;0,00;;0,00;;70.469,90;;;;;',
+      ';4/2025;;20.722,10;;;51.561,38;;72.283,48;;0,00;;0,00;;0,00;;72.283,48;;;;;',
+    ].join('\n');
+
+    const dados = parseDREComparativa(csv);
+
+    expect(dados.empresaInfo.cnpj).toBe('35.018.014/0001-17');
+    expect(dados.comparativoCalculo.trimestres).toHaveLength(4);
+    expect(dados.comparativoCalculo.trimestres[0].trimestre).toBe('1/2025');
+    expect(dados.comparativoCalculo.trimestres[0].totalReal).toBeCloseTo(26799.08, 2);
+    expect(dados.dados.anoAtual.lucroAntesIR).toEqual([26799.08, 71065.21, 70469.9, 72283.48]);
   });
 });

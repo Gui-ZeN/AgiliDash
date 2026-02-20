@@ -87,8 +87,9 @@ const SETORES_CONFIG = {
       },
       {
         id: 'dreComparativa',
-        nome: 'DRE Comparativa',
-        descricao: 'Exportar do Domínio: Relatórios > Contábil > DRE Comparativa (Anual)',
+        nome: 'Comparativo Lucro Real',
+        descricao:
+          'Exportar do Domínio: Relatórios > Contábil/Fiscal > Comparativo de Cálculo (Lucro Real)',
         formato: 'dominio',
       },
       {
@@ -2562,50 +2563,91 @@ const Configuracoes = () => {
                       <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
                         <div className="p-4 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
                           <h3 className="font-semibold text-slate-800 dark:text-white">
-                            Comparativo Anual
+                            {importPreview.dadosParsed?.comparativoCalculo?.trimestres?.length
+                              ? 'Comparativo Lucro Real'
+                              : 'Comparativo Anual'}
                           </h3>
                         </div>
-                        <table className="w-full text-sm">
-                          <thead className="bg-slate-100 dark:bg-slate-800">
-                            <tr>
-                              <th className="px-4 py-2 text-left text-xs font-semibold text-slate-500">
-                                Descrição
-                              </th>
-                              <th className="px-4 py-2 text-right text-xs font-semibold text-slate-500">
-                                Ano Atual
-                              </th>
-                              <th className="px-4 py-2 text-right text-xs font-semibold text-slate-500">
-                                Ano Anterior
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                            {[
-                              'receitaBruta',
-                              'despesasOperacionais',
-                              'lucroBruto',
-                              'resultadoLiquido',
-                            ].map((key) => (
-                              <tr key={key}>
-                                <td className="px-4 py-2 font-medium text-slate-700 dark:text-slate-300">
-                                  {key
-                                    .replace(/([A-Z])/g, ' $1')
-                                    .replace(/^./, (s) => s.toUpperCase())}
-                                </td>
-                                <td className="px-4 py-2 text-right text-slate-600 dark:text-slate-400">
-                                  {formatCurrency(
-                                    importPreview.dadosParsed.dados?.anoAtual?.[key] || 0
-                                  )}
-                                </td>
-                                <td className="px-4 py-2 text-right text-slate-600 dark:text-slate-400">
-                                  {formatCurrency(
-                                    importPreview.dadosParsed.dados?.anoAnterior?.[key] || 0
-                                  )}
-                                </td>
+                        {importPreview.dadosParsed?.comparativoCalculo?.trimestres?.length ? (
+                          <table className="w-full text-sm">
+                            <thead className="bg-slate-100 dark:bg-slate-800">
+                              <tr>
+                                <th className="px-4 py-2 text-left text-xs font-semibold text-slate-500">
+                                  Trimestre
+                                </th>
+                                <th className="px-4 py-2 text-right text-xs font-semibold text-slate-500">
+                                  CSLL Real
+                                </th>
+                                <th className="px-4 py-2 text-right text-xs font-semibold text-slate-500">
+                                  IRPJ Real
+                                </th>
+                                <th className="px-4 py-2 text-right text-xs font-semibold text-slate-500">
+                                  Total Real
+                                </th>
                               </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                              {importPreview.dadosParsed.comparativoCalculo.trimestres.map((item) => (
+                                <tr key={`${item.ano}-${item.trimestreNumero}`}>
+                                  <td className="px-4 py-2 font-medium text-slate-700 dark:text-slate-300">
+                                    {item.trimestre}
+                                  </td>
+                                  <td className="px-4 py-2 text-right text-slate-600 dark:text-slate-400">
+                                    {formatCurrency(item.csllReal || 0)}
+                                  </td>
+                                  <td className="px-4 py-2 text-right text-slate-600 dark:text-slate-400">
+                                    {formatCurrency(item.irpjReal || 0)}
+                                  </td>
+                                  <td className="px-4 py-2 text-right text-slate-600 dark:text-slate-400 font-semibold">
+                                    {formatCurrency(item.totalReal || 0)}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        ) : (
+                          <table className="w-full text-sm">
+                            <thead className="bg-slate-100 dark:bg-slate-800">
+                              <tr>
+                                <th className="px-4 py-2 text-left text-xs font-semibold text-slate-500">
+                                  Descrição
+                                </th>
+                                <th className="px-4 py-2 text-right text-xs font-semibold text-slate-500">
+                                  Ano Atual
+                                </th>
+                                <th className="px-4 py-2 text-right text-xs font-semibold text-slate-500">
+                                  Ano Anterior
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                              {[
+                                'receitaBruta',
+                                'despesasOperacionais',
+                                'lucroBruto',
+                                'resultadoLiquido',
+                              ].map((key) => (
+                                <tr key={key}>
+                                  <td className="px-4 py-2 font-medium text-slate-700 dark:text-slate-300">
+                                    {key
+                                      .replace(/([A-Z])/g, ' $1')
+                                      .replace(/^./, (s) => s.toUpperCase())}
+                                  </td>
+                                  <td className="px-4 py-2 text-right text-slate-600 dark:text-slate-400">
+                                    {formatCurrency(
+                                      importPreview.dadosParsed.dados?.anoAtual?.[key] || 0
+                                    )}
+                                  </td>
+                                  <td className="px-4 py-2 text-right text-slate-600 dark:text-slate-400">
+                                    {formatCurrency(
+                                      importPreview.dadosParsed.dados?.anoAnterior?.[key] || 0
+                                    )}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        )}
                       </div>
                     )}
 

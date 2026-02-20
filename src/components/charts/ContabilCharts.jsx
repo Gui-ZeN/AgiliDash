@@ -303,7 +303,12 @@ export const VariacaoLucroChart = ({ dadosAtual, dadosAnterior }) => {
 
   // Função para agregar dados mensais em trimestrais
   const agregarTrimestral = (dadosMensais) => {
-    if (!dadosMensais || dadosMensais.length < 12) return [0, 0, 0, 0];
+    if (!Array.isArray(dadosMensais) || dadosMensais.length === 0) return [0, 0, 0, 0];
+    // Quando o parser já entrega valores trimestrais diretos (4 posições), usa sem agregação.
+    if (dadosMensais.length === 4) {
+      return dadosMensais.map((value) => Number(value || 0));
+    }
+    if (dadosMensais.length < 12) return [0, 0, 0, 0];
     return [
       dadosMensais.slice(0, 3).reduce((a, b) => a + b, 0), // Q1: Jan-Mar
       dadosMensais.slice(3, 6).reduce((a, b) => a + b, 0), // Q2: Abr-Jun
