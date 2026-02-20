@@ -1,4 +1,4 @@
-﻿import { useState, useRef, useEffect } from 'react';
+﻿import { useState, useRef, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -300,6 +300,8 @@ const Configuracoes = () => {
   const [importRelatorio, setImportRelatorio] = useState(null);
   const [importPreview, setImportPreview] = useState(null);
   const [, setImportMapping] = useState({});
+  const [selectedGrupoImport, setSelectedGrupoImport] = useState('');
+  const [cnpjImportSearch, setCnpjImportSearch] = useState('');
   const [selectedCnpjImport, setSelectedCnpjImport] = useState('');
   const [selectedTrimestre, setSelectedTrimestre] = useState('1'); // Para CSLL/IRPJ
   const [importBatchFiles, setImportBatchFiles] = useState([]); // Para importação em lote
@@ -314,6 +316,57 @@ const Configuracoes = () => {
   const [selectedGrupoVisibilidade, setSelectedGrupoVisibilidade] = useState('');
   const [selectedCnpjVisibilidade, setSelectedCnpjVisibilidade] = useState('');
   const [visibilidadeBusca, setVisibilidadeBusca] = useState('');
+
+  const normalizeFilterText = (text = '') =>
+    String(text)
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
+
+  const gruposById = useMemo(() => {
+    const map = new Map();
+    grupos.forEach((grupo) => map.set(grupo.id, grupo.nome));
+    return map;
+  }, [grupos]);
+
+  const cnpjsFiltradosImport = useMemo(() => {
+    const termo = normalizeFilterText(cnpjImportSearch);
+    const base = selectedGrupoImport
+      ? cnpjs.filter((cnpj) => cnpj.grupoId === selectedGrupoImport)
+      : [];
+
+    const filtrados = base.filter((cnpj) => {
+      if (!termo) return true;
+
+      const nome = normalizeFilterText(cnpj.nomeFantasia || cnpj.razaoSocial || '');
+      const razao = normalizeFilterText(cnpj.razaoSocial || '');
+      const codigo = normalizeFilterText(cnpj.id || '');
+      const numeroCnpj = String(cnpj.cnpj || '').replace(/[^\d]/g, '');
+      const termoCnpj = termo.replace(/[^\d]/g, '');
+
+      return (
+        nome.includes(termo) ||
+        razao.includes(termo) ||
+        codigo.includes(termo) ||
+        (termoCnpj && numeroCnpj.includes(termoCnpj))
+      );
+    });
+
+    return filtrados.sort((a, b) => {
+      const nomeA = (a.nomeFantasia || a.razaoSocial || '').toLowerCase();
+      const nomeB = (b.nomeFantasia || b.razaoSocial || '').toLowerCase();
+      return nomeA.localeCompare(nomeB, 'pt-BR');
+    });
+  }, [cnpjs, selectedGrupoImport, cnpjImportSearch]);
+
+  useEffect(() => {
+    if (!selectedCnpjImport) return;
+    const cnpjAindaValido = cnpjsFiltradosImport.some((cnpj) => cnpj.id === selectedCnpjImport);
+    if (!cnpjAindaValido) {
+      setSelectedCnpjImport('');
+    }
+  }, [cnpjsFiltradosImport, selectedCnpjImport]);
 
   // Estrutura de dashboards disponíveis
   const DASHBOARD_SECTIONS = {
@@ -864,6 +917,8 @@ const Configuracoes = () => {
     setImportRelatorio(null);
     setImportPreview(null);
     setImportMapping({});
+    setSelectedGrupoImport('');
+    setCnpjImportSearch('');
     setSelectedCnpjImport('');
     setSelectedTrimestre('1');
     if (fileInputRef.current) fileInputRef.current.value = '';
@@ -1906,6 +1961,9 @@ const Configuracoes = () => {
                                 onClick={() => {
                                   setImportSetor(setor.id);
                                   setImportRelatorio(null);
+                                  setSelectedGrupoImport('');
+                                  setCnpjImportSearch('');
+                                  setSelectedCnpjImport('');
                                 }}
                                 className={`p-4 rounded-xl border-2 text-center transition-all ${importSetor === setor.id ? `${cores.border} ${cores.bg}` : 'border-slate-200 hover:border-slate-300'}`}
                               >
@@ -1963,18 +2021,70 @@ const Configuracoes = () => {
                           <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">
                             Para qual CNPJ?
                           </label>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                            <div>
+                              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+                                Grupo
+                              </label>
+                              <select
+                                value={selectedGrupoImport}
+                                onChange={(e) => {
+                                  setSelectedGrupoImport(e.target.value);
+                                  setCnpjImportSearch('');
+                                }}
+                                className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white"
+                              >
+                                <option value="">Selecione o grupo...</option>
+                                {grupos.map((grupo) => (
+                                  <option key={grupo.id} value={grupo.id}>
+                                    {grupo.nome}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+                                Buscar CNPJ
+                              </label>
+                              <input
+                                type="text"
+                                value={cnpjImportSearch}
+                                onChange={(e) => setCnpjImportSearch(e.target.value)}
+                                placeholder={
+                                  selectedGrupoImport
+                                    ? 'Nome fantasia, razão social, CNPJ ou código...'
+                                    : 'Selecione um grupo primeiro...'
+                                }
+                                disabled={!selectedGrupoImport}
+                                className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed"
+                              />
+                            </div>
+                          </div>
                           <select
                             value={selectedCnpjImport}
                             onChange={(e) => setSelectedCnpjImport(e.target.value)}
-                            className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white"
+                            disabled={!selectedGrupoImport}
+                            className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-800 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed"
                           >
-                            <option value="">Selecione o CNPJ...</option>
-                            {cnpjs.map((c) => (
+                            <option value="">
+                              {!selectedGrupoImport
+                                ? 'Selecione o grupo primeiro...'
+                                : cnpjsFiltradosImport.length === 0
+                                  ? 'Nenhum CNPJ encontrado nesse grupo'
+                                  : 'Selecione o CNPJ...'}
+                            </option>
+                            {cnpjsFiltradosImport.map((c) => (
                               <option key={c.id} value={c.id}>
                                 {c.nomeFantasia || c.razaoSocial} - {c.cnpj}
+                                {` (${gruposById.get(c.grupoId) || 'Sem grupo'})`}
                               </option>
                             ))}
                           </select>
+                          {selectedGrupoImport && (
+                            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                              {cnpjsFiltradosImport.length} CNPJ(s) encontrado(s) no grupo selecionado.
+                            </p>
+                          )}
                         </div>
                       )}
                     </>
@@ -1995,7 +2105,10 @@ const Configuracoes = () => {
                       disabled={
                         (importCategory === 'cadastros' && !importType) ||
                         (importCategory === 'setores' &&
-                          (!importSetor || !importRelatorio || !selectedCnpjImport))
+                          (!importSetor ||
+                            !importRelatorio ||
+                            !selectedGrupoImport ||
+                            !selectedCnpjImport))
                       }
                       className="flex items-center gap-2 px-6 py-2 bg-[#0e4f6d] text-white rounded-lg hover:bg-[#0d4560] disabled:opacity-50 disabled:cursor-not-allowed"
                     >
