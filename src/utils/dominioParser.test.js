@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { parseDREComparativa, parseImpostoRenda, parseResumoPorAcumulador } from './dominioParser';
+import {
+  parseDREComparativa,
+  parseDREMensal,
+  parseImpostoRenda,
+  parseResumoPorAcumulador,
+} from './dominioParser';
 
 describe('parseResumoPorAcumulador', () => {
   it('mantem suporte ao formato com delimitador ponto e virgula', () => {
@@ -136,5 +141,83 @@ describe('parseDREComparativa', () => {
     expect(dados.comparativoCalculo.trimestres[0].trimestre).toBe('1/2025');
     expect(dados.comparativoCalculo.trimestres[0].totalReal).toBeCloseTo(26799.08, 2);
     expect(dados.dados.anoAtual.lucroAntesIR).toEqual([26799.08, 71065.21, 70469.9, 72283.48]);
+  });
+
+  it('suporta DRE comparativa completa com colunas 2025 e 2024', () => {
+    const csv = [
+      'Empresa:;;;ATACADAO DO ACAI INDUSTRIA E COMERCIO LTDA;;;;;Pagina:;;;;0001;;',
+      'C.N.P.J.:;;;35.018.014/0001-17;;;;;Numero livro:;;;;0001;;',
+      'Periodo:;;;01/01/2025 - 31/12/2025;;;;;;;;;;;',
+      'DEMONSTRACAO DO RESULTADO DO EXERCICIO EM 31/12/2025;;;;;;;;;;;;;;',
+      'Descricao;;;;;;2025;;;2024;;;;;',
+      'RECEITA BRUTA;;;;;;17.569.023,21;;;15.838.334,86;;;;;',
+      '(-) DEDUCOES DA RECEITA BRUTA;;;;;;(503.973,68);;;(411.260,81);;;;;;',
+      '= RECEITA LIQUIDA;;;;;;17.065.049,53;;;15.427.074,05;;;;;',
+      '(-) CPV/ CMV;;;;;;(22.994.344,04);;;(16.731.716,18);;;;;;',
+      '= LUCRO BRUTO;;;;;;(5.929.294,51);;;(1.304.642,13);;;;;',
+      'RESULTADO FINANCEIRO;;;;;;(77.826,35);;;(14.731,64);;;;;',
+      '= RESULTADO ANTES DO IRPJ E DA CSLL;;;;;;(8.126.440,67);;;(2.297.643,30);;;;;',
+      '(-) PROVISAO PARA A CONTRIBUICAO SOCIAL;;;;;;(84.233,59);;;(68.737,46);;;;;',
+      '(-) PROVISAO PARA O IMPOSTO DE RENDA;;;;;;(209.982,22);;;(166.937,39);;;;;',
+      '= RESULTADO LIQUIDO DO EXERCICIO;;;;;;(8.420.656,48);;;(2.533.318,15);;;;;',
+    ].join('\n');
+
+    const dados = parseDREComparativa(csv);
+
+    expect(dados.empresaInfo.cnpj).toBe('35.018.014/0001-17');
+    expect(dados.dados.anoAtual.receitaBruta).toBeCloseTo(17569023.21, 2);
+    expect(dados.dados.anoAnterior.receitaBruta).toBeCloseTo(15838334.86, 2);
+    expect(dados.dados.anoAtual.cmv).toBeCloseTo(-22994344.04, 2);
+    expect(dados.dados.anoAnterior.cmv).toBeCloseTo(-16731716.18, 2);
+    expect(dados.dados.anoAtual.lucroAntesIR).toBeCloseTo(-8126440.67, 2);
+    expect(dados.dados.anoAnterior.lucroAntesIR).toBeCloseTo(-2297643.3, 2);
+    expect(dados.dados.anoAtual.resultadoLiquido).toBeCloseTo(-8420656.48, 2);
+    expect(dados.dados.anoAnterior.resultadoLiquido).toBeCloseTo(-2533318.15, 2);
+  });
+});
+
+describe('parseDREMensal', () => {
+  it('mantem suporte ao layout antigo com saldo atual na coluna 10', () => {
+    const csv = [
+      'Empresa:;;;EJP COMERCIO DE ALIMENTOS LTDA',
+      'Periodo:;;;01/01/2025 - 31/01/2025',
+      'RECEITA BRUTA;;;;;;;;;;1.000.000,00',
+      '(-) DESPESAS OPERACIONAIS DAS ATIVIDADES EM GERAL;;;;;;;;;;(400.000,00)',
+      '= RESULTADO LIQUIDO DO PERIODO;;;;;;;;;;200.000,00',
+    ].join('\n');
+
+    const dados = parseDREMensal(csv);
+
+    expect(dados.periodo).toBe('01/01/2025 - 31/01/2025');
+    expect(dados.dados.receitaBruta).toBeCloseTo(1000000, 2);
+    expect(dados.dados.despesasOperacionais).toBeCloseTo(-400000, 2);
+    expect(dados.dados.resultadoLiquido).toBeCloseTo(200000, 2);
+  });
+
+  it('suporta layout completo com colunas 2025 e 2024 na DRE Mensal', () => {
+    const csv = [
+      'Empresa:;;;ATACADAO DO ACAI INDUSTRIA E COMERCIO LTDA;;;;;Pagina:;;;;0001;;',
+      'C.N.P.J.:;;;35.018.014/0001-17;;;;;Numero livro:;;;;0001;;',
+      'Periodo:;;;01/01/2025 - 31/12/2025;;;;;;;;;;;',
+      'DEMONSTRACAO DO RESULTADO DO EXERCICIO EM 31/12/2025;;;;;;;;;;;;;;',
+      'Descricao;;;;;;2025;;;2024;;;;;',
+      'RECEITA BRUTA;;;;;;17.569.023,21;;;15.838.334,86;;;;;',
+      '(-) CPV/ CMV;;;;;;(22.994.344,04);;;(16.731.716,18);;;;;;',
+      'RESULTADO FINANCEIRO;;;;;;(77.826,35);;;(14.731,64);;;;;',
+      '= RESULTADO ANTES DO IRPJ E DA CSLL;;;;;;(8.126.440,67);;;(2.297.643,30);;;;;',
+      '= RESULTADO LIQUIDO DO EXERCICIO;;;;;;(8.420.656,48);;;(2.533.318,15);;;;;',
+    ].join('\n');
+
+    const dados = parseDREMensal(csv);
+
+    expect(dados.empresaInfo.cnpj).toBe('35.018.014/0001-17');
+    expect(dados.dados.receitaBruta).toBeCloseTo(17569023.21, 2);
+    expect(dados.dados.cmv).toBeCloseTo(-22994344.04, 2);
+    expect(dados.dados.resultadoFinanceiro).toBeCloseTo(-77826.35, 2);
+    expect(dados.dados.lucroAntesIR).toBeCloseTo(-8126440.67, 2);
+    expect(dados.dados.resultadoLiquido).toBeCloseTo(-8420656.48, 2);
+    expect(dados.comparativo.anoAtual).toBe(2025);
+    expect(dados.comparativo.anoAnterior).toBe(2024);
+    expect(dados.comparativo.dadosAnoAnterior.receitaBruta).toBeCloseTo(15838334.86, 2);
   });
 });

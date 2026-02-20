@@ -117,6 +117,17 @@ const normalizeText = (text = '') =>
     .toLowerCase()
     .trim();
 
+const NUMERIC_BR_REGEX = /^-?\(?[\d.]+(?:,\d+)?\)?$/;
+
+const isNumericBRValue = (value = '') =>
+  NUMERIC_BR_REGEX.test(String(value || '').replace(/^"+|"+$/g, '').trim());
+
+const extrairValoresNumericosCols = (cols = []) =>
+  (cols || [])
+    .map((col) => String(col || '').replace(/^"+|"+$/g, '').trim())
+    .filter((col) => isNumericBRValue(col))
+    .map((col) => parseValorBR(col));
+
 const MONTH_PREFIXES = [
   ['jan', 1],
   ['fev', 2],
@@ -501,14 +512,6 @@ export const parseDREComparativa = (csvContent) => {
     anoAnterior: {},
   };
 
-  const extrairValoresNumericos = (cols = []) =>
-    (cols || [])
-      .map((col) => String(col || '').replace(/^"+|"+$/g, '').trim())
-      .filter(
-        (col) => /^-?\(?[\d.]+,\d{2}\)?$/.test(col) || /^-?\(?\d+\)?$/.test(col)
-      )
-      .map((col) => parseValorBR(col));
-
   const isComparativoCalculo = lines.some((line) =>
     normalizeText(line).includes('comparativo de calculo')
   );
@@ -554,7 +557,7 @@ export const parseDREComparativa = (csvContent) => {
       const ano = Number(anoRaw);
       if (!Number.isFinite(trimestreNumero) || !Number.isFinite(ano)) continue;
 
-      const valores = extrairValoresNumericos(cols.slice(trimestreIndex + 1));
+      const valores = extrairValoresNumericosCols(cols.slice(trimestreIndex + 1));
       if (valores.length < 2) continue;
 
       const csllReal = Number(valores[0] || 0);
@@ -642,24 +645,70 @@ export const parseDREComparativa = (csvContent) => {
   }
 
   const categorias = [
-    { key: 'receitaBruta', match: 'RECEITA BRUTA' },
-    { key: 'deducoes', match: '(-) DEDUCOES DA RECEITA BRUTA' },
-    { key: 'receitaLiquida', match: 'RECEITA LIQUIDA' },
-    { key: 'cmv', match: '(-) CMV/ CPV' },
-    { key: 'lucroBruto', match: '= LUCRO BRUTO' },
-    { key: 'despesasOperacionais', match: '(-) DESPESAS OPERACIONAIS DAS ATIVIDADES EM GERAL' },
-    { key: 'despesasPessoal', match: 'DESPESAS C/ PESSOAL' },
-    { key: 'despesasGerais', match: 'DESPESAS GERAIS' },
-    { key: 'resultadoFinanceiro', match: '+ / - RESULTADO FINANCEIRO' },
-    { key: 'lucroAntesIR', match: '= LUCRO ANTES DO IR E DA CSL' },
-    { key: 'provisaoCSLL', match: '(-) PROVISAO PARA A CONTRIBUICAO SOCIAL' },
-    { key: 'provisaoIRPJ', match: '(-) PROVISAO PARA O IMPOSTO DE RENDA' },
-    { key: 'resultadoLiquido', match: '= RESULTADO LIQUIDO DO PERIODO' },
+    {
+      key: 'receitaBruta',
+      match: (desc) => desc === 'receita bruta',
+    },
+    {
+      key: 'deducoes',
+      match: (desc) => desc.includes('deducoes da receita bruta'),
+    },
+    {
+      key: 'receitaLiquida',
+      match: (desc) => desc.includes('receita liquida'),
+    },
+    {
+      key: 'cmv',
+      match: (desc) =>
+        desc.includes('cmv/ cpv') || desc.includes('cpv/ cmv') || desc.includes(' cmv') || desc.includes(' cpv'),
+    },
+    {
+      key: 'lucroBruto',
+      match: (desc) => desc.includes('lucro bruto'),
+    },
+    {
+      key: 'despesasOperacionais',
+      match: (desc) => desc.includes('despesas operacionais das atividades em geral'),
+    },
+    {
+      key: 'despesasPessoal',
+      match: (desc) => desc.includes('despesas c/ pessoal'),
+    },
+    {
+      key: 'despesasGerais',
+      match: (desc) => desc === 'despesas gerais',
+    },
+    {
+      key: 'resultadoFinanceiro',
+      match: (desc) => desc.includes('resultado financeiro'),
+    },
+    {
+      key: 'lucroAntesIR',
+      match: (desc) =>
+        desc.includes('lucro antes do ir') || desc.includes('resultado antes do irpj e da csll'),
+    },
+    {
+      key: 'provisaoCSLL',
+      match: (desc) => desc.includes('provisao para a contribuicao social'),
+    },
+    {
+      key: 'provisaoIRPJ',
+      match: (desc) => desc.includes('provisao para o imposto de renda'),
+    },
+    {
+      key: 'resultadoLiquido',
+      match: (desc) =>
+        desc.includes('resultado liquido do periodo') || desc.includes('resultado liquido do exercicio'),
+    },
   ];
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const cols = parseCsvLine(line, delimiter);
+    const descricaoLinha = normalizeText(String(cols[0] || ''))
+      .replace(/[=]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
 
     // Extrair informações
     if (cols[0] === 'Empresa:' || normalizeText(line).includes('empresa:')) {
@@ -675,9 +724,9 @@ export const parseDREComparativa = (csvContent) => {
 
     // Buscar categorias
     for (const cat of categorias) {
-      if (String(cols[0] || '').trim() === cat.match) {
+      if (cat.match(descricaoLinha)) {
         // Formato: Descrição, vazios, valor 2025, vazios, valor 2024
-        const valores = extrairValoresNumericos(cols.slice(1));
+        const valores = extrairValoresNumericosCols(cols.slice(1));
         dados.anoAtual[cat.key] = Number(valores[0] || 0);
         dados.anoAnterior[cat.key] = Number(valores[1] || 0);
         break;
@@ -714,53 +763,127 @@ export const parseDREComparativa = (csvContent) => {
  */
 export const parseDREMensal = (csvContent) => {
   const lines = csvContent.split('\n');
+  const delimiter = detectarDelimitadorCsv(lines.find((line) => line && line.trim()) || '');
   let empresaInfo = {};
   let periodo = '';
 
   const dados = {};
+  const dadosAnoAtual = {};
+  const dadosAnoAnterior = {};
+  let anoAtual = null;
+  let anoAnterior = null;
+  let layoutComAnos = false;
 
   const categorias = [
-    { key: 'receitaBruta', match: 'RECEITA BRUTA' },
-    { key: 'deducoes', match: '(-) DEDUCOES DA RECEITA BRUTA' },
-    { key: 'receitaLiquida', match: 'RECEITA LIQUIDA' },
-    { key: 'cmv', match: '(-) CMV/ CPV' },
-    { key: 'lucroBruto', match: '= LUCRO BRUTO' },
-    { key: 'despesasOperacionais', match: '(-) DESPESAS OPERACIONAIS DAS ATIVIDADES EM GERAL' },
-    { key: 'despesasPessoal', match: 'DESPESAS C/ PESSOAL' },
-    { key: 'despesasGerais', match: 'DESPESAS GERAIS' },
-    { key: 'resultadoFinanceiro', match: '+ / - RESULTADO FINANCEIRO' },
-    { key: 'lucroAntesIR', match: '= LUCRO ANTES DO IR E DA CSL' },
-    { key: 'provisaoCSLL', match: '(-) PROVISAO PARA A CONTRIBUICAO SOCIAL' },
-    { key: 'provisaoIRPJ', match: '(-) PROVISAO PARA O IMPOSTO DE RENDA' },
-    { key: 'resultadoLiquido', match: '= RESULTADO LIQUIDO DO PERIODO' },
+    { key: 'receitaBruta', match: (desc) => desc === 'receita bruta' },
+    { key: 'deducoes', match: (desc) => desc.includes('deducoes da receita bruta') },
+    { key: 'receitaLiquida', match: (desc) => desc.includes('receita liquida') },
+    {
+      key: 'cmv',
+      match: (desc) =>
+        desc.includes('cmv/ cpv') || desc.includes('cpv/ cmv') || desc.includes(' cmv') || desc.includes(' cpv'),
+    },
+    { key: 'lucroBruto', match: (desc) => desc.includes('lucro bruto') },
+    { key: 'despesasOperacionais', match: (desc) => desc.includes('despesas operacionais das atividades em geral') },
+    { key: 'despesasPessoal', match: (desc) => desc.includes('despesas c/ pessoal') },
+    { key: 'despesasGerais', match: (desc) => desc === 'despesas gerais' },
+    { key: 'resultadoFinanceiro', match: (desc) => desc.includes('resultado financeiro') },
+    {
+      key: 'lucroAntesIR',
+      match: (desc) =>
+        desc.includes('lucro antes do ir e da csl') ||
+        desc.includes('lucro antes do ir') ||
+        desc.includes('resultado antes do irpj e da csll'),
+    },
+    { key: 'provisaoCSLL', match: (desc) => desc.includes('provisao para a contribuicao social') },
+    { key: 'provisaoIRPJ', match: (desc) => desc.includes('provisao para o imposto de renda') },
+    {
+      key: 'resultadoLiquido',
+      match: (desc) =>
+        desc.includes('resultado liquido do periodo') || desc.includes('resultado liquido do exercicio'),
+    },
   ];
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const cols = line.split(';').map((c) => c.trim());
+    const cols = parseCsvLine(line, delimiter);
+    const lineNormalized = normalizeText(line);
 
     // Extrair informações
-    if (cols[0] === 'Empresa:') {
-      empresaInfo.razaoSocial = cols[3];
+    if (lineNormalized.includes('empresa:') && !empresaInfo.razaoSocial) {
+      empresaInfo.razaoSocial = cols[3] || cols[1] || empresaInfo.razaoSocial;
     }
-    if (cols[0] === 'Período:') {
-      periodo = cols[3];
+    if (lineNormalized.includes('periodo:')) {
+      periodo = cols[3] || cols[1] || periodo;
+    }
+    if (!empresaInfo.cnpj) {
+      const cnpj = extrairCnpjDaLinha(line);
+      if (cnpj) empresaInfo.cnpj = cnpj;
     }
 
-    // Buscar categorias - coluna 10 contém Saldo Atual
-    for (const cat of categorias) {
-      if (cols[0] === cat.match) {
-        dados[cat.key] = parseValorBR(cols[10]);
-        break;
+    if (lineNormalized.includes('descricao')) {
+      const anos = cols
+        .map((col) => String(col || '').replace(/^"+|"+$/g, '').trim())
+        .filter((col) => /^\d{4}$/.test(col))
+        .map((col) => Number(col));
+      if (anos.length >= 2) {
+        [anoAtual, anoAnterior] = anos;
+        layoutComAnos = true;
       }
+    }
+
+    const descricaoBruta = String(cols.find((col) => String(col || '').trim()) || '');
+    const descricaoLinha = normalizeText(descricaoBruta)
+      .replace(/[=]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (!descricaoLinha) continue;
+
+    for (const cat of categorias) {
+      if (!cat.match(descricaoLinha)) continue;
+
+      const valores = extrairValoresNumericosCols(cols.slice(1));
+
+      const valorColuna10Raw = String(cols[10] || '').replace(/^"+|"+$/g, '').trim();
+      const valorColuna10Valido = isNumericBRValue(valorColuna10Raw);
+
+      let valorPrincipal = 0;
+      let valorSecundario = null;
+
+      if (layoutComAnos && valores.length) {
+        valorPrincipal = Number(valores[0] || 0);
+        valorSecundario = Number(valores[1] ?? 0);
+      } else if (valorColuna10Valido) {
+        valorPrincipal = parseValorBR(valorColuna10Raw);
+      } else if (valores.length) {
+        valorPrincipal = Number(valores[0] || 0);
+      }
+
+      dados[cat.key] = valorPrincipal;
+      dadosAnoAtual[cat.key] = valorPrincipal;
+      if (valorSecundario !== null) {
+        dadosAnoAnterior[cat.key] = valorSecundario;
+      }
+      break;
     }
   }
 
-  return {
+  const retorno = {
     empresaInfo,
     periodo,
     dados,
   };
+
+  if (layoutComAnos) {
+    retorno.comparativo = {
+      anoAtual,
+      anoAnterior,
+      dadosAnoAtual,
+      dadosAnoAnterior,
+    };
+  }
+
+  return retorno;
 };
 
 /**
@@ -771,10 +894,6 @@ export const detectarTipoRelatorio = (csvContent) => {
   if (csvContent.includes('ANÁLISE HORIZONTAL')) return 'analiseHorizontal';
   if (normalizeText(csvContent).includes('comparativo de calculo')) return 'dreComparativa';
   if (csvContent.includes('DEMONSTRAÇÃO DO RESULTADO DO EXERCÍCIO')) {
-    // Verificar se é comparativa ou mensal
-    if (csvContent.includes('2024') && csvContent.includes('2025')) {
-      return 'dreComparativa';
-    }
     return 'dreMensal';
   }
   return 'desconhecido';
