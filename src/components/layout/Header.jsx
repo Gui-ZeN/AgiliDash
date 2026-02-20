@@ -165,7 +165,7 @@ const Header = ({ activeTab, onTabChange, showTabs = true, tabsPermitidas = null
   };
 
   return (
-    <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-50">
+    <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-[140]">
       {/* Main Header Row */}
       <div className="w-full px-4 lg:px-6 h-16 lg:h-20 flex items-center justify-between">
         {/* Logo */}
@@ -238,7 +238,7 @@ const Header = ({ activeTab, onTabChange, showTabs = true, tabsPermitidas = null
 
             {/* Dropdown Menu */}
             {dropdownOpen && (
-              <div className="absolute right-0 mt-2 w-[340px] lg:w-[400px] bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200/80 dark:border-slate-700/80 py-2 z-50 max-h-[80vh] overflow-y-auto">
+              <div className="absolute right-0 mt-2 w-[340px] lg:w-[400px] bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200/80 dark:border-slate-700/80 py-2 z-[160] max-h-[80vh] overflow-y-auto">
                 {/* Opções de Consolidação */}
                 <p className="px-4 py-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wide">
                   Visualizacao Consolidada

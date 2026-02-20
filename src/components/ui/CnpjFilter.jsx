@@ -65,7 +65,7 @@ const CnpjFilter = ({ className = '' }) => {
   const modosConsolidado = isAdmin ? ['todos', 'grupo', 'empresa'] : ['grupo', 'empresa'];
 
   return (
-    <div className={`relative ${isOpen ? 'z-[95]' : 'z-20'} ${className}`} ref={dropdownRef}>
+    <div className={`relative ${isOpen ? 'z-[160]' : 'z-20'} ${className}`} ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-[#0e4f6d] dark:hover:border-slate-500 transition-colors min-w-[180px]"
@@ -82,7 +82,7 @@ const CnpjFilter = ({ className = '' }) => {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 z-[110] mt-2 max-h-[400px] w-72 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-md dark:border-slate-700 dark:bg-slate-800">
+        <div className="absolute top-full left-0 z-[170] mt-2 max-h-[400px] w-72 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-md dark:border-slate-700 dark:bg-slate-800">
           {/* Consolidado */}
           <div className="p-2 border-b border-slate-100 dark:border-slate-700">
             <p className="px-2 py-1 text-xs font-semibold text-slate-400 uppercase tracking-wide">
