@@ -32,8 +32,20 @@ const normalizarSlug = (value) =>
     .replace(/[^a-z0-9]+/g, '_')
     .replace(/^_+|_+$/g, '');
 
+const extrairDigitosCnpj = (cnpj = '') => String(cnpj || '').replace(/\D/g, '');
+
+const extrairRaizCnpj = (cnpj = '') => {
+  const digitos = extrairDigitosCnpj(cnpj);
+  if (digitos.length !== 14) return '';
+  return digitos.slice(0, 8);
+};
+
 const gerarEmpresaId = (cnpj) => {
   if (cnpj?.empresaId) return cnpj.empresaId;
+  const raizCnpj = extrairRaizCnpj(cnpj?.cnpj);
+  if (raizCnpj) {
+    return `empresa_${cnpj?.grupoId || 'sem_grupo'}_${raizCnpj}`;
+  }
   const base = normalizarSlug(cnpj?.razaoSocial || cnpj?.nomeFantasia || cnpj?.id || 'empresa');
   return `empresa_${cnpj?.grupoId || 'sem_grupo'}_${base}`;
 };
@@ -70,11 +82,33 @@ const construirEmpresas = (cnpjs = []) => {
         cnpjPrincipal: cnpj.cnpj || '',
         regimeTributario: cnpj.regimeTributario || '',
         status: cnpj.status || 'Ativo',
+        tipoPrincipal: cnpj.tipo || '',
+      });
+      return;
+    }
+
+    const empresaAtual = map.get(cnpj.empresaId);
+    const empresaTemMatriz = empresaAtual?.tipoPrincipal === 'Matriz';
+    const cnpjEhMatriz = cnpj?.tipo === 'Matriz';
+
+    const devePromoverComoPrincipal =
+      !empresaAtual?.cnpjPrincipal || (!empresaTemMatriz && cnpjEhMatriz);
+
+    if (devePromoverComoPrincipal) {
+      map.set(cnpj.empresaId, {
+        ...empresaAtual,
+        grupoId: cnpj.grupoId || empresaAtual.grupoId,
+        razaoSocial: cnpj.razaoSocial || cnpj.nomeFantasia || empresaAtual.razaoSocial,
+        nomeFantasia: cnpj.nomeFantasia || cnpj.razaoSocial || empresaAtual.nomeFantasia,
+        cnpjPrincipal: cnpj.cnpj || empresaAtual.cnpjPrincipal,
+        regimeTributario: cnpj.regimeTributario || empresaAtual.regimeTributario,
+        status: cnpj.status || empresaAtual.status,
+        tipoPrincipal: cnpj.tipo || empresaAtual.tipoPrincipal,
       });
     }
   });
 
-  return Array.from(map.values());
+  return Array.from(map.values()).map(({ tipoPrincipal: _tipoPrincipal, ...empresa }) => empresa);
 };
 
 const getTotaisCnpj = ({ dadosContabeis, dadosFiscais, dadosPessoal }) => {
@@ -284,12 +318,12 @@ export const EmpresaProvider = ({ children }) => {
 
   const listaGrupos = gruposPermitidos;
   const listaEmpresas = useMemo(
-    () => empresasPermitidas.filter((e) => e.grupoId === grupoSelecionado),
-    [empresasPermitidas, grupoSelecionado]
+    () => empresasPermitidas.filter((e) => e.grupoId === grupoAtual?.id),
+    [empresasPermitidas, grupoAtual?.id]
   );
   const listaCnpjs = useMemo(
-    () => cnpjsPermitidos.filter((c) => c.empresaId === empresaSelecionada),
-    [cnpjsPermitidos, empresaSelecionada]
+    () => cnpjsPermitidos.filter((c) => c.empresaId === empresaAtual?.id),
+    [cnpjsPermitidos, empresaAtual?.id]
   );
 
   const todosCnpjs = cnpjsPermitidos;
@@ -299,10 +333,10 @@ export const EmpresaProvider = ({ children }) => {
 
     switch (modoVisualizacao) {
       case 'empresa':
-        return cnpjsPermitidos.filter((c) => c.empresaId === empresaSelecionada).map((c) => c.id);
+        return cnpjsPermitidos.filter((c) => c.empresaId === empresaAtual?.id).map((c) => c.id);
       case 'grupo': {
         const empresasDoGrupo = new Set(
-          empresasPermitidas.filter((e) => e.grupoId === grupoSelecionado).map((e) => e.id)
+          empresasPermitidas.filter((e) => e.grupoId === grupoAtual?.id).map((e) => e.id)
         );
         return cnpjsPermitidos.filter((c) => empresasDoGrupo.has(c.empresaId)).map((c) => c.id);
       }
@@ -315,9 +349,9 @@ export const EmpresaProvider = ({ children }) => {
     cnpjInfo?.id,
     modoVisualizacao,
     cnpjsPermitidos,
-    empresaSelecionada,
+    empresaAtual?.id,
     empresasPermitidas,
-    grupoSelecionado,
+    grupoAtual?.id,
   ]);
 
   const isConsolidado = modoVisualizacao !== 'cnpj';
