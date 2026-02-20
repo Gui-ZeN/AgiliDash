@@ -76,6 +76,30 @@ const detectarDelimitadorResumoAcumulador = (line = '') => {
   return ';';
 };
 
+const detectarDelimitadorCsv = (line = '') => {
+  if (line.includes(';')) return ';';
+  if (line.includes(',')) return ',';
+  return ';';
+};
+
+const extrairCnpjDaLinha = (line = '') => {
+  const match = String(line).match(/(\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}|\d{14})/);
+  return match ? match[1] : '';
+};
+
+const extrairTrimestreDaLinha = (line = '', cols = []) => {
+  const lineMatch = String(line).match(
+    /TRIMESTRE:\s*[,; ]*"?([A-Za-z]{3}\/\d{2}|\d{1,2}\/\d{4})"?/i
+  );
+  if (lineMatch) return lineMatch[1];
+
+  const colMatch = (cols || [])
+    .map((col) => String(col || '').replace(/^"+|"+$/g, '').trim())
+    .find((col) => /^([A-Za-z]{3}\/\d{2}|\d{1,2}\/\d{4})$/i.test(col));
+
+  return colMatch || '';
+};
+
 // Extrai porcentagem do formato "(12,34)"
 export const parsePercentBR = (valor) => {
   if (!valor) return 0;
@@ -680,6 +704,7 @@ export const consolidarBalancetesMensais = (balancetes) => {
  */
 export const parseContribuicaoSocial = (csvContent) => {
   const lines = csvContent.split('\n');
+  const delimiter = detectarDelimitadorCsv(lines.find((line) => line && line.trim()) || '');
   let empresaInfo = {};
   let trimestre = '';
   let dados = {};
@@ -688,7 +713,7 @@ export const parseContribuicaoSocial = (csvContent) => {
   const findLastValue = (cols) => {
     // Procura de trás pra frente o primeiro valor que parece número brasileiro
     for (let i = cols.length - 1; i >= 0; i--) {
-      const val = cols[i].trim();
+      const val = cols[i].trim().replace(/^"+|"+$/g, '');
       // Valor brasileiro: pode ter pontos, vírgula decimal, números
       if (val && /^-?[\d.]+,\d{2}$/.test(val)) {
         return parseValorBR(val);
@@ -703,15 +728,15 @@ export const parseContribuicaoSocial = (csvContent) => {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const cols = line.split(';').map((c) => c.trim());
+    const cols = parseCsvLine(line, delimiter);
     // Converte para uppercase para comparação (sem tentar remover acentos)
 
     // Extrair informações da empresa
     if (line.includes('C.N.P.J.:')) {
-      empresaInfo.cnpj = cols.find((c) => c.match(/\d{2}\.\d{3}\.\d{3}/)) || cols[2];
+      empresaInfo.cnpj = extrairCnpjDaLinha(line) || empresaInfo.cnpj;
     }
     if (line.includes('Trimestre:')) {
-      trimestre = cols.find((c) => c.match(/\w{3}\/\d{2}/)) || cols[2];
+      trimestre = extrairTrimestreDaLinha(line, cols) || trimestre;
     }
 
     // Extrair valores usando regex que ignora caracteres acentuados
@@ -763,6 +788,7 @@ export const parseContribuicaoSocial = (csvContent) => {
  */
 export const parseImpostoRenda = (csvContent) => {
   const lines = csvContent.split('\n');
+  const delimiter = detectarDelimitadorCsv(lines.find((line) => line && line.trim()) || '');
   let empresaInfo = {};
   let trimestre = '';
   let dados = {};
@@ -770,7 +796,7 @@ export const parseImpostoRenda = (csvContent) => {
   // Função auxiliar para encontrar o Último valor numérico em uma linha
   const findLastValue = (cols) => {
     for (let i = cols.length - 1; i >= 0; i--) {
-      const val = cols[i].trim();
+      const val = cols[i].trim().replace(/^"+|"+$/g, '');
       if (val && /^-?[\d.]+,\d{2}$/.test(val)) {
         return parseValorBR(val);
       }
@@ -783,14 +809,14 @@ export const parseImpostoRenda = (csvContent) => {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const cols = line.split(';').map((c) => c.trim());
+    const cols = parseCsvLine(line, delimiter);
 
     // Extrair informações da empresa
     if (line.includes('C.N.P.J.:')) {
-      empresaInfo.cnpj = cols.find((c) => c.match(/\d{2}\.\d{3}\.\d{3}/)) || cols[2];
+      empresaInfo.cnpj = extrairCnpjDaLinha(line) || empresaInfo.cnpj;
     }
     if (line.includes('Trimestre:')) {
-      trimestre = cols.find((c) => c.match(/\w{3}\/\d{2}/)) || cols[2];
+      trimestre = extrairTrimestreDaLinha(line, cols) || trimestre;
     }
 
     // Extrair valores usando regex que ignora caracteres acentuados

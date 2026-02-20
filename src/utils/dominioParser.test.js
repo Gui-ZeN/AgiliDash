@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseResumoPorAcumulador } from './dominioParser';
+import { parseImpostoRenda, parseResumoPorAcumulador } from './dominioParser';
 
 describe('parseResumoPorAcumulador', () => {
   it('mantem suporte ao formato com delimitador ponto e virgula', () => {
@@ -45,3 +45,54 @@ describe('parseResumoPorAcumulador', () => {
   });
 });
 
+describe('parseImpostoRenda', () => {
+  it('mantem suporte ao formato com delimitador ponto e virgula', () => {
+    const csv = [
+      'EJP COMERCIO DE ALIMENTOS LTDA;;;;;;;;;;;;;;;Pagina:;;01/jan',
+      'C.N.P.J.:;;;30.533.759/0001-09;;;;;;;;;;;;;;',
+      'Trimestre:;;;jan/25;;;;;;;;;;;;;;',
+      'IMPOSTO DE RENDA;;;;;;;;;;;;;;;;',
+      'Lucro liquido antes do IRPJ;;;;;;;;;;;;;215.622,23;;;;',
+      '(+) Adicoes;;;;;;;;;;;;;14.497,55;;;;',
+      '(=) Lucro Real antes da compensacao;;;;;;;;;;;;;230.119,78;;;;',
+      '(=) Lucro Real;;;;;;;;;;;;;161.083,85;;;;',
+      'IRPJ devido (Aliquota 15,00%);;;;;;;;;;;;;24.162,58;;;;',
+      '(+) Adicional de IRPJ;;;;;;;;;;;;;10.108,39;;;;',
+      '(=) IRPJ a recolher;;;;;;;;;;;;;34.270,97;;;;',
+    ].join('\n');
+
+    const dados = parseImpostoRenda(csv);
+
+    expect(dados.empresaInfo.cnpj).toBe('30.533.759/0001-09');
+    expect(dados.trimestre).toBe('jan/25');
+    expect(dados.dados.lucroLiquido).toBeCloseTo(215622.23, 2);
+    expect(dados.dados.irpjDevido).toBeCloseTo(24162.58, 2);
+    expect(dados.dados.adicionalIR).toBeCloseTo(10108.39, 2);
+    expect(dados.dados.irpjRecolher).toBeCloseTo(34270.97, 2);
+  });
+
+  it('suporta formato com delimitador virgula e valores entre aspas', () => {
+    const csv = [
+      'ATACADAO DO ACAI INDUSTRIA E COMERCIO LTDA,,,,,,,,,,,,,,,Folha:,,1/1',
+      'C.N.P.J.:,,,35.018.014/0001-17,,,,,,,,,,,,,,',
+      'Trimestre:,,,1/2025,,,,,,,,,,,,,,',
+      'IMPOSTO DE RENDA,,,,,,,,,,,,,,,,,',
+      'Lucro liquido antes do IRPJ,,,,,,,,,,,,,"231.239,64",,,,',
+      '(+) Adicoes,,,,,,,,,,,,,"22.869,85",,,,',
+      '(=) Lucro Real antes da compensacao,,,,,,,,,,,,,"254.109,49",,,,',
+      '(=) Lucro Real,,,,,,,,,,,,,"254.109,49",,,,',
+      '"IRPJ devido (Aliquota 15,00%)",,,,,,,,,,,,, "38.116,42",,,,',
+      '(+) Adicional de IRPJ,,,,,,,,,,,,,"19.410,95",,,,',
+      '(=) IRPJ a recolher,,,,,,,,,,,,,"57.527,37",,,,',
+    ].join('\n');
+
+    const dados = parseImpostoRenda(csv);
+
+    expect(dados.empresaInfo.cnpj).toBe('35.018.014/0001-17');
+    expect(dados.trimestre).toBe('1/2025');
+    expect(dados.dados.lucroLiquido).toBeCloseTo(231239.64, 2);
+    expect(dados.dados.irpjDevido).toBeCloseTo(38116.42, 2);
+    expect(dados.dados.adicionalIR).toBeCloseTo(19410.95, 2);
+    expect(dados.dados.irpjRecolher).toBeCloseTo(57527.37, 2);
+  });
+});
