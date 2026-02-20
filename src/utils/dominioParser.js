@@ -10,6 +10,7 @@ export const parseValorBR = (valor) => {
 
   // Remove espaços e caracteres especiais
   let clean = valor.toString().trim();
+  clean = clean.replace(/^"+|"+$/g, '').trim();
 
   // Se for apenas texto ou cabeçalho, retorna 0
   if (clean.match(/^[a-zA-Z]/)) return 0;
@@ -35,6 +36,44 @@ export const parseValorBR = (valor) => {
   // Em DREs, valores com parênteses já são negativos
 
   return num;
+};
+
+const parseCsvLine = (line = '', delimiter = ';') => {
+  const cols = [];
+  let current = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i += 1) {
+    const char = line[i];
+    const next = line[i + 1];
+
+    if (char === '"') {
+      if (inQuotes && next === '"') {
+        current += '"';
+        i += 1;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+
+    if (char === delimiter && !inQuotes) {
+      cols.push(current.trim());
+      current = '';
+      continue;
+    }
+
+    current += char;
+  }
+
+  cols.push(current.trim());
+  return cols;
+};
+
+const detectarDelimitadorResumoAcumulador = (line = '') => {
+  if (line.includes(';')) return ';';
+  if (line.includes(',')) return ',';
+  return ';';
 };
 
 // Extrai porcentagem do formato "(12,34)"
@@ -1202,6 +1241,9 @@ export const parseResumoImpostos = (csvContent) => {
  */
 export const parseResumoPorAcumulador = (csvContent) => {
   const lines = csvContent.split('\n');
+  const delimiter = detectarDelimitadorResumoAcumulador(
+    lines.find((line) => line && line.trim()) || ''
+  );
   let empresaInfo = {};
   let periodo = '';
   let periodoInicio = '';
@@ -1236,7 +1278,7 @@ export const parseResumoPorAcumulador = (csvContent) => {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const cols = line.split(';').map((c) => c.trim());
+    const cols = parseCsvLine(line, delimiter);
 
     // Extrair informações da empresa
     if (line.includes('CNPJ:')) {
@@ -1281,10 +1323,11 @@ export const parseResumoPorAcumulador = (csvContent) => {
 
       // Buscar Descrição (texto com mais de 5 caracteres)
       for (let j = 1; j < Math.min(cols.length, 10); j++) {
+        const valorSemAspas = String(cols[j] || '').replace(/^"+|"+$/g, '').trim();
         if (
-          cols[j] &&
-          cols[j].length > 5 &&
-          isNaN(parseFloat(cols[j].replace(/\./g, '').replace(',', '.')))
+          valorSemAspas &&
+          valorSemAspas.length > 5 &&
+          isNaN(parseFloat(valorSemAspas.replace(/\./g, '').replace(',', '.')))
         ) {
           descricao = cols[j];
           break;
